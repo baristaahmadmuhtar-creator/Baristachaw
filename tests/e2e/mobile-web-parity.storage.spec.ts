@@ -5,6 +5,8 @@ import { clearClientState } from '../helpers/cleanup';
 import { expectMobileParityPageHealthy, mobileParityPath } from '../helpers/mobileParity';
 
 test.beforeEach(async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await clearClientState(page);
   await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
 });
 
@@ -45,6 +47,7 @@ test('saved AI Brew recipe survives reload and appears in mobile collection pari
   await page.getByTestId('ai-brew-generate').click();
   await expect(page.getByTestId('ai-brew-result')).toBeVisible();
   await page.getByTestId('ai-brew-result-action-save').click();
+  await expect(page.getByTestId('ai-brew-save-success')).toBeVisible();
 
   await page.reload({ waitUntil: 'domcontentloaded' });
   const storedPlan = await page.evaluate(() => {

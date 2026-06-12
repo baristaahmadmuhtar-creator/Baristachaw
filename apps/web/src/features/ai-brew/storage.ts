@@ -10,6 +10,7 @@ import type {
 
 const AI_BREW_FORM_STORAGE_KEY = 'BARISTACHAW_AI_BREW_FORM_V5';
 const AI_BREW_CATALOG_SNAPSHOT_STORAGE_KEY = 'BARISTACHAW_AI_BREW_CATALOG_SNAPSHOT_V5';
+const AI_BREW_CATALOG_SNAPSHOT_DB_KEY = 'ai_brew_catalog_snapshot_v5';
 const AI_BREW_LAST_PLAN_STORAGE_KEY = 'BARISTACHAW_AI_BREW_LAST_PLAN_V5';
 const AI_BREW_SEQUENCE_CACHE_STORAGE_KEY = 'BARISTACHAW_AI_BREW_SEQUENCE_CACHE_V1';
 const AI_BREW_STORAGE_SCHEMA_VERSION = 5;
@@ -20,6 +21,10 @@ interface VersionedAiBrewPayload<T> {
   schemaVersion: number;
   savedAt: number;
   payload: T;
+}
+
+interface AiBrewCatalogSnapshotRecord extends VersionedAiBrewPayload<AiBrewCatalog> {
+  key: string;
 }
 
 export interface CachedAiBrewSequenceOverlay {
@@ -84,24 +89,7 @@ export function loadAiBrewFormDraft<T>(fallback: T): T {
   }
 }
 
-export function hasAiBrewFormDraft(): boolean {
-  try {
-    return Boolean(localStorage.getItem(AI_BREW_FORM_STORAGE_KEY));
-  } catch {
-    return false;
-  }
-}
-
-export function saveAiBrewFormDraft<T>(value: T) {
-  try {
-    localStorage.setItem(AI_BREW_FORM_STORAGE_KEY, JSON.stringify(value));
-  } catch {
-    // Ignore storage write failures (private mode / quota / security policy).
-  }
-}
-
-export function loadCachedAiBrewCatalogSnapshot(): AiBrewCatalog | null {
-  const snapshot = readVersionedStorage<AiBrewCatalog>(AI_BREW_CATALOG_SNAPSHOT_STORAGE_KEY);
+function validateCachedAiBrewCatalogSnapshot(snapshot: AiBrewCatalog | null | undefined): AiBrewCatalog | null {
   if (!snapshot?.catalogVersion) return null;
   if (
     !Array.isArray(snapshot.drippers)
@@ -120,8 +108,60 @@ export function loadCachedAiBrewCatalogSnapshot(): AiBrewCatalog | null {
   return snapshot;
 }
 
+export function hasAiBrewFormDraft(): boolean {
+  try {
+    return Boolean(localStorage.getItem(AI_BREW_FORM_STORAGE_KEY));
+  } catch {
+    return false;
+  }
+}
+
+export function saveAiBrewFormDraft<T>(value: T) {
+  try {
+    localStorage.setItem(AI_BREW_FORM_STORAGE_KEY, JSON.stringify(value));
+  } catch {
+    // Ignore storage write failures (private mode / quota / security policy).
+  }
+}
+
+export function loadCachedAiBrewCatalogSnapshot(): AiBrewCatalog | null {
+  return validateCachedAiBrewCatalogSnapshot(
+    readVersionedStorage<AiBrewCatalog>(AI_BREW_CATALOG_SNAPSHOT_STORAGE_KEY),
+  );
+}
+
 export function saveCachedAiBrewCatalogSnapshot(catalog: AiBrewCatalog) {
   writeVersionedStorage(AI_BREW_CATALOG_SNAPSHOT_STORAGE_KEY, catalog);
+}
+
+export async function loadPersistentAiBrewCatalogSnapshot(): Promise<AiBrewCatalog | null> {
+  const localSnapshot = loadCachedAiBrewCatalogSnapshot();
+  if (localSnapshot) return localSnapshot;
+
+  try {
+    const record = await idbGet<AiBrewCatalogSnapshotRecord>(
+      DB_STORES.META,
+      AI_BREW_CATALOG_SNAPSHOT_DB_KEY,
+    );
+    if (record?.schemaVersion !== AI_BREW_STORAGE_SCHEMA_VERSION) return null;
+    return validateCachedAiBrewCatalogSnapshot(record.payload);
+  } catch {
+    return null;
+  }
+}
+
+export async function savePersistentAiBrewCatalogSnapshot(catalog: AiBrewCatalog): Promise<void> {
+  saveCachedAiBrewCatalogSnapshot(catalog);
+  try {
+    await idbPut(DB_STORES.META, {
+      key: AI_BREW_CATALOG_SNAPSHOT_DB_KEY,
+      schemaVersion: AI_BREW_STORAGE_SCHEMA_VERSION,
+      savedAt: Date.now(),
+      payload: catalog,
+    } satisfies AiBrewCatalogSnapshotRecord);
+  } catch {
+    // Keep the localStorage best-effort copy when IndexedDB is unavailable.
+  }
 }
 
 export function loadLastGeneratedBrewPlan(expectedCatalogVersion?: string): BrewPlan | null {

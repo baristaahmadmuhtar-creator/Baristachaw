@@ -570,9 +570,10 @@ for (const config of MATRIX) {
       await actionsMenu.locator('summary').click();
       
       if (config.caseNum === 1) {
-        // 1. Edit Inputs
-        console.log('Testing "Edit Inputs"...');
-        await page.getByTestId('ai-brew-edit-inputs').click();
+        // 1. Reopen the retained draft
+        console.log('Testing retained draft reopening...');
+        await page.getByRole('button', { name: /Close planned output|Tutup hasil/i }).click();
+        await page.getByTestId('ai-brew-open-pro').click();
         await expect(page.getByTestId('ai-brew-coffee-name')).toHaveValue(config.coffeeName);
         
         // Re-generate to restore results

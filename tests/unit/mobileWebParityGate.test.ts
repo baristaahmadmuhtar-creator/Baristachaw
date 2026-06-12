@@ -1,9 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 
 const ROOT = process.cwd();
+const require = createRequire(import.meta.url);
 
 function read(relativePath: string) {
   return readFileSync(path.join(ROOT, relativePath), 'utf8');
@@ -103,16 +105,82 @@ test('mobile env defaults and app config keep store builds on web parity source 
   assert.match(appSource, /if \(mobileEnv\.webParityFallbackEnabled\) \{\s*setRootMode\('native'\);/s);
 });
 
+test('authoritative viewport metrics cancel a stale keyboard fallback frame', () => {
+  const keyboardHookSource = read('apps/web/src/hooks/useIOSKeyboardFix.ts');
+
+  assert.match(
+    keyboardHookSource,
+    /const onMetrics = \(e: Event\) => \{\s*if \(rafId !== null\) \{\s*window\.cancelAnimationFrame\(rafId\);\s*rafId = null;\s*\}\s*const ce = e as CustomEvent<ViewportMetricsDetail>;\s*applyMetrics\(ce\.detail\);/s,
+  );
+});
+
 test('Android store config minimizes sensitive storage permissions for Play review', () => {
   const appConfig = read('apps/mobile/app.config.ts');
+  const androidConfigPlugin = read('apps/mobile/plugins/with-android-monorepo-release-bundle.js');
+  const packageJson = JSON.parse(read('package.json'));
 
-  assert.match(appConfig, /'android\.permission\.READ_EXTERNAL_STORAGE'/);
-  assert.match(appConfig, /'android\.permission\.READ_MEDIA_IMAGES'/);
-  assert.match(appConfig, /'android\.permission\.READ_MEDIA_VIDEO'/);
-  assert.match(appConfig, /'android\.permission\.READ_MEDIA_AUDIO'/);
+  for (const permission of [
+    'android.permission.SYSTEM_ALERT_WINDOW',
+    'android.permission.READ_EXTERNAL_STORAGE',
+    'android.permission.WRITE_EXTERNAL_STORAGE',
+    'android.permission.READ_MEDIA_IMAGES',
+    'android.permission.READ_MEDIA_VIDEO',
+    'android.permission.READ_MEDIA_AUDIO',
+    'android.permission.MANAGE_EXTERNAL_STORAGE',
+  ]) {
+    assert.match(appConfig, new RegExp(`'${escapeRegex(permission)}'`));
+    assert.match(
+      androidConfigPlugin,
+      new RegExp(`'${escapeRegex(permission)}'`),
+      `Android config plugin must explicitly remove ${permission}`,
+    );
+  }
+
+  assert.match(androidConfigPlugin, /withAndroidManifest/);
+  assert.match(androidConfigPlugin, /permission\.\$\['tools:node'\] = 'remove'/);
+  assert.match(androidConfigPlugin, /BARISTACHAW_RELEASE_STORE_FILE/);
+  assert.match(androidConfigPlugin, /BARISTACHAW_RELEASE_STORE_PASSWORD/);
+  assert.match(androidConfigPlugin, /BARISTACHAW_RELEASE_KEY_ALIAS/);
+  assert.match(androidConfigPlugin, /BARISTACHAW_RELEASE_KEY_PASSWORD/);
+  assert.match(androidConfigPlugin, /Release signing credentials are required for production Android builds/);
+  assert.match(androidConfigPlugin, /signingConfig signingConfigs\.release/);
   assert.doesNotMatch(appConfig, /permissions:\s*\[[\s\S]*'READ_MEDIA_IMAGES'/);
   assert.doesNotMatch(appConfig, /permissions:\s*\[[\s\S]*'READ_MEDIA_VIDEO'/);
   assert.doesNotMatch(appConfig, /permissions:\s*\[[\s\S]*'READ_MEDIA_AUDIO'/);
+  assert.equal(packageJson.scripts?.['mobile:android:permissions'], 'node scripts/check-android-release-permissions.mjs');
+  assert.equal(packageJson.scripts?.test, 'npm run test:unit && npm run mobile:test');
+});
+
+test('Android config plugin preserves debug signing and enforces release signing', () => {
+  const plugin = require(path.join(ROOT, 'apps/mobile/plugins/with-android-monorepo-release-bundle.js'));
+  assert.equal(typeof plugin.ensureAndroidMonorepoReleaseBundle, 'function');
+
+  const transformed = plugin.ensureAndroidMonorepoReleaseBundle(`
+def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
+react {
+}
+android {
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+        }
+    }
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            signingConfig signingConfigs.debug
+        }
+    }
+    packagingOptions {
+    }
+}
+`);
+
+  assert.match(transformed, /debug\s*\{\s*signingConfig signingConfigs\.debug\s*\}/s);
+  assert.match(transformed, /release\s*\{[\s\S]*?signingConfig signingConfigs\.release/s);
+  assert.doesNotMatch(transformed, /debug\s*\{\s*signingConfig signingConfigs\.release\s*\}/s);
 });
 
 test('mobile telemetry does not attach email or display name to crash user scope', () => {

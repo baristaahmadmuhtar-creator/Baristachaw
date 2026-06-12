@@ -1,9 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { qaLogin, qaLogout } from '../fixtures/auth';
 import { buildQaUser } from '../fixtures/test-data';
+import { clearClientState } from '../helpers/cleanup';
 import { expectMobileParityPageHealthy, mobileParityPath } from '../helpers/mobileParity';
 
 test.beforeEach(async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await clearClientState(page);
   await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
 });
 

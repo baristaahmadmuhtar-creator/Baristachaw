@@ -24,6 +24,7 @@ export default defineConfig({
     video: shouldUseSystemChrome ? 'off' : 'retain-on-failure',
     actionTimeout: 20_000,
     navigationTimeout: 60_000,
+    serviceWorkers: 'block',
     extraHTTPHeaders: shouldUseLiveAi ? undefined : { 'x-e2e-mock': '1' },
   },
   webServer: shouldStartWebServer

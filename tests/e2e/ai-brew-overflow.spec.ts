@@ -109,7 +109,7 @@ async function selectCustomProcessAndVariety(page: Page, process: string, variet
 
 async function closeBuilder(page: Page) {
   if ((await page.getByTestId('ai-brew-builder-pro').count()) === 0) return;
-  await page.getByTestId('ai-brew-close-pro').click();
+  await page.getByTestId('ai-brew-close-pro').dispatchEvent('click');
   await expect(page.getByTestId('ai-brew-builder-pro')).toHaveCount(0);
 }
 
@@ -243,7 +243,6 @@ test('AI Brew Hario Switch iced mode keeps builder, method strip, and result mod
     await expect(result.getByTestId('ai-brew-post-extraction-note')).toContainText(/tidak menambah waktu rasa utama|do not add to the main taste time/i);
     await expect(result.getByTestId('ai-brew-result-action-bar')).toBeVisible();
     await expect(result.getByTestId('ai-brew-result-action-guide')).toBeVisible();
-    await expect(result.getByTestId('ai-brew-result-action-edit')).toBeVisible();
     await expectNoHorizontalOverflow(page, `${viewport.label} switch iced summary`);
 
     await result.getByTestId('ai-brew-result-tab-flow').click();

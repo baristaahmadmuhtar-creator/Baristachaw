@@ -46,6 +46,12 @@ async function openProBuilder(page: import('@playwright/test').Page) {
   await expect(page.getByTestId('ai-brew-builder-pro')).toBeVisible({ timeout: 60_000 });
 }
 
+async function reopenProBuilderFromResult(page: import('@playwright/test').Page) {
+  await page.getByRole('button', { name: /Close planned output|Tutup hasil/i }).click();
+  await page.getByTestId('ai-brew-open-pro').click();
+  await expect(page.getByTestId('ai-brew-builder-pro')).toBeVisible({ timeout: 60_000 });
+}
+
 async function setVisibleInputValue(
   page: import('@playwright/test').Page,
   testId: string,
@@ -1264,8 +1270,7 @@ test('ai brew deterministic sequence changes checkpoint timeline across target c
   await expect(baselineTimes.length).toBeGreaterThan(2);
   await expect(baselinePours.length).toBeGreaterThan(2);
 
-  await page.getByTestId('ai-brew-result-secondary-actions').locator('summary').click();
-  await page.getByTestId('ai-brew-edit-inputs').click();
+  await reopenProBuilderFromResult(page);
   await clickTargetProfile(page, 'quick', 'More Body');
   await page.getByTestId('ai-brew-generate').click();
   await openResultGuide(page);
@@ -1297,8 +1302,7 @@ test('ai brew deterministic sequence changes pour-map structure across bean extr
   const baselineShares = baselinePourSteps.map((step) => step.pourVolumeMl / baselinePlan.hotWaterMl);
   await expect(baselinePours.length).toBeGreaterThan(2);
 
-  await page.getByTestId('ai-brew-result-secondary-actions').locator('summary').click();
-  await page.getByTestId('ai-brew-edit-inputs').click();
+  await reopenProBuilderFromResult(page);
   await page.getByTestId('ai-brew-bean-profile-toggle').click();
   await page.getByTestId('ai-brew-bean-roast-underdeveloped').click();
   await page.getByTestId('ai-brew-bean-solubility-low').click();
@@ -1333,8 +1337,7 @@ test('ai brew regenerates fresh output identity after process and variety edits'
   await expect(page.getByTestId('ai-brew-result')).toContainText(firstPlan.process);
   await expect(page.getByTestId('ai-brew-result')).toContainText(firstPlan.variety);
 
-  await page.getByTestId('ai-brew-result-secondary-actions').locator('summary').click();
-  await page.getByTestId('ai-brew-edit-inputs').click();
+  await reopenProBuilderFromResult(page);
   await pickProcess(page, 'anaerobic carbonic', 'anaerobic_carbonic');
   await pickVariety(page, 'andina', 'andina');
   await page.getByTestId('ai-brew-generate').click();

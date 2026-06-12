@@ -109,14 +109,44 @@ export const tx = async <T>(
     return new Promise<T>((resolve, reject) => {
         const transaction = db.transaction(storeName, mode);
         const store = transaction.objectStore(storeName);
+        let operationCompleted = false;
+        let transactionCompleted = false;
+        let operationValue!: T;
+        let settled = false;
+
+        const resolveWhenComplete = () => {
+            if (!settled && operationCompleted && transactionCompleted) {
+                settled = true;
+                resolve(operationValue);
+            }
+        };
+        const rejectOnce = (error: Error) => {
+            if (settled) return;
+            settled = true;
+            reject(error);
+        };
+
+        transaction.oncomplete = () => {
+            transactionCompleted = true;
+            resolveWhenComplete();
+        };
+        transaction.onerror = () => rejectOnce(transaction.error || new Error('IndexedDB transaction failed'));
+        transaction.onabort = () => rejectOnce(transaction.error || new Error('IndexedDB transaction aborted'));
 
         Promise.resolve(operation(store))
             .then((value) => {
-                transaction.oncomplete = () => resolve(value);
-                transaction.onerror = () => reject(transaction.error || new Error('IndexedDB transaction failed'));
-                transaction.onabort = () => reject(transaction.error || new Error('IndexedDB transaction aborted'));
+                operationValue = value;
+                operationCompleted = true;
+                resolveWhenComplete();
             })
-            .catch(reject);
+            .catch((error) => {
+                try {
+                    transaction.abort();
+                } catch {
+                    // The transaction may already be inactive after an operation failure.
+                }
+                rejectOnce(error instanceof Error ? error : new Error('IndexedDB operation failed'));
+            });
     });
 };
 

@@ -1,80 +1,92 @@
-# Mobile Release Checklist (Parity + Stability)
+# Mobile Release Checklist
 
-## A. Backend Readiness
+Verified locally on 2026-06-12 for the Android WebView parity shell and mobile/PWA web surfaces.
 
-- [ ] `JWT_SECRET` set in production.
-- [ ] `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` set.
-- [ ] `APPLE_BUNDLE_ID` set and matches iOS bundle identifier.
-- [ ] `APP_URL=https://baristaclaw.vercel.app` set.
-- [ ] `MOBILE_APP_SCHEME=baristachaw` set.
-- [ ] `MOBILE_AUTH_GRANT_TTL_SEC` set (default 120).
+## Release Configuration
 
-## B. Mobile Config
+- [x] Production mobile mode is `web_parity`.
+- [x] Production fallback to the incomplete native feature surface is disabled.
+- [x] Guest mode is disabled; browse-only preview remains available.
+- [x] Android package remains `com.baristachaw.mobile`.
+- [x] Existing release keystore/alias is preserved.
+- [x] Release signer SHA-256 is `3781C67814CB199B95AB9CB086FD273E585D83C6DBBB6B856F56D454FECA5AE0`.
+- [x] `allowBackup=false`.
 
-- [ ] `EXPO_PUBLIC_API_BASE_URL=https://baristaclaw.vercel.app`.
-- [ ] `EXPO_PUBLIC_APP_SCHEME=baristachaw`.
-- [ ] `EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS=10000`.
-- [ ] `EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED=false` for production parity. Enable native fallback only in non-store debug builds.
-- [ ] `EXPO_PUBLIC_ENABLE_GUEST_MODE=false`; production uses browse-only preview and gates feature actions behind sign-in.
-- [ ] `EXPO_PUBLIC_ENABLE_APPLE_SIGNIN=true` for iOS store builds once Apple provider is configured. Android must not show the Apple button.
-- [ ] `EXPO_PUBLIC_SENTRY_DSN` set (or intentionally empty for local-only).
-- [ ] `EXPO_PUBLIC_RELEASE` set for environment labeling.
-- [ ] iOS light, dark, and tinted app icons are wired from `apps/mobile/assets/ios-appicon`.
-- [ ] Android `allowBackup=false` and store-blocked permissions are removed or blocked.
-- [ ] iOS bundle identifier validated.
-- [ ] Signing team selected in Xcode.
+## Android Permissions
 
-## C. Quality Gates (Required)
+- [x] `CAMERA` retained.
+- [x] `RECORD_AUDIO` retained.
+- [x] `READ_EXTERNAL_STORAGE` blocked.
+- [x] `WRITE_EXTERNAL_STORAGE` blocked.
+- [x] `READ_MEDIA_IMAGES` blocked.
+- [x] `READ_MEDIA_VIDEO` blocked.
+- [x] `READ_MEDIA_AUDIO` blocked.
+- [x] `MANAGE_EXTERNAL_STORAGE` blocked.
+- [x] `SYSTEM_ALERT_WINDOW` blocked.
+- [x] APK permission audit passes.
+- [x] AAB permission audit passes.
 
-- [ ] `npm run check` passes.
-- [ ] `npm run mobile:lint` passes.
-- [ ] `npm run mobile:test` passes (no `No tests found`).
-- [ ] `npm run mobile:doctor` passes.
-- [ ] `docs/mobile-parity-matrix.md` reviewed and all `OPEN` items accepted.
+## Artifacts
 
-## D. Functional QA Scenarios
+- [x] Signed release APK built: `apps/mobile/android/app/build/outputs/apk/release/app-release.apk`.
+- [x] Signed release AAB built: `apps/mobile/android/app/build/outputs/bundle/release/app-release.aab`.
+- [x] APK installs and launches on Pixel API 35.
+- [x] APK installs and launches on Pixel API 36.
+- [x] No BaristaChaw fatal exception or ANR found in app-scoped log review.
 
-- [ ] Expo Go launch via `npm run mobile:start` works for current SDK target.
-- [ ] Google sign in opens browser and returns to app.
-- [ ] Apple entry shows maintenance state when `EXPO_PUBLIC_ENABLE_APPLE_SIGNIN=false`.
-- [ ] Browse-only preview shows useful content without login.
-- [ ] Session persists after relaunch and expires correctly.
-- [ ] Logout clears local session.
-- [ ] Home search works and save-to-collection works.
-- [ ] Chat normal/fast/deep response works.
-- [ ] Chat session history, rename, delete, folder move works.
-- [ ] Chat attachments (image/video/file/audio) are processed correctly.
-- [ ] Chat text-to-speech playback works.
-- [ ] Chat image generation works.
-- [ ] Scanner auto/ocr/video work from camera, gallery, and files.
-- [ ] Scanner live camera capture works in-app.
-- [ ] Native share sheet works (Home/Chat/Scanner/Collection).
-- [ ] Haptics trigger for timer + scanner + save success.
-- [ ] Collection note create/edit/delete/filter/search works.
-- [ ] Collection folder CRUD and move-item works.
-- [ ] Tools timer/ratio/todo flows work.
+## Android Emulator QA
 
-## E. Security + Reliability
+- [x] Onboarding and web-parity shell launch.
+- [x] WebView route navigation.
+- [x] AI Brew modal and search keyboard visibility.
+- [x] Overlay-keyboard and `adjustResize` behavior.
+- [x] Portrait/landscape/portrait recovery.
+- [x] Hardware back behavior.
+- [x] Relaunch/session restoration.
+- [x] Deep link routing.
+- [x] Camera permission prompt.
+- [x] Modal focus and footer remain above keyboard.
 
-- [ ] Mobile exchange grant is one-time use.
-- [ ] Expired grant rejected.
-- [ ] API protected routes accept Bearer token.
-- [ ] Error envelopes (`errorCode`, `retryable`, `details`) handled cleanly.
-- [ ] Sentry receives runtime errors with release/environment tags.
-- [ ] No production secrets inside mobile source code.
-- [ ] Play Store/App Store builds come from EAS store profiles, not local debug signing.
+## Mobile/PWA QA
 
-## F. Local-Free Track Constraints
+- [x] Quick and Advanced AI Brew footer closes the viewport without a page strip.
+- [x] Picker search/category list remains usable with keyboard open.
+- [x] Keyboard overlay offset resets after close and orientation change.
+- [x] Safe area and bottom navigation recover after rotation.
+- [x] Mobile Chrome E2E passes.
+- [x] Mobile Safari E2E passes.
+- [x] PWA/native-shell mobile parity passes.
+- [x] Saved AI Brew recipe survives reload and appears in Collection.
+- [x] Service worker registration passes on Chromium, Firefox, and WebKit.
+- [x] Light and dark AI Brew result checks pass.
+- [x] Serious/critical axe violations: 0.
 
-- [ ] Team acknowledges free signing validity is limited (typically ~7 days).
-- [ ] Team acknowledges macOS 12 + Xcode 14.2 cannot directly deploy to iOS 18.3.2 devices.
-- [ ] Cutover plan to modern build host documented before App Store submission.
+## Required Commands
 
-## G. Submit
+- [x] `pnpm test`
+- [x] `pnpm lint`
+- [x] `pnpm build`
+- [x] `pnpm mobile:test`
+- [x] `pnpm mobile:lint`
+- [x] `pnpm mobile:doctor`
+- [x] `pnpm test:a11y`
+- [x] `pnpm test:e2e:mobile`
+- [x] `pnpm test:mobile-parity`
+- [x] `pnpm mobile:android:permissions`
+- [x] APK permission audit
+- [x] `pnpm test:perf`
+- [x] `git diff --check`
 
-- [ ] `npm run mobile:eas:build:preview` succeeds.
-- [ ] `npm run mobile:eas:build:android-production` succeeds and uploads an AAB.
-- [ ] `npm run mobile:eas:build:ios-production` succeeds and uploads an IPA.
-- [ ] `npm run mobile:eas:submit:preview` succeeds.
-- [ ] Android submit uses the internal track first, then production only after QA sign-off.
-- [ ] Release notes prepared from template.
+## External Release Actions
+
+These are outside this certification scope and remain unchecked:
+
+- [ ] Upload AAB to Play Console internal testing.
+- [ ] Complete Play Console Data Safety and store listing.
+- [ ] Deploy the PWA build.
+- [ ] Run production OAuth/payment smoke with production secrets.
+- [ ] Collect physical real-brew validation logs.
+
+## Verdict
+
+`READY FOR MVP SOFTWARE RELEASE / REAL BREW VALIDATION REQUIRED`

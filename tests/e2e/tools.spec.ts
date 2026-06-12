@@ -1124,8 +1124,8 @@ test('ai brew non-AeroPress style guides render method-specific copy through the
     },
     {
       label: 'Cold drip tower',
-      query: 'cold brew',
-      optionId: 'toddy-cold-brew',
+      query: 'cold drip',
+      optionId: 'cold-drip-tower',
       styleTestId: 'ai-brew-cold-brew-style-cold_drip_tower',
       expectedFamily: 'cold_brew',
       expectedStyle: 'cold_drip_tower',
@@ -1337,12 +1337,22 @@ test('ai brew all non-AeroPress selectable styles generate fresh validated plans
       forbidden: /bloom|drawdown bed|final pour|tuang akhir|spiral|v60|filter wall/i,
     },
     {
-      label: 'Cold Brew',
+      label: 'Toddy Cold Brew',
       query: 'cold brew',
       optionId: 'toddy-cold-brew',
       expectedFamily: 'cold_brew',
       stylePrefix: 'ai-brew-cold-brew-style',
-      styles: ['classic_toddy_immersion', 'cold_drip_tower', 'double_extraction_concentrate', 'accelerated_room_temp', 'japanese_slow_drip'],
+      styles: ['classic_toddy_immersion', 'double_extraction_concentrate', 'accelerated_room_temp'],
+      dose: '60',
+      forbidden: /hot pour|kettle|bloom|tuang panas|air panas|final pour|tuang akhir/i,
+    },
+    {
+      label: 'Cold Drip Tower',
+      query: 'cold drip',
+      optionId: 'cold-drip-tower',
+      expectedFamily: 'cold_brew',
+      stylePrefix: 'ai-brew-cold-brew-style',
+      styles: ['cold_drip_tower', 'japanese_slow_drip'],
       dose: '60',
       forbidden: /hot pour|kettle|bloom|tuang panas|air panas|final pour|tuang akhir/i,
     },
@@ -1413,16 +1423,8 @@ test('ai brew all non-AeroPress selectable styles generate fresh validated plans
   }
 
   async function editCurrentResultInputs() {
-    const secondaryActions = page.getByTestId('ai-brew-result-secondary-actions');
-    if (await secondaryActions.count()) {
-      const isOpen = await secondaryActions.evaluate((node) => (node as HTMLDetailsElement).open).catch(() => false);
-      if (!isOpen) {
-        await secondaryActions.locator('summary').click();
-      }
-      await page.getByTestId('ai-brew-edit-inputs').click();
-    } else {
-      await page.getByTestId('ai-brew-result-action-edit').click();
-    }
+    await page.getByRole('button', { name: /Close planned output|Tutup hasil/i }).click();
+    await page.getByTestId('ai-brew-open-pro').click();
     await expect(page.getByTestId('ai-brew-builder-pro')).toBeVisible();
   }
 
@@ -2178,8 +2180,8 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
     } else {
       await result.getByTestId('ai-brew-result-tab-details').click();
       await expect(result.getByTestId('ai-brew-prediction-status-card')).toBeVisible();
-      await expect(result.getByTestId('ai-brew-bean-data-precision')).toContainText(/Bean data|Data kopi|Unknown bean|fallback|low|rendah/i);
       await expect(result.getByTestId('ai-brew-why-this-extraction')).toContainText(/Why This Extraction|Kenapa Ekstraksi Ini/i);
+      await expect(result.getByTestId('ai-brew-why-this-extraction')).toContainText(/Bean data|Data kopi|Unknown bean|fallback|low|rendah/i);
       await expect(result.getByTestId('ai-brew-bean-data-precision-signals')).toContainText(/process|proses|roast|water|TDS/i);
       await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Final ratio|Rasio Final/i);
       await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Hot concentrate|Konsentrat Panas/i);

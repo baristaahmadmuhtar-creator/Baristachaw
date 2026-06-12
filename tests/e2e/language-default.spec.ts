@@ -31,6 +31,8 @@ async function pickAquaWater(page: import('@playwright/test').Page) {
 }
 
 test.beforeEach(async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await clearClientState(page);
   await qaLogout(page.request);
   await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await mockAiApis(page);
@@ -65,10 +67,10 @@ test('fresh launch defaults to English and AI Brew result surfaces stay English'
 
   const result = page.getByTestId('ai-brew-result');
   await expect(result).toContainText(/English QA Ethiopia/i, { timeout: 30_000 });
-  await expect(result.getByRole('tab', { name: /Plan/i })).toBeVisible();
-  await expect(result.getByRole('tab', { name: /Brew Guide/i })).toBeVisible();
-  await expect(result.getByRole('tab', { name: /Coach/i })).toBeVisible();
-  await expect(result.getByRole('tab', { name: /Details/i })).toBeVisible();
+  await expect(result.getByTestId('ai-brew-result-tab-plan')).toContainText(/Summary/i);
+  await expect(result.getByTestId('ai-brew-result-tab-flow')).toContainText(/^Brew$/i);
+  await expect(result.getByTestId('ai-brew-result-tab-coach')).toContainText(/^AI$/i);
+  await expect(result.getByTestId('ai-brew-result-tab-details')).toContainText(/Detail/i);
   await expect(result).toContainText(/Expected cup|Confidence|Safety|Grind|Temperature|Extraction/i);
 
   await scanAiBrewResultTabs(page, ENGLISH_FORBIDDEN_INDONESIAN_COPY);

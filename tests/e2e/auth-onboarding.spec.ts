@@ -1,7 +1,13 @@
 import { test, expect } from '@playwright/test';
+import { clearClientState } from '../helpers/cleanup';
 
 const realAuthEmail = process.env.BARISTACHAW_E2E_REAL_EMAIL?.trim();
 const realAuthPassword = process.env.BARISTACHAW_E2E_REAL_PASSWORD?.trim();
+
+test.beforeEach(async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await clearClientState(page);
+});
 
 test('mobile sign-in keeps the auth actions first without marketing panel clutter', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });

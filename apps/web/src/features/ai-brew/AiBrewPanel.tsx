@@ -128,13 +128,13 @@ import {
   listBrewPresets,
   listRecentBrewJournalEntries,
   loadAiBrewFormDraft,
-  loadCachedAiBrewCatalogSnapshot,
+  loadPersistentAiBrewCatalogSnapshot,
   loadCachedAiBrewSequenceOverlay,
   loadLastGeneratedBrewPlan,
   saveAiBrewFormDraft,
   saveBrewJournalEntry,
   saveBrewPreset,
-  saveCachedAiBrewCatalogSnapshot,
+  savePersistentAiBrewCatalogSnapshot,
   saveCachedAiBrewSequenceOverlay,
   saveLastGeneratedBrewPlan,
   updateBrewJournalAiNotes,
@@ -5519,7 +5519,7 @@ function FocusLockedDialog({
             aria-describedby={ariaDescribedBy}
             data-disable-page-swipe
             className={className}
-            style={style}
+            style={{ ...style, marginBlock: 0 }}
           >
             {children}
           </motion.div>
@@ -5664,6 +5664,7 @@ function MasterPickerDialog({
   emptyText,
   items,
   restoreFocusTarget,
+  keyboardOverlayOffset = 0,
   onClose,
   onSelect,
 }: {
@@ -5679,6 +5680,7 @@ function MasterPickerDialog({
   emptyText: string;
   items: PickerOption[];
   restoreFocusTarget?: HTMLElement | null;
+  keyboardOverlayOffset?: number;
   onClose: () => void;
   onSelect: (id: string) => void;
 }) {
@@ -5757,9 +5759,10 @@ function MasterPickerDialog({
       ariaLabel={ariaLabel || title}
       ariaDescribedBy={hasDescription ? descriptionId : undefined}
       restoreFocusTarget={restoreFocusTarget}
-      className="fixed inset-x-0 bottom-0 z-[111] mx-auto flex w-full max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-t-[1.8rem] border border-glass bg-[var(--bg-base)]/96 px-4 pb-4 pt-4 shadow-[0_-18px_40px_rgba(0,0,0,0.24)] lg:bottom-auto lg:top-1/2 lg:max-w-3xl lg:-translate-y-1/2 lg:rounded-[1.8rem] lg:px-5"
+      className="ai-brew-picker-dialog fixed inset-x-0 z-[111] mx-auto flex w-full max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-t-[1.8rem] border border-glass bg-[var(--bg-base)]/96 px-4 pb-4 pt-4 shadow-[0_-18px_40px_rgba(0,0,0,0.24)] lg:top-1/2 lg:max-w-3xl lg:-translate-y-1/2 lg:rounded-[1.8rem] lg:px-5"
       style={{
-        maxHeight: 'min(88vh, calc(var(--fullscreen-modal-height, 100dvh) - var(--safe-top, 0px) - 12px))',
+        bottom: `max(${keyboardOverlayOffset}px, var(--keyboard-overlay-offset, 0px))`,
+        maxHeight: `min(88vh, calc(var(--app-height-visual, 100dvh) - var(--safe-top, 0px) - 12px), calc(100dvh - max(${keyboardOverlayOffset}px, var(--keyboard-overlay-offset, 0px)) - var(--safe-top, 0px) - 12px))`,
         paddingBottom: 'max(1rem, calc(var(--bottom-safe-capped, 0px) + 1rem))',
       }}
     >
@@ -5834,7 +5837,7 @@ function MasterPickerDialog({
         ref={scrollContainerRef}
         className="max-w-full overflow-y-auto overflow-x-hidden overscroll-contain rounded-2xl border panel-divider-subtle panel-soft p-2"
         style={{
-          maxHeight: 'min(68vh, calc(var(--fullscreen-modal-height, 100dvh) - var(--safe-top, 0px) - var(--bottom-safe-capped, 0px) - 12rem))',
+          maxHeight: `min(68vh, calc(var(--app-height-visual, 100dvh) - var(--safe-top, 0px) - var(--bottom-safe-capped, 0px) - 12rem), calc(100dvh - max(${keyboardOverlayOffset}px, var(--keyboard-overlay-offset, 0px)) - var(--safe-top, 0px) - var(--bottom-safe-capped, 0px) - 12rem))`,
           WebkitOverflowScrolling: 'touch',
         }}
         data-testid={`ai-brew-picker-${kind}`}
@@ -7181,7 +7184,7 @@ function PlanResultDialog({
           className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-4 pb-6 pt-4 lg:px-6 lg:pb-8 lg:pt-6"
           style={{
             paddingTop: 'calc(16px + var(--safe-top, 0px))',
-            paddingBottom: `calc(108px + var(--bottom-safe-capped, 0px) + max(${keyboardOffset}px, var(--keyboard-offset, 0px)))`,
+            paddingBottom: `calc(108px + var(--bottom-safe-capped, 0px) + max(${keyboardOffset}px, var(--keyboard-overlay-offset, 0px)))`,
           }}
           data-testid="ai-brew-result-scroll"
           tabIndex={0}
@@ -9412,7 +9415,7 @@ export function AiBrewPanel() {
   const equipmentPreferences = useMemo(() => loadEquipmentPreferences(), []);
   const hasHydratedRef = useRef(false);
   const aiBrewPanelRef = useRef<HTMLDivElement | null>(null);
-  const { keyboardOffset: aiBrewKeyboardOffset } = useIOSKeyboardFix({
+  const { keyboardOverlayOffset: aiBrewKeyboardOverlayOffset } = useIOSKeyboardFix({
     focusScopeRef: aiBrewPanelRef,
     enableScrollIntoViewOnFocus: true,
     scrollIntoViewBlock: 'center',
@@ -9573,7 +9576,7 @@ export function AiBrewPanel() {
 
     void (async () => {
       setCatalogLoading(true);
-      const cachedCatalog = loadCachedAiBrewCatalogSnapshot();
+      const cachedCatalog = await loadPersistentAiBrewCatalogSnapshot();
       if (cachedCatalog && !cancelled) {
         setCatalog(cachedCatalog);
         setCatalogError(null);
@@ -9595,8 +9598,8 @@ export function AiBrewPanel() {
         if (cancelled) return;
         setCatalog(nextCatalog);
         setCatalogError(null);
-        saveCachedAiBrewCatalogSnapshot(nextCatalog);
         hydrateInitialState(nextCatalog);
+        void savePersistentAiBrewCatalogSnapshot(nextCatalog);
       } catch (error) {
         if (cancelled) return;
         if (!cachedCatalog) {
@@ -13111,7 +13114,7 @@ export function AiBrewPanel() {
             className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-3 pb-3 pt-3 lg:px-6 lg:pb-6 lg:pt-6"
             style={{
               paddingTop: 'calc(12px + var(--safe-top, 0px))',
-              paddingBottom: `calc(108px + var(--bottom-safe-capped, 0px) + max(${aiBrewKeyboardOffset}px, var(--keyboard-offset, 0px)))`,
+              paddingBottom: `calc(108px + var(--bottom-safe-capped, 0px) + max(${aiBrewKeyboardOverlayOffset}px, var(--keyboard-overlay-offset, 0px)))`,
             }}
             data-testid="ai-brew-builder-scroll"
           >
@@ -14237,7 +14240,7 @@ export function AiBrewPanel() {
             className="shrink-0 max-w-full overflow-hidden border-t panel-divider-subtle bg-[var(--bg-base)] px-3 py-3 lg:px-6 lg:py-4"
             style={{
               paddingBottom: 'calc(12px + var(--bottom-safe-capped, 0px))',
-              transform: `translateY(calc(-1 * max(${aiBrewKeyboardOffset}px, var(--keyboard-offset, 0px))))`,
+              transform: `translateY(calc(-1 * max(${aiBrewKeyboardOverlayOffset}px, var(--keyboard-overlay-offset, 0px))))`,
             }}
             data-testid="ai-brew-builder-footer"
           >
@@ -14506,6 +14509,7 @@ export function AiBrewPanel() {
           emptyText={copy.noPickerResults}
           items={pickerOptions}
           restoreFocusTarget={pickerRestoreFocusTarget}
+          keyboardOverlayOffset={aiBrewKeyboardOverlayOffset}
           onClose={() => {
             const restoreTarget = pickerRestoreFocusTarget;
             setPickerKind(null);
@@ -14562,7 +14566,7 @@ export function AiBrewPanel() {
         saveError={saveError}
         feedback={activeFeedback}
         feedbackNoteDraft={feedbackNoteDraft}
-        keyboardOffset={aiBrewKeyboardOffset}
+        keyboardOffset={aiBrewKeyboardOverlayOffset}
         showProvenance={showProvenance}
         isAuthenticated={isAuthenticated}
         isOffline={isOffline}

@@ -36,6 +36,7 @@ dotenv.config();
 
 const isLocalRuntime = !process.env.VERCEL;
 const isProduction = process.env.NODE_ENV === "production";
+const serveStaticBuild = isProduction || process.env.SERVE_STATIC_BUILD === "1";
 Object.assign(process.env, buildLocalRuntimeAuthDefaults(process.env, { isLocalRuntime, isProduction }));
 
 const app = express();
@@ -177,7 +178,7 @@ app.use((error: unknown, _req: express.Request, res: express.Response, _next: ex
 });
 
 async function startServer() {
-  if (process.env.NODE_ENV !== "production") {
+  if (!serveStaticBuild) {
     const vite = await createViteServer({
       root: WEB_ROOT,
       server: { middlewareMode: true },

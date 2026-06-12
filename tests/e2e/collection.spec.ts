@@ -34,6 +34,8 @@ async function submitCreateFolder(page: import('@playwright/test').Page, name: s
   const submitButton = createInput.locator('xpath=following-sibling::button[1]');
   await expect(submitButton).toBeEnabled({ timeout: 10_000 });
   await submitButton.click();
+  await expect(createInput).toBeHidden({ timeout: 20_000 });
+  await expect(page.locator('h3', { hasText: new RegExp(`^${name}$`) }).first()).toBeVisible({ timeout: 20_000 });
 }
 
 test('supports folder create, rename, delete flow', async ({ page }) => {

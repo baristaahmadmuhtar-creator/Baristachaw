@@ -12,6 +12,7 @@
         "packages/*"
     ],
     "scripts": {
+        "test": "npm run test:unit && npm run mobile:test",
         "dev": "tsx server.ts",
         "dev:web": "npm run dev --workspace @baristachaw/web",
         "build": "npm run build --workspace @baristachaw/web",
@@ -96,6 +97,7 @@
         "mobile:auth:check": "node scripts/check-mobile-auth-env.mjs",
         "mobile:test": "npm run test --workspace @baristachaw/mobile",
         "mobile:lint": "npm run lint --workspace @baristachaw/mobile",
+        "mobile:android:permissions": "node scripts/check-android-release-permissions.mjs",
         "mobile:eas:build:preview": "npm run eas:build:preview --workspace @baristachaw/mobile",
         "mobile:eas:submit:preview": "npm run eas:submit:preview --workspace @baristachaw/mobile",
         "mobile:eas:build:production": "npm run eas:build:production --workspace @baristachaw/mobile",

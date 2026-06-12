@@ -1,29 +1,47 @@
 # AI Brew Method + Style UI/UX Report
 
-Generated: 2026-06-11T13:40:30.680Z
-Local SHA: 83c3935a87d291c0db2acb450e803210da124ad3
-Remote main SHA: 83c3935a87d291c0db2acb450e803210da124ad3
+Generated: 2026-06-12T00:57:30.468Z
+Local SHA: 93ba05587bf9e4ba8917ac54fd17f94bc6b63b1f
+Remote main SHA: 93ba05587bf9e4ba8917ac54fd17f94bc6b63b1f
 Branch: main
-Working tree status at generation: M apps/web/src/features/ai-brew/AiBrewPanel.tsx
- M apps/web/src/features/ai-brew/antiHallucination.ts
- M apps/web/src/features/ai-brew/aprilPlanner.ts
- M apps/web/src/features/ai-brew/konoPlanner.ts
- M apps/web/src/features/ai-brew/melittaPlanner.ts
- M apps/web/src/features/ai-brew/origamiPlanner.ts
- M apps/web/src/features/ai-brew/planner.ts
- M apps/web/src/features/ai-brew/siphonPlanner.ts
- M apps/web/src/features/ai-brew/types.ts
- M apps/web/src/features/ai-brew/workflowGuide.ts
- M apps/web/src/features/ai-brew/workflowTutorials.ts
- M docs/ai-brew-method-style-coverage-report.md
- M docs/ai-brew-method-style-final-verdict.md
- M docs/ai-brew-method-style-inventory.md
- M docs/ai-brew-method-style-ui-ux-report.md
- M docs/ai-brew-real-world-1000-report.md
- M tests/unit/aiBrewPlanner.test.ts
-?? C/
+Working tree status at generation: M apps/mobile/app.config.ts
+ M apps/mobile/plugins/with-android-monorepo-release-bundle.js
+ M apps/web/src/components/billing/AiAccessGate.tsx
+ M apps/web/src/features/ai-brew/AiBrewPanel.tsx
+ M apps/web/src/features/ai-brew/storage.ts
+ M apps/web/src/hooks/useIOSKeyboardFix.ts
+ M apps/web/src/index.css
+ M apps/web/src/main.tsx
+ M apps/web/src/services/db.ts
+ M package.json
+ M playwright.config.ts
+ M server.ts
+ M tests/a11y/routes.spec.ts
+ M tests/e2e/ai-brew-overflow.spec.ts
+ M tests/e2e/aiBrewHybrid.spec.ts
+ M tests/e2e/auth-onboarding.spec.ts
+ M tests/e2e/collection.spec.ts
+ M tests/e2e/language-default.spec.ts
+ M tests/e2e/mobile-web-parity.ai-brew.spec.ts
+ M tests/e2e/mobile-web-parity.errors.spec.ts
+ M tests/e2e/mobile-web-parity.language.spec.ts
+ M tests/e2e/mobile-web-parity.navigation.spec.ts
+ M tests/e2e/mobile-web-parity.no-dead-feature.spec.ts
+ M tests/e2e/mobile-web-parity.safe-area.spec.ts
+ M tests/e2e/mobile-web-parity.storage.spec.ts
+ M tests/e2e/mobile.spec.ts
+ M tests/e2e/precision-audit.spec.ts
+ M tests/e2e/scanner.spec.ts
+ M tests/e2e/tools.spec.ts
+ M tests/helpers/cleanup.ts
+ M tests/unit/mobileWebParityGate.test.ts
+?? pnpm-workspace.yaml
 ?? scratch/
-Artifact directory: `artifacts/ai-brew-audit/method-styles/83c3935a87d2`
+?? scripts/check-android-release-permissions.mjs
+?? tests/e2e/onboarding.spec.ts
+?? tests/e2e/service-worker.spec.ts
+?? tests/unit/androidReleasePermissions.test.ts
+Artifact directory: `artifacts/ai-brew-audit/method-styles/93ba05587bf9`
 
 This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
 
@@ -31,32 +49,27 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 
 - UI result surfaces checked: 1000
 - Guide surfaces checked: 1000
-- UI warning count: 22
+- UI warning count: 17
 
 ## Mobile/Workflow Risks
 
-- kono-kono_meimon_traditional-soft_round-110: guide/detail text may be too dense for mobile
-- kono-kono_meimon_traditional-dense_comforting-495: guide/detail text may be too dense for mobile
-- kono-kono_meimon_traditional-floral_transparent-540: guide/detail text may be too dense for mobile
-- kono-kono_meimon_traditional-soft_round-590: guide/detail text may be too dense for mobile
-- kono-kono_slow_drip_body-fruit_forward-605: guide/detail text may be too dense for mobile
-- kono-kono_meimon_traditional-more_body-635: guide/detail text may be too dense for mobile
-- kono-kono_slow_drip_body-more_acidity-650: guide/detail text may be too dense for mobile
-- kono-iced_kono_meimon-fruit_forward-661: guide/detail text may be too dense for mobile
-- kono-kono_meimon_traditional-balance_clean-680: guide/detail text may be too dense for mobile
-- kono-kono_meimon_traditional-fruit_forward-685: guide/detail text may be too dense for mobile
-- kono-kono_slow_drip_body-floral_transparent-700: guide/detail text may be too dense for mobile
-- kono-kono_meimon_traditional-more_acidity-730: guide/detail text may be too dense for mobile
-- kono-kono_slow_drip_body-more_sweetness-745: guide/detail text may be too dense for mobile
-- kono-kono_slow_drip_body-soft_round-750: guide/detail text may be too dense for mobile
-- kono-kono_dripper_standard-soft_round-790: guide/detail text may be too dense for mobile
-- kono-kono_slow_drip_body-more_body-795: guide/detail text may be too dense for mobile
-- kono-kono_meimon_traditional-soft_round-830: guide/detail text may be too dense for mobile
-- kono-kono_slow_drip_body-fruit_forward-845: guide/detail text may be too dense for mobile
-- kono-kono_meimon_traditional-fruit_forward-925: guide/detail text may be too dense for mobile
-- kono-kono_slow_drip_body-floral_transparent-940: guide/detail text may be too dense for mobile
-- kono-kono_meimon_traditional-more_acidity-970: guide/detail text may be too dense for mobile
-- kono-kono_meimon_traditional-dense_comforting-975: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-fruit_forward-77: guide/detail text may be too dense for mobile
+- hario_switch-mugen_everyday_hybrid-soft_round-110: guide/detail text may be too dense for mobile
+- chemex-competition_multi_pulse-more_acidity-130: guide/detail text may be too dense for mobile
+- chemex-competition_multi_pulse-fruit_forward-133: guide/detail text may be too dense for mobile
+- chemex-competition_multi_pulse-dense_comforting-135: guide/detail text may be too dense for mobile
+- hario_switch-immersion_heavy_body-floral_transparent-860: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-balance_clean-864: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-more_sweetness-865: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-floral_transparent-868: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-fruit_forward-869: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-soft_round-870: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-dense_comforting-871: guide/detail text may be too dense for mobile
+- hario_switch-mugen_everyday_hybrid-fruit_forward-901: guide/detail text may be too dense for mobile
+- hario_switch-mugen_everyday_hybrid-soft_round-902: guide/detail text may be too dense for mobile
+- chemex-competition_multi_pulse-balance_clean-920: guide/detail text may be too dense for mobile
+- chemex-competition_multi_pulse-fruit_forward-925: guide/detail text may be too dense for mobile
+- kalita_wave-competition_fast_four-dense_comforting-975: guide/detail text may be too dense for mobile
 
 ## Remaining UI Risk
 

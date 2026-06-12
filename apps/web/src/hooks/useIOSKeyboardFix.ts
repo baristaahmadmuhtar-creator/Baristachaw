@@ -8,6 +8,7 @@ type ViewportMetricsDetail = {
   baselineLayoutHeight: number;
   baselineVisualBottom: number;
   keyboardOffset: number;
+  keyboardOverlayOffset: number;
   keyboardOpen: boolean;
 };
 
@@ -46,6 +47,7 @@ function computeKeyboardOffsetFromViewport(args: {
   if (typeof window === 'undefined') {
     return {
       keyboardOffset: 0,
+      keyboardOverlayOffset: 0,
       keyboardOpen: false,
       baselineLayoutHeight: args.baselineLayoutHeight,
       baselineVisualBottom: args.baselineVisualBottom,
@@ -86,6 +88,10 @@ function computeKeyboardOffsetFromViewport(args: {
       : rawOffset > IOS_KEYBOARD_THRESHOLD
   );
   const keyboardOffset = keyboardOpen ? rawOffset : 0;
+  const layoutShrink = Math.max(0, nextBaselineLayoutHeight - layoutHeight);
+  const keyboardOverlayOffset = keyboardOpen
+    ? Math.max(0, keyboardOffset - layoutShrink)
+    : 0;
 
   if (!keyboardOpen) {
     nextBaselineLayoutHeight = Math.max(nextBaselineLayoutHeight, layoutHeight);
@@ -94,6 +100,7 @@ function computeKeyboardOffsetFromViewport(args: {
 
   return {
     keyboardOffset,
+    keyboardOverlayOffset,
     keyboardOpen,
     baselineLayoutHeight: nextBaselineLayoutHeight,
     baselineVisualBottom: nextBaselineVisualBottom,
@@ -121,6 +128,7 @@ export function useIOSKeyboardFix({
   scrollIntoViewBlock = 'center',
 }: UseIOSKeyboardFixOptions = {}) {
   const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const [keyboardOverlayOffset, setKeyboardOverlayOffset] = useState(0);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [composerHeight, setComposerHeight] = useState(0);
   const [focusWithin, setFocusWithin] = useState(false);
@@ -136,6 +144,7 @@ export function useIOSKeyboardFix({
 
     const applyMetrics = (detail?: Partial<ViewportMetricsDetail>) => {
       const offset = Math.max(0, Number(detail?.keyboardOffset ?? 0));
+      const overlayOffset = Math.max(0, Number(detail?.keyboardOverlayOffset ?? offset));
       const open = offset > 0 || !!detail?.keyboardOpen;
       const detailBaselineLayout = Number(detail?.baselineLayoutHeight ?? 0);
       const detailBaselineVisualBottom = Number(detail?.baselineVisualBottom ?? 0);
@@ -155,6 +164,7 @@ export function useIOSKeyboardFix({
 
       lastKeyboardOpenRef.current = open;
       setKeyboardOffset(offset);
+      setKeyboardOverlayOffset(open ? overlayOffset : 0);
       setIsKeyboardOpen(open);
     };
 
@@ -172,11 +182,19 @@ export function useIOSKeyboardFix({
         baselineLayoutRef.current = fallback.baselineLayoutHeight;
         baselineVisualBottomRef.current = fallback.baselineVisualBottom;
         orientationKeyRef.current = fallback.orientationKey;
-        applyMetrics({ keyboardOffset: fallback.keyboardOffset, keyboardOpen: fallback.keyboardOpen });
+        applyMetrics({
+          keyboardOffset: fallback.keyboardOffset,
+          keyboardOverlayOffset: fallback.keyboardOverlayOffset,
+          keyboardOpen: fallback.keyboardOpen,
+        });
       });
     };
 
     const onMetrics = (e: Event) => {
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+        rafId = null;
+      }
       const ce = e as CustomEvent<ViewportMetricsDetail>;
       applyMetrics(ce.detail);
     };
@@ -299,6 +317,7 @@ export function useIOSKeyboardFix({
 
   return {
     keyboardOffset,
+    keyboardOverlayOffset,
     isKeyboardOpen,
     composerHeight,
     focusWithin,

@@ -107,7 +107,9 @@ test('deep mode uses /api/ai with response profile and deep action', async ({ pa
   });
 
   await expect(page.getByPlaceholder(chatInputPlaceholder)).toBeVisible();
-  await page.getByLabel(deepThinkButton).click({ force: true });
+  const deepModeButton = page.getByLabel(deepThinkButton);
+  await deepModeButton.click();
+  await expect(deepModeButton).toHaveAttribute('aria-pressed', 'true');
   await sendChatMessage(page, 'Berikan detail teknis dan alasan.', '/api/ai');
 
   await expect(page.locator('.chat-markdown').last()).toContainText('Analisis');

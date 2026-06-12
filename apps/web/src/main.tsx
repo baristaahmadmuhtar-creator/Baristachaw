@@ -12,6 +12,7 @@ type ViewportMetricsDetail = {
   baselineLayoutHeight: number;
   baselineVisualBottom: number;
   keyboardOffset: number;
+  keyboardOverlayOffset: number;
   keyboardOpen: boolean;
 };
 
@@ -198,6 +199,10 @@ function readViewportMetrics(): ViewportMetricsDetail {
       : rawKeyboardOffset > IOS_KEYBOARD_THRESHOLD
   );
   const keyboardOffset = keyboardOpen ? rawKeyboardOffset : 0;
+  const layoutShrink = Math.max(0, baselineLayoutHeight - layoutHeight);
+  const keyboardOverlayOffset = keyboardOpen
+    ? Math.max(0, keyboardOffset - layoutShrink)
+    : 0;
   lastKeyboardOpenState = keyboardOpen;
 
   if (!keyboardOpen) {
@@ -213,6 +218,7 @@ function readViewportMetrics(): ViewportMetricsDetail {
     baselineLayoutHeight,
     baselineVisualBottom,
     keyboardOffset,
+    keyboardOverlayOffset,
     keyboardOpen,
   };
 }
@@ -241,6 +247,7 @@ function publishViewportMetrics() {
   root.style.setProperty('--app-height-visual', `${metrics.visualHeight}px`);
   root.style.setProperty('--app-vh-visual', `${metrics.visualHeight}px`);
   root.style.setProperty('--keyboard-offset', `${metrics.keyboardOffset}px`);
+  root.style.setProperty('--keyboard-overlay-offset', `${metrics.keyboardOverlayOffset}px`);
   root.dataset.keyboardOpen = metrics.keyboardOpen ? 'true' : 'false';
 
   window.dispatchEvent(new CustomEvent<ViewportMetricsDetail>('app:viewport-metrics', {

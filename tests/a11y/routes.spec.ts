@@ -2,12 +2,16 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { qaLogin, qaLogout } from '../fixtures/auth';
 import { buildQaUser } from '../fixtures/test-data';
+import { clearClientState } from '../helpers/cleanup';
 import { mockAiApis } from '../helpers/network';
 
 const routes = ['/', '/chat', '/scanner', '/collection', '/tools'];
 
 test.beforeEach(async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await page.goto('/');
+  await clearClientState(page);
 });
 
 test.afterEach(async ({ page }) => {
@@ -17,6 +21,7 @@ test.afterEach(async ({ page }) => {
 for (const route of routes) {
   test(`a11y ${route} has no serious/critical violations`, async ({ page }) => {
     await page.goto(route);
+    await page.waitForTimeout(500);
     const results = await new AxeBuilder({ page }).analyze();
     const severe = results.violations.filter((v) =>
       v.impact === 'critical' || v.impact === 'serious'

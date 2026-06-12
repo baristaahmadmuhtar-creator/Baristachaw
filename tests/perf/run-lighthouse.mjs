@@ -59,55 +59,67 @@ if (!(await isServerHealthy(baseUrl))) {
   await waitForServer(baseUrl);
 }
 
-const chrome = await launch({ chromeFlags: ['--headless=new', '--no-sandbox'] });
-
 try {
   const failures = [];
 
   for (const route of config.routes) {
     const target = `${baseUrl.replace(/\/+$/, '')}${route}`;
-    const result = await lighthouse(target, {
-      port: chrome.port,
-      output: ['json', 'html'],
-      logLevel: 'error',
-      onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
-      emulatedFormFactor: 'mobile',
-      throttlingMethod: 'simulate',
-      screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 2, disabled: false },
-    });
+    let chrome = null;
+    try {
+      chrome = await launch({ chromeFlags: ['--headless=new', '--no-sandbox'] });
+      const result = await lighthouse(target, {
+        port: chrome.port,
+        output: ['json', 'html'],
+        logLevel: 'error',
+        onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
+        emulatedFormFactor: 'mobile',
+        throttlingMethod: 'simulate',
+        screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 2, disabled: false },
+      });
 
-    if (!result?.report || !result.lhr) {
-      failures.push(`${route} -> lighthouse returned empty report`);
-      continue;
-    }
+      if (!result?.report || !result.lhr) {
+        failures.push(`${route} -> lighthouse returned empty report`);
+        continue;
+      }
 
-    const safeName = route === '/' ? 'home' : route.replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '');
-    const [jsonReport, htmlReport] = Array.isArray(result.report) ? result.report : [result.report, ''];
+      const safeName = route === '/' ? 'home' : route.replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '');
+      const [jsonReport, htmlReport] = Array.isArray(result.report) ? result.report : [result.report, ''];
 
-    await fs.writeFile(path.join(outDir, `${safeName}.json`), jsonReport, 'utf8');
-    if (htmlReport) await fs.writeFile(path.join(outDir, `${safeName}.html`), htmlReport, 'utf8');
+      await fs.writeFile(path.join(outDir, `${safeName}.json`), jsonReport, 'utf8');
+      if (htmlReport) await fs.writeFile(path.join(outDir, `${safeName}.html`), htmlReport, 'utf8');
 
-    const scores = result.lhr.categories;
-    const checks = [
-      ['performance', config.thresholds.performance],
-      ['accessibility', config.thresholds.accessibility],
-      ['best-practices', config.thresholds['best-practices']],
-      ['seo', config.thresholds.seo],
-    ];
+      const scores = result.lhr.categories;
+      const checks = [
+        ['performance', config.thresholds.performance],
+        ['accessibility', config.thresholds.accessibility],
+        ['best-practices', config.thresholds['best-practices']],
+        ['seo', config.thresholds.seo],
+      ];
 
-    for (const [key, threshold] of checks) {
-      const score = Number(scores[key]?.score ?? 0);
-      if (score < Number(threshold)) {
-        failures.push(`${route} -> ${key} score ${score.toFixed(2)} below ${Number(threshold).toFixed(2)}`);
+      for (const [key, threshold] of checks) {
+        const score = Number(scores[key]?.score ?? 0);
+        if (score < Number(threshold)) {
+          failures.push(`${route} -> ${key} score ${score.toFixed(2)} below ${Number(threshold).toFixed(2)}`);
+        }
+      }
+
+      console.log(`[perf] ${route} scores:`, {
+        performance: scores.performance?.score,
+        accessibility: scores.accessibility?.score,
+        bestPractices: scores['best-practices']?.score,
+        seo: scores.seo?.score,
+      });
+    } catch (error) {
+      failures.push(`${route} -> lighthouse failed: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      if (chrome) {
+        try {
+          await chrome.kill();
+        } catch (error) {
+          console.warn(`[perf] ${route} chrome cleanup failed:`, error instanceof Error ? error.message : String(error));
+        }
       }
     }
-
-    console.log(`[perf] ${route} scores:`, {
-      performance: scores.performance?.score,
-      accessibility: scores.accessibility?.score,
-      bestPractices: scores['best-practices']?.score,
-      seo: scores.seo?.score,
-    });
   }
 
   if (failures.length) {
@@ -116,10 +128,5 @@ try {
     process.exitCode = 1;
   }
 } finally {
-  try {
-    await chrome.kill();
-  } catch (error) {
-    console.warn('[perf] chrome cleanup failed:', error instanceof Error ? error.message : String(error));
-  }
   await stopServer(perfServer);
 }

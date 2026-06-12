@@ -1,29 +1,47 @@
 # AI Brew Method + Style Inventory
 
-Generated: 2026-06-11T13:40:30.680Z
-Local SHA: 83c3935a87d291c0db2acb450e803210da124ad3
-Remote main SHA: 83c3935a87d291c0db2acb450e803210da124ad3
+Generated: 2026-06-12T00:57:30.468Z
+Local SHA: 93ba05587bf9e4ba8917ac54fd17f94bc6b63b1f
+Remote main SHA: 93ba05587bf9e4ba8917ac54fd17f94bc6b63b1f
 Branch: main
-Working tree status at generation: M apps/web/src/features/ai-brew/AiBrewPanel.tsx
- M apps/web/src/features/ai-brew/antiHallucination.ts
- M apps/web/src/features/ai-brew/aprilPlanner.ts
- M apps/web/src/features/ai-brew/konoPlanner.ts
- M apps/web/src/features/ai-brew/melittaPlanner.ts
- M apps/web/src/features/ai-brew/origamiPlanner.ts
- M apps/web/src/features/ai-brew/planner.ts
- M apps/web/src/features/ai-brew/siphonPlanner.ts
- M apps/web/src/features/ai-brew/types.ts
- M apps/web/src/features/ai-brew/workflowGuide.ts
- M apps/web/src/features/ai-brew/workflowTutorials.ts
- M docs/ai-brew-method-style-coverage-report.md
- M docs/ai-brew-method-style-final-verdict.md
- M docs/ai-brew-method-style-inventory.md
- M docs/ai-brew-method-style-ui-ux-report.md
- M docs/ai-brew-real-world-1000-report.md
- M tests/unit/aiBrewPlanner.test.ts
-?? C/
+Working tree status at generation: M apps/mobile/app.config.ts
+ M apps/mobile/plugins/with-android-monorepo-release-bundle.js
+ M apps/web/src/components/billing/AiAccessGate.tsx
+ M apps/web/src/features/ai-brew/AiBrewPanel.tsx
+ M apps/web/src/features/ai-brew/storage.ts
+ M apps/web/src/hooks/useIOSKeyboardFix.ts
+ M apps/web/src/index.css
+ M apps/web/src/main.tsx
+ M apps/web/src/services/db.ts
+ M package.json
+ M playwright.config.ts
+ M server.ts
+ M tests/a11y/routes.spec.ts
+ M tests/e2e/ai-brew-overflow.spec.ts
+ M tests/e2e/aiBrewHybrid.spec.ts
+ M tests/e2e/auth-onboarding.spec.ts
+ M tests/e2e/collection.spec.ts
+ M tests/e2e/language-default.spec.ts
+ M tests/e2e/mobile-web-parity.ai-brew.spec.ts
+ M tests/e2e/mobile-web-parity.errors.spec.ts
+ M tests/e2e/mobile-web-parity.language.spec.ts
+ M tests/e2e/mobile-web-parity.navigation.spec.ts
+ M tests/e2e/mobile-web-parity.no-dead-feature.spec.ts
+ M tests/e2e/mobile-web-parity.safe-area.spec.ts
+ M tests/e2e/mobile-web-parity.storage.spec.ts
+ M tests/e2e/mobile.spec.ts
+ M tests/e2e/precision-audit.spec.ts
+ M tests/e2e/scanner.spec.ts
+ M tests/e2e/tools.spec.ts
+ M tests/helpers/cleanup.ts
+ M tests/unit/mobileWebParityGate.test.ts
+?? pnpm-workspace.yaml
 ?? scratch/
-Artifact directory: `artifacts/ai-brew-audit/method-styles/83c3935a87d2`
+?? scripts/check-android-release-permissions.mjs
+?? tests/e2e/onboarding.spec.ts
+?? tests/e2e/service-worker.spec.ts
+?? tests/unit/androidReleasePermissions.test.ts
+Artifact directory: `artifacts/ai-brew-audit/method-styles/93ba05587bf9`
 
 This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
 
@@ -31,8 +49,8 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 
 ### aeropress
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 100
 - Visible methods: AeroPress (aeropress)
 - Styles/gaya: Auto (auto); Standard (standard); Inverted (inverted); Measured bypass (bypass); No bypass (no_bypass); Bright clean (bright_clean); Sweet body (sweet_body)
 - Manual presets: 6
@@ -41,15 +59,15 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 
 ### april
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 100
 - Visible methods: April Brewer (april-brewer); Blue Bottle Dripper (blue-bottle-dripper); Brewista Gem Series (brewista-gem-series); Brewista Tornado (brewista-tornado); Fellow Stagg [X] (fellow-stagg-x); Orea V3 / V4 (orea-v3-v4); Suji Wave Dripper (suji-wave-dripper); Timemore B75 (timemore-b75); April Hybrid Brewer (april-hybrid-brewer); Fellow Stagg [XF] Dripper (fellow-stagg-xf-dripper)
 - Styles/gaya: Auto (auto); April flat-bottom standard (april_flat_bottom_standard); April continuous slow (april_continuous_slow); Competition two-pour (competition_two_pour); Iced April style (iced_april_style); High-body heavy dose (high_body_heavy_dose)
 - Manual presets: 4
@@ -58,15 +76,15 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 
 ### batch_brew
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 100
 - Visible methods: Batch Brewer (batch-brewer)
 - Styles/gaya: Auto (auto); SCA Gold Cup (sca_gold_cup); Heavy batch catering (heavy_batch_catering); Bright light-roast batch (bright_light_roast_batch); Pre-wet hybrid batch (pre_wet_hybrid_batch); High extraction thermos (high_extraction_thermos)
 - Manual presets: 0
@@ -75,15 +93,15 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 
 ### chemex
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 99.8
 - Visible methods: Chemex (chemex)
 - Styles/gaya: Auto (auto); Traditional three-pour clarity (traditional_three_pour); Competition multi-pulse (competition_multi_pulse); Continuous center pour clarity (continuous_center_pour); Iced flash concentrate (iced_chemex); High-dose thick-filter heavy (high_dose_heavy_body)
 - Manual presets: 3
@@ -92,15 +110,15 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 
 ### clever_dripper
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 100
 - Visible methods: Clever Dripper (clever-dripper); Vietnam Drip (vietnam-drip); NextLevel Pulsar (nextlevel-pulsar); Tricolate Brewer (tricolate-brewer)
 - Styles/gaya: Auto (auto); Classic immersion bloom (classic_closed); Reverse water first (reverse_water_first); Double-stage hybrid (double_stage_hybrid); Iced flash immersion (iced_clever); High-dose ultra immersion (high_dose_concentrate)
 - Manual presets: 1
@@ -109,15 +127,15 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 
 ### cold_brew
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 100
 - Visible methods: Toddy Cold Brew (toddy-cold-brew); Cold Drip Tower (cold-drip-tower)
 - Styles/gaya: Auto (auto); Classic Toddy immersion (classic_toddy_immersion); Cold drip tower (cold_drip_tower); Double extraction concentrate (double_extraction_concentrate); Accelerated room temp (accelerated_room_temp); Japanese slow drip (japanese_slow_drip)
 - Manual presets: 1
@@ -126,15 +144,15 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 
 ### espresso
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 100
 - Visible methods: Espresso Machine (espresso-machine)
 - Styles/gaya: Standard dial-in (standard_dial_in); Bright modern (bright_modern); Soft round (soft_round); Milk base (milk_base); Ristretto-ish safe (ristretto_safe); Lungo-ish safe (lungo_safe)
 - Manual presets: 0
@@ -143,15 +161,15 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 
 ### french_press
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 100
 - Visible methods: French Press (french-press)
 - Styles/gaya: Auto traditional (auto); Traditional (traditional); Clean decant (clean_decant); Double filter (double_filter); Heavy concentrate (heavy_concentrate); Sweet immersion (sweet_immersion)
 - Manual presets: 1
@@ -160,15 +178,15 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 
 ### hario_switch
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 99.6
 - Visible methods: Hario Switch (hario-switch); Hario Switch 02 (hario-switch-02); Hario Switch 03 (hario-switch-03); MUGEN x SWITCH (mugen-x-switch)
 - Styles/gaya: Switch immersion sweet (immersion_sweet); Switch immersion heavy body (immersion_heavy_body); Switch hybrid balanced (hybrid_balanced); Switch hybrid bright clean (hybrid_bright_clean); Switch V60 mode (v60_mode); Switch iced hybrid (iced_hybrid); MUGEN x SWITCH everyday hybrid (mugen_everyday_hybrid)
 - Manual presets: 1
@@ -177,15 +195,15 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 
 ### kalita_wave
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 100
 - Visible methods: Kalita Wave 155 / 185 (kalita-wave-155-185)
 - Styles/gaya: Auto (auto); Traditional flat three-pour (traditional_flat_three); Competition fast four-pour (competition_fast_four); Continuous slow stream (continuous_slow_stream); Iced Wave (iced_wave); High-dose concentrate (high_dose_concentrate)
 - Manual presets: 4
@@ -194,15 +212,15 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 
 ### kono
 
 - Classification: STRONG
-- Average score: 99.9
+- Average score: 100
 - Visible methods: Kono Meimon (kono-meimon)
 - Styles/gaya: Auto (auto); Kono Meimon traditional (kono_meimon_traditional); Kono dripper standard (kono_dripper_standard); Kono slow-drip body (kono_slow_drip_body); Iced Kono Meimon (iced_kono_meimon); Kono agitation sweet (kono_agitation_sweet)
 - Manual presets: 0
@@ -218,8 +236,8 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 
 ### melitta
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 100
 - Visible methods: Kalita 102 (kalita-102); Melitta (melitta); Hario Pegasus (hario-pegasus)
 - Styles/gaya: Auto (auto); Traditional Melitta one-pour (traditional_melitta_one_pour); Aromaboy style (aromaboy_style); Three-pour Melitta (three_pour_melitta); Iced Melitta brew (iced_melitta_brew); Dense classic extraction (dense_classic_extraction)
 - Manual presets: 0
@@ -228,15 +246,15 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 
 ### moka_pot
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 100
 - Visible methods: Bialetti Moka Pot (bialetti-moka-pot)
 - Styles/gaya: Auto (auto); Traditional stovetop (traditional_stovetop); Preheated boiler (preheated_boiler); Low-temp controlled (low_temp_controlled); Iced moka concentrate (iced_moka_concentrate); High-yield robust (high_yield_robust)
 - Manual presets: 1
@@ -245,15 +263,15 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 
 ### origami
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 100
 - Visible methods: Origami Dripper (S/M) (origami-dripper-s-m); ORIGAMI Dripper Air S (origami-dripper-air-s)
 - Styles/gaya: Auto (auto); Cone dripper style (cone_dripper_style); Wave dripper style (wave_dripper_style); Mugen one-pour (mugen_one_pour); Iced Origami (iced_origami); Competition hybrid flow (competition_hybrid_flow)
 - Manual presets: 5
@@ -262,15 +280,15 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 
 ### siphon
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 100
 - Visible methods: Hario Siphon (hario-siphon)
 - Styles/gaya: Auto (auto); Traditional vacuum siphon (traditional_vacuum_siphon); Competition triple agitation (competition_triple_agitation); Low-temperature delicate (low_temp_delicate); High-body fast drawdown (high_body_fast_drawdown); Spirit infusion style (spirit_infusion_style)
 - Manual presets: 1
@@ -279,15 +297,15 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 
 ### v60
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 100
 - Visible methods: Cafec Deep 27 (cafec-deep-27); Cafec Flower Dripper (cafec-flower-dripper); Hario Mugen (hario-mugen); Hario V60 (hario-v60); Hero Variable Dripper (hero-variable-dripper); Latina Cono (latina-cono); Latina Volcano (latina-volcano); Loveramics (loveramics); MHW-3Bomber Elf (mhw-3bomber-elf); Suji V60 Dripper (suji-v60-dripper); The Gabi Master A/B (the-gabi-master-a-b); Timemore Crystal Eye (timemore-crystal-eye); Torch Mountain (torch-mountain)
 - Styles/gaya: Classic bloom and pulse (classic_bloom_pulse); Continuous low agitation (continuous_low_agitation); 4:6 inspired (four_six_inspired); High extraction light roast (high_extraction_light_roast); Sweet/body (sweet_body); Floral/clarity (floral_clarity); Japanese iced (japanese_iced)
 - Manual presets: 21
@@ -296,7 +314,7 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none

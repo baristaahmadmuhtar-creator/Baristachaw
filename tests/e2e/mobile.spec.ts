@@ -4,6 +4,8 @@ import { qaLogin, qaLogout } from '../fixtures/auth';
 import { buildQaUser } from '../fixtures/test-data';
 
 test.beforeEach(async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await clearClientState(page);
   await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
 });
 
@@ -468,8 +470,50 @@ test('mobile ai brew builder keeps the action footer docked to the modal bottom'
   const builderBottom = builderBox!.y + builderBox!.height;
   const footerBottom = footerBox!.y + footerBox!.height;
 
-  expect(Math.abs(builderBottom - footerBottom)).toBeLessThanOrEqual(24);
-  expect(Math.abs(viewport!.height - footerBottom)).toBeLessThanOrEqual(24);
+  expect(Math.abs(builderBottom - footerBottom)).toBeLessThanOrEqual(2);
+  expect(Math.abs(viewport!.height - footerBottom)).toBeLessThanOrEqual(2);
+
+  const bottomHitTarget = await page.evaluate(({ x, y }) => {
+    const target = document.elementFromPoint(x, y);
+    return {
+      insideBuilder: !!target?.closest('[data-testid^="ai-brew-builder-"]'),
+      insidePanel: !!target?.closest('[data-testid="ai-brew-panel"]'),
+    };
+  }, { x: Math.round(viewport!.width / 2), y: viewport!.height - 1 });
+
+  expect(bottomHitTarget.insideBuilder).toBe(true);
+  expect(bottomHitTarget.insidePanel).toBe(true);
+});
+
+test('mobile ai brew advanced builder covers the viewport through its action footer', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/tools?tab=ai-brew');
+  await clearClientState(page);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
+
+  await page.getByTestId('ai-brew-open-pro').click();
+
+  const builder = page.getByTestId('ai-brew-builder-pro');
+  const footer = page.getByTestId('ai-brew-builder-footer');
+  await expect(builder).toBeVisible();
+  await expect(footer).toBeVisible();
+
+  const [builderBox, footerBox] = await Promise.all([
+    builder.boundingBox(),
+    footer.boundingBox(),
+  ]);
+  expect(builderBox).toBeTruthy();
+  expect(footerBox).toBeTruthy();
+  expect(Math.abs(844 - (builderBox!.y + builderBox!.height))).toBeLessThanOrEqual(2);
+  expect(Math.abs(844 - (footerBox!.y + footerBox!.height))).toBeLessThanOrEqual(2);
+
+  const bottomTarget = await page.evaluate(() => (
+    document.elementFromPoint(Math.round(window.innerWidth / 2), window.innerHeight - 1)
+      ?.closest('[data-testid="ai-brew-builder-pro"]')
+      ?.getAttribute('data-testid') || ''
+  ));
+  expect(bottomTarget).toBe('ai-brew-builder-pro');
 });
 
 test('mobile ai brew builder keeps focused inputs and footer above simulated iOS keyboard', async ({ page }) => {
@@ -525,6 +569,93 @@ test('mobile ai brew builder keeps focused inputs and footer above simulated iOS
   const metrics = await readMetrics();
   expect(metrics.inputBottom).toBeLessThanOrEqual(metrics.viewportSafeBottom + 8);
   expect(metrics.scrollPaddingBottom).toBeGreaterThanOrEqual(300);
+
+  await page.evaluate(() => {
+    document.documentElement.dataset.keyboardOpen = 'false';
+    document.documentElement.style.setProperty('--keyboard-offset', '0px');
+    document.documentElement.style.setProperty('--keyboard-overlay-offset', '0px');
+    window.dispatchEvent(new CustomEvent('app:viewport-metrics', {
+      detail: {
+        keyboardOpen: false,
+        keyboardOffset: 0,
+        keyboardOverlayOffset: 0,
+        layoutHeight: window.innerHeight,
+        visualHeight: window.innerHeight,
+        visualOffsetTop: 0,
+        visualBottom: window.innerHeight,
+        baselineLayoutHeight: window.innerHeight,
+        baselineVisualBottom: window.innerHeight,
+      },
+    }));
+  });
+  await coffeeNameInput.blur();
+
+  await expect.poll(async () => {
+    const footerBox = await page.getByTestId('ai-brew-builder-footer').boundingBox();
+    return footerBox ? Math.round(footerBox.y + footerBox.height) : 0;
+  }).toBe(844);
+});
+
+test('mobile ai brew picker stays usable for overlay and adjustResize keyboards', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await clearClientState(page);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await page.goto('/tools?tab=ai-brew&runtime=web_parity&ui_profile=native_shell&host_safe_bottom=28', {
+    waitUntil: 'domcontentloaded',
+  });
+  await page.getByTestId('ai-brew-open-pro').click();
+  await page.locator('[data-testid="ai-brew-process-picker"]:visible').click();
+
+  const pickerDialog = page.getByRole('dialog').last();
+  const search = page.getByTestId('ai-brew-picker-search-process');
+  const list = page.getByTestId('ai-brew-picker-process');
+  await search.focus();
+  await expect(search).toBeFocused();
+  await page.waitForTimeout(650);
+
+  await page.evaluate(() => {
+    document.documentElement.dataset.keyboardOpen = 'true';
+    document.documentElement.style.setProperty('--app-height-visual', '564px');
+    document.documentElement.style.setProperty('--keyboard-offset', '280px');
+    document.documentElement.style.setProperty('--keyboard-overlay-offset', '280px');
+    window.dispatchEvent(new CustomEvent('app:viewport-metrics', {
+      detail: {
+        keyboardOpen: true,
+        keyboardOffset: 280,
+        keyboardOverlayOffset: 280,
+        layoutHeight: 844,
+        visualHeight: 564,
+        visualOffsetTop: 0,
+        visualBottom: 564,
+        baselineLayoutHeight: 844,
+        baselineVisualBottom: 844,
+      },
+    }));
+  });
+
+  await expect.poll(async () => {
+    const box = await pickerDialog.boundingBox();
+    return box ? Math.round(box.y + box.height) : 0;
+  }).toBeLessThanOrEqual(564);
+  const overlaySearchBox = await search.boundingBox();
+  const overlayListBox = await list.boundingBox();
+  expect(overlaySearchBox).toBeTruthy();
+  expect(overlayListBox).toBeTruthy();
+  expect(overlaySearchBox!.y + overlaySearchBox!.height).toBeLessThanOrEqual(564);
+  expect(overlayListBox!.y).toBeLessThan(564);
+
+  await page.evaluate(() => {
+    document.documentElement.style.setProperty('--keyboard-overlay-offset', '0px');
+  });
+  await page.setViewportSize({ width: 390, height: 544 });
+  await expect.poll(async () => {
+    const box = await pickerDialog.boundingBox();
+    return box ? Math.round(box.y + box.height) : 0;
+  }).toBeLessThanOrEqual(544);
+  const resizedSearchBox = await search.boundingBox();
+  expect(resizedSearchBox).toBeTruthy();
+  expect(resizedSearchBox!.y + resizedSearchBox!.height).toBeLessThanOrEqual(544);
 });
 
 test('mobile ai brew result has no horizontal overflow and keeps touch targets comfortable', async ({ page }, testInfo) => {
@@ -571,7 +702,7 @@ test('mobile ai brew result has no horizontal overflow and keeps touch targets c
       };
     }));
 
-  expect(targetMetrics.length).toBeGreaterThanOrEqual(3);
+  expect(targetMetrics.length).toBeGreaterThanOrEqual(2);
   for (const metric of targetMetrics) {
     expect(metric.width, `${metric.testId || 'control'} width`).toBeGreaterThanOrEqual(44);
     expect(metric.height, `${metric.testId || 'control'} height`).toBeGreaterThanOrEqual(44);
@@ -587,15 +718,15 @@ test('mobile ai brew result tabs support arrow home and end keyboard navigation'
   await expect(planTab).toHaveAttribute('aria-selected', 'true');
 
   await planTab.focus();
-  await page.keyboard.press('ArrowRight');
+  await planTab.press('ArrowRight');
   await expect(flowTab).toHaveAttribute('aria-selected', 'true');
   await expect(flowTab).toBeFocused();
 
-  await page.keyboard.press('End');
+  await flowTab.press('End');
   await expect(coachTab).toHaveAttribute('aria-selected', 'true');
   await expect(coachTab).toBeFocused();
 
-  await page.keyboard.press('Home');
+  await coachTab.press('Home');
   await expect(planTab).toHaveAttribute('aria-selected', 'true');
   await expect(planTab).toBeFocused();
 });

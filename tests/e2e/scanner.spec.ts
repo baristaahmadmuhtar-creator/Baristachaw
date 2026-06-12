@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { qaLogin, qaLogout } from '../fixtures/auth';
 import { buildQaUser } from '../fixtures/test-data';
+import { clearClientState } from '../helpers/cleanup';
 import { mockAiApis } from '../helpers/network';
 import { expectAccountModal } from '../helpers/authGate';
 
@@ -15,7 +16,9 @@ const latteRequestLabel = /Latte art request|Permintaan latte art/i;
 test.beforeEach(async ({ page }) => {
   if (!isLive) await mockAiApis(page);
   await qaLogout(page.request);
-  await page.goto('/scanner');
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await clearClientState(page);
+  await page.goto('/scanner', { waitUntil: 'domcontentloaded' });
 });
 
 test.afterEach(async ({ page }) => {

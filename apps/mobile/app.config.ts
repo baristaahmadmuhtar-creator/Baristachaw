@@ -20,6 +20,7 @@ const ANDROID_BLOCKED_STORE_PERMISSIONS = [
   'android.permission.READ_MEDIA_IMAGES',
   'android.permission.READ_MEDIA_VIDEO',
   'android.permission.READ_MEDIA_AUDIO',
+  'android.permission.MANAGE_EXTERNAL_STORAGE',
 ];
 
 function isLocalHttpUrl(value: string): boolean {

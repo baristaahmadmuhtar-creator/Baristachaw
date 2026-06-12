@@ -9,6 +9,8 @@ import {
 } from '../helpers/mobileParity';
 
 test.beforeEach(async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await clearClientState(page);
   await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
 });
 

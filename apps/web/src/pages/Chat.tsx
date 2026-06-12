@@ -1573,6 +1573,7 @@ export function Chat() {
                 onClick={() => toggleMode('fast')}
                 className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ease-out ${isFastMode ? 'bg-amber-500/15 text-amber-600 shadow-sm dark:text-amber-400' : 'text-secondary hover:text-primary'}`}
                 aria-label={t.chatFastModeAria}
+                aria-pressed={isFastMode}
               >
                 <Zap size={13} className={isFastMode ? 'fill-amber-600 dark:fill-amber-400' : ''} />
                 {t.fastMode}
@@ -1581,6 +1582,7 @@ export function Chat() {
                 onClick={() => { if (isFastMode) toggleMode('fast'); if (isDeepThinkMode) toggleMode('deep'); }}
                 className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ease-out ${!isFastMode && !isDeepThinkMode ? 'bg-blue-500/15 text-blue-600 shadow-sm dark:text-blue-400' : 'text-secondary hover:text-primary'}`}
                 aria-label={`${t.chatMemoryDetailBalanced} (${t.chatNormalModeAria})`}
+                aria-pressed={!isFastMode && !isDeepThinkMode}
               >
                 <BrainCircuit size={13} />
                 {t.chatMemoryDetailBalanced}
@@ -1589,6 +1591,7 @@ export function Chat() {
                 onClick={() => toggleMode('deep')}
                 className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ease-out ${isDeepThinkMode ? 'bg-purple-500/15 text-purple-600 shadow-sm dark:text-purple-400' : 'text-secondary hover:text-primary'}`}
                 aria-label={t.chatDeepModeAria}
+                aria-pressed={isDeepThinkMode}
               >
                 <Brain size={13} className={isDeepThinkMode ? 'fill-purple-600 dark:fill-purple-400' : ''} />
                 {t.deepThink}

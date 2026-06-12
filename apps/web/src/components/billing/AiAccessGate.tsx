@@ -307,10 +307,15 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   }, [close, feature, openAuthModal, state?.source]);
 
   useEffect(() => {
-    if (state?.mode === 'checking' && hasPaidAiAccess) {
+    if (state?.mode !== 'checking' || loading || !snapshot) return;
+    if (hasPaidAiAccess) {
       close();
+      return;
     }
-  }, [close, hasPaidAiAccess, state?.mode]);
+    setState((current) => current?.mode === 'checking'
+      ? { ...current, mode: 'upgrade' }
+      : current);
+  }, [close, hasPaidAiAccess, loading, snapshot, state?.mode]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshBusy(true);

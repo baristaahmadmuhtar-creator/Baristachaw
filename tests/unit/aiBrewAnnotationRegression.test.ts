@@ -69,13 +69,14 @@ test('first-run onboarding is mounted and covers language plus equipment prefere
   assert.match(onboarding, /submitCatalogSuggestion/);
 });
 
-test('first-run onboarding uses BaristaChaw logo and custom equipment pickers', async () => {
+test('first-run onboarding uses one BaristaChaw logo, a language icon, and custom equipment pickers', async () => {
   const onboarding = await readFile(onboardingPath, 'utf8');
 
   assert.match(onboarding, /src="\/icons\/icon-192\.png"/);
   assert.match(onboarding, /data-testid="onboarding-logo"/);
-  assert.match(onboarding, /data-testid="onboarding-language-logo"/);
-  assert.doesNotMatch(onboarding, /<Languages\b/);
+  assert.match(onboarding, /data-testid="onboarding-language-icon"/);
+  assert.doesNotMatch(onboarding, /data-testid="onboarding-language-logo"/);
+  assert.match(onboarding, /<Languages\b/);
   assert.doesNotMatch(onboarding, /<select\b/);
   assert.match(onboarding, /data-testid="onboarding-dripper-picker"/);
   assert.match(onboarding, /data-testid="onboarding-grinder-picker"/);

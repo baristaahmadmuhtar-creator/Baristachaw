@@ -577,7 +577,8 @@ test('ai brew Hario Switch quick plan defaults to safe Hybrid Balanced with valv
   await result.getByTestId('ai-brew-result-tab-flow').click();
   await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
   await expect(result.getByTestId('ai-brew-flow-current-card')).toBeVisible();
-  await expect(result.getByTestId('ai-brew-sequence-section')).toHaveCount(0);
+  await expect(result.getByTestId('ai-brew-sequence-section')).toBeVisible();
+  await expect(result.locator('[data-testid^="ai-brew-step-card-"]').first()).toBeVisible();
 
   const plan = await readStoredAiBrewPlan(page);
   expect(plan.dripper.id).toBe('hario-switch-03');
@@ -623,7 +624,8 @@ test('ai brew Hario Switch Auto follows taste target before method preference', 
   await result.getByTestId('ai-brew-result-tab-flow').click();
   await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
   await expect(result.getByTestId('ai-brew-flow-current-card')).toBeVisible();
-  await expect(result.getByTestId('ai-brew-sequence-section')).toHaveCount(0);
+  await expect(result.getByTestId('ai-brew-sequence-section')).toBeVisible();
+  await expect(result.locator('[data-testid^="ai-brew-step-card-"]').first()).toBeVisible();
 
   const plan = await readStoredAiBrewPlan(page);
   const guideText = (plan.workflowGuideSteps || [])
@@ -746,7 +748,8 @@ test('ai brew guide renders workflow-specific phases for non-pour-over methods',
     await result.getByTestId('ai-brew-result-tab-flow').click({ force: true });
     await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
     await expect(result.getByTestId('ai-brew-flow-current-card')).toBeVisible();
-    await expect(result.getByTestId('ai-brew-sequence-section')).toHaveCount(0);
+    await expect(result.getByTestId('ai-brew-sequence-section')).toBeVisible();
+    await expect(result.locator('[data-testid^="ai-brew-step-card-"]').first()).toBeVisible();
     const plan = await readStoredAiBrewPlan(page);
     expect(plan.workflowValidation?.passed).toBe(true);
     expect(plan.workflowGuideSteps?.length || 0).toBeGreaterThan(plan.steps.length);
@@ -1872,7 +1875,8 @@ test('ai brew generates a hot brew plan and saves it to collection', async ({ pa
   const result = page.getByTestId('ai-brew-result');
   await expect(result).toContainText('QA Ethiopia Chelbesa');
   await result.getByTestId('ai-brew-result-tab-flow').click();
-  await expect(result.getByTestId('ai-brew-sequence-section')).toHaveCount(0);
+  await expect(result.getByTestId('ai-brew-sequence-section')).toBeVisible();
+  await expect(result.locator('[data-testid^="ai-brew-step-card-"]').first()).toBeVisible();
   await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
   const hotPlan = await readStoredAiBrewPlan(page);
   await result.getByTestId('ai-brew-result-tab-plan').click();
@@ -2174,7 +2178,8 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
     if (mode === 'quick') {
       await result.getByTestId('ai-brew-result-tab-flow').click();
       await expect(result.getByTestId('ai-brew-iced-calibration')).toHaveCount(0);
-      await expect(result.getByTestId('ai-brew-sequence-section')).toHaveCount(0);
+      await expect(result.getByTestId('ai-brew-sequence-section')).toBeVisible();
+      await expect(result.locator('[data-testid^="ai-brew-step-card-"]').first()).toBeVisible();
       await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
       await expect(result.getByTestId('ai-brew-flow-agitation-metric')).toContainText(/Agitation|Agitasi/i);
       await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/Berikutnya|Next/i);

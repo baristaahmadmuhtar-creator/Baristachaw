@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Check, ChevronRight, Loader2, Search, X } from 'lucide-react';
+import { Check, ChevronRight, Languages, Loader2, Search, X } from 'lucide-react';
 import { useGlobalState } from '../../context/GlobalState';
 import { loadAiBrewCatalog } from '../../features/ai-brew/catalog';
 import type { AiBrewCatalog } from '../../features/ai-brew/types';
@@ -345,11 +345,10 @@ export function FirstRunOnboarding() {
         {step === 'language' ? (
           <section data-testid="onboarding-language-step">
             <div className="text-center">
-              <img
-                data-testid="onboarding-language-logo"
-                src="/icons/icon-192.png"
-                alt="BaristaChaw"
-                className="mx-auto h-6 w-6 rounded-md object-cover"
+              <Languages
+                data-testid="onboarding-language-icon"
+                aria-hidden="true"
+                className="mx-auto h-7 w-7 text-blue-500"
               />
               <h1 className="mt-4 text-2xl font-semibold text-primary">{copy.languageTitle}</h1>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-secondary">{copy.languageBody}</p>

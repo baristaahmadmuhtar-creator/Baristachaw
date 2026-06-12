@@ -25,7 +25,7 @@ test('first-run onboarding uses logo and custom favorite equipment pickers', asy
 
   await expect(page.getByTestId('first-run-onboarding')).toBeVisible();
   await expect(page.getByTestId('onboarding-logo')).toHaveAttribute('src', /\/icons\/icon-192\.png/);
-  await expect(page.getByTestId('onboarding-language-logo')).toHaveAttribute('src', /\/icons\/icon-192\.png/);
+  await expect(page.getByTestId('onboarding-language-icon')).toBeVisible();
   await page.getByRole('button', { name: /Continue|Lanjut/i }).click();
 
   await expect(page.getByTestId('onboarding-equipment-step')).toBeVisible();

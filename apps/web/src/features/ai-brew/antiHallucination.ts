@@ -521,6 +521,16 @@ export function sanitizeBrewNarrative(text: string, plan: BrewPlan, language?: s
 
 export function validateBrewPlanOutput(plan: BrewPlan): BrewGuardResult {
   const reasons: string[] = [];
+  const strictSourceStepFamilies = new Set([
+    'v60',
+    'hario_switch',
+    'kalita_wave',
+    'chemex',
+    'origami',
+    'april',
+    'melitta',
+    'kono',
+  ]);
   const numericFields = [
     ['doseG', plan.doseG],
     ['totalWaterMl', plan.totalWaterMl],
@@ -534,6 +544,46 @@ export function validateBrewPlanOutput(plan: BrewPlan): BrewGuardResult {
 
   for (const [field, value] of numericFields) {
     if (!Number.isFinite(value)) reasons.push(`${field} is not finite`);
+    if (Number.isFinite(value) && value < 0) reasons.push(`${field} cannot be negative`);
+  }
+  if (Number.isFinite(plan.finalBeverageRatio) && (plan.finalBeverageRatio <= 0 || plan.finalBeverageRatio > 25)) {
+    reasons.push('finalBeverageRatio is outside practical bounds');
+  }
+  if (Number.isFinite(plan.hotExtractionRatio) && (plan.hotExtractionRatio <= 0 || plan.hotExtractionRatio > 25)) {
+    reasons.push('hotExtractionRatio is outside practical bounds');
+  }
+  let lastCumulativeTarget = 0;
+  for (const [index, step] of plan.steps.entries()) {
+    const stepNumericFields = [
+      ['startSeconds', step.startSeconds],
+      ['targetVolumeMl', step.targetVolumeMl],
+      ['pourVolumeMl', step.pourVolumeMl],
+      ['share', step.share],
+    ] as const;
+    for (const [field, value] of stepNumericFields) {
+      if (value === undefined) continue;
+      if (!Number.isFinite(value)) reasons.push(`steps[${index}].${field} is not finite`);
+      if (Number.isFinite(value) && value < 0) reasons.push(`steps[${index}].${field} cannot be negative`);
+    }
+    const kind = step.kind || 'pour';
+    const volumeStep = kind === 'pour' || kind === 'extract';
+    if (volumeStep && Number.isFinite(step.targetVolumeMl) && step.targetVolumeMl > 0) {
+      if (step.targetVolumeMl + 0.1 < lastCumulativeTarget) {
+        reasons.push(`steps[${index}] cumulative target must be monotonic`);
+      }
+      lastCumulativeTarget = Math.max(lastCumulativeTarget, step.targetVolumeMl);
+    }
+  }
+  if (strictSourceStepFamilies.has(plan.methodFamily) && Array.isArray(plan.workflowGuideSteps) && plan.workflowGuideSteps.length > 0) {
+    const preservedSourceStepIds = new Set(
+      plan.workflowGuideSteps.flatMap((step) => step.sourceStepIds || []),
+    );
+    for (const step of plan.steps) {
+      const kind = step.kind || 'pour';
+      if ((kind === 'pour' || kind === 'extract') && step.pourVolumeMl > 0 && !preservedSourceStepIds.has(step.id)) {
+        reasons.push(`workflow guide missing source step ${step.id}`);
+      }
+    }
   }
   reasons.push(...validateBrewPlanRatioInvariants(plan));
 
@@ -678,7 +728,7 @@ export function validateBrewPlanOutput(plan: BrewPlan): BrewGuardResult {
     }
   }
 
-  const blocked = reasons.some((reason) => /not finite|must equal|must be lower|conflicting|workflow guide failed|workflow wording|ratio mismatch|canonical|placeholder|developer copy|mislabeled|vocabulary|starts before|spirit_infusion_style|spirit infusion|incompatible|Origami/i.test(reason));
+  const blocked = reasons.some((reason) => /not finite|cannot be negative|outside practical bounds|monotonic|missing source step|must equal|must be lower|conflicting|workflow guide failed|workflow wording|ratio mismatch|canonical|placeholder|developer copy|mislabeled|vocabulary|starts before|spirit_infusion_style|spirit infusion|incompatible|Origami/i.test(reason));
   return {
     allowed: !blocked,
     risk: reasons.length === 0 ? 'none' : blocked ? 'blocked' : 'medium',

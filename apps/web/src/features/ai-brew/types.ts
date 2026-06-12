@@ -590,6 +590,7 @@ export interface ManualBrewPreset {
     targetTempC: number;
     targetRatio?: number;
     pourCount: Extract<AiBrewPourCount, '3' | '4' | '5'>;
+    presetPourCount?: number;
     pourStyle: Exclude<AiBrewPourStyle, 'auto'>;
     waterTdsPpm: number;
     waterHardnessPpm: number;
@@ -1163,6 +1164,12 @@ export interface AiBrewReadinessScores {
   grinder: number;
   workflow: number;
   catalog: number;
+  recipeArithmetic?: number;
+  languageQuality?: number;
+  sourceFidelity?: number;
+  grinderCalibration?: number;
+  waterVerification?: number;
+  realBrewEvidence?: number;
 }
 
 export interface BrewPlanAiNotes {
@@ -1372,6 +1379,66 @@ export interface BrewTasteFeedback {
   note?: string;
   createdAt: number;
   updatedAt: number;
+}
+
+export interface RealBrewSensoryScore {
+  acidity: number;
+  sweetness: number;
+  body: number;
+  clarity: number;
+  bitterness: number;
+  astringency: number;
+  balance: number;
+  notes?: string;
+}
+
+export interface RealBrewMeasurement {
+  label?: string;
+  tdsPpm?: number;
+  ghPpmAsCaCO3?: number;
+  khPpmAsCaCO3?: number;
+  sourceBacked: boolean;
+  measured: boolean;
+  verifiedAt?: number;
+}
+
+export interface GrinderCalibrationProfile {
+  grinderId?: string;
+  grinderLabel: string;
+  zeroPointClicks?: number;
+  burrTouchOffsetClicks?: number;
+  lastDrawdownSeconds?: number;
+  lastTasteCorrection?: string;
+  completedAt?: number;
+  confidence: AiBrewScoreConfidence;
+}
+
+export interface RealBrewLogEntry {
+  id: string;
+  planId?: string;
+  fingerprint?: string;
+  createdAt: number;
+  updatedAt: number;
+  brewDate: string;
+  beanName: string;
+  methodFamily: AiBrewMethodFamily;
+  brewerLabel: string;
+  grinderLabel: string;
+  grinderSetting?: string;
+  doseG: number;
+  brewWaterMl: number;
+  beverageOutputG?: number;
+  tdsPercent?: number;
+  extractionYieldPercent?: number;
+  drawdownSeconds?: number;
+  sensory?: RealBrewSensoryScore;
+  water?: RealBrewMeasurement;
+  calibration?: GrinderCalibrationProfile;
+  notes?: string;
+  validation: {
+    status: 'validated' | 'needs_review' | 'blocked';
+    warnings: string[];
+  };
 }
 
 export interface BrewPreset {

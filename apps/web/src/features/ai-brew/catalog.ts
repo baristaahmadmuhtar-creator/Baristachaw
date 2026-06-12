@@ -1065,6 +1065,9 @@ function normalizeManualBrewPreset(preset: ManualBrewPreset): ManualBrewPreset {
       targetTempC: Number.isFinite(targetDefaults.targetTempC) ? targetDefaults.targetTempC : 92,
       targetRatio: Number.isFinite(targetDefaults.targetRatio) ? targetDefaults.targetRatio : undefined,
       pourCount: targetDefaults.pourCount || '4',
+      presetPourCount: Number.isFinite(targetDefaults.presetPourCount) && targetDefaults.presetPourCount > 0
+        ? Math.round(targetDefaults.presetPourCount)
+        : undefined,
       pourStyle: targetDefaults.pourStyle || 'balanced',
       waterTdsPpm: Number.isFinite(targetDefaults.waterTdsPpm) ? targetDefaults.waterTdsPpm : 90,
       waterHardnessPpm: Number.isFinite(targetDefaults.waterHardnessPpm) ? targetDefaults.waterHardnessPpm : 50,

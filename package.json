@@ -1,7 +1,7 @@
 {
     "name": "baristachaw",
     "private": true,
-    "version": "1.0.0",
+    "version": "1.0.1",
     "type": "module",
     "engines": {
         "node": ">=24.0.0",
@@ -65,6 +65,7 @@
         "test:ai-brew:method-style-language": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs scripts/ai-brew-method-style-audit.mjs --mode=language",
         "test:ai-brew:method-style-ui": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs scripts/ai-brew-method-style-audit.mjs --mode=ui",
         "test:ai-brew:method-style-report": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs scripts/ai-brew-method-style-audit.mjs --mode=report",
+        "test:ai-brew:readiness99": "node scripts/ai-brew-99-readiness-score.mjs",
         "test:ai-brew:v60-styles": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs scripts/ai-brew-method-style-audit.mjs --method=v60",
         "test:ai-brew:switch-styles": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs scripts/ai-brew-method-style-audit.mjs --method=hario_switch",
         "test:ai-brew:chemex-styles": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs scripts/ai-brew-method-style-audit.mjs --method=chemex",

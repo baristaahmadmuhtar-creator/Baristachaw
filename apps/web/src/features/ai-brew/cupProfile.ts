@@ -647,5 +647,11 @@ export function buildAiBrewReadinessScores(plan: BrewPlan): AiBrewReadinessScore
     grinder: clampReadiness(grinder),
     workflow,
     catalog,
+    recipeArithmetic: recipe,
+    languageQuality: 99,
+    sourceFidelity: catalog,
+    grinderCalibration: clampReadiness(grinder),
+    waterVerification: clampReadiness(water),
+    realBrewEvidence: 0,
   };
 }

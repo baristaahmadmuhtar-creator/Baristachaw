@@ -1,5 +1,5 @@
 const DB_NAME = 'baristachaw_v1';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 const STORES = {
     CHAT_SESSIONS: 'chat_sessions',
@@ -9,6 +9,7 @@ const STORES = {
     COLLECTION_FOLDERS: 'collection_folders',
     AI_BREW_JOURNAL: 'ai_brew_journal',
     AI_BREW_PRESETS: 'ai_brew_presets',
+    AI_BREW_REAL_BREW_LOGS: 'ai_brew_real_brew_logs',
     BRAIN_SYNC_QUEUE: 'brain_sync_queue',
     META: 'meta',
 } as const;
@@ -72,6 +73,13 @@ export const openAppDb = (): Promise<IDBDatabase> => {
                 const store = db.createObjectStore(STORES.AI_BREW_PRESETS, { keyPath: 'id' });
                 store.createIndex('updatedAt', 'updatedAt', { unique: false });
                 store.createIndex('fingerprint', 'fingerprint', { unique: false });
+            }
+
+            if (!db.objectStoreNames.contains(STORES.AI_BREW_REAL_BREW_LOGS)) {
+                const store = db.createObjectStore(STORES.AI_BREW_REAL_BREW_LOGS, { keyPath: 'id' });
+                store.createIndex('updatedAt', 'updatedAt', { unique: false });
+                store.createIndex('fingerprint', 'fingerprint', { unique: false });
+                store.createIndex('brewDate', 'brewDate', { unique: false });
             }
 
             if (!db.objectStoreNames.contains(STORES.BRAIN_SYNC_QUEUE)) {

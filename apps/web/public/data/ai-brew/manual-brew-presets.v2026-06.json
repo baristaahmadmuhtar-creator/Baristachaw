@@ -1436,6 +1436,7 @@
         "targetTempC": 96,
         "targetRatio": 15,
         "pourCount": "5",
+        "presetPourCount": 10,
         "pourStyle": "pulse",
         "waterTdsPpm": 90,
         "waterHardnessPpm": 50,

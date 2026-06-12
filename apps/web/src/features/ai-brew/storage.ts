@@ -6,6 +6,7 @@ import type {
   BrewPlanAiNotes,
   BrewPreset,
   BrewTasteFeedback,
+  RealBrewLogEntry,
 } from './types';
 
 const AI_BREW_FORM_STORAGE_KEY = 'BARISTACHAW_AI_BREW_FORM_V5';
@@ -276,6 +277,15 @@ export async function updateBrewJournalFeedback(
 
 export async function listRecentBrewJournalEntries(limit = 6): Promise<BrewJournalEntry[]> {
   const all = await idbGetAll<BrewJournalEntry>(DB_STORES.AI_BREW_JOURNAL);
+  return all.sort(byUpdatedDesc).slice(0, limit);
+}
+
+export async function saveRealBrewLogEntry(entry: RealBrewLogEntry): Promise<void> {
+  await idbPut(DB_STORES.AI_BREW_REAL_BREW_LOGS, entry);
+}
+
+export async function listRecentRealBrewLogEntries(limit = 20): Promise<RealBrewLogEntry[]> {
+  const all = await idbGetAll<RealBrewLogEntry>(DB_STORES.AI_BREW_REAL_BREW_LOGS);
   return all.sort(byUpdatedDesc).slice(0, limit);
 }
 

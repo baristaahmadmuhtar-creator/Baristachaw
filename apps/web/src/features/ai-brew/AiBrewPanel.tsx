@@ -127,6 +127,7 @@ import {
   hasAiBrewFormDraft,
   listBrewPresets,
   listRecentBrewJournalEntries,
+  saveRealBrewLogEntry,
   loadAiBrewFormDraft,
   loadPersistentAiBrewCatalogSnapshot,
   loadCachedAiBrewSequenceOverlay,
@@ -140,6 +141,7 @@ import {
   updateBrewJournalAiNotes,
   updateBrewJournalFeedback,
 } from './storage';
+import { buildRealBrewLogEntry } from './realBrewLogs';
 import { parseAiBrewOptimizationPatch } from './aiOptimizer';
 import { findManualBrewPreset, loadAiBrewCatalog } from './catalog';
 import type {
@@ -177,6 +179,7 @@ const AI_BREW_COACH_DEEP_TIMEOUT_MS = 8500;
 const AI_BREW_COACH_TRANSLATION_TIMEOUT_MS = 1200;
 const AI_BREW_FEEDBACK_NOTE_MAX_LENGTH = 240;
 const AI_BREW_ASSIST_PROMPT_VERSION = 'assist-v2026-05-06';
+const AI_BREW_GRINDER_CALIBRATION_KEY_PREFIX = 'BARISTACHAW_GRINDER_CALIBRATION_V1:';
 const LARGE_CATALOG_PICKER_KINDS = new Set<NonNullable<PickerKind>>(['process', 'variety']);
 const LARGE_CATALOG_INITIAL_LIMIT = 140;
 const LARGE_CATALOG_SEARCH_LIMIT = 96;
@@ -604,6 +607,16 @@ const COPY = {
     feedbackSaveFailed: 'Unable to save taste feedback right now.',
     feedbackCoachTitle: 'Next Brew Adjustment',
     feedbackCoachHint: 'Smallest safe correction for the next brew.',
+    realBrewTitle: 'Real Brew Log',
+    realBrewDescription: 'Record physical brew evidence separately from software prediction. Leave blank if you have not brewed it.',
+    realBrewOutput: 'Cup output (g)',
+    realBrewTds: 'TDS % optional',
+    realBrewDrawdown: 'Drawdown/time (sec)',
+    realBrewSensory: 'Sensory sliders',
+    realBrewSave: 'Save real brew log',
+    realBrewSaved: 'Real brew log saved.',
+    realBrewNeedsReview: 'Saved as needs review until physical evidence is complete.',
+    realBrewBlocked: 'Real brew log blocked: {reason}',
     guideDensitySimple: 'Lite',
     guideDensityPro: 'Pro',
     guideDensitySimpleHint: '',
@@ -1220,6 +1233,16 @@ const COPY = {
     feedbackSaveFailed: 'Catatan rasa belum bisa disimpan sekarang.',
     feedbackCoachTitle: 'Koreksi Seduhan Berikutnya',
     feedbackCoachHint: 'Koreksi aman paling kecil untuk seduhan berikutnya.',
+    realBrewTitle: 'Log Seduh Nyata',
+    realBrewDescription: 'Catat bukti seduh fisik terpisah dari prediksi software. Kosongkan jika belum benar-benar diseduh.',
+    realBrewOutput: 'Output cangkir (g)',
+    realBrewTds: 'TDS % opsional',
+    realBrewDrawdown: 'Air turun/waktu (detik)',
+    realBrewSensory: 'Slider rasa',
+    realBrewSave: 'Simpan log seduh nyata',
+    realBrewSaved: 'Log seduh nyata tersimpan.',
+    realBrewNeedsReview: 'Tersimpan sebagai perlu review sampai bukti fisik lengkap.',
+    realBrewBlocked: 'Log seduh nyata diblokir: {reason}',
     guideDensitySimple: 'Lite',
     guideDensityPro: 'Pro',
     guideDensitySimpleHint: '',
@@ -5759,14 +5782,14 @@ function MasterPickerDialog({
       ariaLabel={ariaLabel || title}
       ariaDescribedBy={hasDescription ? descriptionId : undefined}
       restoreFocusTarget={restoreFocusTarget}
-      className="ai-brew-picker-dialog fixed inset-x-0 z-[111] mx-auto flex w-full max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-t-[1.8rem] border border-glass bg-[var(--bg-base)]/96 px-4 pb-4 pt-4 shadow-[0_-18px_40px_rgba(0,0,0,0.24)] lg:top-1/2 lg:max-w-3xl lg:-translate-y-1/2 lg:rounded-[1.8rem] lg:px-5"
+      className="ai-brew-picker-dialog fixed inset-x-0 z-[111] mx-auto flex min-h-0 w-full max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-t-[1.8rem] border border-glass bg-[var(--bg-base)]/96 px-4 pb-4 pt-4 shadow-[0_-18px_40px_rgba(0,0,0,0.24)] lg:top-1/2 lg:max-w-3xl lg:-translate-y-1/2 lg:rounded-[1.8rem] lg:px-5"
       style={{
         bottom: `max(${keyboardOverlayOffset}px, var(--keyboard-overlay-offset, 0px))`,
         maxHeight: `min(88vh, calc(var(--app-height-visual, 100dvh) - var(--safe-top, 0px) - 12px), calc(100dvh - max(${keyboardOverlayOffset}px, var(--keyboard-overlay-offset, 0px)) - var(--safe-top, 0px) - 12px))`,
         paddingBottom: 'max(1rem, calc(var(--bottom-safe-capped, 0px) + 1rem))',
       }}
     >
-      <div className="mb-3 flex min-w-0 items-start justify-between gap-3">
+      <div className="mb-3 flex min-w-0 shrink-0 items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="break-words text-lg font-semibold text-primary">{title}</h3>
           {hasDescription && (
@@ -5783,7 +5806,7 @@ function MasterPickerDialog({
         </button>
       </div>
 
-      <div className="relative mb-3">
+      <div className="relative mb-3 shrink-0">
         <label htmlFor={searchInputId} className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">
           {searchLabel}
         </label>
@@ -5805,7 +5828,7 @@ function MasterPickerDialog({
 
       {showProcessCategories && (
         <div
-          className="mb-3 flex max-w-full gap-2 overflow-x-auto pb-1"
+          className="mb-3 flex max-w-full shrink-0 gap-2 overflow-x-auto pb-1"
           data-testid="ai-brew-process-category-chips"
         >
           {(['all', ...PROCESS_PICKER_CATEGORIES] as const).map((category) => {
@@ -5835,9 +5858,10 @@ function MasterPickerDialog({
 
       <div
         ref={scrollContainerRef}
-        className="max-w-full overflow-y-auto overflow-x-hidden overscroll-contain rounded-2xl border panel-divider-subtle panel-soft p-2"
+        className="min-h-[10rem] max-w-full flex-1 overflow-y-auto overflow-x-hidden overscroll-contain rounded-2xl border panel-divider-subtle panel-soft p-2"
         style={{
           maxHeight: `min(68vh, calc(var(--app-height-visual, 100dvh) - var(--safe-top, 0px) - var(--bottom-safe-capped, 0px) - 12rem), calc(100dvh - max(${keyboardOverlayOffset}px, var(--keyboard-overlay-offset, 0px)) - var(--safe-top, 0px) - var(--bottom-safe-capped, 0px) - 12rem))`,
+          scrollPaddingBottom: `calc(max(${keyboardOverlayOffset}px, var(--keyboard-overlay-offset, 0px)) + var(--bottom-safe-capped, 0px) + 5rem)`,
           WebkitOverflowScrolling: 'touch',
         }}
         data-testid={`ai-brew-picker-${kind}`}
@@ -6438,6 +6462,21 @@ function PlanResultDialog({
   const isQuickResult = resultMode === 'quick';
   const [guideDensity, setGuideDensity] = useState<AiBrewGuideDensity>('basic');
   const [targetCompareExpanded, setTargetCompareExpanded] = useState(true);
+  const [realBrewOutputG, setRealBrewOutputG] = useState('');
+  const [realBrewTdsPercent, setRealBrewTdsPercent] = useState('');
+  const [realBrewDrawdownSeconds, setRealBrewDrawdownSeconds] = useState('');
+  const [realBrewSensory, setRealBrewSensory] = useState({
+    acidity: 3,
+    sweetness: 3,
+    body: 3,
+    clarity: 3,
+    bitterness: 2,
+    astringency: 2,
+    balance: 3,
+  });
+  const [realBrewNotes, setRealBrewNotes] = useState('');
+  const [realBrewSaving, setRealBrewSaving] = useState(false);
+  const [realBrewStatus, setRealBrewStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -6455,6 +6494,20 @@ function PlanResultDialog({
     setFlowAccumulatedSeconds(0);
     setFlowRunning(false);
     setFlowStartedAtMs(null);
+    setRealBrewOutputG('');
+    setRealBrewTdsPercent('');
+    setRealBrewDrawdownSeconds('');
+    setRealBrewSensory({
+      acidity: 3,
+      sweetness: 3,
+      body: 3,
+      clarity: 3,
+      bitterness: 2,
+      astringency: 2,
+      balance: 3,
+    });
+    setRealBrewNotes('');
+    setRealBrewStatus(null);
   }, [plan?.id]);
 
   useEffect(() => {
@@ -6486,6 +6539,83 @@ function PlanResultDialog({
   if (!plan) return null;
 
   const id = isIndonesianAiBrewLanguage(language);
+  const realBrewSensoryFields: Array<{ key: keyof typeof realBrewSensory; label: string }> = [
+    { key: 'acidity', label: id ? 'Asam' : 'Acidity' },
+    { key: 'sweetness', label: id ? 'Manis' : 'Sweetness' },
+    { key: 'body', label: id ? 'Body' : 'Body' },
+    { key: 'clarity', label: id ? 'Jernih' : 'Clarity' },
+    { key: 'bitterness', label: id ? 'Pahit' : 'Bitterness' },
+    { key: 'astringency', label: id ? 'Sepat' : 'Astringency' },
+    { key: 'balance', label: id ? 'Seimbang' : 'Balance' },
+  ];
+  const parseOptionalRealBrewNumber = (value: string) => {
+    const normalized = value.trim().replace(',', '.');
+    if (!normalized) return undefined;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  };
+  async function handleSaveRealBrewLog() {
+    if (realBrewSaving) return;
+    setRealBrewSaving(true);
+    setRealBrewStatus(null);
+    try {
+      const outputMass = parseOptionalRealBrewNumber(realBrewOutputG);
+      const tdsPercent = parseOptionalRealBrewNumber(realBrewTdsPercent);
+      const drawdownSeconds = parseOptionalRealBrewNumber(realBrewDrawdownSeconds);
+      const sourceBackedWater = plan.waterBrandVerification === 'official'
+        || plan.waterBrandVerification === 'community_verified'
+        || plan.waterBrandVerification === 'curated';
+      const entry = buildRealBrewLogEntry({
+        planId: plan.id,
+        fingerprint: plan.fingerprint,
+        beanName: plan.coffeeName || buildLocalizedPlanRecipeName(plan, language),
+        methodFamily: plan.methodFamily,
+        brewerLabel: plan.dripper.name,
+        grinderLabel: plan.grinder.name,
+        grinderSetting: plan.grindSettingReference,
+        doseG: plan.doseG,
+        brewWaterMl: plan.totalWaterMl,
+        beverageOutputG: outputMass,
+        tdsPercent,
+        drawdownSeconds,
+        sensory: {
+          ...realBrewSensory,
+          notes: realBrewNotes.trim() || undefined,
+        },
+        water: {
+          label: plan.waterBrandLabel || plan.waterMinerals.styleLabel,
+          tdsPpm: plan.waterMinerals.tdsPpm,
+          ghPpmAsCaCO3: plan.waterMinerals.hardnessPpm,
+          khPpmAsCaCO3: plan.waterMinerals.alkalinityPpm,
+          sourceBacked: sourceBackedWater,
+          measured: plan.waterCustomized,
+          verifiedAt: Date.now(),
+        },
+        calibration: {
+          grinderId: plan.grinder.id,
+          grinderLabel: plan.grinder.name,
+          lastDrawdownSeconds: drawdownSeconds,
+          completedAt: plan.grindCalibrationRequired ? undefined : Date.now(),
+          confidence: plan.grindCalibrationRequired || plan.fallbackUsed
+            ? 'low'
+            : plan.grindSettingVerification === 'official'
+              ? 'high'
+              : 'medium',
+        },
+        notes: realBrewNotes,
+      });
+      if (entry.validation.status === 'blocked') {
+        setRealBrewStatus(copy.realBrewBlocked.replace('{reason}', entry.validation.warnings.join('; ')));
+        return;
+      }
+      await saveRealBrewLogEntry(entry);
+      setRealBrewStatus(entry.validation.status === 'validated' ? copy.realBrewSaved : copy.realBrewNeedsReview);
+    } catch {
+      setRealBrewStatus(copy.realBrewBlocked.replace('{reason}', id ? 'gagal menyimpan storage lokal' : 'local storage save failed'));
+    } finally {
+      setRealBrewSaving(false);
+    }
+  }
   const resultTabs: Array<{ id: ResultTab; label: string }> = [
     { id: 'plan', label: copy.planTab },
     { id: 'flow', label: id ? 'Seduh' : copy.flowTab },
@@ -6798,8 +6928,8 @@ function PlanResultDialog({
       label: id ? 'Air + grinder' : 'Water + grinder',
       value: `${plan.waterBrandLabel || copy.waterSelectedManual} - ${localizedGrindHeadline}`,
       detail: id
-        ? `Air memakai TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; acuan grinder ditampilkan sebagai ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)} agar tidak memberi kesan terlalu pasti.${waterRealityNote ? ` ${waterRealityNote}` : ''}`
-        : `Water uses TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; grinder is labelled ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)} so the plan does not overclaim precision.${waterRealityNote ? ` ${waterRealityNote}` : ''}`,
+        ? `Air memakai TDS ${plan.waterMinerals.tdsPpm} ppm, GH ${plan.waterMinerals.hardnessPpm} ppm as CaCO3, KH ${plan.waterMinerals.alkalinityPpm} ppm as CaCO3; acuan grinder ditampilkan sebagai ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)} agar tidak memberi kesan terlalu pasti.${waterRealityNote ? ` ${waterRealityNote}` : ''}`
+        : `Water uses TDS ${plan.waterMinerals.tdsPpm} ppm, GH ${plan.waterMinerals.hardnessPpm} ppm as CaCO3, KH ${plan.waterMinerals.alkalinityPpm} ppm as CaCO3; grinder is labelled ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)} so the plan does not overclaim precision.${waterRealityNote ? ` ${waterRealityNote}` : ''}`,
     },
     {
       label: id ? 'Alat & alur' : 'Brewer workflow',
@@ -6847,7 +6977,7 @@ function PlanResultDialog({
     {
       label: copy.waterSourceUsed,
       value: plan.waterBrandLabel || copy.waterSelectedManual,
-      detail: `TDS ${plan.waterMinerals.tdsPpm} - GH ${plan.waterMinerals.hardnessPpm} - KH ${plan.waterMinerals.alkalinityPpm} - ${localizedWaterStyle}`,
+      detail: `TDS ${plan.waterMinerals.tdsPpm} ppm - GH ${plan.waterMinerals.hardnessPpm} ppm as CaCO3 - KH ${plan.waterMinerals.alkalinityPpm} ppm as CaCO3 - ${localizedWaterStyle}`,
     },
     {
       label: id ? 'Kopi' : 'Bean',
@@ -7796,7 +7926,7 @@ function PlanResultDialog({
                       <p>{formatRoundedMl(plan.totalWaterMl)} water at {formatRoundedTemperature(plan.waterTempC)}</p>
                       <p>{copy.grind}: {localizedGrindRecommendation}</p>
                       <p>{id ? 'Ekstraksi' : 'Extraction'}: {formatTime(extractionSeconds)}</p>
-                      <p>{plan.waterBrandLabel || copy.waterSelectedManual} - TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm}</p>
+                      <p>{plan.waterBrandLabel || copy.waterSelectedManual} - TDS {plan.waterMinerals.tdsPpm} ppm - GH {plan.waterMinerals.hardnessPpm} ppm as CaCO3 - KH {plan.waterMinerals.alkalinityPpm} ppm as CaCO3</p>
                     </div>
                   </div>
                   <div className="rounded-2xl bg-surface-alpha p-4">
@@ -7983,6 +8113,103 @@ function PlanResultDialog({
                     )}
                   </ResultDisclosureSection>
 
+                  <ResultDisclosureSection
+                    title={copy.realBrewTitle}
+                    summary={copy.realBrewDescription}
+                    icon={<FlaskConical size={15} />}
+                    defaultOpen={false}
+                    testId="ai-brew-real-brew-log"
+                    tone="blue"
+                  >
+                    <div className="grid gap-3">
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-widest text-secondary">
+                          {copy.realBrewOutput}
+                          <input
+                            value={realBrewOutputG}
+                            onChange={(event) => setRealBrewOutputG(event.target.value)}
+                            inputMode="decimal"
+                            className="glass-input h-11 px-3 text-base normal-case tracking-normal text-primary sm:text-sm"
+                            data-testid="ai-brew-real-output"
+                          />
+                        </label>
+                        <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-widest text-secondary">
+                          {copy.realBrewTds}
+                          <input
+                            value={realBrewTdsPercent}
+                            onChange={(event) => setRealBrewTdsPercent(event.target.value)}
+                            inputMode="decimal"
+                            className="glass-input h-11 px-3 text-base normal-case tracking-normal text-primary sm:text-sm"
+                            data-testid="ai-brew-real-tds"
+                          />
+                        </label>
+                        <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-widest text-secondary">
+                          {copy.realBrewDrawdown}
+                          <input
+                            value={realBrewDrawdownSeconds}
+                            onChange={(event) => setRealBrewDrawdownSeconds(event.target.value)}
+                            inputMode="numeric"
+                            className="glass-input h-11 px-3 text-base normal-case tracking-normal text-primary sm:text-sm"
+                            data-testid="ai-brew-real-drawdown"
+                          />
+                        </label>
+                      </div>
+                      <div className="rounded-2xl bg-surface-alpha p-3" data-testid="ai-brew-real-sensory">
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.realBrewSensory}</p>
+                        <div className="mt-3 grid gap-2">
+                          {realBrewSensoryFields.map((field) => (
+                            <label key={field.key} className="grid gap-1 text-xs text-secondary">
+                              <span className="flex items-center justify-between gap-2">
+                                <span>{field.label}</span>
+                                <span className="font-semibold text-primary">{realBrewSensory[field.key]}/5</span>
+                              </span>
+                              <input
+                                type="range"
+                                min={1}
+                                max={5}
+                                step={1}
+                                value={realBrewSensory[field.key]}
+                                onChange={(event) => {
+                                  const value = Number(event.target.value);
+                                  setRealBrewSensory((current) => ({
+                                    ...current,
+                                    [field.key]: Number.isFinite(value) ? value : current[field.key],
+                                  }));
+                                }}
+                                data-testid={`ai-brew-real-sensory-${field.key}`}
+                              />
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-widest text-secondary">
+                        {copy.feedbackNote}
+                        <textarea
+                          value={realBrewNotes}
+                          onChange={(event) => setRealBrewNotes(event.target.value.slice(0, 500))}
+                          placeholder={id ? 'Catatan fisik: aroma, rasa, deviasi alat, atau koreksi berikutnya' : 'Physical notes: aroma, cup result, equipment deviation, or next correction'}
+                          className="glass-input min-h-20 resize-none px-3 py-2 text-base normal-case leading-6 tracking-normal text-primary sm:text-sm"
+                          data-testid="ai-brew-real-notes"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => { void handleSaveRealBrewLog(); }}
+                        disabled={realBrewSaving}
+                        className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-55"
+                        data-testid="ai-brew-real-save"
+                      >
+                        {realBrewSaving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+                        {copy.realBrewSave}
+                      </button>
+                      {realBrewStatus && (
+                        <p className="rounded-xl border border-blue-500/18 bg-blue-500/[0.07] px-3 py-2 text-xs leading-5 text-secondary" data-testid="ai-brew-real-status">
+                          {realBrewStatus}
+                        </p>
+                      )}
+                    </div>
+                  </ResultDisclosureSection>
+
                   {plan.methodFamily === 'aeropress' && (
                     <ResultDisclosureSection
                       title={id ? 'Troubleshooting AeroPress' : 'AeroPress Troubleshooting'}
@@ -8126,7 +8353,7 @@ function PlanResultDialog({
                     <div className="rounded-2xl bg-surface-alpha p-3">
                       <p className="text-sm font-semibold text-primary">{plan.waterBrandLabel || copy.waterSelectedManual}</p>
                       <p className="mt-1 text-xs text-secondary">
-                        TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm}
+                        TDS {plan.waterMinerals.tdsPpm} ppm - GH {plan.waterMinerals.hardnessPpm} ppm as CaCO3 - KH {plan.waterMinerals.alkalinityPpm} ppm as CaCO3
                       </p>
                       <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-secondary">
                         <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">
@@ -8272,7 +8499,7 @@ function PlanResultDialog({
                   defaultOpen={false}
                 >
                   <p className="rounded-xl bg-surface-alpha px-3 py-3 text-sm text-secondary">
-                    TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm}
+                    TDS {plan.waterMinerals.tdsPpm} ppm - GH {plan.waterMinerals.hardnessPpm} ppm as CaCO3 - KH {plan.waterMinerals.alkalinityPpm} ppm as CaCO3
                   </p>
                 </ResultDisclosureSection>
               </div>
@@ -8436,7 +8663,7 @@ function PlanResultDialog({
                   )}
                 </div>
 
-                {!isQuickResult && guideDensity === 'pro' && (
+                {(isQuickResult || guideDensity === 'pro') && (
                 <div className="space-y-3" data-testid="ai-brew-sequence-section">
                   {workflowGuideSteps.map((step, index) => {
                     const state = index < flowActiveStepIndex
@@ -8708,7 +8935,7 @@ function PlanResultDialog({
                         )}
                       </div>
                     <p className="mt-2 text-xs text-secondary">
-                      TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm}
+                      TDS {plan.waterMinerals.tdsPpm} ppm - GH {plan.waterMinerals.hardnessPpm} ppm as CaCO3 - KH {plan.waterMinerals.alkalinityPpm} ppm as CaCO3
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-secondary">
                       <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">
@@ -8943,9 +9170,9 @@ function getWaterNumericProfile(item: WaterBrandProfile) {
 function buildWaterChemistryLabel(item: WaterBrandProfile, language?: string) {
   const profile = getWaterNumericProfile(item);
   const parts = [
-    profile.tdsPpm !== null ? `TDS ${profile.tdsPpm}` : null,
-    profile.hardnessPpm !== null ? `GH ${profile.hardnessPpm}` : null,
-    profile.alkalinityPpm !== null ? `KH ${profile.alkalinityPpm}` : null,
+    profile.tdsPpm !== null ? `TDS ${profile.tdsPpm} ppm` : null,
+    profile.hardnessPpm !== null ? `GH ${profile.hardnessPpm} ppm as CaCO3` : null,
+    profile.alkalinityPpm !== null ? `KH ${profile.alkalinityPpm} ppm as CaCO3` : null,
   ].filter(Boolean);
   if (parts.length > 0) return parts.join(' - ');
   return localizeAiBrewWaterClassificationLabel(item.classificationLabel, language);
@@ -9463,6 +9690,11 @@ export function AiBrewPanel() {
   const [manualPresetSearch, setManualPresetSearch] = useState('');
   const [manualPresetCategory, setManualPresetCategory] = useState<ManualBrewPresetCategory | 'all'>('all');
   const [manualPresetExpanded, setManualPresetExpanded] = useState(false);
+  const [grinderCalibrationZeroPoint, setGrinderCalibrationZeroPoint] = useState('');
+  const [grinderCalibrationBurrOffset, setGrinderCalibrationBurrOffset] = useState('');
+  const [grinderCalibrationDrawdown, setGrinderCalibrationDrawdown] = useState('');
+  const [grinderCalibrationTasteCorrection, setGrinderCalibrationTasteCorrection] = useState('');
+  const [grinderCalibrationSaved, setGrinderCalibrationSaved] = useState(false);
   const [pendingPresetChange, setPendingPresetChange] = useState<{
     key: keyof AiBrewFormState;
     value: AiBrewFormState[keyof AiBrewFormState];
@@ -9693,6 +9925,70 @@ export function AiBrewPanel() {
     return catalog.grinders.find((item) => item.id === formState.grinderId) || catalog.grinders[0] || null;
   }, [catalog, formState.grinderId]);
 
+  const grinderCalibrationComplete = Boolean(
+    selectedGrinder
+    && grinderCalibrationZeroPoint.trim()
+    && grinderCalibrationBurrOffset.trim()
+    && grinderCalibrationDrawdown.trim(),
+  );
+
+  useEffect(() => {
+    if (!selectedGrinder) return;
+    try {
+      const raw = window.localStorage.getItem(`${AI_BREW_GRINDER_CALIBRATION_KEY_PREFIX}${selectedGrinder.id}`);
+      if (!raw) {
+        setGrinderCalibrationZeroPoint('');
+        setGrinderCalibrationBurrOffset('');
+        setGrinderCalibrationDrawdown('');
+        setGrinderCalibrationTasteCorrection('');
+        setGrinderCalibrationSaved(false);
+        return;
+      }
+      const parsed = JSON.parse(raw) as {
+        zeroPointClicks?: number | string;
+        burrTouchOffsetClicks?: number | string;
+        lastDrawdownSeconds?: number | string;
+        lastTasteCorrection?: string;
+      };
+      setGrinderCalibrationZeroPoint(parsed.zeroPointClicks === undefined ? '' : String(parsed.zeroPointClicks));
+      setGrinderCalibrationBurrOffset(parsed.burrTouchOffsetClicks === undefined ? '' : String(parsed.burrTouchOffsetClicks));
+      setGrinderCalibrationDrawdown(parsed.lastDrawdownSeconds === undefined ? '' : String(parsed.lastDrawdownSeconds));
+      setGrinderCalibrationTasteCorrection(parsed.lastTasteCorrection || '');
+      setGrinderCalibrationSaved(true);
+    } catch {
+      setGrinderCalibrationSaved(false);
+    }
+  }, [selectedGrinder]);
+
+  function handleSaveGrinderCalibration() {
+    if (!selectedGrinder) return;
+    const parseValue = (value: string) => {
+      const parsed = Number(value.trim().replace(',', '.'));
+      return Number.isFinite(parsed) ? parsed : undefined;
+    };
+    const profile = {
+      grinderId: selectedGrinder.id,
+      grinderLabel: selectedGrinder.name,
+      zeroPointClicks: parseValue(grinderCalibrationZeroPoint),
+      burrTouchOffsetClicks: parseValue(grinderCalibrationBurrOffset),
+      lastDrawdownSeconds: parseValue(grinderCalibrationDrawdown),
+      lastTasteCorrection: grinderCalibrationTasteCorrection.trim() || undefined,
+      completedAt: grinderCalibrationComplete ? Date.now() : undefined,
+      confidence: grinderCalibrationComplete ? 'high' : 'low',
+    };
+    try {
+      window.localStorage.setItem(`${AI_BREW_GRINDER_CALIBRATION_KEY_PREFIX}${selectedGrinder.id}`, JSON.stringify(profile));
+      setGrinderCalibrationSaved(true);
+      setNotice(grinderCalibrationComplete
+        ? (isIndonesianAiBrewLanguage(language) ? 'Kalibrasi grinder lengkap tersimpan.' : 'Complete grinder calibration saved.')
+        : (isIndonesianAiBrewLanguage(language) ? 'Kalibrasi grinder tersimpan sebagai belum lengkap.' : 'Grinder calibration saved as incomplete.'));
+    } catch {
+      setFormError(isIndonesianAiBrewLanguage(language)
+        ? 'Kalibrasi grinder belum bisa disimpan di perangkat ini.'
+        : 'Grinder calibration could not be saved on this device.');
+    }
+  }
+
   const selectedTargetProfile = useMemo(() => {
     if (!catalog) return null;
     return catalog.targetProfiles.find((item) => item.id === formState.targetProfileId) || catalog.targetProfiles[0] || null;
@@ -9850,7 +10146,7 @@ export function AiBrewPanel() {
       const waterDetail = formState.waterMode === 'brand' && selectedWaterBrand
         ? `${buildWaterChemistryLabel(selectedWaterBrand, language)} - ${formatWaterDerivationLabel(copy, waterDerivation)}`
         : nextMineralsReady
-          ? `TDS ${formState.waterTdsPpm} - GH ${formState.waterHardnessPpm} - KH ${formState.waterAlkalinityPpm}`
+          ? `TDS ${formState.waterTdsPpm} ppm - GH ${formState.waterHardnessPpm} ppm as CaCO3 - KH ${formState.waterAlkalinityPpm} ppm as CaCO3`
           : copy.waterRequired;
       const beanProfileSummary = buildBeanProfileSummary(formState, language);
       const beanProfileActive = Boolean(beanProfileSummary);
@@ -9867,6 +10163,11 @@ export function AiBrewPanel() {
         !formState.process ? copy.processOptionalNote : '',
         !formState.variety ? copy.varietyOptionalNote : '',
         !grinderSetting ? copy.noVerifiedGrinderSettingDetail : '',
+        grinderSetting && !grinderCalibrationComplete
+          ? (isIndonesianAiBrewLanguage(language)
+            ? 'Lengkapi zero point, offset burr, dan drawdown terakhir agar keyakinan grinder naik.'
+            : 'Complete zero point, burr offset, and last drawdown to upgrade grinder confidence.')
+          : '',
         !beanProfileActive ? copy.beanProfileNeutral : '',
       ].filter(Boolean);
 
@@ -9874,8 +10175,10 @@ export function AiBrewPanel() {
         profileTone: profileTrustStatus === 'exact' ? 'blue' : profileTrustStatus === 'calibration_required' ? 'amber' : 'slate',
         profileStatus: formatBrewerProfileTrustLabel(profileTrustStatus, language),
         profileLabel: deviceSelection.profile.label,
-        grindTone: grinderSetting ? 'blue' : 'amber',
-        grindStatus: grinderSetting
+        grindTone: grinderSetting || grinderCalibrationComplete ? 'blue' : 'amber',
+        grindStatus: grinderCalibrationComplete
+          ? (isIndonesianAiBrewLanguage(language) ? 'Kalibrasi lengkap' : 'Calibration complete')
+          : grinderSetting
           ? formatGrinderReferenceLabel(copy, grinderSetting.verificationLevel, grinderSetting.id.startsWith('derived_') ? 'derived_baseline' : 'catalog_reference', grinderSetting.calibrationRequired)
           : copy.grindFallback,
         grindLabel: grinderSetting?.rangeLabel || copy.noVerifiedGrinderSettingShort,
@@ -9895,6 +10198,7 @@ export function AiBrewPanel() {
     catalog,
     copy,
     formState,
+    grinderCalibrationComplete,
     language,
     selectedDripper,
     selectedGrinder,
@@ -13750,8 +14054,8 @@ export function AiBrewPanel() {
                                 <p className="font-semibold text-primary">{copy.waterGuidance}</p>
                                 <p className="mt-1">
                                   TDS {catalog.waterGuidance.recommended.tdsPpm[0]}-{catalog.waterGuidance.recommended.tdsPpm[1]}
-                                  {' - '}GH {catalog.waterGuidance.recommended.hardnessPpm[0]}-{catalog.waterGuidance.recommended.hardnessPpm[1]}
-                                  {' - '}KH {catalog.waterGuidance.recommended.alkalinityPpm[0]}-{catalog.waterGuidance.recommended.alkalinityPpm[1]}
+                                  {' - '}GH {catalog.waterGuidance.recommended.hardnessPpm[0]}-{catalog.waterGuidance.recommended.hardnessPpm[1]} ppm as CaCO3
+                                  {' - '}KH {catalog.waterGuidance.recommended.alkalinityPpm[0]}-{catalog.waterGuidance.recommended.alkalinityPpm[1]} ppm as CaCO3
                                 </p>
                               </div>
                             )}
@@ -13870,6 +14174,85 @@ export function AiBrewPanel() {
                       <p className="font-semibold text-primary">{selectedGrinder?.name || copy.notSpecified}</p>
                       <p className="mt-1">{selectedGrinder?.verificationLevel ? formatGrinderReferenceLabel(copy, selectedGrinder.verificationLevel) : copy.grindCuratedReference}</p>
                       <p className="mt-2 text-xs">{buildGrindCalibrationNote(selectedDripper?.methodFamily, language)}</p>
+                    </div>
+                    <div className="mt-3 rounded-xl border border-blue-500/14 bg-blue-500/[0.06] px-3 py-3" data-testid="ai-brew-grinder-calibration">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-semibold text-primary">
+                            {isIndonesianAiBrewLanguage(language) ? 'Profil kalibrasi grinder' : 'Grinder calibration profile'}
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-secondary">
+                            {isIndonesianAiBrewLanguage(language)
+                              ? 'Lengkapi titik nol, offset burr touch, drawdown terakhir, dan koreksi rasa. Data ini hanya menaikkan confidence jika lengkap.'
+                              : 'Complete zero point, burr-touch offset, last drawdown, and taste correction. This only upgrades confidence when complete.'}
+                          </p>
+                        </div>
+                        <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${
+                          grinderCalibrationComplete
+                            ? 'bg-emerald-500/12 text-emerald-700 dark:text-emerald-300'
+                            : 'bg-amber-500/12 text-amber-700 dark:text-amber-300'
+                        }`}>
+                          {grinderCalibrationComplete
+                            ? (isIndonesianAiBrewLanguage(language) ? 'Lengkap' : 'Complete')
+                            : (isIndonesianAiBrewLanguage(language) ? 'Belum lengkap' : 'Incomplete')}
+                        </span>
+                      </div>
+                      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                        <label className="grid gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-secondary">
+                          {isIndonesianAiBrewLanguage(language) ? 'Titik nol' : 'Zero point'}
+                          <input
+                            value={grinderCalibrationZeroPoint}
+                            onChange={(event) => setGrinderCalibrationZeroPoint(event.target.value)}
+                            inputMode="decimal"
+                            placeholder="0"
+                            className="glass-input h-11 px-3 text-base normal-case tracking-normal text-primary sm:text-sm"
+                            data-testid="ai-brew-grinder-zero-point"
+                          />
+                        </label>
+                        <label className="grid gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-secondary">
+                          {isIndonesianAiBrewLanguage(language) ? 'Offset burr touch' : 'Burr-touch offset'}
+                          <input
+                            value={grinderCalibrationBurrOffset}
+                            onChange={(event) => setGrinderCalibrationBurrOffset(event.target.value)}
+                            inputMode="decimal"
+                            placeholder="0"
+                            className="glass-input h-11 px-3 text-base normal-case tracking-normal text-primary sm:text-sm"
+                            data-testid="ai-brew-grinder-burr-offset"
+                          />
+                        </label>
+                        <label className="grid gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-secondary">
+                          {isIndonesianAiBrewLanguage(language) ? 'Drawdown terakhir' : 'Last drawdown'}
+                          <input
+                            value={grinderCalibrationDrawdown}
+                            onChange={(event) => setGrinderCalibrationDrawdown(event.target.value)}
+                            inputMode="numeric"
+                            placeholder="210"
+                            className="glass-input h-11 px-3 text-base normal-case tracking-normal text-primary sm:text-sm"
+                            data-testid="ai-brew-grinder-drawdown"
+                          />
+                        </label>
+                      </div>
+                      <label className="mt-2 grid gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-secondary">
+                        {isIndonesianAiBrewLanguage(language) ? 'Koreksi rasa terakhir' : 'Last taste correction'}
+                        <input
+                          value={grinderCalibrationTasteCorrection}
+                          onChange={(event) => setGrinderCalibrationTasteCorrection(event.target.value.slice(0, 160))}
+                          placeholder={isIndonesianAiBrewLanguage(language) ? 'mis. satu klik lebih halus karena tipis' : 'e.g. one click finer because cup was thin'}
+                          className="glass-input h-11 px-3 text-base normal-case tracking-normal text-primary sm:text-sm"
+                          data-testid="ai-brew-grinder-taste-correction"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleSaveGrinderCalibration}
+                        className="mt-3 inline-flex min-h-[40px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700"
+                        data-testid="ai-brew-grinder-calibration-save"
+                      >
+                        <Check size={14} />
+                        {grinderCalibrationSaved
+                          ? (isIndonesianAiBrewLanguage(language) ? 'Perbarui kalibrasi' : 'Update calibration')
+                          : (isIndonesianAiBrewLanguage(language) ? 'Simpan kalibrasi' : 'Save calibration')}
+                      </button>
                     </div>
                   </ProBuilderAccordion>
 

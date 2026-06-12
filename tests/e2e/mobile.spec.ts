@@ -160,7 +160,7 @@ test('mobile ai brew picker keeps dialog semantics and returns focus on close', 
   await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
-  const aiTab = page.getByRole('tab', { name: /Brew|AI Brew|AI Seduh/i });
+  const aiTab = page.locator('#tools-tab-ai_brew');
   const builderOpen = page.getByTestId('ai-brew-open-quick');
   await expect(aiTab).toHaveAttribute('aria-selected', 'true');
   await expect(page.getByTestId('ai-brew-landing-mode-hot')).toHaveCount(0);
@@ -295,9 +295,10 @@ test('mobile ai brew result workspace keeps primary actions inside the viewport'
   await expect(result.getByTestId('ai-brew-result-summary-metric-strip')).toBeVisible();
   await expect(page.getByTestId('ai-brew-result-action-bar')).toBeVisible();
   await page.getByTestId('ai-brew-result-tab-flow').click();
-  await expect(result.getByTestId('ai-brew-sequence-section')).toHaveCount(0);
   await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
   await expect(result.getByTestId('ai-brew-flow-current-card')).toBeVisible();
+  await expect(result.getByTestId('ai-brew-sequence-section')).toBeVisible();
+  await expect(result.locator('[data-testid^="ai-brew-step-card-"]').first()).toBeVisible();
   await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/(Berikutnya|Next)/);
   await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/(Sisa total|Total left)/);
   const liteRingBox = await result.getByTestId('ai-brew-lite-progress-ring').boundingBox();
@@ -419,16 +420,20 @@ test('mobile ai brew loading stays centered and keeps bottom nav hidden through 
   await expect(page.getByTestId('mobile-bottom-nav')).toBeHidden();
 
   const overlayCardLocator = page.getByTestId('ai-brew-generation-card');
-  const overlayCardVisible = await overlayCardLocator.waitFor({ state: 'visible', timeout: 1500 })
-    .then(() => true)
-    .catch(() => false);
-  if (overlayCardVisible) {
-    const overlayCard = await overlayCardLocator.boundingBox();
+  const overlayCard = await overlayCardLocator.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      x: rect.x,
+      y: rect.y,
+      width: rect.width,
+      height: rect.height,
+    };
+  }).catch(() => null);
+  if (overlayCard) {
     const viewport = page.viewportSize();
-    expect(overlayCard).toBeTruthy();
     expect(viewport).toBeTruthy();
-    const overlayCenterX = (overlayCard!.x) + (overlayCard!.width / 2);
-    const overlayCenterY = (overlayCard!.y) + (overlayCard!.height / 2);
+    const overlayCenterX = overlayCard.x + (overlayCard.width / 2);
+    const overlayCenterY = overlayCard.y + (overlayCard.height / 2);
     expect(Math.abs(overlayCenterX - (viewport!.width / 2))).toBeLessThanOrEqual(48);
     expect(Math.abs(overlayCenterY - (viewport!.height / 2))).toBeLessThanOrEqual(84);
   }
@@ -532,10 +537,12 @@ test('mobile ai brew builder keeps focused inputs and footer above simulated iOS
   await page.evaluate(() => {
     document.documentElement.dataset.keyboardOpen = 'true';
     document.documentElement.style.setProperty('--keyboard-offset', '280px');
+    document.documentElement.style.setProperty('--keyboard-overlay-offset', '280px');
     window.dispatchEvent(new CustomEvent('app:viewport-metrics', {
       detail: {
         keyboardOpen: true,
         keyboardOffset: 280,
+        keyboardOverlayOffset: 280,
         layoutHeight: window.innerHeight,
         visualHeight: window.innerHeight - 280,
         visualOffsetTop: 0,

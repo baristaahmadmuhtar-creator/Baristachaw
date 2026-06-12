@@ -3,7 +3,7 @@
 Date: 2026-06-12 (Asia/Brunei)
 Repository: `baristaahmadmuhtar-creator/Baristachaw`
 Branch: `main`
-Base SHA: `93ba05587bf9e4ba8917ac54fd17f94bc6b63b1f`
+Base SHA: `9c5e3156c5c39fd0479029bf54462e714e0e1875`
 
 This report certifies software behavior and barista-reasoned guardrails. It does not certify physical cup quality.
 
@@ -111,7 +111,7 @@ Method/style minimum score was 96; the only finding was potentially dense mobile
 
 | Gate | Result |
 | --- | --- |
-| `pnpm test` | Pass: 713 passed, 4 intentional stress skips; mobile 40/40 |
+| `pnpm test` | Pass: 725 passed, 4 intentional stress skips; mobile 40/40 |
 | `pnpm lint` | Pass |
 | `pnpm build` | Pass; chunk-size/import warnings are non-blocking |
 | `pnpm mobile:test` | Pass: 40/40 |
@@ -124,17 +124,18 @@ Method/style minimum score was 96; the only finding was potentially dense mobile
 | Firefox latest-delta E2E | Pass: 25 runnable, 3 viewport-specific skips |
 | WebKit latest-delta E2E | Pass: 25 runnable, 3 viewport-specific skips |
 | Static service worker | Pass: Chromium, Firefox, WebKit |
-| Lighthouse mobile | Pass: Home 0.80, Chat 0.75, Scanner 0.80; accessibility/best practices 1.00 |
+| Lighthouse mobile | Pass: Home 0.79, Chat 0.84, Scanner 0.79; accessibility/best practices 1.00 |
 | Method/style audit | Pass: 1,000/1,000 |
 | Source-backed real-world audit | Pass: 1,000/1,000 |
 | `git diff --check` | Pass |
 
 ## Android Release Evidence
 
-- Signed APK: `apps/mobile/android/app/build/outputs/apk/release/app-release.apk` (95,715,169 bytes).
+- Signed APK: `apps/mobile/android/app/build/outputs/apk/release/app-release.apk` (95,715,177 bytes).
 - Signed AAB: `apps/mobile/android/app/build/outputs/bundle/release/app-release.aab` (49,201,682 bytes).
 - Signer SHA-256: `3781C67814CB199B95AB9CB086FD273E585D83C6DBBB6B856F56D454FECA5AE0`.
-- APK SHA-256: `CC4E8434073384B00AE21BBE694CC4D2CA682321CE4A5B890C953E53FFE28526`.
+- APK SHA-256: `8D7B841368E78D3768ACCD18AA6634B05AFE9A16B7C384E0D952FBDB1DB7A919`.
+- AAB SHA-256: `E52494E105F627D7273FD5756F52718C10A7FEC873DAE83A49026D708765D50D`.
 - APK and AAB blocked permission count: 0.
 - Retained functional permissions include `CAMERA` and `RECORD_AUDIO`.
 - Pixel API 35 and API 36: install, launch, WebView, keyboard/modal, rotation, relaunch, hardware back, deep link, camera prompt, and app-scoped fatal log/ANR checks passed.

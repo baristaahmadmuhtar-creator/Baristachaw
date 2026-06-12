@@ -1592,6 +1592,9 @@ test('ai brew Brew Presets preserve source-backed ratios, localized confidence, 
   await expect(result).toContainText('QA Brew Presets Tetsu 2026');
   await expect(result.getByTestId('ai-brew-result-manual-preset-chip')).toContainText(/Tetsu Kasuya 2026 10x Pour/i);
   await result.getByTestId('ai-brew-result-tab-flow').click();
+  await expect(
+    result.locator('[data-testid^="ai-brew-step-card-"], [data-testid^="ai-brew-flow-step-"]', { hasText: /30\s*(g|ml)/i }),
+  ).toHaveCount(10);
   const tetsuPlan = await readStoredAiBrewPlan(page);
   const tetsuGuide = (tetsuPlan.workflowGuideSteps || [])
     .map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''}`)
@@ -1607,6 +1610,7 @@ test('ai brew Brew Presets preserve source-backed ratios, localized confidence, 
   expect(tetsuPlan.steps.filter((step) => (step.pourVolumeMl || 0) > 0).map((step) => step.pourVolumeMl)).toEqual(
     Array.from({ length: 10 }, () => 30),
   );
+  expect((tetsuPlan.workflowGuideSteps || []).filter((step) => (step.pourVolumeMl || 0) === 30)).toHaveLength(10);
   await result.getByTestId('ai-brew-result-tab-plan').click();
   await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(tetsuPlan.finalBeverageRatio)}`);
   expect(tetsuGuide).toMatch(/30\s*(g|ml)/i);

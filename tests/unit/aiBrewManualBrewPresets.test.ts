@@ -247,6 +247,11 @@ test('AI Brew 2025 WAC runner-up and 2026 multi-pour presets stay source-scoped 
   assert.equal(tetsuTen.targetDefaults.doseG, 20);
   assert.equal(tetsuTen.targetDefaults.targetWaterMl, 300);
   assert.equal(tetsuTen.targetDefaults.targetTempC, 96);
+  assert.equal(
+    tetsuTen.targetDefaults.presetPourCount,
+    10,
+    'Tetsu 2026 metadata must explicitly preserve the 10-pour preset count',
+  );
   assert.equal(tetsuTen.techniquePattern, 'ten_pour_multi');
   assert.ok(tetsuTen.sourceUrls.some((url) => /roastaroma/.test(url)));
   assert.match(JSON.stringify(tetsuTen), /secondary public coverage|not an official/i);
@@ -260,6 +265,14 @@ test('AI Brew 2025 WAC runner-up and 2026 multi-pour presets stay source-scoped 
   assert.equal(Number((tetsuPlan.totalWaterMl / tetsuPlan.doseG).toFixed(1)), 15);
   assert.equal(tetsuPours.length, 10, 'Tetsu 2026 10x pour should create ten positive pours');
   assert.deepEqual(tetsuPours.map((step) => step.pourVolumeMl), Array.from({ length: 10 }, () => 30));
+  const tetsuGuidePours = (tetsuPlan.workflowGuideSteps || []).filter((step) => (step.pourVolumeMl || 0) > 0);
+  assert.equal(tetsuGuidePours.length, 10, 'Tetsu workflow guide should expose all ten source pours');
+  const preservedSourceStepIds = new Set(
+    (tetsuPlan.workflowGuideSteps || []).flatMap((step) => step.sourceStepIds || []),
+  );
+  for (const step of tetsuPours) {
+    assert.ok(preservedSourceStepIds.has(step.id), `Tetsu workflow guide should preserve source step ${step.id}`);
+  }
   assert.ok(tetsuPlan.totalTimeSeconds >= 210, 'Tetsu 10-pour should keep a realistic slow finish window');
   assert.match([tetsuPlan.manualPresetSummary, ...tetsuPlan.notes, ...tetsuPlan.warnings].join('\n'), /reported 2026|curated|secondary|10x pour|ten 30g pours|very coarse|Hario Neo.*V60/i);
 });

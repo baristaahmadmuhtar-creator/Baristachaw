@@ -14,50 +14,50 @@ export function FeatureGraphics({ language }: { language: 'id' | 'en' }) {
       <div className="feature-story">
         <article className="feature-large feature-recipe">
           <div className="feature-copy">
-            <span>{isId ? 'Cerdas & Otomatis' : 'Smart & Automatic'}</span>
-            <h3>{isId ? 'Semua faktor penting—mulai dari jenis biji kopi hingga tingkat gilingan—dianalisis otomatis untuk kenyamanan Anda.' : 'All critical factors—from coffee beans to grind size—are automatically analyzed for your convenience.'}</h3>
+            <span>{isId ? 'Sentuhan Personal' : 'Personalized Touch'}</span>
+            <h3>{isId ? 'Beri tahu kami biji kopi, rasa yang diinginkan, dan grinder Anda. AI akan meracik parameter seduh presisi secara instan.' : 'Tell us your beans, target flavor, and grinder. Our AI instantly formulates a precise brewing guide.'}</h3>
           </div>
           <div className="input-output-graphic" aria-hidden="true">
             <div className="input-stack">
-              {(isId ? ['Biji Pilihan', 'Roast Level', 'Rasa Manis', 'Alat Seduh V60'] : ['Premium Beans', 'Roast Level', 'Sweet Profile', 'V60 Brewer']).map((item) => <span key={item}>{item}</span>)}
+              {(isId ? ['Ethiopia Washed', 'Medium Roast', 'Rasa Floral', 'Grinder Fellow Ode'] : ['Ethiopia Washed', 'Medium Roast', 'Floral Flavor', 'Fellow Ode Grinder']).map((item) => <span key={item}>{item}</span>)}
             </div>
             <div className="logic-beam"><FlaskConical /></div>
             <div className="output-stack">
-              <strong>{isId ? 'Suhu Pas' : 'Ideal Temp'}</strong>
-              <strong>{isId ? 'Gilingan Pas' : 'Right Grind'}</strong>
-              <strong>{isId ? 'Langkah Bloom' : 'Bloom Step'}</strong>
-              <strong>{isId ? 'Waktu Seduh' : 'Brew Time'}</strong>
+              <strong>{isId ? 'Gilingan #4.2' : 'Grind #4.2'}</strong>
+              <strong>{isId ? 'Suhu 92°C' : 'Temp 92°C'}</strong>
+              <strong>{isId ? '3x Tuangan' : '3 Pours'}</strong>
+              <strong>{isId ? 'Rasa Bersih' : 'Clean Taste'}</strong>
             </div>
           </div>
         </article>
         <article className="feature-split feature-workflow">
           <div className="feature-copy">
-            <span>{isId ? 'Alur Seduh Santai' : 'Relaxed Brew Flow'}</span>
-            <h3>{isId ? 'Panduan yang mengalir alami, memandu Anda dari persiapan hingga sesapan pertama.' : 'A naturally flowing guide, leading you from prep to the first sip.'}</h3>
+            <span>{isId ? 'Alur Seduh yang Rileks' : 'Relaxed Step-by-Step Flow'}</span>
+            <h3>{isId ? 'Panduan waktu nyata yang menenangkan, memandu Anda dari persiapan hingga sesapan pertama tanpa tergesa-gesa.' : 'Interactive, calm guidance that takes you from prep to the first sip without any rush.'}</h3>
           </div>
           <ol className="workflow-rail">
-            {(isId ? ['Persiapan', 'Aroma Bloom', 'Ekstraksi', 'Penyelesaian', 'Nikmati'] : ['Prep', 'Aroma Bloom', 'Extraction', 'Finish', 'Enjoy']).map((step, index) => (
+            {(isId ? ['Persiapan', 'Aroma Bloom', 'Ekstraksi Tenang', 'Sentuhan Akhir', 'Sesapan Pertama'] : ['Preparation', 'Aroma Bloom', 'Calm Extraction', 'Finishing Touch', 'First Sip']).map((step, index) => (
               <li key={step}><i>{index + 1}</i><span>{step}</span></li>
             ))}
           </ol>
         </article>
         <article className="feature-split feature-confidence">
           <div className="feature-copy">
-            <span>{isId ? 'Jaminan Kepuasan' : 'Satisfaction Assurance'}</span>
-            <h3>{isId ? 'Memberikan kejelasan informasi sehingga Anda selalu percaya diri dengan hasil seduhan Anda.' : 'Providing clear parameters so you can always brew with complete peace of mind.'}</h3>
+            <span>{isId ? 'Informasi yang Transparan' : 'Transparent Information'}</span>
+            <h3>{isId ? 'Kami menunjukkan asal-usul resep—apakah berdasarkan referensi barista juara, panduan resmi alat, atau estimasi cerdas.' : 'We reveal the recipe origins—whether from champion barista references, official maker guides, or smart AI predictions.'}</h3>
           </div>
           <div className="confidence-list">
-            <span><CheckCircle2 /> {isId ? 'Referensi Resmi' : 'Official Reference'}</span>
-            <span><ShieldCheck /> {isId ? 'Kurasi Barista' : 'Barista Curated'}</span>
-            <span><CircleDashed /> {isId ? 'Rekomendasi Cerdas' : 'Smart Suggestion'}</span>
-            <span><FlaskConical /> {isId ? 'Kalibrasi Rasa' : 'Flavor Calibration'}</span>
+            <span><CheckCircle2 /> {isId ? 'Referensi Barista Juara' : 'Champion Barista Ref'}</span>
+            <span><ShieldCheck /> {isId ? 'Panduan Resmi Alat' : 'Official Device Guide'}</span>
+            <span><CircleDashed /> {isId ? 'Rekomendasi Cerdas AI' : 'Smart AI Prediction'}</span>
+            <span><FlaskConical /> {isId ? 'Kalibrasi Rasa Mandiri' : 'Self-Taste Calibration'}</span>
           </div>
         </article>
         <article className="feature-large feature-coach">
           <div className="coach-avatar"><Bot /></div>
           <div className="coach-dialogue">
-            <p className="coach-user">{isId ? 'Rasanya tipis dan asam kosong.' : 'The cup tastes thin and hollow-sour.'}</p>
-            <p className="coach-ai">{isId ? 'Jangan cemas. Coba giling sedikit lebih halus untuk mengeluarkan rasa manis alami biji kopi Anda, lalu seduh kembali.' : 'No worries. Try grinding slightly finer to bring out the natural sweetness of your beans, then brew again.'}</p>
+            <p className="coach-user">{isId ? 'Kopi saya terasa agak terlalu pahit dan sepet.' : 'My cup tastes a bit too bitter and astringent.'}</p>
+            <p className="coach-ai">{isId ? 'Mari kita perbaiki bersama. Coba turunkan suhu air 2°C atau giling sedikit lebih kasar untuk seduhan berikutnya agar rasanya lebih manis dan bersih.' : 'Let\'s fix it together. Try lowering the water temp by 2°C or grinding slightly coarser next time for a sweeter, cleaner cup.'}</p>
           </div>
         </article>
       </div>

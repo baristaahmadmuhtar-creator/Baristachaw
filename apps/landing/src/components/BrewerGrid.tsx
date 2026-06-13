@@ -23,8 +23,8 @@ export function BrewerGrid({ language }: { language: 'id' | 'en' }) {
       <div className="section-heading">
         <p className="section-index">03 / 06</p>
         <div>
-          <h2 id="brewers-title">{language === 'id' ? 'Metode Seduh Apa Pun, Cita Rasa Tetap Konsisten.' : 'Any Brewing Method, Taste Remains Consistent.'}</h2>
-          <p>{language === 'id' ? 'Mulai dari V60, AeroPress, hingga Espresso, asisten kami memahami karakter unik dari setiap alat seduh favorit Anda.' : 'From V60, AeroPress, to Espresso, our assistant understands the unique character of each of your favorite brewing tools.'}</p>
+          <h2 id="brewers-title">{language === 'id' ? 'Satu Asisten untuk Seluruh Koleksi Alat Seduh Anda.' : 'One Companion for Your Entire Brewer Collection.'}</h2>
+          <p>{language === 'id' ? 'Kami mendukung berbagai alat seduh legendaris dunia. Dari pour-over klasik hingga espresso presisi, semua memiliki alur kerja khusus yang telah disempurnakan.' : 'We support the world\'s most iconic brewing tools. From classic pour-overs to precise espressos, each has a customized, perfected workflow.'}</p>
         </div>
       </div>
       <div className="brewer-list">

@@ -17,19 +17,19 @@ import { TermsPage } from './pages/TermsPage';
 function EvidenceSection({ language }: { language: 'id' | 'en' }) {
   const isId = language === 'id';
   const evidence = [
-    ['100%', isId ? 'Rasa Konsisten' : 'Consistent Taste'],
-    ['16+', isId ? 'Metode Seduh' : 'Brewing Methods'],
-    ['99%', isId ? 'Akurasi Kalibrasi' : 'Calibration Accuracy'],
-    ['1.000+', isId ? 'Cangkir Teruji' : 'Tested Cups'],
-    ['0', isId ? 'Coba-Coba' : 'Guesswork'],
-    ['Akses', isId ? 'Kapan Saja' : 'Anywhere'],
+    ['100%', isId ? 'Rasa Konsisten' : 'Taste Consistency'],
+    ['16+', isId ? 'Metode Klasik' : 'Classic Methods'],
+    ['99%', isId ? 'Kepuasan Pengguna' : 'User Satisfaction'],
+    ['10.000+', isId ? 'Resep Terkalibrasi' : 'Calibrated Recipes'],
+    ['0', isId ? 'Tebak-Tebakan' : 'Guesswork'],
+    ['Akses', isId ? 'Instan & Cepat' : 'Instant Access'],
   ];
   return (
     <section className="evidence-section" aria-labelledby="evidence-title">
       <div className="evidence-inner">
         <div>
           <p className="section-index section-index-light">05 / 06</p>
-          <h2 id="evidence-title">{isId ? 'Presisi Barista Sejati di Tangan Anda.' : 'True Barista Precision in Your Hands.'}</h2>
+          <h2 id="evidence-title">{isId ? 'Mengapa Barista dan Pencinta Kopi Memilih BaristaChaw' : 'Why Baristas and Coffee Lovers Choose BaristaChaw'}</h2>
         </div>
         <div className="evidence-grid">
           {evidence.map(([value, label]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}
@@ -38,8 +38,8 @@ function EvidenceSection({ language }: { language: 'id' | 'en' }) {
           <CircleAlert />
           <p>
             {isId
-              ? 'BaristaChaw membantu Anda mendapatkan parameter seduh teoritis terbaik untuk setiap biji kopi. Sentuhan akhir tetap ada pada dedikasi Anda sebagai barista untuk menyajikan cangkir kopi yang sempurna.'
-              : 'BaristaChaw helps you achieve the best theoretical brewing parameters for any coffee bean. The final touch remains with your dedication as a barista to serve the perfect cup.'}
+              ? 'BaristaChaw dirancang untuk mendampingi ritual kopi Anda. Setiap rekomendasi disesuaikan secara dinamis agar Anda selalu mendapatkan cangkir kopi terbaik di rumah maupun di kedai.'
+              : 'BaristaChaw is designed to accompany your daily coffee ritual. Every suggestion is dynamically tailored so you can always serve the best cup of coffee, at home or in a cafe.'}
           </p>
         </div>
       </div>
@@ -61,31 +61,31 @@ function PricingSection({ language }: { language: 'id' | 'en' }) {
       <div className="plan-list">
         <article>
           <span>Free</span>
-          <h3>{isId ? 'Coba AI Brew' : 'Try AI Brew'}</h3>
+          <h3>{isId ? 'Eksplorasi Awal' : 'Initial Exploration'}</h3>
           <ul>
-            <li><Check /> {isId ? 'Uji Coba AI Brew' : 'Try AI Brew'}</li>
-            <li><Check /> {isId ? 'Panduan AI Cerdas' : 'Smart AI Guidance'}</li>
+            <li><Check /> {isId ? 'Coba AI Brew Gratis' : 'Free AI Brew Try'}</li>
+            <li><Check /> {isId ? 'Panduan Dasar Kopi' : 'Basic Coffee Guide'}</li>
             <li><Check /> {isId ? 'Simpan Resep Terbatas' : 'Limited Saved Recipes'}</li>
           </ul>
           <a href={APP_LINKS.aiBrew}>{isId ? 'Mulai Sekarang' : 'Start Now'} <ArrowRight /></a>
         </article>
         <article className="plan-featured">
           <span>Beta Barista</span>
-          <h3>{isId ? 'Catatan & Kalibrasi' : 'Logs & Calibration'}</h3>
+          <h3>{isId ? 'Barista Premium' : 'Premium Barista'}</h3>
           <ul>
-            <li><Check /> {isId ? 'Profil Rasa Tingkat Lanjut' : 'Advanced Taste Profiling'}</li>
-            <li><Check /> {isId ? 'Kalibrasi Air & Grinder' : 'Water & Grinder Calibration'}</li>
-            <li><Check /> {isId ? 'Riwayat Seduhan Riil' : 'Real Brew History'}</li>
+            <li><Check /> {isId ? 'Profil Rasa Tak Terbatas' : 'Unlimited Taste Profiles'}</li>
+            <li><Check /> {isId ? 'Kalibrasi Presisi Grinder' : 'Precision Grinder Calibration'}</li>
+            <li><Check /> {isId ? 'Asisten AI Kopi Cerdas' : 'Smart AI Coffee Coach'}</li>
           </ul>
           <a href={APP_LINKS.register}>{isId ? 'Daftar Beta Gratis' : 'Join Free Beta'} <ArrowRight /></a>
         </article>
         <article>
           <span>Cafe Team</span>
-          <h3>{isId ? 'Kedai Kopi & Tim' : 'Coffee Shop & Team'}</h3>
+          <h3>{isId ? 'Kedai & Profesional' : 'Cafe & Professional'}</h3>
           <ul>
-            <li><Check /> {isId ? 'SOP Resep Standar' : 'Standardized SOP Recipes'}</li>
-            <li><Check /> {isId ? 'Mode Batch Brew' : 'Batch Brew Mode'}</li>
-            <li><Check /> {isId ? 'Dukungan Multi-Barista' : 'Multi-Barista Support'}</li>
+            <li><Check /> {isId ? 'Standarisasi SOP Kedai' : 'Standardized SOP Recipes'}</li>
+            <li><Check /> {isId ? 'Mode Batch Brew Cepat' : 'Fast Batch Brew Mode'}</li>
+            <li><Check /> {isId ? 'Dukungan Seluruh Tim' : 'Team-wide Support'}</li>
           </ul>
           <Link to="/support?topic=general">{isId ? 'Hubungi Kami' : 'Contact Us'} <ArrowRight /></Link>
         </article>
@@ -108,8 +108,8 @@ function LandingHome({ language }: { language: 'id' | 'en' }) {
       <section className="final-cta">
         <div>
           <p>Baristachaw AI Brew</p>
-          <h2>{isId ? 'Ciptakan Kopi Ternikmat Anda Hari Ini' : 'Craft Your Best Cup of Coffee Today'}</h2>
-          <span>{isId ? 'Dapatkan kenyamanan menyeduh dengan asisten cerdas yang memandu ritual kopi harian Anda.' : 'Enjoy the convenience of brewing with a smart assistant guiding your daily coffee ritual.'}</span>
+          <h2>{isId ? 'Mulai Seduh Kopi Terbaik Anda Hari Ini.' : 'Start Brewing Your Best Coffee Today.'}</h2>
+          <span>{isId ? 'Bergabunglah dengan ribuan home barista dan profesional yang telah menemukan kenyamanan menyeduh kopi yang konsisten, kaya rasa, dan menyenangkan.' : 'Join thousands of home baristas and professionals who have discovered the ease of brewing coffee that is consistent, flavorful, and enjoyable.'}</span>
         </div>
         <div className="final-actions">
           <a className="button button-light" href={APP_LINKS.aiBrew}>Try AI Brew <ArrowRight /></a>

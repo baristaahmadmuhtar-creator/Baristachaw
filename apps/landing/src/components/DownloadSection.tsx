@@ -9,8 +9,8 @@ export function DownloadSection({ language }: { language: 'id' | 'en' }) {
       <div className="section-heading">
         <p className="section-index">06 / 06</p>
         <div>
-          <h2 id="download-title">{isId ? 'Mulai Perjalanan Kopi Anda Sekarang.' : 'Start Your Coffee Journey Today.'}</h2>
-          <p>{isId ? 'Nikmati BaristaChaw di ponsel atau browser Anda untuk kenyamanan seduh setiap hari.' : 'Enjoy BaristaChaw on your phone or browser for daily brewing convenience.'}</p>
+          <h2 id="download-title">{isId ? 'Mulai Ritual Kopi Terbaik Anda Sekarang.' : 'Start Your Perfect Coffee Ritual Today.'}</h2>
+          <p>{isId ? 'Gunakan aplikasi web secara instan atau unduh aplikasi Android untuk kenyamanan menyeduh di mana saja.' : 'Use the web app instantly or download the Android application for brewing comfort anywhere.'}</p>
         </div>
       </div>
       <div className="download-list">

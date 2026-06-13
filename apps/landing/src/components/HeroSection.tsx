@@ -19,19 +19,19 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
         <p className="hero-brand">Baristachaw AI Brew</p>
         <h1 id="hero-title">
           <span className="hero-title-desktop">
-            {isId ? 'Seduh Kopi Sempurna Setiap Pagi, Tanpa Tebak-Tebak.' : 'Brew the Perfect Cup Every Morning, Effortlessly.'}
+            {isId ? 'Seduh Kopi Sempurna Setiap Pagi, Tanpa Menebak-nebak.' : 'Brew the Perfect Cup Every Morning, Effortlessly.'}
           </span>
           <span className="hero-title-mobile" aria-hidden="true">
-            {isId ? <>Seduh sempurna.<br />Tanpa tebak-tebak.</> : <>Brew the perfect cup.<br />Effortlessly.</>}
+            {isId ? <>Seduh sempurna.<br />Tanpa menebak-nebak.</> : <>Brew the perfect cup.<br />Effortlessly.</>}
           </span>
         </h1>
         <p className="hero-alternate">
-          {isId ? 'Brew the Perfect Cup Every Morning, Effortlessly.' : 'Seduh Kopi Sempurna Setiap Pagi, Tanpa Tebak-Tebak.'}
+          {isId ? 'Brew the Perfect Cup Every Morning, Effortlessly.' : 'Seduh Kopi Sempurna Setiap Pagi, Tanpa Menebak-nebak.'}
         </p>
         <p className="hero-body">
           {isId
-            ? 'Nikmati kenyamanan menyeduh dengan asisten cerdas yang memandu setiap langkah Anda menuju cita rasa kopi impian, disesuaikan dengan biji kopi dan grinder Anda.'
-            : 'Enjoy the comfort of brewing with a smart assistant guiding your every step toward your dream flavor, tailored to your beans and grinder.'}
+            ? 'Dapatkan kenyamanan ritual menyeduh kopi yang nikmat dan konsisten. Asisten cerdas kami memandu Anda menyelaraskan rasa, biji kopi, dan grinder Anda untuk hasil cangkir terbaik.'
+            : 'Experience the comfort of brewing delicious, consistent coffee at home. Our smart assistant guides you to align flavor, beans, and grinder for the perfect cup every time.'}
         </p>
         <div className="hero-actions">
           <a className="button button-primary" href={APP_LINKS.aiBrew}>
@@ -44,8 +44,8 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
         </div>
         <p className="hero-microcopy">
           {isId
-            ? 'Dosis, rasio gilingan, suhu air, roast level, profil rasa, dan panduan langkah demi langkah.'
-            : 'Dose, ratio, temperature, roast level, taste profile, and step-by-step guidance.'}
+            ? 'Bebas ribet. Disukai barista rumahan dan pencinta kopi profesional.'
+            : 'Zero hassle. Loved by home baristas and coffee enthusiasts.'}
         </p>
       </motion.div>
       <motion.div
@@ -56,20 +56,20 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
         aria-label={isId ? 'Alur Seduh Santai' : 'Relaxed Brewing Experience'}
       >
         <div className="recipe-topline">
-          <span>{isId ? 'Profil Rasa Ideal' : 'Ideal Taste Profile'}</span>
-          <span className="confidence-chip"><ShieldCheck size={13} /> {isId ? 'Konsisten' : 'Consistent'}</span>
+          <span>{isId ? 'Teman Seduh Anda' : 'Your Brew Companion'}</span>
+          <span className="confidence-chip"><ShieldCheck size={13} /> {isId ? 'Aktif' : 'Active'}</span>
         </div>
         <div className="recipe-numbers">
-          <div><strong>100%</strong><span>{isId ? 'Rasa Konsisten' : 'Consistent Taste'}</span></div>
-          <div><strong>0</strong><span>{isId ? 'Coba-Coba' : 'Guesswork'}</span></div>
-          <div><strong>Sempurna</strong><span>{isId ? 'Hasil Cup' : 'Cup Result'}</span></div>
+          <div><strong>100%</strong><span>{isId ? 'Konsisten' : 'Consistent'}</span></div>
+          <div><strong>0</strong><span>{isId ? 'Tanpa Tebak' : 'No Guessing'}</span></div>
+          <div><strong>Optimal</strong><span>{isId ? 'Rasa Kopi' : 'Coffee Taste'}</span></div>
         </div>
         <div className="pour-timeline">
           {[
-            ['Step 1', isId ? 'Pilih Alat' : 'Select Brewer', isId ? 'Moka, V60, dll' : 'Moka, V60, etc.'],
-            ['Step 2', isId ? 'Atur Rasa' : 'Adjust Taste', isId ? 'Bright / Sweet' : 'Bright / Sweet'],
-            ['Step 3', isId ? 'Ikuti AI' : 'Follow AI Guide', isId ? 'Sangat Tenang' : 'Calm Guide'],
-            ['Step 4', isId ? 'Sip & Enjoy' : 'Sip & Enjoy', isId ? 'Nikmat & Rileks' : 'Relaxed & Tasty'],
+            ['Step 1', isId ? 'Pilih Profil' : 'Select Profile', isId ? 'Sweet / Bright' : 'Sweet / Bright'],
+            ['Step 2', isId ? 'Rasio Otomatis' : 'Auto Ratio', isId ? 'Dihitung untuk Anda' : 'Calculated for you'],
+            ['Step 3', isId ? 'Panduan Tenang' : 'Calm Guide', isId ? 'Langkah demi langkah' : 'Step-by-step'],
+            ['Step 4', isId ? 'Nikmati Hasil' : 'Sip & Smile', isId ? 'Rasa konsisten' : 'Always consistent'],
           ].map(([time, label, value], index) => (
             <div className="pour-step" key={label}>
               <span className="pour-dot" style={{ animationDelay: `${index * 0.35}s` }} />
@@ -80,8 +80,8 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
           ))}
         </div>
         <div className="recipe-footer">
-          <span>{isId ? 'Kenyamanan Seduh' : 'Brewing Comfort'}</span>
-          <strong>{isId ? 'Setiap Pagi' : 'Every Morning'}</strong>
+          <span>{isId ? 'Ritual Pagi Tenang' : 'Peaceful Morning Ritual'}</span>
+          <strong>{isId ? 'Setiap Hari' : 'Every Single Day'}</strong>
         </div>
       </motion.div>
       <a className="hero-scroll" href="#engine" aria-label="Scroll to AI Brew engine">

@@ -1,13 +1,13 @@
 {
   "version": "2026.07.0-master-grinder-calibration",
-  "generated_at": "2026-06-13T11:03:24.845Z",
+  "generated_at": "2026-06-13T15:14:40.726Z",
   "counts": {
     "waters_total": 107,
     "waters_published": 76,
     "waters_brew_ready": 65,
     "drippers_total": 36,
     "drippers_published": 36,
-    "grinders_total": 66,
-    "grinders_published": 66
+    "grinders_total": 247,
+    "grinders_published": 247
   }
 }

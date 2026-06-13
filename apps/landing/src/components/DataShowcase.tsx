@@ -42,12 +42,12 @@ export function DataShowcase({ language }: { language: 'id' | 'en' }) {
             <h2 id="data-title">
               {isId
                 ? 'Kami Mengenal Air dan Grinder Anda.'
-                : 'We Know Your Water and Grinder.'}
+                : 'We Know Your Grinder and Water Profile.'}
             </h2>
             <p>
               {isId
                 ? 'BaristaChaw memiliki database profil air mineral dan grinder terlengkap di Asia Tenggara. Setiap rekomendasi disesuaikan dengan apa yang Anda gunakan di rumah.'
-                : 'BaristaChaw has the most comprehensive mineral water and grinder database in Southeast Asia. Every recommendation is tailored to what you use at home.'}
+                : 'BaristaChaw hosts Southeast Asia\'s most comprehensive database of mineral waters and coffee grinders. Every recipe is tailored to your exact home setup.'}
             </p>
           </div>
         </ScrollReveal>
@@ -66,7 +66,7 @@ export function DataShowcase({ language }: { language: 'id' | 'en' }) {
             </div>
             <div className="data-stat">
               <strong>36</strong>
-              <span>{isId ? 'Alat Seduh' : 'Brewing Tools'}</span>
+              <span>{isId ? 'Alat Seduh' : 'Supported Brewers'}</span>
             </div>
           </div>
         </ScrollReveal>

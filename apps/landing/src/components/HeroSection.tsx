@@ -19,19 +19,19 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
         <p className="hero-brand">Baristachaw AI Brew</p>
         <h1 id="hero-title">
           <span className="hero-title-desktop">
-            {isId ? 'Seduh Kopi Sempurna Setiap Pagi, Tanpa Menebak-nebak.' : 'Brew the Perfect Cup Every Morning, Effortlessly.'}
+            {isId ? 'Seduh Kopi Sempurna Setiap Pagi, Tanpa Menebak-nebak.' : 'Brew the Perfect Cup Every Morning, Without the Guesswork.'}
           </span>
           <span className="hero-title-mobile" aria-hidden="true">
-            {isId ? <>Seduh sempurna.<br />Tanpa menebak-nebak.</> : <>Brew the perfect cup.<br />Effortlessly.</>}
+            {isId ? <>Seduh sempurna.<br />Tanpa menebak-nebak.</> : <>Brew the perfect cup.<br />Without the guesswork.</>}
           </span>
         </h1>
         <p className="hero-alternate">
-          {isId ? 'Brew the Perfect Cup Every Morning, Effortlessly.' : 'Seduh Kopi Sempurna Setiap Pagi, Tanpa Menebak-nebak.'}
+          {isId ? 'Brew the Perfect Cup Every Morning, Without the Guesswork.' : 'Seduh Kopi Sempurna Setiap Pagi, Tanpa Menebak-nebak.'}
         </p>
         <p className="hero-body">
           {isId
             ? 'Nikmati kenyamanan ritual menyeduh kopi yang nikmat dan konsisten. Asisten cerdas kami memandu Anda menyelaraskan rasa, biji kopi, dan grinder — untuk hasil cangkir terbaik, setiap hari.'
-            : 'Experience the comfort of a delicious, consistent coffee coffee ritual. Our smart assistant guides you to align flavor, beans, and grinder — for the perfect cup, every single day.'}
+            : 'Enjoy the peace of mind that comes with a consistently delicious morning coffee. Our brewing companion aligns your specific beans, water profile, and grinder settings to unlock the best possible extraction, every single day.'}
         </p>
         <div className="hero-actions">
           <a className="button button-primary" href={APP_LINKS.aiBrew}>
@@ -45,7 +45,7 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
         <p className="hero-microcopy">
           {isId
             ? 'Bebas ribet. Dipercaya barista rumahan dan pencinta kopi di seluruh Indonesia.'
-            : 'Zero hassle. Trusted by home baristas and coffee enthusiasts everywhere.'}
+            : 'Zero hassle. Trusted by passionate home brewers and coffee professionals alike.'}
         </p>
       </motion.div>
       <motion.div
@@ -77,10 +77,10 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
         </div>
         <div className="pour-timeline">
           {[
-            ['0:00', isId ? 'Blooming' : 'Blooming', isId ? 'Basahi Kopi (50g)' : 'Wet Coffee (50g)'],
-            ['0:40', isId ? 'Tuangan 1' : 'First Pour', isId ? 'Bentuk Rasa (120g)' : 'Extract Sweet (120g)'],
-            ['1:20', isId ? 'Tuangan 2' : 'Second Pour', isId ? 'Bentuk Body (150g)' : 'Add Body (150g)'],
-            ['2:30', isId ? 'Selesai' : 'Drawdown', isId ? 'Nikmati Kopi Anda' : 'Enjoy Your Cup'],
+            ['0:00', isId ? 'Blooming' : 'Blooming', isId ? 'Basahi Kopi (50g)' : 'Wet coffee bed (50g)'],
+            ['0:40', isId ? 'Tuangan 1' : 'First Pour', isId ? 'Bentuk Rasa (120g)' : 'Extract sweetness (120g)'],
+            ['1:20', isId ? 'Tuangan 2' : 'Second Pour', isId ? 'Bentuk Body (150g)' : 'Develop body (150g)'],
+            ['2:30', isId ? 'Selesai' : 'Drawdown', isId ? 'Nikmati Kopi Anda' : 'Pour complete. Sip & enjoy!'],
           ].map(([time, label, value], index) => (
             <div className="pour-step" key={label}>
               <span className="pour-dot" style={{ animationDelay: `${index * 0.35}s` }} />
@@ -92,7 +92,7 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
         </div>
         <div className="recipe-footer">
           <span>{isId ? 'Target Karakter Rasa' : 'Target Flavor Profile'}</span>
-          <strong>{isId ? 'Sweet & Sweet Acid' : 'Sweet & Sweet Acid'}</strong>
+          <strong>{isId ? 'Sweet & Sweet Acid' : 'Sweet & Vibrant Acidity'}</strong>
         </div>
       </motion.div>
       <a className="hero-scroll" href="#engine" aria-label="Scroll to AI Brew engine">

@@ -58,7 +58,7 @@ const TOOLS = {
       icon: FlaskConical,
       badge: 'AI',
       title: 'AI Brew',
-      body: 'Enter your beans, choose your flavor, and select your grinder. In seconds, AI crafts a precise brewing guide — from water temperature to grind size.',
+      body: 'Input your beans, roast date, target flavor notes, and grinder model. In seconds, our engine crafts a custom, multi-pour recipe.',
       link: APP_LINKS.aiBrew,
       cta: 'Try AI Brew',
     },
@@ -66,7 +66,7 @@ const TOOLS = {
       icon: Clock,
       badge: 'FREE',
       title: 'Brew Timer',
-      body: 'Interactive timer with step-by-step guidance. Bloom, first pour, second pour — everything is timed so you just follow along.',
+      body: 'An intuitive timer with step-by-step pouring stages. We calculate the bloom time and flow rates so you can focus on a steady pour.',
       link: APP_LINKS.home + '/tools?tab=timer',
       cta: 'Open Timer',
     },
@@ -74,7 +74,7 @@ const TOOLS = {
       icon: Gauge,
       badge: 'FREE',
       title: 'Ratio Calculator',
-      body: 'Calculate the ideal coffee-to-water ratio, convert grind sizes to your grinder settings, and adjust volume to taste — all on one screen.',
+      body: 'Dial in the perfect coffee-to-water ratio. Adjust your water volume or bean dosage dynamically to meet gold extraction standards.',
       link: APP_LINKS.home + '/tools?tab=ratio',
       cta: 'Open Calculator',
     },
@@ -82,7 +82,7 @@ const TOOLS = {
       icon: Settings,
       badge: 'FREE',
       title: 'Grind Size Calculator',
-      body: 'Easily convert grind sizes between different grinder models. Select your grinder and get the exact click settings for your chosen brewing method.',
+      body: 'Cross-reference grind settings between Comandante, 1Zpresso, Fellow Ode, and more. Instantly find the exact click target for your brewer.',
       link: APP_LINKS.home + '/tools?tab=ratio&panel=grind-size',
       cta: 'Open Grinder Calc',
     },
@@ -90,7 +90,7 @@ const TOOLS = {
       icon: MessageSquare,
       badge: 'AI',
       title: 'AI Coffee Coach',
-      body: 'Ask anything about coffee. Cup too bitter? New beans? New grinder? AI Coach is ready to help you find the answer.',
+      body: 'Troubleshoot your extractions in real time. If your cup tastes too dry, astringent, or sour, get instant barista troubleshooting.',
       link: APP_LINKS.home + '/chat',
       cta: 'Ask AI Coach',
     },
@@ -98,7 +98,7 @@ const TOOLS = {
       icon: BookOpen,
       badge: 'FREE',
       title: 'Recipe Collection',
-      body: 'Save your favorite recipes and come back anytime. Build a personal recipe library that is always at your fingertips.',
+      body: 'Keep track of your best extractions. Log your favorite recipes, water chemistries, and tasting notes in your personal brew vault.',
       link: APP_LINKS.home + '/collection',
       cta: 'View Collection',
     },
@@ -118,12 +118,12 @@ export function ToolsShowcase({ language }: { language: 'id' | 'en' }) {
             <h2 id="tools-title">
               {isId
                 ? 'Semua yang Anda Butuhkan, dalam Satu Aplikasi.'
-                : 'Everything You Need, in One App.'}
+                : 'Everything You Need for a Perfect Cup, in One App.'}
             </h2>
             <p>
               {isId
                 ? 'Dari kalkulator rasio yang gratis hingga AI Brew yang cerdas — setiap alat dirancang agar ritual kopi Anda lebih mudah dan menyenangkan.'
-                : 'From a free ratio calculator to smart AI Brew — every tool is designed to make your coffee ritual easier and more enjoyable.'}
+                : 'From our free ratio calculator to intelligent AI-guided recipes, each tool is crafted to elevate your daily brewing ritual.'}
             </p>
           </div>
         </div>

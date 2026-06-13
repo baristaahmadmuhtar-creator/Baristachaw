@@ -20,12 +20,12 @@ import { TermsPage } from './pages/TermsPage';
 function EvidenceSection({ language }: { language: 'id' | 'en' }) {
   const isId = language === 'id';
   const evidence = [
-    ['100%', isId ? 'Rasa Konsisten' : 'Taste Consistency'],
-    ['16+', isId ? 'Alat Seduh Didukung' : 'Supported Brewers'],
-    ['99%', isId ? 'Kepuasan Pengguna' : 'User Satisfaction'],
+    ['100%', isId ? 'Rasa Konsisten' : 'Flavor Consistency'],
+    ['36+', isId ? 'Alat Seduh Didukung' : 'Supported Brewers'],
+    ['99%', isId ? 'Kepuasan Pengguna' : 'User Satisfaction Rate'],
     ['10.000+', isId ? 'Resep Terkalibrasi' : 'Calibrated Recipes'],
-    ['0', isId ? 'Tebak-Tebakan' : 'Zero Guesswork'],
-    ['Instan', isId ? 'Akses Kapan Saja' : 'Instant Access'],
+    ['0', isId ? 'Tebak-Tebakan' : 'Guesswork Needed'],
+    ['Instan', isId ? 'Akses Kapan Saja' : 'App Access'],
   ];
   return (
     <section className="evidence-section" aria-labelledby="evidence-title">
@@ -33,7 +33,7 @@ function EvidenceSection({ language }: { language: 'id' | 'en' }) {
         <ScrollReveal variant="dramatic">
           <div>
             <p className="section-index section-index-light">05 / 06</p>
-            <h2 id="evidence-title">{isId ? 'Mengapa Barista dan Pencinta Kopi Memilih BaristaChaw' : 'Why Baristas and Coffee Lovers Choose BaristaChaw'}</h2>
+            <h2 id="evidence-title">{isId ? 'Mengapa Barista dan Pencinta Kopi Memilih BaristaChaw' : 'Why Coffee Lovers Rely on BaristaChaw'}</h2>
           </div>
         </ScrollReveal>
         <div className="evidence-grid">
@@ -49,7 +49,7 @@ function EvidenceSection({ language }: { language: 'id' | 'en' }) {
             <p>
               {isId
                 ? 'BaristaChaw dirancang untuk mendampingi ritual kopi harian Anda. Setiap rekomendasi disesuaikan secara dinamis agar Anda selalu mendapatkan cangkir kopi terbaik — di rumah, di kantor, atau di kedai favorit Anda.'
-                : 'BaristaChaw is designed to accompany your daily coffee ritual. Every recommendation is dynamically personalized so you always get the best cup — at home, at the office, or at your favorite café.'}
+                : 'BaristaChaw is crafted to elevate your daily coffee ritual. Each recommendation is dynamically tailored to your specific setup so you can unlock the best possible extraction — at home, at the office, or on the bar.'}
             </p>
           </div>
         </ScrollReveal>
@@ -66,8 +66,8 @@ function PricingSection({ language }: { language: 'id' | 'en' }) {
         <div className="section-heading">
           <p className="section-index">Access</p>
           <div>
-            <h2 id="pricing-title">{isId ? 'Akses Fleksibel untuk Setiap Barista.' : 'Flexible Access for Every Barista.'}</h2>
-            <p>{isId ? 'Pilih paket yang sesuai dengan gaya menyeduh Anda — dari home brewer hingga profesional kedai.' : 'Choose a plan that fits your brewing style — from home brewer to café professional.'}</p>
+            <h2 id="pricing-title">{isId ? 'Akses Fleksibel untuk Setiap Barista.' : 'Flexible Access for Every Coffee Brewer.'}</h2>
+            <p>{isId ? 'Pilih paket yang sesuai dengan gaya menyeduh Anda — dari home brewer hingga profesional kedai.' : 'Choose a tier that matches your brewing setup — from casual home extraction to professional bar workflows.'}</p>
           </div>
         </div>
       </ScrollReveal>
@@ -77,9 +77,9 @@ function PricingSection({ language }: { language: 'id' | 'en' }) {
             <span>Free</span>
             <h3>{isId ? 'Mulai Eksplorasi' : 'Start Exploring'}</h3>
             <ul>
-              <li><Check /> {isId ? 'Coba AI Brew gratis' : 'Try AI Brew for free'}</li>
-              <li><Check /> {isId ? 'Panduan dasar menyeduh' : 'Basic brewing guidance'}</li>
-              <li><Check /> {isId ? 'Simpan beberapa resep favorit' : 'Save a few favorite recipes'}</li>
+              <li><Check /> {isId ? 'Coba AI Brew gratis' : 'Daily free AI Brew plans'}</li>
+              <li><Check /> {isId ? 'Panduan dasar menyeduh' : 'Real-time brew timer'}</li>
+              <li><Check /> {isId ? 'Simpan beberapa resep favorit' : 'Save up to 5 custom recipes'}</li>
             </ul>
             <a href={APP_LINKS.aiBrew}>{isId ? 'Mulai Sekarang' : 'Start Now'} <ArrowRight /></a>
           </article>
@@ -89,9 +89,9 @@ function PricingSection({ language }: { language: 'id' | 'en' }) {
             <span>Beta Barista</span>
             <h3>{isId ? 'Barista Premium' : 'Premium Barista'}</h3>
             <ul>
-              <li><Check /> {isId ? 'Profil rasa tak terbatas' : 'Unlimited flavor profiles'}</li>
-              <li><Check /> {isId ? 'Kalibrasi presisi grinder Anda' : 'Precision grinder calibration'}</li>
-              <li><Check /> {isId ? 'Asisten AI kopi yang cerdas' : 'Smart AI coffee coach'}</li>
+              <li><Check /> {isId ? 'Profil rasa tak terbatas' : 'Unlimited flavor profiles (Sweet, Bright, Body)'}</li>
+              <li><Check /> {isId ? 'Kalibrasi presisi grinder Anda' : 'Grinder setting calculations & conversions'}</li>
+              <li><Check /> {isId ? 'Asisten AI kopi yang cerdas' : 'Unlimited AI Coffee Coach diagnostic chats'}</li>
             </ul>
             <a href={APP_LINKS.register}>{isId ? 'Daftar Beta — Gratis' : 'Join Free Beta'} <ArrowRight /></a>
           </article>
@@ -101,9 +101,9 @@ function PricingSection({ language }: { language: 'id' | 'en' }) {
             <span>Cafe Team</span>
             <h3>{isId ? 'Kedai & Profesional' : 'Café & Professional'}</h3>
             <ul>
-              <li><Check /> {isId ? 'Standarisasi SOP resep kedai' : 'Standardized café recipe SOPs'}</li>
-              <li><Check /> {isId ? 'Mode batch brew cepat' : 'Fast batch brew mode'}</li>
-              <li><Check /> {isId ? 'Akses untuk seluruh tim barista' : 'Access for your entire barista team'}</li>
+              <li><Check /> {isId ? 'Standarisasi SOP resep kedai' : 'Standardize recipe SOPs for your team'}</li>
+              <li><Check /> {isId ? 'Mode batch brew cepat' : 'High-volume batch brew calculations'}</li>
+              <li><Check /> {isId ? 'Akses untuk seluruh tim barista' : 'Multi-seat team manager access'}</li>
             </ul>
             <Link to="/support?topic=general">{isId ? 'Hubungi Kami' : 'Contact Us'} <ArrowRight /></Link>
           </article>
@@ -130,8 +130,8 @@ function LandingHome({ language }: { language: 'id' | 'en' }) {
         <section className="final-cta">
           <div>
             <p>Baristachaw AI Brew</p>
-            <h2>{isId ? 'Mulai Seduh Kopi Terbaik Anda Hari Ini.' : 'Start Brewing Your Best Coffee Today.'}</h2>
-            <span>{isId ? 'Bergabung dengan ribuan home barista dan profesional yang sudah merasakan kenyamanan menyeduh kopi yang konsisten, kaya rasa, dan menyenangkan — setiap hari.' : 'Join thousands of home baristas and professionals who have discovered the joy of brewing consistent, flavorful, and delightful coffee — every single day.'}</span>
+            <h2>{isId ? 'Mulai Seduh Kopi Terbaik Anda Hari Ini.' : 'Start Extracting Exceptional Coffee Today.'}</h2>
+            <span>{isId ? 'Bergabung dengan ribuan home barista dan profesional yang sudah merasakan kenyamanan menyeduh kopi yang konsisten, kaya rasa, dan menyenangkan — setiap hari.' : 'Join thousands of home brewers and coffee professionals who have elevated their morning rituals with consistent, flavorful, and repeatable extractions — every single day.'}</span>
           </div>
           <div className="final-actions">
             <a className="button button-light" href={APP_LINKS.aiBrew}>{isId ? 'Coba AI Brew' : 'Try AI Brew'} <ArrowRight /></a>
@@ -150,7 +150,7 @@ function SiteFooter({ language }: { language: 'id' | 'en' }) {
     <footer className="site-footer">
       <div className="footer-brand">
         <img src="/assets/baristachaw-logo.png" alt="" />
-        <div><strong>Baristachaw</strong><span>{isId ? 'Asisten kopi cerdas untuk ritual seduh terbaik Anda.' : 'Your smart coffee companion for the perfect brew.'}</span></div>
+        <div><strong>Baristachaw</strong><span>{isId ? 'Asisten kopi cerdas untuk ritual seduh terbaik Anda.' : 'Your intelligent brewing companion for the perfect extraction.'}</span></div>
       </div>
       <nav aria-label="Footer">
         <Link to="/privacy">Privacy</Link>
@@ -159,7 +159,7 @@ function SiteFooter({ language }: { language: 'id' | 'en' }) {
         <Link to="/download">{isId ? 'Unduh' : 'Download'}</Link>
         <a href={APP_LINKS.home}>Web App</a>
       </nav>
-      <p>© 2026 Baristachaw. {isId ? 'Kopi terbaik dimulai dari ritual yang tepat.' : 'Great coffee starts with the right ritual.'}</p>
+      <p>© 2026 Baristachaw. {isId ? 'Kopi terbaik dimulai dari ritual yang tepat.' : 'Exceptional coffee begins with a precise ritual.'}</p>
     </footer>
   );
 }

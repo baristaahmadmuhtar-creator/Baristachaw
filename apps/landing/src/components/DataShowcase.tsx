@@ -61,7 +61,7 @@ export function DataShowcase({ language }: { language: 'id' | 'en' }) {
             </div>
             <div className="data-stat">
               <Settings2 />
-              <strong>66</strong>
+              <strong>250</strong>
               <span>{isId ? 'Model Grinder' : 'Grinder Models'}</span>
             </div>
             <div className="data-stat">

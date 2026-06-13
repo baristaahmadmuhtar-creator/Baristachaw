@@ -19,33 +19,33 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
         <p className="hero-brand">Baristachaw AI Brew</p>
         <h1 id="hero-title">
           <span className="hero-title-desktop">
-            {isId ? 'Seduh lebih presisi dengan AI yang paham metode kopi.' : 'Brew smarter with AI that understands coffee methods.'}
+            {isId ? 'Seduh Kopi Sempurna Setiap Pagi, Tanpa Tebak-Tebak.' : 'Brew the Perfect Cup Every Morning, Effortlessly.'}
           </span>
           <span className="hero-title-mobile" aria-hidden="true">
-            {isId ? <>Seduh lebih presisi.<br />AI paham metode.</> : <>Brew smarter.<br />AI understands methods.</>}
+            {isId ? <>Seduh sempurna.<br />Tanpa tebak-tebak.</> : <>Brew the perfect cup.<br />Effortlessly.</>}
           </span>
         </h1>
         <p className="hero-alternate">
-          {isId ? 'Brew smarter with AI that understands coffee methods.' : 'Seduh lebih presisi dengan AI yang paham metode kopi.'}
+          {isId ? 'Brew the Perfect Cup Every Morning, Effortlessly.' : 'Seduh Kopi Sempurna Setiap Pagi, Tanpa Tebak-Tebak.'}
         </p>
         <p className="hero-body">
           {isId
-            ? 'Starting recipe method-aware untuk hot dan iced, dengan confidence yang jujur, workflow yang jelas, dan guardrail real brew.'
-            : 'Method-aware starting recipes for hot and iced brewing, with honest confidence, clear workflow, and real-brew guardrails.'}
+            ? 'Nikmati kenyamanan menyeduh dengan asisten cerdas yang memandu setiap langkah Anda menuju cita rasa kopi impian, disesuaikan dengan biji kopi dan grinder Anda.'
+            : 'Enjoy the comfort of brewing with a smart assistant guiding your every step toward your dream flavor, tailored to your beans and grinder.'}
         </p>
         <div className="hero-actions">
           <a className="button button-primary" href={APP_LINKS.aiBrew}>
-            {isId ? 'Coba AI Brew' : 'Try AI Brew'} <ArrowRight size={18} />
+            {isId ? 'Mulai Seduh' : 'Start Brewing'} <ArrowRight size={18} />
           </a>
           <a className="button button-ghost" href={APK_URL}>
             <Download size={18} /> {isId ? 'Unduh APK' : 'Download APK'}
           </a>
-          <a className="hero-register" href={APP_LINKS.register}>{isId ? 'Daftar gratis' : 'Register free'}</a>
+          <a className="hero-register" href={APP_LINKS.register}>{isId ? 'Daftar Gratis' : 'Register Free'}</a>
         </div>
         <p className="hero-microcopy">
           {isId
-            ? 'Dose, rasio, roast, process, varietas, grinder, water, method, dan target rasa.'
-            : 'Dose, ratio, roast, process, variety, grinder, water, method, and target taste.'}
+            ? 'Dosis, rasio gilingan, suhu air, roast level, profil rasa, dan panduan langkah demi langkah.'
+            : 'Dose, ratio, temperature, roast level, taste profile, and step-by-step guidance.'}
         </p>
       </motion.div>
       <motion.div
@@ -53,23 +53,23 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
         initial={{ opacity: 0, x: 38, rotateY: -5 }}
         animate={{ opacity: 1, x: 0, rotateY: 0 }}
         transition={{ duration: 0.85, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
-        aria-label={isId ? 'Contoh timeline recipe V60' : 'Example V60 recipe timeline'}
+        aria-label={isId ? 'Alur Seduh Santai' : 'Relaxed Brewing Experience'}
       >
         <div className="recipe-topline">
-          <span>V60 · Sweet & clean</span>
-          <span className="confidence-chip"><ShieldCheck size={13} /> Curated</span>
+          <span>{isId ? 'Profil Rasa Ideal' : 'Ideal Taste Profile'}</span>
+          <span className="confidence-chip"><ShieldCheck size={13} /> {isId ? 'Konsisten' : 'Consistent'}</span>
         </div>
         <div className="recipe-numbers">
-          <div><strong>15 g</strong><span>Dose</span></div>
-          <div><strong>250 g</strong><span>Water</span></div>
-          <div><strong>93°C</strong><span>Temp</span></div>
+          <div><strong>100%</strong><span>{isId ? 'Rasa Konsisten' : 'Consistent Taste'}</span></div>
+          <div><strong>0</strong><span>{isId ? 'Coba-Coba' : 'Guesswork'}</span></div>
+          <div><strong>Sempurna</strong><span>{isId ? 'Hasil Cup' : 'Cup Result'}</span></div>
         </div>
         <div className="pour-timeline">
           {[
-            ['00:00', 'Bloom', '45 g'],
-            ['00:45', 'Pour 1', '120 g'],
-            ['01:20', 'Pour 2', '190 g'],
-            ['01:55', 'Final', '250 g'],
+            ['Step 1', isId ? 'Pilih Alat' : 'Select Brewer', isId ? 'Moka, V60, dll' : 'Moka, V60, etc.'],
+            ['Step 2', isId ? 'Atur Rasa' : 'Adjust Taste', isId ? 'Bright / Sweet' : 'Bright / Sweet'],
+            ['Step 3', isId ? 'Ikuti AI' : 'Follow AI Guide', isId ? 'Sangat Tenang' : 'Calm Guide'],
+            ['Step 4', isId ? 'Sip & Enjoy' : 'Sip & Enjoy', isId ? 'Nikmat & Rileks' : 'Relaxed & Tasty'],
           ].map(([time, label, value], index) => (
             <div className="pour-step" key={label}>
               <span className="pour-dot" style={{ animationDelay: `${index * 0.35}s` }} />
@@ -80,8 +80,8 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
           ))}
         </div>
         <div className="recipe-footer">
-          <span>{isId ? 'Target selesai' : 'Target finish'}</span>
-          <strong>02:45–03:15</strong>
+          <span>{isId ? 'Kenyamanan Seduh' : 'Brewing Comfort'}</span>
+          <strong>{isId ? 'Setiap Pagi' : 'Every Morning'}</strong>
         </div>
       </motion.div>
       <a className="hero-scroll" href="#engine" aria-label="Scroll to AI Brew engine">

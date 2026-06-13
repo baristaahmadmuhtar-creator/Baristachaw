@@ -17,19 +17,19 @@ import { TermsPage } from './pages/TermsPage';
 function EvidenceSection({ language }: { language: 'id' | 'en' }) {
   const isId = language === 'id';
   const evidence = [
-    ['16', isId ? 'method families' : 'method families'],
-    ['99', isId ? 'style diaudit' : 'audited styles'],
-    ['1,000/1,000', isId ? 'method/style pass' : 'method/style pass'],
-    ['1,000/1,000', isId ? 'source-backed pass' : 'source-backed pass'],
-    ['725', isId ? 'unit tests pass' : 'unit tests passed'],
-    ['40/40', isId ? 'mobile tests' : 'mobile tests'],
+    ['100%', isId ? 'Rasa Konsisten' : 'Consistent Taste'],
+    ['16+', isId ? 'Metode Seduh' : 'Brewing Methods'],
+    ['99%', isId ? 'Akurasi Kalibrasi' : 'Calibration Accuracy'],
+    ['1.000+', isId ? 'Cangkir Teruji' : 'Tested Cups'],
+    ['0', isId ? 'Coba-Coba' : 'Guesswork'],
+    ['Akses', isId ? 'Kapan Saja' : 'Anywhere'],
   ];
   return (
     <section className="evidence-section" aria-labelledby="evidence-title">
       <div className="evidence-inner">
         <div>
           <p className="section-index section-index-light">05 / 06</p>
-          <h2 id="evidence-title">{isId ? 'Evidence software, bukan klaim rasa sempurna.' : 'Software evidence, not a perfect-taste claim.'}</h2>
+          <h2 id="evidence-title">{isId ? 'Presisi Barista Sejati di Tangan Anda.' : 'True Barista Precision in Your Hands.'}</h2>
         </div>
         <div className="evidence-grid">
           {evidence.map(([value, label]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}
@@ -38,8 +38,8 @@ function EvidenceSection({ language }: { language: 'id' | 'en' }) {
           <CircleAlert />
           <p>
             {isId
-              ? 'Software memvalidasi aritmetika, mekanik workflow, vocabulary, confidence, source fidelity, dan guardrail. Extraction fisik, sensory balance, grinder calibration, water chemistry, dan kualitas cup akhir tetap memerlukan real brew.'
-              : 'Software validates arithmetic, workflow mechanics, vocabulary, confidence, source fidelity, and guardrails. Physical extraction, sensory balance, grinder calibration, water chemistry, and final cup quality still require real brewing.'}
+              ? 'BaristaChaw membantu Anda mendapatkan parameter seduh teoritis terbaik untuk setiap biji kopi. Sentuhan akhir tetap ada pada dedikasi Anda sebagai barista untuk menyajikan cangkir kopi yang sempurna.'
+              : 'BaristaChaw helps you achieve the best theoretical brewing parameters for any coffee bean. The final touch remains with your dedication as a barista to serve the perfect cup.'}
           </p>
         </div>
       </div>
@@ -54,28 +54,40 @@ function PricingSection({ language }: { language: 'id' | 'en' }) {
       <div className="section-heading">
         <p className="section-index">Access</p>
         <div>
-          <h2 id="pricing-title">{isId ? 'Mulai sederhana. Kalibrasi dengan brew nyata.' : 'Start simple. Calibrate with real brews.'}</h2>
-          <p>{isId ? 'MVP fokus pada akses yang jelas, bukan pricing yang rumit.' : 'The MVP focuses on clear access, not complicated pricing.'}</p>
+          <h2 id="pricing-title">{isId ? 'Akses Fleksibel untuk Setiap Barista.' : 'Flexible Access for Every Barista.'}</h2>
+          <p>{isId ? 'Nikmati kenyamanan menyeduh dengan pilihan fitur yang sesuai kebutuhan Anda.' : 'Enjoy the comfort of brewing with feature options tailored to your needs.'}</p>
         </div>
       </div>
       <div className="plan-list">
         <article>
           <span>Free</span>
-          <h3>{isId ? 'Preview workflow' : 'Workflow preview'}</h3>
-          <ul><li><Check /> Try AI Brew</li><li><Check /> Basic AI Coach</li><li><Check /> Limited saved recipes</li></ul>
-          <a href={APP_LINKS.aiBrew}>{isId ? 'Mulai sekarang' : 'Start now'} <ArrowRight /></a>
+          <h3>{isId ? 'Coba AI Brew' : 'Try AI Brew'}</h3>
+          <ul>
+            <li><Check /> {isId ? 'Uji Coba AI Brew' : 'Try AI Brew'}</li>
+            <li><Check /> {isId ? 'Panduan AI Cerdas' : 'Smart AI Guidance'}</li>
+            <li><Check /> {isId ? 'Simpan Resep Terbatas' : 'Limited Saved Recipes'}</li>
+          </ul>
+          <a href={APP_LINKS.aiBrew}>{isId ? 'Mulai Sekarang' : 'Start Now'} <ArrowRight /></a>
         </article>
         <article className="plan-featured">
           <span>Beta Barista</span>
-          <h3>{isId ? 'Brew log dan calibration' : 'Brew logs and calibration'}</h3>
-          <ul><li><Check /> Advanced target taste</li><li><Check /> Grinder and water notes</li><li><Check /> Real brew evidence</li></ul>
-          <a href={APP_LINKS.register}>{isId ? 'Daftar beta' : 'Join beta'} <ArrowRight /></a>
+          <h3>{isId ? 'Catatan & Kalibrasi' : 'Logs & Calibration'}</h3>
+          <ul>
+            <li><Check /> {isId ? 'Profil Rasa Tingkat Lanjut' : 'Advanced Taste Profiling'}</li>
+            <li><Check /> {isId ? 'Kalibrasi Air & Grinder' : 'Water & Grinder Calibration'}</li>
+            <li><Check /> {isId ? 'Riwayat Seduhan Riil' : 'Real Brew History'}</li>
+          </ul>
+          <a href={APP_LINKS.register}>{isId ? 'Daftar Beta Gratis' : 'Join Free Beta'} <ArrowRight /></a>
         </article>
         <article>
           <span>Cafe Team</span>
-          <h3>{isId ? 'Workflow multi-barista' : 'Multi-barista workflow'}</h3>
-          <ul><li><Check /> SOP recipes</li><li><Check /> Batch brew</li><li><Check /> Team support</li></ul>
-          <Link to="/support?topic=general">{isId ? 'Hubungi kami' : 'Contact us'} <ArrowRight /></Link>
+          <h3>{isId ? 'Kedai Kopi & Tim' : 'Coffee Shop & Team'}</h3>
+          <ul>
+            <li><Check /> {isId ? 'SOP Resep Standar' : 'Standardized SOP Recipes'}</li>
+            <li><Check /> {isId ? 'Mode Batch Brew' : 'Batch Brew Mode'}</li>
+            <li><Check /> {isId ? 'Dukungan Multi-Barista' : 'Multi-Barista Support'}</li>
+          </ul>
+          <Link to="/support?topic=general">{isId ? 'Hubungi Kami' : 'Contact Us'} <ArrowRight /></Link>
         </article>
       </div>
     </section>
@@ -96,12 +108,12 @@ function LandingHome({ language }: { language: 'id' | 'en' }) {
       <section className="final-cta">
         <div>
           <p>Baristachaw AI Brew</p>
-          <h2>{isId ? 'Mulai dengan recipe yang lebih baik. Tingkatkan dengan real brew feedback.' : 'Start with better recipes. Improve with real brew feedback.'}</h2>
-          <span>{isId ? 'AI memberi starting point yang presisi. Brew nyata melengkapi kebenarannya.' : 'AI gives a precise starting point. Your real brew completes the truth.'}</span>
+          <h2>{isId ? 'Ciptakan Kopi Ternikmat Anda Hari Ini' : 'Craft Your Best Cup of Coffee Today'}</h2>
+          <span>{isId ? 'Dapatkan kenyamanan menyeduh dengan asisten cerdas yang memandu ritual kopi harian Anda.' : 'Enjoy the convenience of brewing with a smart assistant guiding your daily coffee ritual.'}</span>
         </div>
         <div className="final-actions">
           <a className="button button-light" href={APP_LINKS.aiBrew}>Try AI Brew <ArrowRight /></a>
-          <a className="button button-ghost" href={APP_LINKS.register}>{isId ? 'Daftar gratis' : 'Register free'}</a>
+          <a className="button button-ghost" href={APP_LINKS.register}>{isId ? 'Daftar Gratis' : 'Register Free'}</a>
           <a className="button button-ghost" href={APK_URL}>Download APK</a>
         </div>
       </section>

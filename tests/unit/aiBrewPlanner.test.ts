@@ -4942,9 +4942,9 @@ test('AI Brew grinder catalog publish rules keep sources, references, and ranges
   }
 
   const kUltra = grinders.find((item) => item.name === '1Zpresso K-Ultra');
-  assert.equal(kUltra?.medium, '6.0 - 7.0 numbers');
+  assert.equal(kUltra?.medium, '5.3 - 9.2 numbers');
   const breville = grinders.find((item) => item.name === 'Breville Smart Grinder Pro');
-  assert.equal(breville?.medium, '45 - 45 settings');
+  assert.equal(breville?.medium, '21.0 - 60.0 settings');
 });
 
 test('AI Brew core brewer production profiles keep method-specific SOP cues', () => {

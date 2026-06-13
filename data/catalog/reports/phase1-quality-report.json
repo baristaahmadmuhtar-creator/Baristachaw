@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-05-18T05:53:46.877Z",
+  "generated_at": "2026-06-13T17:17:47.397Z",
   "version": "2026.03.10-asean-first-phase1",
   "waters": {
-    "total": 107,
-    "published": 76,
-    "brew_ready": 65,
-    "complete": 78,
+    "total": 111,
+    "published": 80,
+    "brew_ready": 72,
+    "complete": 82,
     "incomplete": 29,
     "estimated": [
       "heysong-water-global",
@@ -31,7 +31,7 @@
       "Fiji": 3,
       "France": 9,
       "Germany": 1,
-      "Global": 2,
+      "Global": 4,
       "Hong Kong": 2,
       "Iceland": 3,
       "Indonesia": 57,
@@ -44,23 +44,43 @@
       "Taiwan": 2,
       "Thailand": 2,
       "UK": 2,
-      "USA": 4,
+      "USA": 6,
       "Vietnam": 2
     },
     "by_market": {
       "bn": 5,
-      "global": 22,
+      "global": 26,
       "id": 56,
       "my": 6,
       "sg": 18
     },
     "by_publish_state": {
-      "published": 76,
+      "published": 80,
       "review_only": 31,
       "rejected": 0
     },
     "top_recommended_by_region": {
       "Indonesia": [
+        {
+          "id": "barista-hustle-sca-global",
+          "brand": "Barista Hustle",
+          "score": 95
+        },
+        {
+          "id": "barista-hustle-rao-global",
+          "brand": "Barista Hustle",
+          "score": 93
+        },
+        {
+          "id": "third-wave-water-classic-global",
+          "brand": "Third Wave Water",
+          "score": 90
+        },
+        {
+          "id": "third-wave-water-espresso-global",
+          "brand": "Third Wave Water",
+          "score": 85
+        },
         {
           "id": "pure-life-global",
           "brand": "Pure Life",
@@ -68,6 +88,26 @@
         }
       ],
       "Brunei": [
+        {
+          "id": "barista-hustle-sca-global",
+          "brand": "Barista Hustle",
+          "score": 95
+        },
+        {
+          "id": "barista-hustle-rao-global",
+          "brand": "Barista Hustle",
+          "score": 93
+        },
+        {
+          "id": "third-wave-water-classic-global",
+          "brand": "Third Wave Water",
+          "score": 90
+        },
+        {
+          "id": "third-wave-water-espresso-global",
+          "brand": "Third Wave Water",
+          "score": 85
+        },
         {
           "id": "pure-life-global",
           "brand": "Pure Life",
@@ -81,24 +121,24 @@
           "score": 100
         },
         {
-          "id": "pure-life-global",
-          "brand": "Pure Life",
-          "score": 64
+          "id": "barista-hustle-sca-global",
+          "brand": "Barista Hustle",
+          "score": 95
         },
         {
-          "id": "acqua-panna-sg",
-          "brand": "Acqua Panna",
-          "score": 56
+          "id": "barista-hustle-rao-global",
+          "brand": "Barista Hustle",
+          "score": 93
         },
         {
-          "id": "fiji-sg",
-          "brand": "FIJI",
-          "score": 25
+          "id": "third-wave-water-classic-global",
+          "brand": "Third Wave Water",
+          "score": 90
         },
         {
-          "id": "evian-sg",
-          "brand": "Evian",
-          "score": 0
+          "id": "third-wave-water-espresso-global",
+          "brand": "Third Wave Water",
+          "score": 85
         }
       ],
       "Malaysia": [
@@ -108,24 +148,24 @@
           "score": 100
         },
         {
-          "id": "spritzer-my",
-          "brand": "Spritzer",
-          "score": 82
+          "id": "barista-hustle-sca-global",
+          "brand": "Barista Hustle",
+          "score": 95
         },
         {
-          "id": "pure-life-global",
-          "brand": "Pure Life",
-          "score": 64
+          "id": "barista-hustle-rao-global",
+          "brand": "Barista Hustle",
+          "score": 93
         },
         {
-          "id": "acqua-panna-my",
-          "brand": "Acqua Panna",
-          "score": 56
+          "id": "third-wave-water-classic-global",
+          "brand": "Third Wave Water",
+          "score": 90
         },
         {
-          "id": "fiji-my",
-          "brand": "FIJI",
-          "score": 25
+          "id": "third-wave-water-espresso-global",
+          "brand": "Third Wave Water",
+          "score": 85
         }
       ]
     },
@@ -252,6 +292,20 @@
         ]
       },
       {
+        "id": "barista-hustle-rao-global",
+        "brand": "Barista Hustle",
+        "sources": [
+          "https://www.baristahustle.com/blog/diy-water-recipes-the-world-in-two-bottles/"
+        ]
+      },
+      {
+        "id": "barista-hustle-sca-global",
+        "brand": "Barista Hustle",
+        "sources": [
+          "https://www.baristahustle.com/blog/diy-water-recipes-the-world-in-two-bottles/"
+        ]
+      },
+      {
         "id": "bayu-id",
         "brand": "Bayu",
         "sources": [
@@ -279,15 +333,6 @@
           "https://cleopurewater.com/brand-cleo/",
           "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#cleo-id",
           "https://cleopurewater.com/"
-        ]
-      },
-      {
-        "id": "galon-isi-ulang-id",
-        "brand": "Galon isi ulang",
-        "sources": [
-          "https://peraturan.bpk.go.id/Details/119084/permenkes-no-43-tahun-2014",
-          "https://ejournal.unsrat.ac.id/v3/index.php/tekno/article/view/51265",
-          "https://jurnal.fp.unila.ac.id/index.php/JAB/article/view/5641/0"
         ]
       },
       {
@@ -431,6 +476,15 @@
         "brand": "Frozen",
         "sources": [
           "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#frozen-id"
+        ]
+      },
+      {
+        "id": "galon-isi-ulang-id",
+        "brand": "Galon isi ulang",
+        "sources": [
+          "https://peraturan.bpk.go.id/Details/119084/permenkes-no-43-tahun-2014",
+          "https://ejournal.unsrat.ac.id/v3/index.php/tekno/article/view/51265",
+          "https://jurnal.fp.unila.ac.id/index.php/JAB/article/view/5641/0"
         ]
       },
       {
@@ -871,6 +925,20 @@
         ]
       },
       {
+        "id": "third-wave-water-classic-global",
+        "brand": "Third Wave Water",
+        "sources": [
+          "https://thirdwavewater.com/products/classic-profile-1-gallon"
+        ]
+      },
+      {
+        "id": "third-wave-water-espresso-global",
+        "brand": "Third Wave Water",
+        "sources": [
+          "https://thirdwavewater.com/products/espresso-profile-1-gallon"
+        ]
+      },
+      {
         "id": "tirta-fresh-id",
         "brand": "Tirta Fresh",
         "sources": [
@@ -976,6 +1044,17 @@
         ]
       },
       {
+        "id": "dasani-global",
+        "brand": "Dasani",
+        "missing_fields": [
+          "calcium",
+          "magnesium",
+          "bicarbonate",
+          "tds_ppm",
+          "ph"
+        ]
+      },
+      {
         "id": "galon-isi-ulang-id",
         "brand": "Galon isi ulang",
         "missing_fields": [
@@ -985,17 +1064,6 @@
           "calcium",
           "magnesium",
           "bicarbonate"
-        ]
-      },
-      {
-        "id": "dasani-global",
-        "brand": "Dasani",
-        "missing_fields": [
-          "calcium",
-          "magnesium",
-          "bicarbonate",
-          "tds_ppm",
-          "ph"
         ]
       },
       {
@@ -1236,11 +1304,9 @@
     "manual_only": [
       "air-alfamart-id",
       "airku-id",
-      "amidis-id",
-      "cleo-id",
-      "galon-isi-ulang-id",
       "dasani-global",
       "evian-bn",
+      "galon-isi-ulang-id",
       "heysong-water-global",
       "heysong-water-sg",
       "icelandic-glacial-bn",
@@ -1260,7 +1326,6 @@
       "nongfu-spring-sg",
       "oasis-plus-id",
       "oxywater-id",
-      "pristine-8-6-plus-id",
       "pristine-8-plus-id",
       "pure-life-sg",
       "rivero-id",
@@ -1572,584 +1637,2097 @@
     "data_gaps": []
   },
   "grinders": {
-    "total": 53,
-    "published": 33,
+    "total": 250,
+    "published": 250,
     "by_publish_state": {
-      "published": 33,
-      "review_only": 20,
+      "published": 250,
+      "review_only": 0,
       "rejected": 0
     },
     "by_brand": {
-      "1Zpresso": 10,
-      "Breville": 1,
-      "Comandante": 3,
-      "Etzinger": 1,
+      "1Zpresso": 25,
+      "Acaia": 1,
+      "Anfim": 2,
+      "Balmuda": 1,
+      "Baratza": 16,
+      "Barista & Co": 1,
+      "Barista Space": 1,
+      "BelleLife": 1,
+      "Bentwood": 1,
+      "Bodum": 1,
+      "Bravo": 1,
+      "Breville": 3,
+      "Cafflano": 1,
+      "Capresso": 2,
+      "Comandante": 6,
+      "Compak": 3,
+      "Cores": 1,
+      "Cuisinart": 2,
+      "De'Longhi": 2,
+      "Epeios": 1,
+      "Etzinger": 4,
+      "Eureka": 8,
       "Feima": 1,
-      "Hario": 3,
-      "HARIO": 1,
-      "Kingrinder": 2,
-      "KINGrinder": 4,
-      "Kinu": 2,
+      "Fellow": 4,
+      "Fiorenzato (Sanremo)": 2,
+      "Flair": 1,
+      "Fuji Royal": 1,
+      "Goat Story": 1,
+      "Handground": 1,
+      "Hario": 11,
+      "Helor": 2,
+      "HeyCafé": 1,
+      "Hongbei": 1,
+      "JavaPresse": 1,
+      "Joy Resolve": 1,
+      "Kaldi": 1,
+      "Kalita": 4,
+      "Kanso": 1,
+      "KINGrinder": 10,
+      "Kinu": 5,
+      "KitchenAid": 2,
+      "Knock": 4,
+      "Krups": 4,
       "Latina": 2,
+      "Mahlkönig": 8,
       "Mavo": 1,
-      "Mazzer": 1,
-      "MHW-3BOMBER": 1,
-      "OE": 1,
-      "Pietro": 1,
-      "Porlex": 1,
+      "Mazzer": 4,
+      "Melitta": 2,
+      "MHW-3BOMBER": 2,
+      "MiiCoffee": 1,
+      "Moccamaster": 1,
+      "montwave": 1,
+      "Mueller": 1,
+      "Niche": 1,
+      "Option-O": 5,
+      "Orphan Espresso": 2,
+      "OXO": 1,
+      "Pietro": 2,
+      "Pinecone": 1,
+      "Porlex": 4,
+      "Precision": 1,
+      "Rancilio": 2,
+      "ROK": 1,
+      "Saint Anthony Industries": 1,
+      "Smeg": 2,
       "Starseeker": 1,
-      "Timemore": 10,
-      "TIMEMORE": 3,
-      "Varia": 1,
+      "Timemore": 30,
+      "Timemore x Millab": 1,
+      "Turin": 10,
+      "Varia": 5,
       "Vesper": 1,
-      "Wacaco": 1
+      "Vevok Chef": 2,
+      "VSSL": 1,
+      "Wacaco": 1,
+      "Weber Workshops": 2,
+      "Wilfa": 4,
+      "xBloom": 1,
+      "Zerno": 1,
+      "Zwilling": 1
     },
-    "review_required": [
-      "hario-smart-g",
-      "kingrinder-k4",
-      "timemore-c3-max",
-      "kingrinder-k0-k1",
-      "kingrinder-k3",
-      "1zpresso-k-plus",
-      "1zpresso-j-max-s",
-      "kinu-m47-phoenix",
-      "timemore-sculptor-078s"
-    ],
+    "review_required": [],
     "source_coverage": [
       {
-        "id": "1",
-        "label": "Vesper VS-3 FOLD",
+        "id": "1zpresso-j",
+        "label": "1Zpresso J",
         "sources": [
-          "https://www.brewlogic.app/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "1zpresso-j-max",
+        "label": "1Zpresso J-Max",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "1zpresso-j-max-s",
+        "label": "1Zpresso J-Max S",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "1zpresso-j-ultra",
+        "label": "1Zpresso J-Ultra",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "1zpresso-je",
+        "label": "1Zpresso JE",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
         "id": "1zpresso-je-plus-grinder",
         "label": "1Zpresso JE-Plus Grinder",
         "sources": [
-          "https://1zpresso.coffee/grinder/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "1zpresso-jx",
+        "label": "1Zpresso JX",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "1zpresso-jx-s",
+        "label": "1Zpresso JX S",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "1zpresso-jx-pro",
+        "label": "1Zpresso JX-Pro",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
         "id": "1zpresso-jx-pro-s",
         "label": "1Zpresso JX-Pro S",
         "sources": [
-          "https://1zpresso.coffee/grinder/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
         "id": "1zpresso-k-max",
         "label": "1Zpresso K-Max",
         "sources": [
-          "https://1zpresso.coffee/grinder/",
-          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "2",
-        "label": "Timemore C5 ESP PRO",
+        "id": "1zpresso-k-plus",
+        "label": "1Zpresso K-Plus",
         "sources": [
-          "https://www.brewlogic.app/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "32",
-        "label": "1Zpresso J-Ultra",
+        "id": "1zpresso-k-pro",
+        "label": "1Zpresso K-Pro",
         "sources": [
-          "https://www.brewlogic.app/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "33",
+        "id": "1zpresso-k-ultra",
         "label": "1Zpresso K-Ultra",
         "sources": [
-          "https://1zpresso.coffee/grind-setting-reference/",
-          "https://1zpresso.coffee/k-ultra/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "34",
+        "id": "1zpresso-q-air",
+        "label": "1Zpresso Q Air",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "1zpresso-q-air-q2",
         "label": "1Zpresso Q Air / Q2",
         "sources": [
-          "https://1zpresso.coffee/grind-setting-reference/",
-          "https://1zpresso.coffee/q/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "35",
+        "id": "1zpresso-q2-heptagonal-burrs",
+        "label": "1Zpresso Q2 (Heptagonal burrs)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "1zpresso-q2-pentagonal-burrs",
+        "label": "1Zpresso Q2 (Pentagonal burrs)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "1zpresso-q2-s",
+        "label": "1Zpresso Q2 S",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "1zpresso-x-pro",
+        "label": "1Zpresso X-Pro",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "1zpresso-x-pro-x-ultra",
         "label": "1Zpresso X-Pro / X-Ultra",
         "sources": [
-          "https://1zpresso.coffee/grind-setting-reference/",
-          "https://1zpresso.coffee/x/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "36",
+        "id": "1zpresso-x-pro-s",
+        "label": "1Zpresso X-Pro S",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "1zpresso-x-ultra",
+        "label": "1Zpresso X-Ultra",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "1zpresso-zp6",
+        "label": "1Zpresso ZP6",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "1zpresso-zp6-special",
         "label": "1Zpresso ZP6 Special",
         "sources": [
-          "https://1zpresso.coffee/grind-setting-reference/",
-          "https://1zpresso.coffee/zp6/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "37",
+        "id": "acaia-orbit",
+        "label": "Acaia Orbit",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "anfim-best",
+        "label": "Anfim Best",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "anfim-sp-ii",
+        "label": "Anfim SP II",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "balmuda-coffee-mill",
+        "label": "Balmuda Coffee Mill",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-encore",
+        "label": "Baratza Encore",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-encore-esp",
+        "label": "Baratza Encore ESP",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-encore-esp-pro",
+        "label": "Baratza Encore ESP PRO",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-fort-ap",
+        "label": "Baratza Forté AP",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-fort-bg",
+        "label": "Baratza Forté BG",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-maestro",
+        "label": "Baratza Maestro",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-maestro-plus",
+        "label": "Baratza Maestro Plus",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-preciso",
+        "label": "Baratza Preciso",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-sette-270",
+        "label": "Baratza Sette 270",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-sette-270-w",
+        "label": "Baratza Sette 270 W",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-sette-270-wi",
+        "label": "Baratza Sette 270 Wi",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-sette-30",
+        "label": "Baratza Sette 30",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-starbucks-barista",
+        "label": "Baratza Starbucks Barista",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-vario",
+        "label": "Baratza Vario",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-vario-w",
+        "label": "Baratza Vario W",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "baratza-virtuoso",
+        "label": "Baratza Virtuoso+",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "barista-co-core-all-grind",
+        "label": "Barista & Co Core All Grind",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "barista-space-premium-coffee-hand-grinder",
+        "label": "Barista Space Premium Coffee Hand Grinder",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "bellelife-electric-coffee-grinder",
+        "label": "BelleLife Electric Coffee Grinder",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "bentwood-vertical-63",
+        "label": "Bentwood Vertical 63",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "bodum-bistro-10903",
+        "label": "Bodum Bistro 10903",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "bravo-it",
+        "label": "Bravo IT",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "breville-smart-grinder-pro",
         "label": "Breville Smart Grinder Pro",
         "sources": [
-          "https://www.breville.com/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "38",
+        "id": "breville-the-dose-control-pro",
+        "label": "Breville The Dose Control Pro",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "breville-the-smart-grinder-pro",
+        "label": "Breville The Smart Grinder Pro",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "cafflano-grinder",
+        "label": "Cafflano Grinder",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "capresso-infinity",
+        "label": "Capresso Infinity",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "capresso-infinity-plus",
+        "label": "Capresso Infinity Plus",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "comandante-c40-mk4",
         "label": "Comandante C40 MK4",
         "sources": [
-          "https://www.comandantegrinder.com/",
-          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "39",
+        "id": "comandante-c40-mk4-with-red-clix",
+        "label": "Comandante C40 MK4 (with Red Clix)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "comandante-c60-baracuda",
         "label": "Comandante C60 Baracuda",
         "sources": [
-          "https://www.brewlogic.app/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "40",
-        "label": "Etzinger etz-I",
+        "id": "comandante-c60-baracuda-with-gold-clix",
+        "label": "Comandante C60 Baracuda (with Gold Clix)",
         "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "41",
-        "label": "Hario Canister (C-20)",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "42",
-        "label": "Hario Mini Slim+",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "43",
-        "label": "Hario Skerton Pro",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "44",
-        "label": "Kingrinder K6",
-        "sources": [
-          "https://www.kingrinder.com/",
-          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
-        ]
-      },
-      {
-        "id": "45",
-        "label": "Kingrinder P0/P1/P2",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "46",
-        "label": "Kinu M47",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "47",
-        "label": "Latina Sumba / Sumbawa",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "48",
-        "label": "Latina Sumo",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "49",
-        "label": "Mazzer Omega",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "50",
-        "label": "OE Lido 3 / OG",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "51",
-        "label": "Pietro (Flat Burr)",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "52",
-        "label": "Porlex Mini II",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "53",
-        "label": "Starseeker Edge / Edge+",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "55",
-        "label": "Timemore C3 ESP",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "56",
-        "label": "Timemore Chestnut X",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "57",
-        "label": "Timemore Nano / Plus",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "58",
-        "label": "Timemore S3",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "59",
-        "label": "Timemore Slim Plus",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "60",
-        "label": "Varia Hand Grinder",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "61",
-        "label": "Wacaco Exagrind",
-        "sources": [
-          "https://www.wacaco.com/products/exagrind",
-          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
-        ]
-      },
-      {
-        "id": "69",
-        "label": "Timemore C5",
-        "sources": [
-          "https://www.timemore.com/es/products/timemore-manual-coffee-grinder-chestnut-c5-series"
-        ]
-      },
-      {
-        "id": "70",
-        "label": "MHW-3BOMBER Blade R3",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "71",
-        "label": "Timemore x Millab M01",
-        "sources": [
-          "https://www.brewlogic.app/"
-        ]
-      },
-      {
-        "id": "72",
-        "label": "Timemore C3",
-        "sources": [
-          "https://www.timemore.com/",
-          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
-        ]
-      },
-      {
-        "id": "73",
-        "label": "Timemore C2",
-        "sources": [
-          "https://www.timemore.com/",
-          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
-        ]
-      },
-      {
-        "id": "74",
-        "label": "Mavo Phantox Pro",
-        "sources": [
-          "https://www.brewlogic.app/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
         "id": "comandante-x25-trailmaster",
         "label": "Comandante X25 Trailmaster",
         "sources": [
-          "https://www.comandantegrinder.com/",
-          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "hario-smart-g",
-        "label": "HARIO Smart G",
-        "sources": []
-      },
-      {
-        "id": "kingrinder-k2",
-        "label": "KINGrinder K2",
+        "id": "comandante-x25-trailmaster-with-red-clix",
+        "label": "Comandante X25 Trailmaster (with Red Clix)",
         "sources": [
-          "https://www.kingrinder.com/",
-          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "kingrinder-k4",
-        "label": "KINGrinder K4",
-        "sources": []
-      },
-      {
-        "id": "timemore-c3-max",
-        "label": "TIMEMORE C3 Max",
-        "sources": []
-      },
-      {
-        "id": "timemore-chestnut-c5-pro",
-        "label": "TIMEMORE Chestnut C5 Pro",
+        "id": "compak-k3-push",
+        "label": "Compak K3 Push",
         "sources": [
-          "https://www.timemore.com/es/products/timemore-manual-coffee-grinder-chestnut-c5-series"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "kingrinder-k0-k1",
-        "label": "KINGrinder K0 / K1",
-        "sources": []
+        "id": "compak-k3-touch",
+        "label": "Compak K3 Touch",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
       },
       {
-        "id": "kingrinder-k3",
-        "label": "KINGrinder K3",
-        "sources": []
+        "id": "compak-k3-touch-advanced",
+        "label": "Compak K3 Touch Advanced",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
       },
       {
-        "id": "1zpresso-k-plus",
-        "label": "1Zpresso K-Plus",
-        "sources": []
+        "id": "cores-cone-grinder-c330",
+        "label": "Cores Cone Grinder C330",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
       },
       {
-        "id": "1zpresso-j-max-s",
-        "label": "1Zpresso J-Max S",
-        "sources": []
+        "id": "cuisinart-cbm-18",
+        "label": "Cuisinart CBM-18",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
       },
       {
-        "id": "kinu-m47-phoenix",
-        "label": "Kinu M47 Phoenix",
-        "sources": []
+        "id": "cuisinart-dbm-8",
+        "label": "Cuisinart DBM-8",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
       },
       {
-        "id": "timemore-sculptor-078s",
-        "label": "TIMEMORE Sculptor 078S",
-        "sources": []
+        "id": "de-longhi-kg79",
+        "label": "De'Longhi KG79",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "de-longhi-kg89",
+        "label": "De'Longhi KG89",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "epeios-essense-go",
+        "label": "Epeios Essense Go",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "etzinger-etz-i",
+        "label": "Etzinger etz-I",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "etzinger-etz-i-regular",
+        "label": "Etzinger etz-I (Regular)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "etzinger-etz-i-trim",
+        "label": "Etzinger etz-I (Trim)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "etzinger-etz-u",
+        "label": "Etzinger etz-U",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "eureka-atom-60",
+        "label": "Eureka Atom 60",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "eureka-atom-75",
+        "label": "Eureka Atom 75",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "eureka-drogheria-mcd4",
+        "label": "Eureka Drogheria MCD4",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "eureka-mignon-classico",
+        "label": "Eureka Mignon Classico",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "eureka-mignon-oro",
+        "label": "Eureka Mignon Oro",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "eureka-mignon-oro-xl",
+        "label": "Eureka Mignon Oro XL",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "eureka-mignon-silenzio",
+        "label": "Eureka Mignon Silenzio",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "eureka-mignon-specialit",
+        "label": "Eureka Mignon Specialità",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
       },
       {
         "id": "feima-600n",
         "label": "Feima 600N",
         "sources": [
-          "https://www.costco.com.tw/Warehouse-Only/Exhibitions/Kitchen-Appliances/Yang-Chia-Coffee-Grinder-600N/p/88262",
-          "https://www.blibli.com/p/latina-feima-600n-electric-coffee-grinder-penggiling-kopi-elektrik600-putih-100-original/ps--PUA-70058-01532",
-          "https://lampungbaratkab.go.id/home/wp-content/uploads/2025/05/SK-SSH-2026.pdf"
-        ]
-      }
-    ],
-    "data_gaps": [
-      {
-        "id": "1zpresso-je-plus-grinder",
-        "label": "1Zpresso JE-Plus Grinder",
-        "missing_fields": [
-          "grinder_type",
-          "step_type"
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "1zpresso-jx-pro-s",
-        "label": "1Zpresso JX-Pro S",
-        "missing_fields": [
-          "grinder_type",
-          "step_type"
+        "id": "fellow-ode-brew-grinder-gen-1",
+        "label": "Fellow Ode Brew Grinder Gen 1",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "1zpresso-k-max",
-        "label": "1Zpresso K-Max",
-        "missing_fields": [
-          "grinder_type",
-          "step_type"
+        "id": "fellow-ode-brew-grinder-gen-2",
+        "label": "Fellow Ode Brew Grinder Gen 2",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "40",
-        "label": "Etzinger etz-I",
-        "missing_fields": [
-          "grinder_type",
-          "step_type"
+        "id": "fellow-ode-gen-2",
+        "label": "Fellow Ode Gen 2",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "49",
-        "label": "Mazzer Omega",
-        "missing_fields": [
-          "grinder_type",
-          "step_type"
+        "id": "fellow-opus",
+        "label": "Fellow Opus",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "50",
-        "label": "OE Lido 3 / OG",
-        "missing_fields": [
-          "grinder_type"
+        "id": "fiorenzato-sanremo-allground",
+        "label": "Fiorenzato (Sanremo) Allground",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "51",
-        "label": "Pietro (Flat Burr)",
-        "missing_fields": [
-          "grinder_type",
-          "step_type"
+        "id": "fiorenzato-sanremo-allground-sense",
+        "label": "Fiorenzato (Sanremo) Allground Sense",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "56",
-        "label": "Timemore Chestnut X",
-        "missing_fields": [
-          "grinder_type",
-          "step_type"
+        "id": "flair-royal-grinder",
+        "label": "Flair Royal Grinder",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "58",
-        "label": "Timemore S3",
-        "missing_fields": [
-          "grinder_type",
-          "step_type"
+        "id": "fuji-royal-r-220",
+        "label": "Fuji Royal R-220",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "comandante-x25-trailmaster",
-        "label": "Comandante X25 Trailmaster",
-        "missing_fields": [
-          "grinder_type",
-          "step_type"
+        "id": "goat-story-arco",
+        "label": "Goat Story Arco",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "handground-precision-coffee-grinder",
+        "label": "Handground Precision Coffee Grinder",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "hario-canister-c-20",
+        "label": "Hario Canister (C-20)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "hario-mini-mill-plus",
+        "label": "Hario Mini Mill PLUS",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "hario-mini-mill-slim",
+        "label": "Hario Mini Mill Slim",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "hario-mini-mill-slim-pro",
+        "label": "Hario Mini Mill Slim PRO",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "hario-mini-slim",
+        "label": "Hario Mini Slim+",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "hario-skerton",
+        "label": "Hario Skerton",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "hario-skerton-plus",
+        "label": "Hario Skerton PLUS",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "hario-skerton-pro",
+        "label": "Hario Skerton Pro",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
         "id": "hario-smart-g",
-        "label": "HARIO Smart G",
-        "missing_fields": [
-          "grinder_type",
-          "step_type",
-          "sources"
+        "label": "Hario Smart G",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "hario-v60-evc-8b",
+        "label": "Hario V60 EVC-8B",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "hario-v60-evcg-8b-e",
+        "label": "Hario V60 EVCG-8B-E",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "helor-101",
+        "label": "Helor 101",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "helor-106-flux",
+        "label": "Helor 106 Flux",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "heycaf-h1",
+        "label": "HeyCafé H1",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "hongbei-coffee-grinder",
+        "label": "Hongbei Coffee Grinder",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "javapresse-manual-coffee-grinder",
+        "label": "JavaPresse Manual Coffee Grinder",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "joy-resolve-groove-compact",
+        "label": "Joy Resolve Groove Compact",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kaldi-ceramic-coffee-mill",
+        "label": "Kaldi Ceramic Coffee Mill",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kalita-c-90",
+        "label": "Kalita C-90",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kalita-dia-coffee-mill",
+        "label": "Kalita DIA Coffee Mill",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kalita-next-g",
+        "label": "Kalita Next G",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kalita-nice-cut-g",
+        "label": "Kalita Nice Cut G",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kanso-hiku",
+        "label": "Kanso Hiku",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kingrinder-k0",
+        "label": "KINGrinder K0",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kingrinder-k1",
+        "label": "KINGrinder K1",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kingrinder-k1-k0",
+        "label": "KINGrinder K1 / K0",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
         "id": "kingrinder-k2",
         "label": "KINGrinder K2",
-        "missing_fields": [
-          "grinder_type",
-          "step_type"
-        ]
-      },
-      {
-        "id": "kingrinder-k4",
-        "label": "KINGrinder K4",
-        "missing_fields": [
-          "grinder_type",
-          "step_type",
-          "sources"
-        ]
-      },
-      {
-        "id": "timemore-c3-max",
-        "label": "TIMEMORE C3 Max",
-        "missing_fields": [
-          "grinder_type",
-          "step_type",
-          "sources"
-        ]
-      },
-      {
-        "id": "kingrinder-k0-k1",
-        "label": "KINGrinder K0 / K1",
-        "missing_fields": [
-          "grinder_type",
-          "step_type",
-          "sources"
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
         "id": "kingrinder-k3",
         "label": "KINGrinder K3",
-        "missing_fields": [
-          "grinder_type",
-          "step_type",
-          "sources"
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "1zpresso-k-plus",
-        "label": "1Zpresso K-Plus",
-        "missing_fields": [
-          "grinder_type",
-          "step_type",
-          "sources"
+        "id": "kingrinder-k4",
+        "label": "KINGrinder K4",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
-        "id": "1zpresso-j-max-s",
-        "label": "1Zpresso J-Max S",
-        "missing_fields": [
-          "grinder_type",
-          "step_type",
-          "sources"
+        "id": "kingrinder-k5",
+        "label": "KINGrinder K5",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kingrinder-k6",
+        "label": "KINGrinder K6",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kingrinder-p1-p0",
+        "label": "KINGrinder P1 / P0",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kingrinder-p2",
+        "label": "KINGrinder P2",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kinu-m47",
+        "label": "Kinu M47",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kinu-m47-classic",
+        "label": "Kinu M47 Classic",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
         "id": "kinu-m47-phoenix",
         "label": "Kinu M47 Phoenix",
-        "missing_fields": [
-          "grinder_type",
-          "sources"
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kinu-m47-simplicity",
+        "label": "Kinu M47 Simplicity",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kinu-m47-traveller",
+        "label": "Kinu M47 Traveller",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kitchenaid-artisan-coffee-grinder-5kcg0702",
+        "label": "KitchenAid Artisan Coffee Grinder 5KCG0702",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "kitchenaid-coffee-grinder-5kcg8433",
+        "label": "KitchenAid Coffee Grinder 5KCG8433",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "knock-aergrind",
+        "label": "Knock Aergrind",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "knock-feld2",
+        "label": "Knock Feld2",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "knock-feld47",
+        "label": "Knock Feld47",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "knock-feldgrind",
+        "label": "Knock Feldgrind",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "krups-gvx1",
+        "label": "Krups GVX1",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "krups-gvx2",
+        "label": "Krups GVX2",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "krups-gx5000",
+        "label": "Krups GX5000",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "krups-gx6000",
+        "label": "Krups GX6000",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "latina-sumba-sumbawa",
+        "label": "Latina Sumba / Sumbawa",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "latina-sumo",
+        "label": "Latina Sumo",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mahlk-nig-ek-omnia",
+        "label": "Mahlkönig EK Omnia",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mahlk-nig-ek43-0-16",
+        "label": "Mahlkönig EK43 (0-16)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mahlk-nig-ek43-1-11",
+        "label": "Mahlkönig EK43 (1-11)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mahlk-nig-ek43-s",
+        "label": "Mahlkönig EK43 S",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mahlk-nig-gh2-hc880",
+        "label": "Mahlkönig GH2 (HC880)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mahlk-nig-vta-6s",
+        "label": "Mahlkönig VTA 6S",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mahlk-nig-vta-6s-w",
+        "label": "Mahlkönig VTA 6S W",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mahlk-nig-x54",
+        "label": "Mahlkönig X54",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mavo-phantox-pro",
+        "label": "Mavo Phantox Pro",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mazzer-omega",
+        "label": "Mazzer Omega",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mazzer-philos",
+        "label": "Mazzer Philos",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mazzer-zm",
+        "label": "Mazzer ZM",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mazzer-zm-plus",
+        "label": "Mazzer ZM Plus",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "melitta-calibra",
+        "label": "Melitta Calibra",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "melitta-molino",
+        "label": "Melitta Molino",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mhw-3bomber-blade-r3",
+        "label": "MHW-3BOMBER Blade R3",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mhw-3bomber-r3",
+        "label": "MHW-3BOMBER R3",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "miicoffee-d40",
+        "label": "MiiCoffee D40+",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "moccamaster-km5",
+        "label": "Moccamaster KM5",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "montwave-gu2",
+        "label": "montwave GU2",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "mueller-ultra-grind",
+        "label": "Mueller Ultra-Grind",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "niche-zero",
+        "label": "Niche Zero",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "option-o-lagom-01",
+        "label": "Option-O Lagom 01",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "option-o-lagom-casa",
+        "label": "Option-O Lagom Casa",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "option-o-lagom-mini-moonshine-burrs",
+        "label": "Option-O Lagom Mini (Moonshine burrs)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "option-o-lagom-mini-obsidian-burrs",
+        "label": "Option-O Lagom Mini (Obsidian burrs)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "option-o-lagom-p64",
+        "label": "Option-O Lagom P64",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "oe-lido-3-og",
+        "label": "Orphan Espresso OE Lido 3 / OG",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "orphan-espresso-lido-og",
+        "label": "Orphan Espresso Lido OG",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "oxo-conical-burr-coffee-grinder",
+        "label": "OXO Conical Burr Coffee Grinder",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "pietro-b-modal-burrs",
+        "label": "Pietro (B-Modal Burrs)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "pietro-m-modal-burrs",
+        "label": "Pietro (M-Modal Burrs)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "pinecone-pinion",
+        "label": "Pinecone Pinion",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "porlex-mini",
+        "label": "Porlex Mini",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "porlex-mini-ii",
+        "label": "Porlex Mini II",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "porlex-tall",
+        "label": "Porlex Tall",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "porlex-tall-ii",
+        "label": "Porlex Tall II",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "precision-gs30",
+        "label": "Precision GS30",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "rancilio-rocky",
+        "label": "Rancilio Rocky",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "rancilio-rocky-sd",
+        "label": "Rancilio Rocky SD",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "rok-grindergc",
+        "label": "ROK GrinderGC",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "saint-anthony-industries-millwright-hand-grinder",
+        "label": "Saint Anthony Industries Millwright Hand Grinder",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "smeg-cgf01",
+        "label": "Smeg CGF01",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "smeg-cgf11",
+        "label": "Smeg CGF11",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "starseeker-edge-edge",
+        "label": "Starseeker Edge / Edge+",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-c2",
+        "label": "Timemore C2",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-c2-fold",
+        "label": "Timemore C2 Fold",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-c2-max",
+        "label": "Timemore C2 Max",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-c2-max-pro",
+        "label": "Timemore C2 Max Pro",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-c3",
+        "label": "Timemore C3",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-c3-esp",
+        "label": "Timemore C3 ESP",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-c3-esp-pro",
+        "label": "Timemore C3 ESP / Pro",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-c3-max",
+        "label": "Timemore C3 Max",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-c3-max-pro",
+        "label": "Timemore C3 Max Pro",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-c3-pro",
+        "label": "Timemore C3 Pro",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-c3s",
+        "label": "Timemore C3S",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-c3s-pro",
+        "label": "Timemore C3S Pro",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-c5",
+        "label": "Timemore C5",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-c5-esp-pro",
+        "label": "Timemore C5 ESP PRO",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-c5-pro",
+        "label": "Timemore C5 Pro",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-chestnut-c5-pro",
+        "label": "Timemore Chestnut C5 Pro",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-chestnut-x",
+        "label": "Timemore Chestnut X",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-g1",
+        "label": "Timemore G1",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-g1-plus",
+        "label": "Timemore G1 Plus",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-nano",
+        "label": "Timemore Nano",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-nano-plus",
+        "label": "Timemore Nano / Plus",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-s3",
+        "label": "Timemore S3",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-s3-esp",
+        "label": "Timemore S3 ESP",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-sculptor-064",
+        "label": "Timemore Sculptor 064",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-sculptor-064s",
+        "label": "Timemore Sculptor 064S",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-sculptor-078",
+        "label": "Timemore Sculptor 078",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       },
       {
         "id": "timemore-sculptor-078s",
-        "label": "TIMEMORE Sculptor 078S",
-        "missing_fields": [
-          "sources"
+        "label": "Timemore Sculptor 078S",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-slim",
+        "label": "Timemore Slim",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-slim-plus",
+        "label": "Timemore Slim Plus",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-x-millab-m01",
+        "label": "Timemore x Millab M01",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "timemore-x-millab-e01",
+        "label": "Timemore x Millab E01",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "df64-gen2",
+        "label": "Turin DF64 Gen2",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "turin-cf64v",
+        "label": "Turin CF64V",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "turin-df54",
+        "label": "Turin DF54",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "turin-df64-gen-1",
+        "label": "Turin DF64 (Gen 1)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "turin-df64-gen-2",
+        "label": "Turin DF64 (Gen 2)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "turin-df64v",
+        "label": "Turin DF64V",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "turin-df83",
+        "label": "Turin DF83",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "turin-df83v",
+        "label": "Turin DF83V",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "turin-sd40-v1",
+        "label": "Turin SD40 V1",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "turin-sd40-v2",
+        "label": "Turin SD40 V2",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "varia-evo-hybrid",
+        "label": "Varia Evo Hybrid",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "varia-hand-grinder",
+        "label": "Varia Hand Grinder",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "varia-vs3-gen-1",
+        "label": "Varia VS3 (Gen 1)",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "varia-vs3-gen-2",
+        "label": "Varia VS3 Gen 2",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "varia-vs6",
+        "label": "Varia VS6",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "vesper-vs-3-fold",
+        "label": "Vesper VS-3 FOLD",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "vevok-chef-06",
+        "label": "Vevok Chef 06",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "vevok-chef-06-slim",
+        "label": "Vevok Chef 06 Slim",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "vssl-java",
+        "label": "VSSL JAVA",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "wacaco-exagrind",
+        "label": "Wacaco Exagrind",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "weber-workshops-eg-1",
+        "label": "Weber Workshops EG-1",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "weber-workshops-key-mk1",
+        "label": "Weber Workshops KEY Mk1",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "wilfa-balance",
+        "label": "Wilfa Balance",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "wilfa-svart",
+        "label": "Wilfa Svart",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "wilfa-svart-aroma",
+        "label": "Wilfa Svart Aroma",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "wilfa-uniform",
+        "label": "Wilfa Uniform",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "xbloom-studio",
+        "label": "xBloom Studio",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "zerno-z1",
+        "label": "Zerno Z1",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
+        ]
+      },
+      {
+        "id": "zwilling-enfinigy-coffee-grinder",
+        "label": "Zwilling Enfinigy Coffee Grinder",
+        "sources": [
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "https://sca.coffee/research"
         ]
       }
-    ]
+    ],
+    "data_gaps": []
   }
 }

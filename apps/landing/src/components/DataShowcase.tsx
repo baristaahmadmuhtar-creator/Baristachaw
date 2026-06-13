@@ -56,7 +56,7 @@ export function DataShowcase({ language }: { language: 'id' | 'en' }) {
           <div className="data-stats">
             <div className="data-stat">
               <Droplet />
-              <strong>107</strong>
+              <strong>111</strong>
               <span>{isId ? 'Profil Air Mineral' : 'Water Profiles'}</span>
             </div>
             <div className="data-stat">

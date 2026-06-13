@@ -694,11 +694,8 @@
       ],
       "water_type": "purified",
       "is_sparkling": false,
-      "is_brew_ready": false,
-      "brew_block_reason": [
-        "Distilled/demineral water is too low in minerals for direct brewing.",
-        "Use as RO-style base only after adding brew minerals, or enter measured TDS, GH, and KH manually."
-      ],
+      "is_brew_ready": true,
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": 0,
         "magnesium": 0,
@@ -715,7 +712,7 @@
         "hardness_ppm_as_caco3": 1.4,
         "alkalinity_ppm_as_caco3": 1.2,
         "sca_match_score": null,
-        "brew_recommendation": "poor"
+        "brew_recommendation": "acceptable"
       },
       "sources": [
         {
@@ -745,7 +742,7 @@
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "amidis indonesia id amidis distilled demineral water air demineral low mineral ro base purified amidis",
+      "search_text": "amidis indonesia id amidis distilled demineral water air demineral low mineral ro base purified amidis direct low mineral experimental filter",
       "aliases": [
         "Amidis",
         "AMIDIS",
@@ -1027,6 +1024,136 @@
       "updated_at": "2026-04-07T07:30:53.893Z"
     },
     {
+      "id": "barista-hustle-rao-global",
+      "brand_group_id": "barista-hustle-rao",
+      "market_code": "global",
+      "sku_label": "Barista Hustle DIY Scott Rao Profile Water",
+      "brand": "Barista Hustle",
+      "country_origin": "Global",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Singapore",
+        "Malaysia",
+        "Brunei"
+      ],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "is_brew_ready": true,
+      "brew_block_reason": [],
+      "minerals_mg_l": {
+        "calcium": 16,
+        "magnesium": 9.7,
+        "sodium": 20.5,
+        "potassium": 0,
+        "bicarbonate": 61,
+        "sulfate": 38.3,
+        "chloride": 0,
+        "silica": 0
+      },
+      "ph": 7,
+      "tds_ppm": 150,
+      "coffee_parameters": {
+        "hardness_ppm_as_caco3": 80,
+        "alkalinity_ppm_as_caco3": 50,
+        "sca_match_score": 93,
+        "brew_recommendation": "excellent"
+      },
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.baristahustle.com/blog/diy-water-recipes-the-world-in-two-bottles/",
+          "collected_at": "2026-06-14T00:00:00.000Z",
+          "confidence_score": 0.98
+        }
+      ],
+      "published": true,
+      "publish_state": "published",
+      "search_text": "barista hustle diy rao scott rao profile water recipes global indonesia singapore malaysia brunei remineralized custom",
+      "aliases": [
+        "Scott Rao Water",
+        "BH Rao"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://www.baristahustle.com/blog/diy-water-recipes-the-world-in-two-bottles/",
+        "collected_at": "2026-06-14T00:00:00.000Z",
+        "confidence_score": 0.98
+      },
+      "updated_at": "2026-06-14T00:00:00.000Z"
+    },
+    {
+      "id": "barista-hustle-sca-global",
+      "brand_group_id": "barista-hustle-sca",
+      "market_code": "global",
+      "sku_label": "Barista Hustle DIY SCA Standard Water",
+      "brand": "Barista Hustle",
+      "country_origin": "Global",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Singapore",
+        "Malaysia",
+        "Brunei"
+      ],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "is_brew_ready": true,
+      "brew_block_reason": [],
+      "minerals_mg_l": {
+        "calcium": 12,
+        "magnesium": 9.3,
+        "sodium": 16.4,
+        "potassium": 0,
+        "bicarbonate": 48.8,
+        "sulfate": 36.7,
+        "chloride": 0,
+        "silica": 0
+      },
+      "ph": 7,
+      "tds_ppm": 150,
+      "coffee_parameters": {
+        "hardness_ppm_as_caco3": 68,
+        "alkalinity_ppm_as_caco3": 40,
+        "sca_match_score": 95,
+        "brew_recommendation": "excellent"
+      },
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.baristahustle.com/blog/diy-water-recipes-the-world-in-two-bottles/",
+          "collected_at": "2026-06-14T00:00:00.000Z",
+          "confidence_score": 0.98
+        }
+      ],
+      "published": true,
+      "publish_state": "published",
+      "search_text": "barista hustle diy sca standard water recipes global indonesia singapore malaysia brunei remineralized custom",
+      "aliases": [
+        "Barista Hustle SCA",
+        "BH SCA"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://www.baristahustle.com/blog/diy-water-recipes-the-world-in-two-bottles/",
+        "collected_at": "2026-06-14T00:00:00.000Z",
+        "confidence_score": 0.98
+      },
+      "updated_at": "2026-06-14T00:00:00.000Z"
+    },
+    {
       "id": "bayu-id",
       "brand_group_id": "bayu",
       "market_code": "id",
@@ -1221,11 +1348,8 @@
       ],
       "water_type": "purified",
       "is_sparkling": false,
-      "is_brew_ready": false,
-      "brew_block_reason": [
-        "Cleo is positioned as pure low-mineral water; direct brewing can taste thin and under-buffered.",
-        "Use as base water only after adding minerals, or enter measured TDS, GH, and KH manually."
-      ],
+      "is_brew_ready": true,
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": 1.8,
         "magnesium": 0.5,
@@ -1242,7 +1366,7 @@
         "hardness_ppm_as_caco3": 6.6,
         "alkalinity_ppm_as_caco3": 5.5,
         "sca_match_score": null,
-        "brew_recommendation": "poor"
+        "brew_recommendation": "acceptable"
       },
       "sources": [
         {
@@ -1279,7 +1403,7 @@
         "Air Murni Cleo",
         "Celo"
       ],
-      "verification_status": "verified",
+      "verification_status": "curated",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [
@@ -1288,96 +1412,6 @@
           "official_bicarbonate"
         ],
         "completeness_score": 70
-      },
-      "updated_at": "2026-05-18T00:00:00.000Z"
-    },
-    {
-      "id": "galon-isi-ulang-id",
-      "brand_group_id": "galon-isi-ulang",
-      "market_code": "id",
-      "sku_label": "Galon isi ulang / depot water manual profile",
-      "brand": "Galon isi ulang",
-      "country_origin": "Indonesia",
-      "available_in": [
-        "Indonesia"
-      ],
-      "water_type": "purified",
-      "is_sparkling": false,
-      "is_brew_ready": false,
-      "brew_block_reason": [
-        "Depot and refill-gallon water varies by source, filter condition, and maintenance.",
-        "Enter measured TDS, GH, and KH manually before using it as brew water."
-      ],
-      "minerals_mg_l": {
-        "calcium": null,
-        "magnesium": null,
-        "sodium": null,
-        "potassium": null,
-        "bicarbonate": null,
-        "sulfate": null,
-        "chloride": null,
-        "silica": null
-      },
-      "ph": null,
-      "tds_ppm": null,
-      "coffee_parameters": {
-        "hardness_ppm_as_caco3": null,
-        "alkalinity_ppm_as_caco3": null,
-        "sca_match_score": null,
-        "brew_recommendation": "manual_required"
-      },
-      "sources": [
-        {
-          "source_type": "regulator",
-          "source_url": "https://peraturan.bpk.go.id/Details/119084/permenkes-no-43-tahun-2014",
-          "collected_at": "2026-05-18T00:00:00.000Z",
-          "confidence_score": 0.78
-        },
-        {
-          "source_type": "community_reference",
-          "source_url": "https://ejournal.unsrat.ac.id/v3/index.php/tekno/article/view/51265",
-          "collected_at": "2026-05-18T00:00:00.000Z",
-          "confidence_score": 0.65
-        },
-        {
-          "source_type": "community_reference",
-          "source_url": "https://jurnal.fp.unila.ac.id/index.php/JAB/article/view/5641/0",
-          "collected_at": "2026-05-18T00:00:00.000Z",
-          "confidence_score": 0.65
-        }
-      ],
-      "primary_source": {
-        "source_type": "regulator",
-        "source_url": "https://peraturan.bpk.go.id/Details/119084/permenkes-no-43-tahun-2014",
-        "collected_at": "2026-05-18T00:00:00.000Z",
-        "confidence_score": 0.78
-      },
-      "published": false,
-      "publish_state": "review_only",
-      "search_text": "galon isi ulang depot air minum air galon air isi ulang ro depot filter depot manual mineral tds gh kh",
-      "aliases": [
-        "Air galon",
-        "Galon isi ulang",
-        "Air galon isi ulang",
-        "Depot air minum",
-        "Depot isi ulang",
-        "Air isi ulang",
-        "RO depot",
-        "Air RO galon",
-        "Refill gallon water"
-      ],
-      "verification_status": "curated",
-      "data_quality": {
-        "is_estimated": false,
-        "missing_fields": [
-          "tds_ppm",
-          "hardness_ppm_as_caco3",
-          "alkalinity_ppm_as_caco3",
-          "calcium",
-          "magnesium",
-          "bicarbonate"
-        ],
-        "completeness_score": 35
       },
       "updated_at": "2026-05-18T00:00:00.000Z"
     },
@@ -2573,6 +2607,96 @@
         "completeness_score": 100
       },
       "updated_at": "2026-04-07T07:30:53.893Z"
+    },
+    {
+      "id": "galon-isi-ulang-id",
+      "brand_group_id": "galon-isi-ulang",
+      "market_code": "id",
+      "sku_label": "Galon isi ulang / depot water manual profile",
+      "brand": "Galon isi ulang",
+      "country_origin": "Indonesia",
+      "available_in": [
+        "Indonesia"
+      ],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Depot and refill-gallon water varies by source, filter condition, and maintenance.",
+        "Enter measured TDS, GH, and KH manually before using it as brew water."
+      ],
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": null,
+      "tds_ppm": null,
+      "coffee_parameters": {
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "sca_match_score": null,
+        "brew_recommendation": "manual_required"
+      },
+      "sources": [
+        {
+          "source_type": "regulator",
+          "source_url": "https://peraturan.bpk.go.id/Details/119084/permenkes-no-43-tahun-2014",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.78
+        },
+        {
+          "source_type": "community_reference",
+          "source_url": "https://ejournal.unsrat.ac.id/v3/index.php/tekno/article/view/51265",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.65
+        },
+        {
+          "source_type": "community_reference",
+          "source_url": "https://jurnal.fp.unila.ac.id/index.php/JAB/article/view/5641/0",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.65
+        }
+      ],
+      "primary_source": {
+        "source_type": "regulator",
+        "source_url": "https://peraturan.bpk.go.id/Details/119084/permenkes-no-43-tahun-2014",
+        "collected_at": "2026-05-18T00:00:00.000Z",
+        "confidence_score": 0.78
+      },
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "galon isi ulang depot air minum air galon air isi ulang ro depot filter depot manual mineral tds gh kh",
+      "aliases": [
+        "Air galon",
+        "Galon isi ulang",
+        "Air galon isi ulang",
+        "Depot air minum",
+        "Depot isi ulang",
+        "Air isi ulang",
+        "RO depot",
+        "Air RO galon",
+        "Refill gallon water"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [
+          "tds_ppm",
+          "hardness_ppm_as_caco3",
+          "alkalinity_ppm_as_caco3",
+          "calcium",
+          "magnesium",
+          "bicarbonate"
+        ],
+        "completeness_score": 35
+      },
+      "updated_at": "2026-05-18T00:00:00.000Z"
     },
     {
       "id": "gerolsteiner-global",
@@ -5118,10 +5242,8 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": false,
-      "brew_block_reason": [
-        "Alkaline pH is source-backed, but mineral quantities are curated; use manual minerals for coffee-ready precision."
-      ],
+      "is_brew_ready": true,
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": 5.8,
         "magnesium": 1.5,
@@ -6453,6 +6575,136 @@
         "completeness_score": 100
       },
       "updated_at": "2026-05-18T00:00:00.000Z"
+    },
+    {
+      "id": "third-wave-water-classic-global",
+      "brand_group_id": "third-wave-water-classic",
+      "market_code": "global",
+      "sku_label": "Third Wave Water Classic Profile (1 Gallon)",
+      "brand": "Third Wave Water",
+      "country_origin": "USA",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Singapore",
+        "Malaysia",
+        "Brunei"
+      ],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "is_brew_ready": true,
+      "brew_block_reason": [],
+      "minerals_mg_l": {
+        "calcium": 25,
+        "magnesium": 20,
+        "sodium": 5,
+        "potassium": 0,
+        "bicarbonate": 48.8,
+        "sulfate": 75,
+        "chloride": 0,
+        "silica": 0
+      },
+      "ph": 7,
+      "tds_ppm": 150,
+      "coffee_parameters": {
+        "hardness_ppm_as_caco3": 110,
+        "alkalinity_ppm_as_caco3": 40,
+        "sca_match_score": 90,
+        "brew_recommendation": "excellent"
+      },
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://thirdwavewater.com/products/classic-profile-1-gallon",
+          "collected_at": "2026-06-14T00:00:00.000Z",
+          "confidence_score": 0.98
+        }
+      ],
+      "published": true,
+      "publish_state": "published",
+      "search_text": "third wave water classic profile usa global indonesia singapore malaysia brunei remineralized diy custom",
+      "aliases": [
+        "Third Wave Water Classic",
+        "TWW Classic"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://thirdwavewater.com/products/classic-profile-1-gallon",
+        "collected_at": "2026-06-14T00:00:00.000Z",
+        "confidence_score": 0.98
+      },
+      "updated_at": "2026-06-14T00:00:00.000Z"
+    },
+    {
+      "id": "third-wave-water-espresso-global",
+      "brand_group_id": "third-wave-water-espresso",
+      "market_code": "global",
+      "sku_label": "Third Wave Water Espresso Profile (1 Gallon)",
+      "brand": "Third Wave Water",
+      "country_origin": "USA",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Singapore",
+        "Malaysia",
+        "Brunei"
+      ],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "is_brew_ready": true,
+      "brew_block_reason": [],
+      "minerals_mg_l": {
+        "calcium": 15,
+        "magnesium": 15,
+        "sodium": 20,
+        "potassium": 0,
+        "bicarbonate": 85.4,
+        "sulfate": 35,
+        "chloride": 0,
+        "silica": 0
+      },
+      "ph": 7.2,
+      "tds_ppm": 150,
+      "coffee_parameters": {
+        "hardness_ppm_as_caco3": 90,
+        "alkalinity_ppm_as_caco3": 70,
+        "sca_match_score": 85,
+        "brew_recommendation": "excellent"
+      },
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://thirdwavewater.com/products/espresso-profile-1-gallon",
+          "collected_at": "2026-06-14T00:00:00.000Z",
+          "confidence_score": 0.98
+        }
+      ],
+      "published": true,
+      "publish_state": "published",
+      "search_text": "third wave water espresso profile usa global indonesia singapore malaysia brunei remineralized diy custom",
+      "aliases": [
+        "Third Wave Water Espresso",
+        "TWW Espresso"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://thirdwavewater.com/products/espresso-profile-1-gallon",
+        "collected_at": "2026-06-14T00:00:00.000Z",
+        "confidence_score": 0.98
+      },
+      "updated_at": "2026-06-14T00:00:00.000Z"
     },
     {
       "id": "tirta-fresh-id",

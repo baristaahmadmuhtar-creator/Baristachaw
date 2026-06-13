@@ -373,7 +373,7 @@
         "sca_match_score": null,
         "brew_recommendation": "acceptable"
       },
-      "search_text": "amidis indonesia id amidis distilled demineral water direct low mineral experimental filter v60 pour over ro base purified amidis",
+      "search_text": "amidis indonesia id amidis distilled demineral water air demineral low mineral ro base purified amidis direct low mineral experimental filter",
       "aliases": [
         "Amidis",
         "AMIDIS",
@@ -521,6 +521,82 @@
         "BANYU SEHAT"
       ],
       "updated_at": "2026-04-07T07:30:53.893Z"
+    },
+    {
+      "id": "barista-hustle-rao-global",
+      "brand_group_id": "barista-hustle-rao",
+      "market_code": "global",
+      "sku_label": "Barista Hustle DIY Scott Rao Profile Water",
+      "brand": "Barista Hustle",
+      "country_origin": "Global",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Singapore",
+        "Malaysia",
+        "Brunei"
+      ],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "is_brew_ready": true,
+      "brew_block_reason": [],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "coffee_parameters": {
+        "hardness_ppm_as_caco3": 80,
+        "alkalinity_ppm_as_caco3": 50,
+        "sca_match_score": 93,
+        "brew_recommendation": "excellent"
+      },
+      "search_text": "barista hustle diy rao scott rao profile water recipes global indonesia singapore malaysia brunei remineralized custom",
+      "aliases": [
+        "Scott Rao Water",
+        "BH Rao"
+      ],
+      "updated_at": "2026-06-14T00:00:00.000Z"
+    },
+    {
+      "id": "barista-hustle-sca-global",
+      "brand_group_id": "barista-hustle-sca",
+      "market_code": "global",
+      "sku_label": "Barista Hustle DIY SCA Standard Water",
+      "brand": "Barista Hustle",
+      "country_origin": "Global",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Singapore",
+        "Malaysia",
+        "Brunei"
+      ],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "is_brew_ready": true,
+      "brew_block_reason": [],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "coffee_parameters": {
+        "hardness_ppm_as_caco3": 68,
+        "alkalinity_ppm_as_caco3": 40,
+        "sca_match_score": 95,
+        "brew_recommendation": "excellent"
+      },
+      "search_text": "barista hustle diy sca standard water recipes global indonesia singapore malaysia brunei remineralized custom",
+      "aliases": [
+        "Barista Hustle SCA",
+        "BH SCA"
+      ],
+      "updated_at": "2026-06-14T00:00:00.000Z"
     },
     {
       "id": "bayu-id",
@@ -1924,7 +2000,7 @@
         "sca_match_score": null,
         "brew_recommendation": "acceptable"
       },
-      "search_text": "pristine 8.6+ indonesia id pristine 8.6+ natural mineral water pristine-8-6-plus alkaline ph 8.6 air alkali pristine high buffer floral acidity muted filter starting point",
+      "search_text": "pristine 8.6+ indonesia id pristine 8.6+ natural mineral water pristine-8-6-plus alkaline ph 8.6 air alkali pristine",
       "aliases": [
         "Pristine 8.6+",
         "PRISTINE 8.6+",
@@ -2357,6 +2433,82 @@
         "Super O2 Oxygen Water"
       ],
       "updated_at": "2026-05-18T00:00:00.000Z"
+    },
+    {
+      "id": "third-wave-water-classic-global",
+      "brand_group_id": "third-wave-water-classic",
+      "market_code": "global",
+      "sku_label": "Third Wave Water Classic Profile (1 Gallon)",
+      "brand": "Third Wave Water",
+      "country_origin": "USA",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Singapore",
+        "Malaysia",
+        "Brunei"
+      ],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "is_brew_ready": true,
+      "brew_block_reason": [],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "coffee_parameters": {
+        "hardness_ppm_as_caco3": 110,
+        "alkalinity_ppm_as_caco3": 40,
+        "sca_match_score": 90,
+        "brew_recommendation": "excellent"
+      },
+      "search_text": "third wave water classic profile usa global indonesia singapore malaysia brunei remineralized diy custom",
+      "aliases": [
+        "Third Wave Water Classic",
+        "TWW Classic"
+      ],
+      "updated_at": "2026-06-14T00:00:00.000Z"
+    },
+    {
+      "id": "third-wave-water-espresso-global",
+      "brand_group_id": "third-wave-water-espresso",
+      "market_code": "global",
+      "sku_label": "Third Wave Water Espresso Profile (1 Gallon)",
+      "brand": "Third Wave Water",
+      "country_origin": "USA",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Singapore",
+        "Malaysia",
+        "Brunei"
+      ],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "is_brew_ready": true,
+      "brew_block_reason": [],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "coffee_parameters": {
+        "hardness_ppm_as_caco3": 90,
+        "alkalinity_ppm_as_caco3": 70,
+        "sca_match_score": 85,
+        "brew_recommendation": "excellent"
+      },
+      "search_text": "third wave water espresso profile usa global indonesia singapore malaysia brunei remineralized diy custom",
+      "aliases": [
+        "Third Wave Water Espresso",
+        "TWW Espresso"
+      ],
+      "updated_at": "2026-06-14T00:00:00.000Z"
     },
     {
       "id": "tirta-fresh-id",

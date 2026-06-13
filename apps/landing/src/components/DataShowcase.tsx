@@ -13,6 +13,7 @@ const GRINDER_BRANDS = [
   'Baratza Encore', 'KINGrinder K6', 'Timemore Chestnut X', 'Kinu M47', 'Hario Skerton',
   'Varia VS3', 'Turin DF64', 'MHW-3Bomber', 'Timemore Sculptor', 'Breville Smart Grinder',
   'Mazzer Omega', '1Zpresso JX-Pro', 'Porlex Mini', 'Latina Sumba', 'Wacaco Exagrind',
+  'Mazzer Philos', 'EK Omnia', 'Lagom 01',
 ];
 
 function MarqueeRow({ items, speed = 35, reverse = false }: { items: string[]; speed?: number; reverse?: boolean }) {

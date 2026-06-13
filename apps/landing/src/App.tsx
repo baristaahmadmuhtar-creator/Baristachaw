@@ -7,6 +7,7 @@ import { FeatureGraphics } from './components/FeatureGraphics';
 import { HeroSection } from './components/HeroSection';
 import { LandingHeader } from './components/LandingHeader';
 import { MethodSections } from './components/MethodSections';
+import { ScrollReveal } from './components/ScrollReveal';
 import { SupportChatWidget } from './components/SupportChatWidget';
 import { APP_LINKS, APK_URL } from './config';
 import { DownloadPage } from './pages/DownloadPage';
@@ -18,30 +19,38 @@ function EvidenceSection({ language }: { language: 'id' | 'en' }) {
   const isId = language === 'id';
   const evidence = [
     ['100%', isId ? 'Rasa Konsisten' : 'Taste Consistency'],
-    ['16+', isId ? 'Metode Klasik' : 'Classic Methods'],
+    ['16+', isId ? 'Alat Seduh Didukung' : 'Supported Brewers'],
     ['99%', isId ? 'Kepuasan Pengguna' : 'User Satisfaction'],
     ['10.000+', isId ? 'Resep Terkalibrasi' : 'Calibrated Recipes'],
-    ['0', isId ? 'Tebak-Tebakan' : 'Guesswork'],
-    ['Akses', isId ? 'Instan & Cepat' : 'Instant Access'],
+    ['0', isId ? 'Tebak-Tebakan' : 'Zero Guesswork'],
+    ['Instan', isId ? 'Akses Kapan Saja' : 'Instant Access'],
   ];
   return (
     <section className="evidence-section" aria-labelledby="evidence-title">
       <div className="evidence-inner">
-        <div>
-          <p className="section-index section-index-light">05 / 06</p>
-          <h2 id="evidence-title">{isId ? 'Mengapa Barista dan Pencinta Kopi Memilih BaristaChaw' : 'Why Baristas and Coffee Lovers Choose BaristaChaw'}</h2>
-        </div>
+        <ScrollReveal variant="slide-up">
+          <div>
+            <p className="section-index section-index-light">05 / 06</p>
+            <h2 id="evidence-title">{isId ? 'Mengapa Barista dan Pencinta Kopi Memilih BaristaChaw' : 'Why Baristas and Coffee Lovers Choose BaristaChaw'}</h2>
+          </div>
+        </ScrollReveal>
         <div className="evidence-grid">
-          {evidence.map(([value, label]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}
+          {evidence.map(([value, label], index) => (
+            <ScrollReveal key={label} variant="scale" delay={index * 0.06}>
+              <div><strong>{value}</strong><span>{label}</span></div>
+            </ScrollReveal>
+          ))}
         </div>
-        <div className="honesty-note">
-          <CircleAlert />
-          <p>
-            {isId
-              ? 'BaristaChaw dirancang untuk mendampingi ritual kopi Anda. Setiap rekomendasi disesuaikan secara dinamis agar Anda selalu mendapatkan cangkir kopi terbaik di rumah maupun di kedai.'
-              : 'BaristaChaw is designed to accompany your daily coffee ritual. Every suggestion is dynamically tailored so you can always serve the best cup of coffee, at home or in a cafe.'}
-          </p>
-        </div>
+        <ScrollReveal variant="fade" delay={0.2}>
+          <div className="honesty-note">
+            <CircleAlert />
+            <p>
+              {isId
+                ? 'BaristaChaw dirancang untuk mendampingi ritual kopi harian Anda. Setiap rekomendasi disesuaikan secara dinamis agar Anda selalu mendapatkan cangkir kopi terbaik — di rumah, di kantor, atau di kedai favorit Anda.'
+                : 'BaristaChaw is designed to accompany your daily coffee ritual. Every recommendation is dynamically personalized so you always get the best cup — at home, at the office, or at your favorite café.'}
+            </p>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );
@@ -51,44 +60,52 @@ function PricingSection({ language }: { language: 'id' | 'en' }) {
   const isId = language === 'id';
   return (
     <section className="pricing section-shell" aria-labelledby="pricing-title">
-      <div className="section-heading">
-        <p className="section-index">Access</p>
-        <div>
-          <h2 id="pricing-title">{isId ? 'Akses Fleksibel untuk Setiap Barista.' : 'Flexible Access for Every Barista.'}</h2>
-          <p>{isId ? 'Nikmati kenyamanan menyeduh dengan pilihan fitur yang sesuai kebutuhan Anda.' : 'Enjoy the comfort of brewing with feature options tailored to your needs.'}</p>
+      <ScrollReveal variant="slide-up">
+        <div className="section-heading">
+          <p className="section-index">Access</p>
+          <div>
+            <h2 id="pricing-title">{isId ? 'Akses Fleksibel untuk Setiap Barista.' : 'Flexible Access for Every Barista.'}</h2>
+            <p>{isId ? 'Pilih paket yang sesuai dengan gaya menyeduh Anda — dari home brewer hingga profesional kedai.' : 'Choose a plan that fits your brewing style — from home brewer to café professional.'}</p>
+          </div>
         </div>
-      </div>
+      </ScrollReveal>
       <div className="plan-list">
-        <article>
-          <span>Free</span>
-          <h3>{isId ? 'Eksplorasi Awal' : 'Initial Exploration'}</h3>
-          <ul>
-            <li><Check /> {isId ? 'Coba AI Brew Gratis' : 'Free AI Brew Try'}</li>
-            <li><Check /> {isId ? 'Panduan Dasar Kopi' : 'Basic Coffee Guide'}</li>
-            <li><Check /> {isId ? 'Simpan Resep Terbatas' : 'Limited Saved Recipes'}</li>
-          </ul>
-          <a href={APP_LINKS.aiBrew}>{isId ? 'Mulai Sekarang' : 'Start Now'} <ArrowRight /></a>
-        </article>
-        <article className="plan-featured">
-          <span>Beta Barista</span>
-          <h3>{isId ? 'Barista Premium' : 'Premium Barista'}</h3>
-          <ul>
-            <li><Check /> {isId ? 'Profil Rasa Tak Terbatas' : 'Unlimited Taste Profiles'}</li>
-            <li><Check /> {isId ? 'Kalibrasi Presisi Grinder' : 'Precision Grinder Calibration'}</li>
-            <li><Check /> {isId ? 'Asisten AI Kopi Cerdas' : 'Smart AI Coffee Coach'}</li>
-          </ul>
-          <a href={APP_LINKS.register}>{isId ? 'Daftar Beta Gratis' : 'Join Free Beta'} <ArrowRight /></a>
-        </article>
-        <article>
-          <span>Cafe Team</span>
-          <h3>{isId ? 'Kedai & Profesional' : 'Cafe & Professional'}</h3>
-          <ul>
-            <li><Check /> {isId ? 'Standarisasi SOP Kedai' : 'Standardized SOP Recipes'}</li>
-            <li><Check /> {isId ? 'Mode Batch Brew Cepat' : 'Fast Batch Brew Mode'}</li>
-            <li><Check /> {isId ? 'Dukungan Seluruh Tim' : 'Team-wide Support'}</li>
-          </ul>
-          <Link to="/support?topic=general">{isId ? 'Hubungi Kami' : 'Contact Us'} <ArrowRight /></Link>
-        </article>
+        <ScrollReveal variant="slide-up" delay={0}>
+          <article>
+            <span>Free</span>
+            <h3>{isId ? 'Mulai Eksplorasi' : 'Start Exploring'}</h3>
+            <ul>
+              <li><Check /> {isId ? 'Coba AI Brew gratis' : 'Try AI Brew for free'}</li>
+              <li><Check /> {isId ? 'Panduan dasar menyeduh' : 'Basic brewing guidance'}</li>
+              <li><Check /> {isId ? 'Simpan beberapa resep favorit' : 'Save a few favorite recipes'}</li>
+            </ul>
+            <a href={APP_LINKS.aiBrew}>{isId ? 'Mulai Sekarang' : 'Start Now'} <ArrowRight /></a>
+          </article>
+        </ScrollReveal>
+        <ScrollReveal variant="scale" delay={0.08}>
+          <article className="plan-featured">
+            <span>Beta Barista</span>
+            <h3>{isId ? 'Barista Premium' : 'Premium Barista'}</h3>
+            <ul>
+              <li><Check /> {isId ? 'Profil rasa tak terbatas' : 'Unlimited flavor profiles'}</li>
+              <li><Check /> {isId ? 'Kalibrasi presisi grinder Anda' : 'Precision grinder calibration'}</li>
+              <li><Check /> {isId ? 'Asisten AI kopi yang cerdas' : 'Smart AI coffee coach'}</li>
+            </ul>
+            <a href={APP_LINKS.register}>{isId ? 'Daftar Beta — Gratis' : 'Join Free Beta'} <ArrowRight /></a>
+          </article>
+        </ScrollReveal>
+        <ScrollReveal variant="slide-up" delay={0.16}>
+          <article>
+            <span>Cafe Team</span>
+            <h3>{isId ? 'Kedai & Profesional' : 'Café & Professional'}</h3>
+            <ul>
+              <li><Check /> {isId ? 'Standarisasi SOP resep kedai' : 'Standardized café recipe SOPs'}</li>
+              <li><Check /> {isId ? 'Mode batch brew cepat' : 'Fast batch brew mode'}</li>
+              <li><Check /> {isId ? 'Akses untuk seluruh tim barista' : 'Access for your entire barista team'}</li>
+            </ul>
+            <Link to="/support?topic=general">{isId ? 'Hubungi Kami' : 'Contact Us'} <ArrowRight /></Link>
+          </article>
+        </ScrollReveal>
       </div>
     </section>
   );
@@ -105,18 +122,20 @@ function LandingHome({ language }: { language: 'id' | 'en' }) {
       <EvidenceSection language={language} />
       <PricingSection language={language} />
       <DownloadSection language={language} />
-      <section className="final-cta">
-        <div>
-          <p>Baristachaw AI Brew</p>
-          <h2>{isId ? 'Mulai Seduh Kopi Terbaik Anda Hari Ini.' : 'Start Brewing Your Best Coffee Today.'}</h2>
-          <span>{isId ? 'Bergabunglah dengan ribuan home barista dan profesional yang telah menemukan kenyamanan menyeduh kopi yang konsisten, kaya rasa, dan menyenangkan.' : 'Join thousands of home baristas and professionals who have discovered the ease of brewing coffee that is consistent, flavorful, and enjoyable.'}</span>
-        </div>
-        <div className="final-actions">
-          <a className="button button-light" href={APP_LINKS.aiBrew}>Try AI Brew <ArrowRight /></a>
-          <a className="button button-ghost" href={APP_LINKS.register}>{isId ? 'Daftar Gratis' : 'Register Free'}</a>
-          <a className="button button-ghost" href={APK_URL}>Download APK</a>
-        </div>
-      </section>
+      <ScrollReveal variant="blur">
+        <section className="final-cta">
+          <div>
+            <p>Baristachaw AI Brew</p>
+            <h2>{isId ? 'Mulai Seduh Kopi Terbaik Anda Hari Ini.' : 'Start Brewing Your Best Coffee Today.'}</h2>
+            <span>{isId ? 'Bergabung dengan ribuan home barista dan profesional yang sudah merasakan kenyamanan menyeduh kopi yang konsisten, kaya rasa, dan menyenangkan — setiap hari.' : 'Join thousands of home baristas and professionals who have discovered the joy of brewing consistent, flavorful, and delightful coffee — every single day.'}</span>
+          </div>
+          <div className="final-actions">
+            <a className="button button-light" href={APP_LINKS.aiBrew}>{isId ? 'Coba AI Brew' : 'Try AI Brew'} <ArrowRight /></a>
+            <a className="button button-ghost" href={APP_LINKS.register}>{isId ? 'Daftar Gratis' : 'Register Free'}</a>
+            <a className="button button-ghost" href={APK_URL}>Download APK</a>
+          </div>
+        </section>
+      </ScrollReveal>
     </main>
   );
 }
@@ -127,16 +146,16 @@ function SiteFooter({ language }: { language: 'id' | 'en' }) {
     <footer className="site-footer">
       <div className="footer-brand">
         <img src="/assets/baristachaw-logo.png" alt="" />
-        <div><strong>Baristachaw</strong><span>Precise recipes. Honest confidence. Real workflow.</span></div>
+        <div><strong>Baristachaw</strong><span>{isId ? 'Asisten kopi cerdas untuk ritual seduh terbaik Anda.' : 'Your smart coffee companion for the perfect brew.'}</span></div>
       </div>
       <nav aria-label="Footer">
         <Link to="/privacy">Privacy</Link>
         <Link to="/terms">Terms</Link>
         <Link to="/support">Support</Link>
         <Link to="/download">{isId ? 'Unduh' : 'Download'}</Link>
-        <a href={APP_LINKS.home}>Web app</a>
+        <a href={APP_LINKS.home}>Web App</a>
       </nav>
-      <p>© 2026 Baristachaw. {isId ? 'Real brew validation required.' : 'Real brew validation required.'}</p>
+      <p>© 2026 Baristachaw. {isId ? 'Kopi terbaik dimulai dari ritual yang tepat.' : 'Great coffee starts with the right ritual.'}</p>
     </footer>
   );
 }
@@ -180,7 +199,7 @@ export function App() {
       <SupportChatWidget language={language} />
       {location.pathname === '/' ? (
         <div className="mobile-sticky-cta" aria-label="Quick actions">
-          <a href={APP_LINKS.aiBrew}>Try AI Brew</a>
+          <a href={APP_LINKS.aiBrew}>{language === 'id' ? 'Coba AI Brew' : 'Try AI Brew'}</a>
           <a href={APK_URL}>Download</a>
         </div>
       ) : null}

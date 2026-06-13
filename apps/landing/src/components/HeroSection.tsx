@@ -12,9 +12,9 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
       <div className="hero-orbit hero-orbit-two" aria-hidden="true" />
       <motion.div
         className="hero-copy"
-        initial={{ opacity: 0, y: 28 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        initial={{ opacity: 0, y: 32, filter: 'blur(10px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
       >
         <p className="hero-brand">Baristachaw AI Brew</p>
         <h1 id="hero-title">
@@ -30,8 +30,8 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
         </p>
         <p className="hero-body">
           {isId
-            ? 'Dapatkan kenyamanan ritual menyeduh kopi yang nikmat dan konsisten. Asisten cerdas kami memandu Anda menyelaraskan rasa, biji kopi, dan grinder Anda untuk hasil cangkir terbaik.'
-            : 'Experience the comfort of brewing delicious, consistent coffee at home. Our smart assistant guides you to align flavor, beans, and grinder for the perfect cup every time.'}
+            ? 'Nikmati kenyamanan ritual menyeduh kopi yang nikmat dan konsisten. Asisten cerdas kami memandu Anda menyelaraskan rasa, biji kopi, dan grinder — untuk hasil cangkir terbaik, setiap hari.'
+            : 'Experience the comfort of a delicious, consistent coffee ritual. Our smart assistant guides you to align flavor, beans, and grinder — for the perfect cup, every single day.'}
         </p>
         <div className="hero-actions">
           <a className="button button-primary" href={APP_LINKS.aiBrew}>
@@ -44,15 +44,15 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
         </div>
         <p className="hero-microcopy">
           {isId
-            ? 'Bebas ribet. Disukai barista rumahan dan pencinta kopi profesional.'
-            : 'Zero hassle. Loved by home baristas and coffee enthusiasts.'}
+            ? 'Bebas ribet. Dipercaya barista rumahan dan pencinta kopi di seluruh Indonesia.'
+            : 'Zero hassle. Trusted by home baristas and coffee enthusiasts everywhere.'}
         </p>
       </motion.div>
       <motion.div
         className="recipe-visual"
-        initial={{ opacity: 0, x: 38, rotateY: -5 }}
-        animate={{ opacity: 1, x: 0, rotateY: 0 }}
-        transition={{ duration: 0.85, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
+        initial={{ opacity: 0, x: 42, rotateY: -5, filter: 'blur(8px)' }}
+        animate={{ opacity: 1, x: 0, rotateY: 0, filter: 'blur(0px)' }}
+        transition={{ duration: 0.95, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
         aria-label={isId ? 'Alur Seduh Santai' : 'Relaxed Brewing Experience'}
       >
         <div className="recipe-topline">

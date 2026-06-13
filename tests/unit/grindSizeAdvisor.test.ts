@@ -297,16 +297,16 @@ test('Grind Size uses the 2026 master grinder calibration table across pressure,
   assert.equal(grinderIds.has('kingrinder-p0-p1-p2'), false, 'KINGrinder P-series should split P2 from P1/P0');
 
   for (const [settingId, expectedRange] of [
-    ['gs_master_1zpresso-k-ultra_cone_hot', '6.0 - 7.0 numbers'],
-    ['gs_master_1zpresso-k-ultra_cone_iced', '5.0 - 5.8 numbers'],
-    ['gs_master_1zpresso-k-ultra_moka_pot', '4.0 - 5.0 numbers'],
-    ['gs_master_comandante-c40-mk4_flat_hot', '26 - 30 clicks'],
-    ['gs_master_comandante-c40-mk4_chemex_hot', '28 - 32 clicks'],
-    ['gs_master_comandante-c40-mk4_french_press', '30 - 35 clicks'],
-    ['gs_master_pietro-m-modal-burrs_cone_hot', '4.0 - 6.2 numbers'],
-    ['gs_master_pietro-b-modal-burrs_cone_hot', '4.5 - 7.0 numbers'],
+    ['gs_master_1zpresso-k-ultra_cone_hot', '5.3 - 9.2 numbers'],
+    ['gs_master_1zpresso-k-ultra_cone_iced', '4.6 - 7.8 numbers'],
+    ['gs_master_1zpresso-k-ultra_moka_pot', '3.8 - 6.9 numbers'],
+    ['gs_master_comandante-c40-mk4_flat_hot', '25 - 31 clicks'],
+    ['gs_master_comandante-c40-mk4_chemex_hot', '26 - 32 clicks'],
+    ['gs_master_comandante-c40-mk4_french_press', '28 - 34 clicks'],
+    ['gs_master_pietro-m-modal-burrs_cone_hot', '2.4 - 9.3 numbers'],
+    ['gs_master_pietro-b-modal-burrs_cone_hot', '3.2 - 10.0 numbers'],
     ['gs_master_timemore-s3-esp_espresso', '20 - 30 clicks'],
-    ['gs_master_baratza-encore-esp-pro_flat_hot', '50 - 55 settings'],
+    ['gs_master_baratza-encore-esp-pro_flat_hot', '44.3 - 56.8 settings'],
   ] as const) {
     assert.equal(settingById.get(settingId)?.rangeLabel, expectedRange, `${settingId} should use the master table range`);
     assert.equal(settingById.get(settingId)?.referenceType, 'method_specific_master_table');

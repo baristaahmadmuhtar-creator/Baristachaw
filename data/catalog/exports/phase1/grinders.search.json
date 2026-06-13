@@ -22,7 +22,7 @@
       "manual_brew_capable": true,
       "filter_priority": 1000,
       "availability_confidence": "medium",
-      "search_text": "1zpresso k-ultra 1zpresso k-ultra external ring, 100 clicks/rotation, 20 micron per click espresso 2.0 - 2.5 numbers moka 4.0 - 5.0 numbers aeropress 4.0 - 6.0 numbers v60 origami kono 6.0 - 7.0 numbers ice brew finer 5.0 - 5.8 numbers kalita april melitta 7.0 - 8.0 numbers chemex 8.0 - 9.0 numbers french press cold brew batch 8.0 - 10.0 numbers",
+      "search_text": "1zpresso k-ultra 1zpresso k-ultra external ring, 100 clicks/rotation, 20 micron per click espresso 2.4 - 4.0 numbers moka 3.8 - 6.9 numbers aeropress 3.8 - 8.0 numbers v60 origami kono 5.3 - 9.2 numbers ice brew finer 4.6 - 7.8 numbers kalita april melitta 7.2 - 9.5 numbers chemex 9.1 - 9.7 numbers french press cold brew batch 9.1 - 10.0 numbers",
       "aliases": [
         "1Zpresso K-Ultra"
       ],
@@ -49,7 +49,7 @@
       "manual_brew_capable": true,
       "filter_priority": 999,
       "availability_confidence": "medium",
-      "search_text": "1zpresso k-max 1zpresso k-max external ring, 90 clicks/rotation, 22 micron per click espresso 2.6 - 2.6 numbers moka 4.0 - 5.0 numbers aeropress 4.0 - 6.0 numbers v60 origami kono 5.5 - 6.5 numbers ice brew finer 4.5 - 5.2 numbers kalita april melitta 6.8 - 7.5 numbers chemex 7.5 - 8.5 numbers french press cold brew batch 7.5 - 9.0 numbers",
+      "search_text": "1zpresso k-max 1zpresso k-max external ring, 90 clicks/rotation, 22 micron per click espresso 3.0 - 4.5 numbers moka 4.9 - 7.0 numbers aeropress 4.9 - 8.0 numbers v60 origami kono 7.0 - 8.5 numbers ice brew finer 5.6 - 7.2 numbers kalita april melitta 8.0 - 8.9 numbers chemex 8.5 - 9.3 numbers french press cold brew batch 8.5 - 9.5 numbers",
       "aliases": [
         "1Zpresso K-Max"
       ],
@@ -76,7 +76,7 @@
       "manual_brew_capable": true,
       "filter_priority": 998,
       "availability_confidence": "medium",
-      "search_text": "1zpresso k-plus 1zpresso k-plus external ring, 90 clicks/rotation, 22 micron per click espresso 3.0 - 3.0 numbers moka 4.0 - 5.0 numbers aeropress 5.0 - 6.0 numbers v60 origami kono 6.5 - 7.5 numbers ice brew finer 5.5 - 6.2 numbers kalita april melitta 7.5 - 8.2 numbers chemex 8.0 - 9.0 numbers french press cold brew batch 8.0 - 9.5 numbers",
+      "search_text": "1zpresso k-plus 1zpresso k-plus external ring, 90 clicks/rotation, 22 micron per click espresso 3.0 - 4.5 numbers moka 4.1 - 6.3 numbers aeropress 5.3 - 7.2 numbers v60 origami kono 7.0 - 8.5 numbers ice brew finer 5.9 - 7.3 numbers kalita april melitta 8.0 - 8.8 numbers chemex 8.5 - 9.2 numbers french press cold brew batch 8.5 - 9.5 numbers",
       "aliases": [
         "1Zpresso K-Plus"
       ],
@@ -130,7 +130,7 @@
       "manual_brew_capable": true,
       "filter_priority": 996,
       "availability_confidence": "medium",
-      "search_text": "1zpresso j-ultra 1zpresso j-ultra external ring, 100 clicks/rotation, 8 micron per click espresso 1.5 - 2.2 turns moka 2.4 - 2.8 turns aeropress 2.8 - 3.2 turns v60 origami kono 3.0 - 3.8 turns ice brew finer 2.4 - 3.0 turns kalita april melitta 3.5 - 4.3 turns chemex 4.0 - 4.8 turns french press cold brew batch 4.3 - 5.0 turns",
+      "search_text": "1zpresso j-ultra 1zpresso j-ultra external ring, 100 clicks/rotation, 8 micron per click espresso 1.0 - 1.7 turns moka 2.2 - 2.6 turns aeropress 2.7 - 3.1 turns v60 origami kono 3.0 - 4.0 turns ice brew finer 2.2 - 2.8 turns kalita april melitta 3.4 - 4.2 turns chemex 3.8 - 4.4 turns french press cold brew batch 4.0 - 4.5 turns",
       "aliases": [
         "1Zpresso J-Ultra"
       ],
@@ -157,7 +157,7 @@
       "manual_brew_capable": true,
       "filter_priority": 995,
       "availability_confidence": "medium",
-      "search_text": "1zpresso j-max s 1zpresso j-max s external ring, 90 clicks/rotation, 8.8 micron per click espresso 1.3 - 1.8 turns moka 2.0 - 2.4 turns aeropress 2.4 - 2.8 turns v60 origami kono 2.8 - 3.5 turns ice brew finer 2.2 - 2.8 turns kalita april melitta 3.3 - 4.1 turns chemex 3.8 - 4.5 turns french press cold brew batch 4.1 - 4.8 turns",
+      "search_text": "1zpresso j-max s 1zpresso j-max s external ring, 90 clicks/rotation, 8.8 micron per click espresso 1.3 - 1.8 turns moka 2.1 - 2.6 turns aeropress 2.5 - 3.1 turns v60 origami kono 3.0 - 4.0 turns ice brew finer 2.3 - 3.1 turns kalita april melitta 3.4 - 4.2 turns chemex 3.8 - 4.4 turns french press cold brew batch 4.0 - 4.5 turns",
       "aliases": [
         "1Zpresso J-Max S"
       ],
@@ -212,7 +212,7 @@
       "manual_brew_capable": true,
       "filter_priority": 993,
       "availability_confidence": "medium",
-      "search_text": "1zpresso jx-pro s 1zpresso jx-pro s top adjustment ring, 40 clicks/rotation, 12.5 micron per click espresso 1.5 - 1.8 numbers moka 2.0 - 2.5 numbers aeropress 2.5 - 3.0 numbers v60 origami kono 3.0 - 3.5 numbers ice brew finer 2.4 - 2.8 numbers kalita april melitta 3.5 - 4.2 numbers chemex 4.0 - 4.6 numbers french press cold brew batch 4.2 - 4.8 numbers",
+      "search_text": "1zpresso jx-pro s 1zpresso jx-pro s top adjustment ring, 40 clicks/rotation, 12.5 micron per click espresso 1.2 - 1.6 numbers moka 1.8 - 2.5 numbers aeropress 2.4 - 3.2 numbers v60 origami kono 3.0 - 3.8 numbers ice brew finer 2.3 - 2.9 numbers kalita april melitta 3.3 - 4.2 numbers chemex 3.7 - 4.4 numbers french press cold brew batch 3.8 - 4.5 numbers",
       "aliases": [
         "1Zpresso JX-Pro S"
       ],
@@ -266,7 +266,7 @@
       "manual_brew_capable": true,
       "filter_priority": 991,
       "availability_confidence": "medium",
-      "search_text": "comandante c40 mk4 comandante c40 mk4 internal clicks, 30 micron per click espresso 9 - 12 clicks moka 12 - 15 clicks aeropress 14 - 24 clicks v60 origami kono 20 - 28 clicks ice brew finer 16 - 22 clicks kalita april melitta 26 - 30 clicks chemex 28 - 32 clicks french press cold brew batch 30 - 35 clicks",
+      "search_text": "comandante c40 mk4 comandante c40 mk4 internal clicks, 30 micron per click espresso 7 - 13 clicks moka 11 - 16 clicks aeropress 13 - 26 clicks v60 origami kono 20 - 30 clicks ice brew finer 15 - 24 clicks kalita april melitta 25 - 31 clicks chemex 26 - 32 clicks french press cold brew batch 28 - 34 clicks",
       "aliases": [
         "Comandante C40 MK4"
       ],
@@ -320,7 +320,7 @@
       "manual_brew_capable": true,
       "filter_priority": 989,
       "availability_confidence": "medium",
-      "search_text": "comandante x25 trailmaster comandante x25 trailmaster internal clicks, c40-style reference espresso 9 - 12 clicks moka 12 - 15 clicks aeropress 14 - 24 clicks v60 origami kono 20 - 28 clicks ice brew finer 16 - 22 clicks kalita april melitta 26 - 30 clicks chemex 28 - 32 clicks french press cold brew batch 30 - 35 clicks",
+      "search_text": "comandante x25 trailmaster comandante x25 trailmaster internal clicks, c40-style reference espresso 7 - 13 clicks moka 11 - 16 clicks aeropress 13 - 26 clicks v60 origami kono 20 - 30 clicks ice brew finer 15 - 24 clicks kalita april melitta 25 - 31 clicks chemex 26 - 32 clicks french press cold brew batch 28 - 34 clicks",
       "aliases": [
         "Comandante X25 Trailmaster"
       ],
@@ -347,7 +347,7 @@
       "manual_brew_capable": true,
       "filter_priority": 988,
       "availability_confidence": "medium",
-      "search_text": "kinu m47 kinu m47 top threaded dial, 50 divisions/rotation, stepless kinu m47 classic espresso 0.9 - 1.3 turns moka 1.8 - 1.8 turns aeropress 2.0 - 2.0 turns v60 origami kono 3.0 - 3.0 turns ice brew finer 2.4 - 2.7 turns kalita april melitta 3.2 - 3.2 turns chemex 3.4 - 3.4 turns french press cold brew batch 3.5 - 4.0 turns",
+      "search_text": "kinu m47 kinu m47 top threaded dial, 50 divisions/rotation, stepless kinu m47 classic espresso 1.0 - 2.0 turns moka 1.9 - 2.7 turns aeropress 2.0 - 3.0 turns v60 origami kono 3.0 - 4.5 turns ice brew finer 2.4 - 4.1 turns kalita april melitta 3.5 - 4.8 turns chemex 4.0 - 5.1 turns french press cold brew batch 4.2 - 6.0 turns",
       "aliases": [
         "Kinu M47",
         "Kinu M47 Classic"
@@ -375,7 +375,7 @@
       "manual_brew_capable": true,
       "filter_priority": 987,
       "availability_confidence": "medium",
-      "search_text": "kinu m47 phoenix kinu m47 phoenix top threaded dial, 50 divisions/rotation, stepless espresso 1.5 - 1.5 turns moka 2.0 - 2.0 turns aeropress 2.5 - 2.5 turns v60 origami kono 3.0 - 3.0 turns ice brew finer 2.4 - 2.7 turns kalita april melitta 3.2 - 3.2 turns chemex 3.4 - 3.4 turns french press cold brew batch 3.5 - 4.0 turns",
+      "search_text": "kinu m47 phoenix kinu m47 phoenix top threaded dial, 50 divisions/rotation, stepless espresso 1.0 - 2.0 turns moka 1.7 - 2.8 turns aeropress 2.3 - 3.7 turns v60 origami kono 3.0 - 4.5 turns ice brew finer 2.2 - 4.0 turns kalita april melitta 3.5 - 4.8 turns chemex 4.0 - 5.1 turns french press cold brew batch 4.2 - 6.0 turns",
       "aliases": [
         "Kinu M47 Phoenix"
       ],
@@ -402,7 +402,7 @@
       "manual_brew_capable": true,
       "filter_priority": 986,
       "availability_confidence": "medium",
-      "search_text": "mazzer omega mazzer omega external ring, 33 micron per click, true zero espresso 4.0 - 4.4 numbers moka 5.0 - 5.5 numbers aeropress 6.0 - 6.0 numbers v60 origami kono 7.2 - 8.0 numbers ice brew finer 6.0 - 7.0 numbers kalita april melitta 8.0 - 8.0 numbers chemex 8.0 - 8.4 numbers french press cold brew batch 7.5 - 9.0 numbers",
+      "search_text": "mazzer omega mazzer omega external ring, 33 micron per click, true zero espresso 4.0 - 4.4 numbers moka 5.0 - 5.5 numbers aeropress 6 - 6 numbers v60 origami kono 7.2 - 8.0 numbers ice brew finer 6.0 - 7.0 numbers kalita april melitta 8 - 8 numbers chemex 8.0 - 8.4 numbers french press cold brew batch 7.5 - 9.0 numbers",
       "aliases": [
         "Mazzer Omega"
       ],
@@ -429,7 +429,7 @@
       "manual_brew_capable": true,
       "filter_priority": 985,
       "availability_confidence": "medium",
-      "search_text": "pietro (m-modal burrs) pietro (m-modal burrs) vertical side slider, 15 micron per division pietro m-modal pietro flat burr m-modal espresso 0.5 - 1.5 numbers moka 1.8 - 2.5 numbers aeropress 2.5 - 4.0 numbers v60 origami kono 4.0 - 6.2 numbers ice brew finer 3.2 - 4.8 numbers kalita april melitta 5.5 - 8.0 numbers chemex 7.5 - 9.0 numbers french press cold brew batch 6.2 - 10.0 numbers",
+      "search_text": "pietro (m-modal burrs) pietro (m-modal burrs) vertical side slider, 15 micron per division pietro m-modal pietro flat burr m-modal espresso 0.0 - 2.0 numbers moka 0.9 - 3.6 numbers aeropress 1.4 - 5.9 numbers v60 origami kono 2.4 - 9.3 numbers ice brew finer 1.9 - 7.1 numbers kalita april melitta 5.0 - 9.6 numbers chemex 8.4 - 9.8 numbers french press cold brew batch 6.2 - 10.0 numbers",
       "aliases": [
         "Pietro (M-Modal Burrs)",
         "Pietro M-Modal",
@@ -458,7 +458,7 @@
       "manual_brew_capable": true,
       "filter_priority": 984,
       "availability_confidence": "medium",
-      "search_text": "pietro (b-modal burrs) pietro (b-modal burrs) vertical side slider, 15 micron per division pietro b-modal pietro flat burr b-modal espresso 1.0 - 2.0 numbers moka 2.6 - 3.5 numbers aeropress 3.5 - 5.0 numbers v60 origami kono 4.5 - 7.0 numbers ice brew finer 3.6 - 5.5 numbers kalita april melitta 6.0 - 8.5 numbers chemex 8.0 - 9.5 numbers french press cold brew batch 7.0 - 10.0 numbers",
+      "search_text": "pietro (b-modal burrs) pietro (b-modal burrs) vertical side slider, 15 micron per division pietro b-modal pietro flat burr b-modal espresso 0.2 - 2.8 numbers moka 1.6 - 5.0 numbers aeropress 2.3 - 7.1 numbers v60 origami kono 3.2 - 10.0 numbers ice brew finer 2.4 - 7.8 numbers kalita april melitta 5.5 - 10.0 numbers chemex 8.5 - 10.0 numbers french press cold brew batch 7.0 - 10.0 numbers",
       "aliases": [
         "Pietro (B-Modal Burrs)",
         "Pietro B-Modal",
@@ -487,7 +487,7 @@
       "manual_brew_capable": true,
       "filter_priority": 983,
       "availability_confidence": "medium",
-      "search_text": "etzinger etz-i etzinger etz-i stepped external ring espresso 1.5 - 2.2 numbers moka 3.0 - 4.0 numbers aeropress 4.5 - 5.5 numbers v60 origami kono 5.0 - 6.5 numbers ice brew finer 4.0 - 5.2 numbers kalita april melitta 7.0 - 8.0 numbers chemex 8.0 - 9.0 numbers french press cold brew batch 8.0 - 10.0 numbers",
+      "search_text": "etzinger etz-i etzinger etz-i stepped external ring espresso 3.0 - 5.0 numbers moka 4.7 - 8.3 numbers aeropress 6.4 - 11.1 numbers v60 origami kono 7.0 - 13.0 numbers ice brew finer 5.9 - 10.6 numbers kalita april melitta 15.0 - 16.0 numbers chemex 18.0 - 19.0 numbers french press cold brew batch 19.0 - 20.0 numbers",
       "aliases": [
         "Etzinger etz-I"
       ],
@@ -514,7 +514,7 @@
       "manual_brew_capable": true,
       "filter_priority": 982,
       "availability_confidence": "medium",
-      "search_text": "oe lido 3 / og orphan espresso stepless external marked ring oe lido 3 oe lido og espresso 4 - 6 marks moka 7 - 9 marks aeropress 10 - 12 marks v60 origami kono 12 - 16 marks ice brew finer 10 - 12 marks kalita april melitta 16 - 18 marks chemex 18 - 22 marks french press cold brew batch 22 - 26 marks",
+      "search_text": "oe lido 3 / og orphan espresso stepless external marked ring oe lido 3 oe lido og espresso 4 - 8 marks moka 6 - 10 marks aeropress 7 - 12 marks v60 origami kono 8 - 14 marks ice brew finer 7 - 12 marks kalita april melitta 11 - 16 marks chemex 12 - 19 marks french press cold brew batch 15 - 22 marks",
       "aliases": [
         "OE Lido 3 / OG",
         "OE Lido 3",
@@ -899,7 +899,7 @@
       "manual_brew_capable": true,
       "filter_priority": 968,
       "availability_confidence": "medium",
-      "search_text": "mavo phantox pro mavo phantox pro stepped external ring espresso 1.0 - 1.5 numbers moka 3.5 - 3.5 numbers aeropress 4.0 - 6.0 numbers v60 origami kono 7.0 - 10.0 numbers ice brew finer 5.5 - 7.0 numbers kalita april melitta 9.0 - 10.0 numbers chemex 10.0 - 10.0 numbers french press cold brew batch 11.0 - 11.0 numbers",
+      "search_text": "mavo phantox pro mavo phantox pro stepped external ring espresso 1.8 - 3.8 numbers moka 2.7 - 5.1 numbers aeropress 2.9 - 6.7 numbers v60 origami kono 4.0 - 9.3 numbers ice brew finer 3.5 - 7.4 numbers kalita april melitta 4.7 - 9.3 numbers chemex 5.1 - 9.3 numbers french press cold brew batch 6.9 - 12.0 numbers",
       "aliases": [
         "Mavo Phantox Pro"
       ],
@@ -926,7 +926,7 @@
       "manual_brew_capable": true,
       "filter_priority": 967,
       "availability_confidence": "medium",
-      "search_text": "kingrinder k6 kingrinder k6 external ring, 60 clicks/rotation, 16 micron per click kingrinder k6 espresso 15 - 25 clicks moka 50 - 60 clicks aeropress 40 - 60 clicks v60 origami kono 60 - 80 clicks ice brew finer 50 - 60 clicks kalita april melitta 80 - 95 clicks chemex 90 - 120 clicks french press cold brew batch 90 - 120 clicks",
+      "search_text": "kingrinder k6 kingrinder k6 external ring, 60 clicks/rotation, 16 micron per click kingrinder k6 espresso 30 - 60 clicks moka 53 - 79 clicks aeropress 47 - 79 clicks v60 origami kono 60 - 90 clicks ice brew finer 53 - 79 clicks kalita april melitta 80 - 112 clicks chemex 90 - 150 clicks french press cold brew batch 90 - 150 clicks",
       "aliases": [
         "KINGrinder K6",
         "Kingrinder K6"
@@ -954,7 +954,7 @@
       "manual_brew_capable": true,
       "filter_priority": 966,
       "availability_confidence": "medium",
-      "search_text": "kingrinder k4 kingrinder k4 external ring, 60 clicks/rotation, 16 micron per click kingrinder k4 espresso 15 - 25 clicks moka 50 - 60 clicks aeropress 35 - 55 clicks v60 origami kono 55 - 75 clicks ice brew finer 45 - 55 clicks kalita april melitta 75 - 90 clicks chemex 90 - 105 clicks french press cold brew batch 90 - 120 clicks",
+      "search_text": "kingrinder k4 kingrinder k4 external ring, 60 clicks/rotation, 16 micron per click kingrinder k4 espresso 50 - 70 clicks moka 85 - 105 clicks aeropress 70 - 100 clicks v60 origami kono 90 - 120 clicks ice brew finer 80 - 100 clicks kalita april melitta 113 - 130 clicks chemex 130 - 140 clicks french press cold brew batch 130 - 150 clicks",
       "aliases": [
         "KINGrinder K4",
         "Kingrinder K4"
@@ -982,7 +982,7 @@
       "manual_brew_capable": true,
       "filter_priority": 965,
       "availability_confidence": "medium",
-      "search_text": "kingrinder k3 kingrinder k3 external ring, 60 clicks/rotation, 20 micron per click kingrinder k3 espresso 28 - 40 clicks moka 50 - 60 clicks aeropress 45 - 55 clicks v60 origami kono 60 - 80 clicks ice brew finer 50 - 60 clicks kalita april melitta 80 - 100 clicks chemex 100 - 120 clicks french press cold brew batch 120 - 140 clicks",
+      "search_text": "kingrinder k3 kingrinder k3 external ring, 60 clicks/rotation, 20 micron per click kingrinder k3 espresso 25 - 51 clicks moka 46 - 88 clicks aeropress 41 - 79 clicks v60 origami kono 56 - 126 clicks ice brew finer 46 - 88 clicks kalita april melitta 69 - 131 clicks chemex 81 - 135 clicks french press cold brew batch 94 - 140 clicks",
       "aliases": [
         "KINGrinder K3",
         "Kingrinder K3"
@@ -1010,7 +1010,7 @@
       "manual_brew_capable": true,
       "filter_priority": 964,
       "availability_confidence": "medium",
-      "search_text": "kingrinder k2 kingrinder k2 external ring, 60 clicks/rotation, 20 micron per click kingrinder k2 espresso 28 - 40 clicks moka 40 - 60 clicks aeropress 45 - 55 clicks v60 origami kono 60 - 80 clicks ice brew finer 50 - 60 clicks kalita april melitta 80 - 90 clicks chemex 90 - 100 clicks french press cold brew batch 80 - 100 clicks",
+      "search_text": "kingrinder k2 kingrinder k2 external ring, 60 clicks/rotation, 20 micron per click kingrinder k2 espresso 25 - 51 clicks moka 37 - 88 clicks aeropress 41 - 79 clicks v60 origami kono 56 - 126 clicks ice brew finer 46 - 88 clicks kalita april melitta 94 - 133 clicks chemex 113 - 140 clicks french press cold brew batch 94 - 140 clicks",
       "aliases": [
         "KINGrinder K2",
         "Kingrinder K2"
@@ -1038,7 +1038,7 @@
       "manual_brew_capable": true,
       "filter_priority": 963,
       "availability_confidence": "medium",
-      "search_text": "kingrinder k1 / k0 kingrinder k1 / k0 internal clicks, 38 mm burr platform kingrinder k1 kingrinder k0 espresso 40 - 55 clicks moka 60 - 80 clicks aeropress 60 - 80 clicks v60 origami kono 80 - 100 clicks ice brew finer 65 - 80 clicks kalita april melitta 100 - 120 clicks chemex 120 - 130 clicks french press cold brew batch 120 - 140 clicks",
+      "search_text": "kingrinder k1 / k0 kingrinder k1 / k0 internal clicks, 38 mm burr platform kingrinder k1 kingrinder k0 espresso 25 - 51 clicks moka 40 - 93 clicks aeropress 40 - 93 clicks v60 origami kono 56 - 126 clicks ice brew finer 44 - 93 clicks kalita april melitta 75 - 133 clicks chemex 94 - 136 clicks french press cold brew batch 94 - 140 clicks",
       "aliases": [
         "KINGrinder K1 / K0",
         "Kingrinder K1",
@@ -1067,7 +1067,7 @@
       "manual_brew_capable": true,
       "filter_priority": 962,
       "availability_confidence": "medium",
-      "search_text": "kingrinder p2 kingrinder p2 internal clicks, 23.3 micron per click kingrinder p2 espresso 17 - 35 clicks moka 34 - 45 clicks aeropress 30 - 50 clicks v60 origami kono 38 - 55 clicks ice brew finer 30 - 38 clicks kalita april melitta 55 - 65 clicks chemex 65 - 75 clicks french press cold brew batch 65 - 120 clicks",
+      "search_text": "kingrinder p2 kingrinder p2 internal clicks, 23.3 micron per click kingrinder p2 espresso 17 - 35 clicks moka 35 - 60 clicks aeropress 31 - 73 clicks v60 origami kono 39 - 86 clicks ice brew finer 31 - 43 clicks kalita april melitta 55 - 91 clicks chemex 65 - 96 clicks french press cold brew batch 65 - 120 clicks",
       "aliases": [
         "KINGrinder P2",
         "Kingrinder P2"
@@ -1095,7 +1095,7 @@
       "manual_brew_capable": true,
       "filter_priority": 961,
       "availability_confidence": "medium",
-      "search_text": "kingrinder p1 / p0 kingrinder p1 / p0 internal clicks, entry p-series platform kingrinder p1 kingrinder p0 espresso 17 - 35 clicks moka 34 - 45 clicks aeropress 30 - 50 clicks v60 origami kono 38 - 55 clicks ice brew finer 30 - 38 clicks kalita april melitta 55 - 65 clicks chemex 65 - 75 clicks french press cold brew batch 65 - 120 clicks",
+      "search_text": "kingrinder p1 / p0 kingrinder p1 / p0 internal clicks, entry p-series platform kingrinder p1 kingrinder p0 espresso 17 - 35 clicks moka 35 - 60 clicks aeropress 31 - 73 clicks v60 origami kono 39 - 86 clicks ice brew finer 31 - 43 clicks kalita april melitta 55 - 91 clicks chemex 65 - 96 clicks french press cold brew batch 65 - 120 clicks",
       "aliases": [
         "KINGrinder P1 / P0",
         "Kingrinder P1",
@@ -1124,7 +1124,7 @@
       "manual_brew_capable": true,
       "filter_priority": 960,
       "availability_confidence": "medium",
-      "search_text": "wacaco exagrind wacaco exagrind internal bottom dial, 30 clicks/rotation, 33 micron per click espresso 10 - 15 clicks moka 16 - 20 clicks aeropress 19 - 25 clicks v60 origami kono 26 - 34 clicks ice brew finer 20 - 26 clicks kalita april melitta 34 - 38 clicks chemex 38 - 42 clicks french press cold brew batch 42 - 46 clicks",
+      "search_text": "wacaco exagrind wacaco exagrind internal bottom dial, 30 clicks/rotation, 33 micron per click espresso 10 - 20 clicks moka 19 - 26 clicks aeropress 24 - 32 clicks v60 origami kono 34 - 42 clicks ice brew finer 25 - 33 clicks kalita april melitta 38 - 43 clicks chemex 40 - 45 clicks french press cold brew batch 42 - 46 clicks",
       "aliases": [
         "Wacaco Exagrind"
       ],
@@ -1151,7 +1151,7 @@
       "manual_brew_capable": true,
       "filter_priority": 959,
       "availability_confidence": "medium",
-      "search_text": "mhw-3bomber r3 mhw-3bomber r3 external ring, approximately 8 micron per click mhw-3bomber blade r3 espresso 20 - 40 clicks moka 80 - 80 clicks aeropress 60 - 80 clicks v60 origami kono 90 - 110 clicks ice brew finer 75 - 90 clicks kalita april melitta 110 - 120 clicks chemex 120 - 130 clicks french press cold brew batch 140 - 150 clicks",
+      "search_text": "mhw-3bomber r3 mhw-3bomber r3 external ring, approximately 8 micron per click mhw-3bomber blade r3 espresso 20 - 40 clicks moka 80 - 91 clicks aeropress 60 - 91 clicks v60 origami kono 90 - 130 clicks ice brew finer 75 - 104 clicks kalita april melitta 112 - 139 clicks chemex 123 - 148 clicks french press cold brew batch 145 - 165 clicks",
       "aliases": [
         "MHW-3BOMBER R3",
         "MHW-3BOMBER Blade R3"
@@ -1179,7 +1179,7 @@
       "manual_brew_capable": true,
       "filter_priority": 958,
       "availability_confidence": "medium",
-      "search_text": "vesper vs-3 fold vesper vs-3 fold external manual clicks espresso 10 - 12 clicks moka 14 - 18 clicks aeropress 18 - 24 clicks v60 origami kono 24 - 32 clicks ice brew finer 18 - 24 clicks kalita april melitta 32 - 38 clicks chemex 38 - 42 clicks french press cold brew batch 40 - 46 clicks",
+      "search_text": "vesper vs-3 fold vesper vs-3 fold external manual clicks espresso 15 - 30 clicks moka 19 - 43 clicks aeropress 24 - 55 clicks v60 origami kono 30 - 72 clicks ice brew finer 24 - 55 clicks kalita april melitta 51 - 81 clicks chemex 67 - 86 clicks french press cold brew batch 72 - 92 clicks",
       "aliases": [
         "Vesper VS-3 FOLD"
       ],
@@ -1206,7 +1206,7 @@
       "manual_brew_capable": true,
       "filter_priority": 957,
       "availability_confidence": "medium",
-      "search_text": "varia hand grinder varia hand grinder external manual clicks espresso 10 - 20 clicks moka 16 - 22 clicks aeropress 22 - 28 clicks v60 origami kono 24 - 34 clicks ice brew finer 18 - 26 clicks kalita april melitta 34 - 38 clicks chemex 38 - 42 clicks french press cold brew batch 40 - 46 clicks",
+      "search_text": "varia hand grinder varia hand grinder external manual clicks espresso 11 - 22 clicks moka 17 - 27 clicks aeropress 22 - 41 clicks v60 origami kono 24 - 55 clicks ice brew finer 18 - 36 clicks kalita april melitta 35 - 62 clicks chemex 39 - 70 clicks french press cold brew batch 41 - 77 clicks",
       "aliases": [
         "Varia Hand Grinder"
       ],
@@ -1233,7 +1233,7 @@
       "manual_brew_capable": true,
       "filter_priority": 956,
       "availability_confidence": "medium",
-      "search_text": "baratza encore baratza encore stepped collar, 1-40 settings espresso 6 - 8 settings moka 8 - 10 settings aeropress 9 - 12 settings v60 origami kono 12 - 15 settings ice brew finer 10 - 12 settings kalita april melitta 15 - 18 settings chemex 18 - 20 settings french press cold brew batch 20 - 30 settings",
+      "search_text": "baratza encore baratza encore stepped collar, 1-40 settings espresso 1.0 - 15.0 settings moka 6.0 - 17.9 settings aeropress 8.5 - 20.7 settings v60 origami kono 16.0 - 25.0 settings ice brew finer 11.0 - 20.7 settings kalita april melitta 21.2 - 28.0 settings chemex 26.5 - 30.0 settings french press cold brew batch 30.0 - 40.0 settings",
       "aliases": [
         "Baratza Encore"
       ],
@@ -1260,7 +1260,7 @@
       "manual_brew_capable": true,
       "filter_priority": 955,
       "availability_confidence": "medium",
-      "search_text": "baratza encore esp baratza encore esp stepped collar, 1-20 micro and 21-40 macro espresso 0 - 13 settings moka 12 - 24 settings aeropress 8 - 30 settings v60 origami kono 22 - 25 settings ice brew finer 18 - 21 settings kalita april melitta 25 - 28 settings chemex 28 - 30 settings french press cold brew batch 30 - 40 settings",
+      "search_text": "baratza encore esp baratza encore esp stepped collar, 1-20 micro and 21-40 macro espresso 1.0 - 15.0 settings moka 10.3 - 26.9 settings aeropress 6.5 - 33.6 settings v60 origami kono 18.0 - 28.0 settings ice brew finer 14.9 - 23.7 settings kalita april melitta 22.5 - 30.4 settings chemex 27.0 - 32.0 settings french press cold brew batch 30.0 - 40.0 settings",
       "aliases": [
         "Baratza Encore ESP"
       ],
@@ -1287,7 +1287,7 @@
       "manual_brew_capable": true,
       "filter_priority": 954,
       "availability_confidence": "medium",
-      "search_text": "baratza encore esp pro baratza encore esp pro digital stepped collar, 0-60 settings espresso 25 - 35 settings moka 35 - 40 settings aeropress 40 - 45 settings v60 origami kono 45 - 50 settings ice brew finer 40 - 45 settings kalita april melitta 50 - 55 settings chemex 55 - 60 settings french press cold brew batch 55 - 60 settings",
+      "search_text": "baratza encore esp pro baratza encore esp pro digital stepped collar, 0-60 settings espresso 0.0 - 40.0 settings moka 20.4 - 44.5 settings aeropress 30.7 - 49.1 settings v60 origami kono 40.9 - 53.6 settings ice brew finer 30.7 - 49.1 settings kalita april melitta 44.3 - 56.8 settings chemex 47.8 - 60.0 settings french press cold brew batch 47.8 - 60.0 settings",
       "aliases": [
         "Baratza Encore ESP PRO",
         "Encore ESP PRO"
@@ -1315,7 +1315,7 @@
       "manual_brew_capable": true,
       "filter_priority": 953,
       "availability_confidence": "medium",
-      "search_text": "fellow ode gen 2 fellow ode gen 2 front stepped dial, 1-11 settings espresso not recommended moka 3.0 - 3.0 numbers aeropress 4.0 - 4.0 numbers v60 origami kono 5.0 - 5.0 numbers ice brew finer 4.0 - 4.0 numbers kalita april melitta 5.5 - 5.5 numbers chemex 6.5 - 6.5 numbers french press cold brew batch 8.0 - 9.0 numbers",
+      "search_text": "fellow ode gen 2 fellow ode gen 2 front stepped dial, 1-11 settings espresso not recommended moka 1.8 - 3.6 numbers aeropress 2.4 - 4.8 numbers v60 origami kono 3.0 - 6.0 numbers ice brew finer 2.4 - 4.8 numbers kalita april melitta 4.0 - 6.6 numbers chemex 6.0 - 7.9 numbers french press cold brew batch 9.0 - 11.0 numbers",
       "aliases": [
         "Fellow Ode Gen 2"
       ],
@@ -1342,7 +1342,7 @@
       "manual_brew_capable": true,
       "filter_priority": 952,
       "availability_confidence": "medium",
-      "search_text": "fellow opus fellow opus stepped dial with internal micro ring espresso 1.5 - 2.5 numbers moka 2.5 - 5.5 numbers aeropress 2.0 - 8.75 numbers v60 origami kono 5.0 - 6.5 numbers ice brew finer 4.0 - 5.0 numbers kalita april melitta 6.5 - 8.0 numbers chemex 8.0 - 8.5 numbers french press cold brew batch 6.0 - 11.0 numbers",
+      "search_text": "fellow opus fellow opus stepped dial with internal micro ring espresso 1.0 - 2.0 numbers moka 1.5 - 7.0 numbers aeropress 1.25 - 11.5 numbers v60 origami kono 3.0 - 8.5 numbers ice brew finer 2.5 - 6.0 numbers kalita april melitta 9.25 - 11.25 numbers chemex 9.5 - 19.5 numbers french press cold brew batch 8.5 - 11.0 numbers",
       "aliases": [
         "Fellow Opus"
       ],
@@ -1369,7 +1369,7 @@
       "manual_brew_capable": true,
       "filter_priority": 951,
       "availability_confidence": "medium",
-      "search_text": "timemore sculptor 078 timemore sculptor 078 front stepped dial, 1-36 settings espresso not recommended moka 2.0 - 3.0 settings aeropress 4.0 - 6.0 settings v60 origami kono 5.0 - 10.0 settings ice brew finer 4.0 - 5.0 settings kalita april melitta 8.0 - 10.0 settings chemex 10.0 - 11.0 settings french press cold brew batch 11.0 - 14.0 settings",
+      "search_text": "timemore sculptor 078 timemore sculptor 078 front stepped dial, 1-36 settings espresso not recommended moka 1.2 - 2.4 settings aeropress 2.4 - 4.8 settings v60 origami kono 3.0 - 8.0 settings ice brew finer 2.4 - 4.0 settings kalita april melitta 4.8 - 8.0 settings chemex 5.9 - 10.5 settings french press cold brew batch 6.5 - 18.0 settings",
       "aliases": [
         "TIMEMORE Sculptor 078"
       ],
@@ -1396,7 +1396,7 @@
       "manual_brew_capable": true,
       "filter_priority": 950,
       "availability_confidence": "medium",
-      "search_text": "timemore sculptor 078s timemore sculptor 078s front stepless dial espresso 1.0 - 3.0 settings moka 4.0 - 6.0 settings aeropress 6.0 - 8.0 settings v60 origami kono 8.0 - 10.0 settings ice brew finer 6.5 - 8.0 settings kalita april melitta 10.0 - 11.0 settings chemex 11.0 - 12.0 settings french press cold brew batch 10.0 - 12.0 settings",
+      "search_text": "timemore sculptor 078s timemore sculptor 078s front stepless dial espresso 1.0 - 4.0 settings moka 4.0 - 7.9 settings aeropress 6.0 - 10.4 settings v60 origami kono 8.0 - 13.0 settings ice brew finer 6.5 - 10.4 settings kalita april melitta 14.0 - 16.0 settings chemex 17.0 - 19.0 settings french press cold brew batch 14.0 - 19.0 settings",
       "aliases": [
         "TIMEMORE Sculptor 078S",
         "Sculptor 078S"
@@ -1424,7 +1424,7 @@
       "manual_brew_capable": true,
       "filter_priority": 949,
       "availability_confidence": "medium",
-      "search_text": "turin df54 turin df54 top stepless dial, 0-90 numbers espresso 10 - 15 dial numbers moka 29 - 35 dial numbers aeropress 35 - 45 dial numbers v60 origami kono 55 - 65 dial numbers ice brew finer 45 - 55 dial numbers kalita april melitta 65 - 70 dial numbers chemex 70 - 75 dial numbers french press cold brew batch 67 - 90 dial numbers",
+      "search_text": "turin df54 turin df54 top stepless dial, 0-90 numbers espresso 10.0 - 20.0 dial numbers moka 24.8 - 38.0 dial numbers aeropress 29.4 - 47.0 dial numbers v60 origami kono 45.0 - 65.0 dial numbers ice brew finer 37.2 - 56.0 dial numbers kalita april melitta 63.3 - 66.4 dial numbers chemex 67.8 - 72.5 dial numbers french press cold brew batch 67.0 - 72.0 dial numbers",
       "aliases": [
         "Turin DF54"
       ],
@@ -1451,7 +1451,7 @@
       "manual_brew_capable": true,
       "filter_priority": 948,
       "availability_confidence": "medium",
-      "search_text": "df64 gen2 turin top stepless dial, 0-90 numbers turin df64 gen2 df64 gen 2 espresso 5 - 15 dial numbers moka 17 - 25 dial numbers aeropress 25 - 40 dial numbers v60 origami kono 40 - 50 dial numbers ice brew finer 30 - 40 dial numbers kalita april melitta 50 - 55 dial numbers chemex 55 - 60 dial numbers french press cold brew batch 55 - 65 dial numbers",
+      "search_text": "df64 gen2 turin top stepless dial, 0-90 numbers turin df64 gen2 df64 gen 2 espresso 5.0 - 20.0 dial numbers moka 13.6 - 31.4 dial numbers aeropress 19.3 - 48.6 dial numbers v60 origami kono 30.0 - 60.0 dial numbers ice brew finer 22.9 - 48.6 dial numbers kalita april melitta 46.7 - 70.0 dial numbers chemex 55.0 - 80.0 dial numbers french press cold brew batch 55.0 - 90.0 dial numbers",
       "aliases": [
         "DF64 Gen2",
         "Turin DF64 Gen2",
@@ -1480,7 +1480,7 @@
       "manual_brew_capable": true,
       "filter_priority": 947,
       "availability_confidence": "medium",
-      "search_text": "turin df83 turin df83 top stepless dial, 0-90 numbers espresso 10 - 25 dial numbers moka 25 - 35 dial numbers aeropress 35 - 50 dial numbers v60 origami kono 50 - 65 dial numbers ice brew finer 40 - 50 dial numbers kalita april melitta 65 - 75 dial numbers chemex 75 - 80 dial numbers french press cold brew batch 75 - 85 dial numbers",
+      "search_text": "turin df83 turin df83 top stepless dial, 0-90 numbers espresso 8.0 - 28.0 dial numbers moka 17.0 - 42.8 dial numbers aeropress 23.0 - 64.9 dial numbers v60 origami kono 32.0 - 87.0 dial numbers ice brew finer 26.0 - 64.9 dial numbers kalita april melitta 42.8 - 83.5 dial numbers chemex 50.0 - 81.8 dial numbers french press cold brew batch 50.0 - 80.0 dial numbers",
       "aliases": [
         "Turin DF83"
       ],
@@ -1507,7 +1507,7 @@
       "manual_brew_capable": true,
       "filter_priority": 946,
       "availability_confidence": "medium",
-      "search_text": "breville smart grinder pro breville smart grinder pro digital stepped settings breville sgp espresso 1 - 15 settings moka 15 - 15 settings aeropress 20 - 20 settings v60 origami kono 45 - 45 settings ice brew finer 35 - 40 settings kalita april melitta 45 - 48 settings chemex 48 - 50 settings french press cold brew batch 50 - 50 settings",
+      "search_text": "breville smart grinder pro breville smart grinder pro digital stepped settings breville sgp espresso 1.0 - 18.0 settings moka 7.4 - 18.0 settings aeropress 9.6 - 25.0 settings v60 origami kono 21.0 - 60.0 settings ice brew finer 16.5 - 53.0 settings kalita april melitta 21.0 - 60.0 settings chemex 37.2 - 60.0 settings french press cold brew batch 48.0 - 60.0 settings",
       "aliases": [
         "Breville Smart Grinder Pro",
         "Breville SGP"
@@ -1535,7 +1535,7 @@
       "manual_brew_capable": true,
       "filter_priority": 945,
       "availability_confidence": "medium",
-      "search_text": "starseeker edge / edge+ starseeker edge / edge+ stepless external ring, 10 scale marks with sub-divisions espresso 1.0 - 1.5 numbers moka 3.0 - 4.0 numbers aeropress 5.0 - 6.0 numbers v60 origami kono 4.0 - 5.0 numbers ice brew finer 3.0 - 4.0 numbers kalita april melitta 5.0 - 5.5 numbers chemex 5.5 - 6.0 numbers french press cold brew batch 8.0 - 9.0 numbers",
+      "search_text": "starseeker edge / edge+ starseeker edge / edge+ stepless external ring, 10 scale marks with sub-divisions espresso 1.0 - 2.0 numbers moka 3.0 - 4.9 numbers aeropress 4.8 - 6.8 numbers v60 origami kono 4.0 - 6.0 numbers ice brew finer 3.0 - 4.9 numbers kalita april melitta 4.8 - 6.4 numbers chemex 5.1 - 6.8 numbers french press cold brew batch 7.0 - 9.0 numbers",
       "aliases": [
         "Starseeker Edge / Edge+"
       ],
@@ -1562,7 +1562,7 @@
       "manual_brew_capable": true,
       "filter_priority": 944,
       "availability_confidence": "medium",
-      "search_text": "varia vs3 gen 2 varia vs3 gen 2 stepless hopper collar, approximately 10 micron increment espresso 3.5 - 5.0 numbers moka 5.0 - 7.0 numbers aeropress 5.0 - 7.0 numbers v60 origami kono 7.5 - 10.0 numbers ice brew finer 6.0 - 7.5 numbers kalita april melitta 10.0 - 11.5 numbers chemex 11.5 - 12.0 numbers french press cold brew batch 11.0 - 15.0 numbers",
+      "search_text": "varia vs3 gen 2 varia vs3 gen 2 stepless hopper collar, approximately 10 micron increment espresso 0.2 - 3.3 numbers moka 1.5 - 6.8 numbers aeropress 1.5 - 6.8 numbers v60 origami kono 3.7 - 12.1 numbers ice brew finer 2.4 - 7.7 numbers kalita april melitta 7.0 - 13.9 numbers chemex 9.0 - 14.5 numbers french press cold brew batch 8.3 - 18.0 numbers",
       "aliases": [
         "Varia VS3 Gen 2"
       ],
@@ -1589,7 +1589,7 @@
       "manual_brew_capable": true,
       "filter_priority": 943,
       "availability_confidence": "medium",
-      "search_text": "hario canister (c-20) hario canister (c-20) internal rotating notches espresso 3 - 3 notches moka 5 - 5 notches aeropress 8 - 8 notches v60 origami kono 10 - 10 notches ice brew finer 8 - 8 notches kalita april melitta 11 - 11 notches chemex 12 - 12 notches french press cold brew batch 13 - 13 notches",
+      "search_text": "hario canister (c-20) hario canister (c-20) internal rotating notches espresso not recommended moka 5 - 5 notches aeropress 8 - 8 notches v60 origami kono 9 - 9 notches ice brew finer 8 - 8 notches kalita april melitta 10 - 11 notches chemex 10 - 14 notches french press cold brew batch 11 - 16 notches",
       "aliases": [
         "Hario Canister (C-20)"
       ],
@@ -1616,7 +1616,7 @@
       "manual_brew_capable": true,
       "filter_priority": 942,
       "availability_confidence": "medium",
-      "search_text": "hario mini slim+ hario mini slim+ internal triangular standard clicks espresso not recommended moka 6 - 6 clicks aeropress 7 - 11 clicks v60 origami kono 12 - 12 clicks ice brew finer 10 - 10 clicks kalita april melitta 13 - 13 clicks chemex 14 - 14 clicks french press cold brew batch 15 - 15 clicks",
+      "search_text": "hario mini slim+ hario mini slim+ internal triangular standard clicks espresso not recommended moka 2 - 6 clicks aeropress 3 - 11 clicks v60 origami kono 5 - 12 clicks ice brew finer 4 - 10 clicks kalita april melitta 6 - 14 clicks chemex 8 - 16 clicks french press cold brew batch 9 - 18 clicks",
       "aliases": [
         "Hario Mini Slim+"
       ],
@@ -1643,7 +1643,7 @@
       "manual_brew_capable": true,
       "filter_priority": 941,
       "availability_confidence": "medium",
-      "search_text": "hario skerton pro hario skerton pro top notch click ring espresso 3 - 3 notches moka 5 - 5 notches aeropress 8 - 8 notches v60 origami kono 10 - 10 notches ice brew finer 8 - 8 notches kalita april melitta 11 - 11 notches chemex 12 - 12 notches french press cold brew batch 13 - 13 notches",
+      "search_text": "hario skerton pro hario skerton pro top notch click ring espresso 3 - 5 clicks moka 4 - 6 notches aeropress 4 - 6 notches v60 origami kono 5 - 7 clicks ice brew finer 4 - 6 notches kalita april melitta 6 - 9 notches chemex 8 - 10 notches french press cold brew batch 9 - 12 clicks",
       "aliases": [
         "Hario Skerton Pro"
       ],
@@ -1670,7 +1670,7 @@
       "manual_brew_capable": true,
       "filter_priority": 940,
       "availability_confidence": "medium",
-      "search_text": "hario smart g hario smart g internal triangular standard clicks espresso 1 - 2 clicks moka 3 - 5 clicks aeropress 2 - 8 clicks v60 origami kono 5 - 6 clicks ice brew finer 4 - 5 clicks kalita april melitta 6 - 8 clicks chemex 8 - 8 clicks french press cold brew batch 7 - 12 clicks",
+      "search_text": "hario smart g hario smart g internal triangular standard clicks espresso 1 - 2 clicks moka 2 - 6 clicks aeropress 1 - 11 clicks v60 origami kono 3 - 8 clicks ice brew finer 2 - 6 clicks kalita april melitta 5 - 9 clicks chemex 9 - 9 clicks french press cold brew batch 7 - 12 clicks",
       "aliases": [
         "HARIO Smart G"
       ],
@@ -1697,7 +1697,7 @@
       "manual_brew_capable": true,
       "filter_priority": 939,
       "availability_confidence": "medium",
-      "search_text": "porlex mini ii porlex mini ii internal clicks, ceramic burr, 37 micron per click espresso not recommended moka 4 - 6 clicks aeropress 7 - 9 clicks v60 origami kono 11 - 14 clicks ice brew finer 9 - 11 clicks kalita april melitta 12 - 14 clicks chemex 14 - 15 clicks french press cold brew batch 13 - 16 clicks",
+      "search_text": "porlex mini ii porlex mini ii internal clicks, ceramic burr, 37 micron per click espresso not recommended moka 3 - 6 clicks aeropress 4 - 10 clicks v60 origami kono 7 - 15 clicks ice brew finer 6 - 12 clicks kalita april melitta 10 - 15 clicks chemex 14 - 18 clicks french press cold brew batch 12 - 22 clicks",
       "aliases": [
         "Porlex Mini II"
       ],
@@ -1724,7 +1724,7 @@
       "manual_brew_capable": true,
       "filter_priority": 938,
       "availability_confidence": "medium",
-      "search_text": "latina sumba / sumbawa latina sumba / sumbawa internal clicks, mini slim style mechanism espresso not recommended moka 6 - 6 clicks aeropress 7 - 11 clicks v60 origami kono 12 - 12 clicks ice brew finer 10 - 10 clicks kalita april melitta 13 - 13 clicks chemex 14 - 14 clicks french press cold brew batch 15 - 15 clicks",
+      "search_text": "latina sumba / sumbawa latina sumba / sumbawa internal clicks, mini slim style mechanism espresso not recommended moka 2 - 6 clicks aeropress 3 - 11 clicks v60 origami kono 5 - 12 clicks ice brew finer 4 - 10 clicks kalita april melitta 6 - 14 clicks chemex 8 - 16 clicks french press cold brew batch 9 - 18 clicks",
       "aliases": [
         "Latina Sumba / Sumbawa"
       ],
@@ -1751,7 +1751,7 @@
       "manual_brew_capable": true,
       "filter_priority": 937,
       "availability_confidence": "medium",
-      "search_text": "latina sumo latina sumo top notch click ring, skerton style espresso 3 - 3 clicks moka 5 - 5 clicks aeropress 8 - 8 clicks v60 origami kono 10 - 10 clicks ice brew finer 8 - 8 clicks kalita april melitta 11 - 11 clicks chemex 12 - 12 clicks french press cold brew batch 13 - 13 clicks",
+      "search_text": "latina sumo latina sumo top notch click ring, skerton style espresso 3 - 5 clicks moka 4 - 6 clicks aeropress 4 - 6 clicks v60 origami kono 5 - 7 clicks ice brew finer 4 - 6 clicks kalita april melitta 6 - 9 clicks chemex 8 - 10 clicks french press cold brew batch 9 - 12 clicks",
       "aliases": [
         "Latina Sumo"
       ],
@@ -1778,7 +1778,7 @@
       "manual_brew_capable": true,
       "filter_priority": 936,
       "availability_confidence": "medium",
-      "search_text": "feima 600n feima 600n stepped ghost-burr 600n platform murane b600bn latina 600n flying eagle 600n fomac 600n kova 600n espresso 1.0 - 1.5 settings moka 2.5 - 3.0 settings aeropress 3.0 - 4.0 settings v60 origami kono 4.0 - 5.0 settings ice brew finer 3.5 - 4.2 settings kalita april melitta 5.0 - 5.5 settings chemex 5.5 - 6.0 settings french press cold brew batch 6.0 - 8.0 settings",
+      "search_text": "feima 600n feima 600n stepped ghost-burr 600n platform murane b600bn latina 600n flying eagle 600n fomac 600n kova 600n espresso 0.5 - 1.0 settings moka 2.5 - 2.7 settings aeropress 3.2 - 3.9 settings v60 origami kono 4.5 - 5.0 settings ice brew finer 3.8 - 4.1 settings kalita april melitta 4.8 - 5.5 settings chemex 4.9 - 6.0 settings french press cold brew batch 5.0 - 8.0 settings",
       "aliases": [
         "Feima 600N",
         "Murane B600BN",
@@ -1810,7 +1810,7 @@
       "manual_brew_capable": true,
       "filter_priority": 935,
       "availability_confidence": "medium",
-      "search_text": "1zpresso q air / q2 1zpresso q air / q2 internal pentagonal clicks, 30 clicks/rotation espresso 33 - 33 clicks moka 40 - 40 clicks aeropress 45 - 45 clicks v60 origami kono 60 - 75 clicks ice brew finer 50 - 60 clicks kalita april melitta 75 - 80 clicks chemex 80 - 80 clicks french press cold brew batch 80 - 110 clicks",
+      "search_text": "1zpresso q air / q2 1zpresso q air / q2 internal pentagonal clicks, 30 clicks/rotation espresso 30 - 36 clicks moka 34 - 42 clicks aeropress 37 - 47 clicks v60 origami kono 45 - 75 clicks ice brew finer 39 - 61 clicks kalita april melitta 68 - 79 clicks chemex 75 - 79 clicks french press cold brew batch 75 - 105 clicks",
       "aliases": [
         "1Zpresso Q Air / Q2"
       ],

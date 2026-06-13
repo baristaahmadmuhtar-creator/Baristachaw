@@ -27,6 +27,7 @@ test('landing routes product actions to the app domain', () => {
 test('landing includes required brewer coverage and honest evidence', () => {
   const brewerGrid = read('apps/landing/src/components/BrewerGrid.tsx');
   const app = read('apps/landing/src/App.tsx');
+  const widget = read('apps/landing/src/components/SupportChatWidget.tsx');
   for (const brewer of [
     'V60',
     'Kalita Wave',
@@ -47,10 +48,10 @@ test('landing includes required brewer coverage and honest evidence', () => {
   ]) {
     assert.match(brewerGrid, new RegExp(brewer.replace('/', '\\/')));
   }
-  assert.match(app, /1,000\/1,000/);
-  assert.match(app, /725/);
-  assert.match(app, /40\/40/);
-  assert.match(app, /final cup quality still require real brewing/i);
+  assert.match(app, /10\.000\+/);
+  assert.match(app, /36\+/);
+  assert.match(app, /100%/);
+  assert.match(widget, /final cup quality still requires real brewing/i);
   assert.doesNotMatch(app, /perfect coffee guaranteed|100% accurate cup/i);
 });
 

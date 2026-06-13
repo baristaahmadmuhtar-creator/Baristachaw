@@ -1,5 +1,5 @@
-const SHELL_CACHE = 'baristachaw-shell-v21';
-const API_CACHE = 'baristachaw-api-v21';
+const SHELL_CACHE = 'baristachaw-shell-v22';
+const API_CACHE = 'baristachaw-api-v22';
 
 const SHELL_ASSETS = [
   '/',
@@ -25,6 +25,11 @@ const SHELL_ASSETS = [
   '/data/ai-brew/device-brew-profiles.v2026-06.json',
   '/data/ai-brew/grinder-settings.v2026-06.json',
   '/data/ai-brew/market-signals.v2026-06.json',
+  '/data/ai-brew/switch-programmes.v2026-05.json',
+  '/data/ai-brew/switch-dose-matrix.v2026-05.json',
+  '/data/ai-brew/switch-troubleshooting.v2026-05.json',
+  '/data/ai-brew/switch-knowledge.v2026-05.json',
+  '/data/ai-brew/manual-brew-presets.v2026-06.json',
   '/data/catalog/phase1/meta.json',
   '/data/catalog/phase1/waters.catalog.json',
   '/data/catalog/phase1/waters.search.json',

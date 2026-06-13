@@ -5,7 +5,7 @@ export function FeatureGraphics({ language }: { language: 'id' | 'en' }) {
   const isId = language === 'id';
   return (
     <section className="feature-graphics section-shell" aria-labelledby="features-title">
-      <ScrollReveal variant="slide-up">
+      <ScrollReveal variant="dramatic">
         <div className="section-heading">
           <p className="section-index">04 / 06</p>
           <div>

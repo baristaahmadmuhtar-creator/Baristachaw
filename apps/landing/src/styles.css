@@ -120,8 +120,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .engine-panels h3 { max-width: 610px; margin: 18px 0 0; font: 700 clamp(25px, 3vw, 42px)/1.12 Manrope, sans-serif; letter-spacing: -.04em; }
 
 .brewer-list { border-top: 1px solid var(--line); }
-.brewer-row { display: grid; grid-template-columns: 46px 76px 1fr 210px; align-items: center; min-height: 92px; border-bottom: 1px solid var(--line); transition: padding .25s ease, background .25s ease; }
-.brewer-row:hover { padding-inline: 12px; background: white; }
+.brewer-row { cursor: pointer; outline: none; border-bottom: 1px solid var(--line); transition: padding 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, border-radius 0.3s ease; }
+.brewer-row:hover { padding-inline: 16px; background: white; box-shadow: 0 12px 30px rgba(9, 21, 45, 0.04); border-radius: 16px; }
+.brewer-row-header { display: grid; grid-template-columns: 46px 76px 1fr 40px; align-items: center; min-height: 92px; }
+.brewer-row-title-wrap { display: flex; flex-direction: column; gap: 4px; }
+.brewer-row-summary { margin: 0; color: var(--muted); font-size: 14px; }
+.brewer-row-toggle { border: 0; background: transparent; color: var(--muted); cursor: pointer; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; transition: background 0.2s ease, color 0.2s ease; }
+.brewer-row:hover .brewer-row-toggle { background: var(--ice); color: var(--blue); }
 .brewer-number { color: #53627a; font-size: 11px; }
 .brewer-glyph { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: #eaf1ff; }
 .brewer-shape { display: block; width: 22px; height: 22px; border: 2px solid var(--blue); }
@@ -129,8 +134,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .brewer-shape-1 { border-radius: 50% 50% 4px 4px; }
 .brewer-shape-2 { width: 16px; border-radius: 50% 50% 8px 8px; }
 .brewer-shape-3 { border-radius: 50%; border-style: dashed; }
-.brewer-row h3 { margin: 0; font: 700 21px Manrope, sans-serif; letter-spacing: -.03em; }
-.brewer-row p { margin: 0; color: var(--muted); font-size: 14px; }
+.brewer-row h3 { margin: 0; font: 700 21px Manrope, sans-serif; letter-spacing: -.03em; color: var(--ink); }
+.brewer-row-body-overflow { overflow: hidden; }
+.brewer-row-body { padding: 12px 24px 32px 122px; }
+.brewer-meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; border-top: 1px dashed var(--line); padding-top: 24px; margin-bottom: 24px; }
+.brewer-meta-grid div { display: flex; flex-direction: column; gap: 6px; }
+.brewer-meta-grid strong { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.brewer-meta-grid span { font-weight: 700; font-size: 15px; color: var(--ink); }
+.brewer-barista-note { padding: 24px; border-radius: 20px; background: var(--ice); border: 1px solid rgba(13, 86, 204, 0.1); }
+.barista-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: rgba(13, 86, 204, 0.12); color: var(--blue-dark); font-size: 11px; font-weight: 800; margin-bottom: 14px; }
+.brewer-barista-note p { margin: 0; font-size: 14px; line-height: 1.65; color: var(--ink); font-style: italic; font-weight: 500; }
+
 
 .feature-graphics { padding-top: 70px; }
 .feature-story { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
@@ -351,3 +365,263 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .001ms !important; }
 }
+
+/* ==========================================================================
+   Data Showcase Section (Waters & Grinders Marquees)
+   ========================================================================== */
+.data-showcase {
+  background: #07152f;
+  color: white;
+  padding-block: 130px;
+  overflow: hidden;
+  position: relative;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.data-header {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 64px;
+  padding-inline: 24px;
+}
+.data-header h2 {
+  margin: 16px 0 20px;
+  font: 800 clamp(38px, 4.5vw, 62px)/1.08 Manrope, sans-serif;
+  letter-spacing: -0.04em;
+  color: white;
+}
+.data-header p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 19px;
+  line-height: 1.65;
+}
+.data-stats {
+  display: flex;
+  justify-content: center;
+  gap: 80px;
+  margin-bottom: 72px;
+  flex-wrap: wrap;
+  padding-inline: 24px;
+}
+.data-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.data-stat svg {
+  width: 32px;
+  height: 32px;
+  color: #8eb9ff;
+  margin-bottom: 14px;
+}
+.data-stat strong {
+  font: 800 64px/1 Manrope, sans-serif;
+  letter-spacing: -0.03em;
+  color: white;
+}
+.data-stat span {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.data-marquees {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-block: 20px;
+}
+.marquee-label {
+  max-width: var(--max);
+  margin: 0 auto;
+  width: 100%;
+  padding-inline: 24px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.marquee-track {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  user-select: none;
+  mask-image: linear-gradient(to right, transparent, white 15%, white 85%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, white 15%, white 85%, transparent);
+}
+.marquee-inner {
+  display: flex;
+  gap: 14px;
+  padding-block: 4px;
+  white-space: nowrap;
+  animation: marquee-scroll 45s linear infinite;
+  width: max-content;
+}
+.marquee-reverse {
+  animation-direction: reverse;
+}
+.marquee-chip {
+  padding: 12px 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  font-weight: 600;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: -0.01em;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ==========================================================================
+   Tools Showcase Section
+   ========================================================================== */
+.tools-showcase {
+  background: #f0f4fc;
+  border-block: 1px solid var(--line);
+}
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 60px;
+}
+.tool-card {
+  display: flex;
+  flex-direction: column;
+  padding: 38px;
+  border-radius: 28px;
+  border: 1px solid var(--line);
+  background: white;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+.tool-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 54px rgba(9, 21, 45, 0.06);
+  border-color: rgba(13, 86, 204, 0.25);
+}
+.tool-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+.tool-icon-wrap {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--ice);
+  color: var(--blue);
+}
+.tool-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  background: rgba(15, 43, 91, 0.08);
+  color: var(--ink);
+  text-transform: uppercase;
+}
+.tool-badge-ai {
+  background: #d9fbe8;
+  color: #155724;
+}
+.tool-card h3 {
+  margin: 0 0 12px;
+  font: 700 22px Manrope, sans-serif;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.tool-card p {
+  margin: 0 0 28px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.65;
+  flex-grow: 1;
+}
+.tool-cta {
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--blue);
+  display: inline-flex;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+.tool-card:hover .tool-cta {
+  transform: translateX(4px);
+}
+
+/* ==========================================================================
+   Responsive Overrides for New Layouts
+   ========================================================================== */
+@media (max-width: 1020px) {
+  .tools-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .pain-cards {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .pain-card {
+    padding: 28px;
+  }
+  .pain-solution-banner {
+    padding: 24px;
+  }
+  .data-showcase {
+    padding-block: 90px;
+  }
+  .data-stats {
+    gap: 40px;
+    margin-bottom: 48px;
+  }
+  .data-stat strong {
+    font-size: 52px;
+  }
+  .tools-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .tool-card {
+    padding: 28px;
+  }
+  .brewer-row-header {
+    grid-template-columns: 32px 54px 1fr 30px;
+    min-height: 82px;
+  }
+  .brewer-row-body {
+    padding: 12px 0 24px 86px;
+  }
+  .brewer-meta-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding-top: 18px;
+  }
+  .brewer-barista-note {
+    padding: 18px;
+  }
+}
+

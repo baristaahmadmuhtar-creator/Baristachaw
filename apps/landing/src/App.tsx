@@ -9,6 +9,8 @@ import { LandingHeader } from './components/LandingHeader';
 import { MethodSections } from './components/MethodSections';
 import { ScrollReveal } from './components/ScrollReveal';
 import { SupportChatWidget } from './components/SupportChatWidget';
+import { DataShowcase } from './components/DataShowcase';
+import { ToolsShowcase } from './components/ToolsShowcase';
 import { APP_LINKS, APK_URL } from './config';
 import { DownloadPage } from './pages/DownloadPage';
 import { PrivacyPage } from './pages/PrivacyPage';
@@ -28,7 +30,7 @@ function EvidenceSection({ language }: { language: 'id' | 'en' }) {
   return (
     <section className="evidence-section" aria-labelledby="evidence-title">
       <div className="evidence-inner">
-        <ScrollReveal variant="slide-up">
+        <ScrollReveal variant="dramatic">
           <div>
             <p className="section-index section-index-light">05 / 06</p>
             <h2 id="evidence-title">{isId ? 'Mengapa Barista dan Pencinta Kopi Memilih BaristaChaw' : 'Why Baristas and Coffee Lovers Choose BaristaChaw'}</h2>
@@ -60,7 +62,7 @@ function PricingSection({ language }: { language: 'id' | 'en' }) {
   const isId = language === 'id';
   return (
     <section className="pricing section-shell" aria-labelledby="pricing-title">
-      <ScrollReveal variant="slide-up">
+      <ScrollReveal variant="dramatic">
         <div className="section-heading">
           <p className="section-index">Access</p>
           <div>
@@ -117,7 +119,9 @@ function LandingHome({ language }: { language: 'id' | 'en' }) {
     <main>
       <HeroSection language={language} />
       <MethodSections language={language} />
+      <DataShowcase language={language} />
       <BrewerGrid language={language} />
+      <ToolsShowcase language={language} />
       <FeatureGraphics language={language} />
       <EvidenceSection language={language} />
       <PricingSection language={language} />

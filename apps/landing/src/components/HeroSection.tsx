@@ -31,7 +31,7 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
         <p className="hero-body">
           {isId
             ? 'Nikmati kenyamanan ritual menyeduh kopi yang nikmat dan konsisten. Asisten cerdas kami memandu Anda menyelaraskan rasa, biji kopi, dan grinder — untuk hasil cangkir terbaik, setiap hari.'
-            : 'Experience the comfort of a delicious, consistent coffee ritual. Our smart assistant guides you to align flavor, beans, and grinder — for the perfect cup, every single day.'}
+            : 'Experience the comfort of a delicious, consistent coffee coffee ritual. Our smart assistant guides you to align flavor, beans, and grinder — for the perfect cup, every single day.'}
         </p>
         <div className="hero-actions">
           <a className="button button-primary" href={APP_LINKS.aiBrew}>
@@ -50,26 +50,37 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
       </motion.div>
       <motion.div
         className="recipe-visual"
-        initial={{ opacity: 0, x: 42, rotateY: -5, filter: 'blur(8px)' }}
+        initial={{ opacity: 0, x: 60, rotateY: -8, filter: 'blur(16px)' }}
         animate={{ opacity: 1, x: 0, rotateY: 0, filter: 'blur(0px)' }}
-        transition={{ duration: 0.95, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
-        aria-label={isId ? 'Alur Seduh Santai' : 'Relaxed Brewing Experience'}
+        transition={{ duration: 1.2, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        aria-label={isId ? 'Resep Seduh Aktif' : 'Active Brew Sheet'}
       >
         <div className="recipe-topline">
-          <span>{isId ? 'Teman Seduh Anda' : 'Your Brew Companion'}</span>
-          <span className="confidence-chip"><ShieldCheck size={13} /> {isId ? 'Aktif' : 'Active'}</span>
+          <span>{isId ? 'Lembar Seduh Hari Ini' : "Today's Brew Sheet"}</span>
+          <span className="confidence-chip">
+            <ShieldCheck size={13} /> {isId ? 'Rekomendasi Utama' : 'Recommended Brew'}
+          </span>
         </div>
         <div className="recipe-numbers">
-          <div><strong>100%</strong><span>{isId ? 'Konsisten' : 'Consistent'}</span></div>
-          <div><strong>0</strong><span>{isId ? 'Tanpa Tebak' : 'No Guessing'}</span></div>
-          <div><strong>Optimal</strong><span>{isId ? 'Rasa Kopi' : 'Coffee Taste'}</span></div>
+          <div>
+            <strong>1:15.5</strong>
+            <span>{isId ? 'Rasio Seduh' : 'Brew Ratio'}</span>
+          </div>
+          <div>
+            <strong>92°C</strong>
+            <span>{isId ? 'Suhu Air' : 'Water Temp'}</span>
+          </div>
+          <div>
+            <strong>3-Pour</strong>
+            <span>{isId ? 'Metode Aliran' : 'Pour Method'}</span>
+          </div>
         </div>
         <div className="pour-timeline">
           {[
-            ['Step 1', isId ? 'Pilih Profil' : 'Select Profile', isId ? 'Sweet / Bright' : 'Sweet / Bright'],
-            ['Step 2', isId ? 'Rasio Otomatis' : 'Auto Ratio', isId ? 'Dihitung untuk Anda' : 'Calculated for you'],
-            ['Step 3', isId ? 'Panduan Tenang' : 'Calm Guide', isId ? 'Langkah demi langkah' : 'Step-by-step'],
-            ['Step 4', isId ? 'Nikmati Hasil' : 'Sip & Smile', isId ? 'Rasa konsisten' : 'Always consistent'],
+            ['0:00', isId ? 'Blooming' : 'Blooming', isId ? 'Basahi Kopi (50g)' : 'Wet Coffee (50g)'],
+            ['0:40', isId ? 'Tuangan 1' : 'First Pour', isId ? 'Bentuk Rasa (120g)' : 'Extract Sweet (120g)'],
+            ['1:20', isId ? 'Tuangan 2' : 'Second Pour', isId ? 'Bentuk Body (150g)' : 'Add Body (150g)'],
+            ['2:30', isId ? 'Selesai' : 'Drawdown', isId ? 'Nikmati Kopi Anda' : 'Enjoy Your Cup'],
           ].map(([time, label, value], index) => (
             <div className="pour-step" key={label}>
               <span className="pour-dot" style={{ animationDelay: `${index * 0.35}s` }} />
@@ -80,8 +91,8 @@ export function HeroSection({ language }: { language: 'id' | 'en' }) {
           ))}
         </div>
         <div className="recipe-footer">
-          <span>{isId ? 'Ritual Pagi Tenang' : 'Peaceful Morning Ritual'}</span>
-          <strong>{isId ? 'Setiap Hari' : 'Every Single Day'}</strong>
+          <span>{isId ? 'Target Karakter Rasa' : 'Target Flavor Profile'}</span>
+          <strong>{isId ? 'Sweet & Sweet Acid' : 'Sweet & Sweet Acid'}</strong>
         </div>
       </motion.div>
       <a className="hero-scroll" href="#engine" aria-label="Scroll to AI Brew engine">

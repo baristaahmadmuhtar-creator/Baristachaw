@@ -1,4 +1,3 @@
-import { Droplets, Gauge, ScanLine, ThermometerSun, Waves } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 
 const PROBLEMS = [
@@ -49,47 +48,40 @@ export function MethodSections({ language }: { language: 'id' | 'en' }) {
       </section>
 
       <section className="engine" id="engine" aria-labelledby="engine-title">
-        <ScrollReveal variant="slide-up" className="engine-sticky">
+        <ScrollReveal variant="dramatic" className="engine-sticky">
           <p className="section-index section-index-light">02 / 06</p>
-          <h2 id="engine-title">{isId ? 'Asisten Cerdas untuk Ritual Kopi yang Sempurna.' : 'Your Smart Companion for the Perfect Brew.'}</h2>
-          <p>{isId ? 'BaristaChaw menyederhanakan semua variabel rumit di balik layar, sehingga Anda bisa fokus menikmati proses seduh dan hasil akhir di cangkir Anda.' : 'BaristaChaw handles the complex variables behind the scenes, so you can focus on enjoying the process and the taste in your cup.'}</p>
+          <h2 id="engine-title">
+            {isId
+              ? 'Asisten Cerdas untuk Ritual Kopi yang Sempurna.'
+              : 'Your Smart Companion for the Perfect Brew.'}
+          </h2>
+          <p>
+            {isId
+              ? 'BaristaChaw menangani semua variabel rumit di balik layar. Anda tinggal fokus menikmati proses seduh dan rasa di cangkir Anda.'
+              : 'BaristaChaw handles all the complex variables behind the scenes. You just focus on enjoying the process and the taste in your cup.'}
+          </p>
         </ScrollReveal>
         <div className="engine-panels">
-          <ScrollReveal delay={0} variant="blur">
-            <article>
-              <ScanLine />
-              <span>{isId ? 'Profil Rasa Personal' : 'Personal Flavor Profile'}</span>
-              <h3>{isId ? 'Pilih karakter rasa idaman Anda: Bright, Sweet, atau Body-forward. AI akan menyesuaikan seluruh parameter untuk Anda.' : 'Choose your dream flavor character: Bright, Sweet, or Body-forward. AI adjusts every parameter for you.'}</h3>
-            </article>
-          </ScrollReveal>
-          <ScrollReveal delay={0.06} variant="blur">
-            <article>
-              <Waves />
-              <span>{isId ? 'Panduan Langkah demi Langkah' : 'Step-by-Step Guidance'}</span>
-              <h3>{isId ? 'Alur seduh yang tenang dan terstruktur — memandu Anda kapan membasahi, menuang, dan menyajikan.' : 'Calm, structured brewing flow — guiding you when to bloom, pour, and serve.'}</h3>
-            </article>
-          </ScrollReveal>
-          <ScrollReveal delay={0.12} variant="blur">
-            <article>
-              <Gauge />
-              <span>{isId ? 'Paham Karakter Biji Kopi' : 'Bean-Aware Intelligence'}</span>
-              <h3>{isId ? 'AI kami mengenali tingkat sangrai biji kopi Anda dan otomatis menyesuaikan suhu serta ukuran gilingan yang ideal.' : "Our AI recognizes your beans' roast level and automatically adjusts the ideal temperature and grind size."}</h3>
-            </article>
-          </ScrollReveal>
-          <ScrollReveal delay={0.18} variant="blur">
-            <article>
-              <Droplets />
-              <span>{isId ? 'Kopi Es yang Tetap Kaya Rasa' : 'Rich Iced Coffee, Never Watery'}</span>
-              <h3>{isId ? 'Nikmati kopi es yang tetap kaya rasa tanpa encer, berkat perhitungan rasio es yang presisi dari AI.' : 'Enjoy iced coffee that stays rich and flavorful — thanks to precise ice dilution calculations.'}</h3>
-            </article>
-          </ScrollReveal>
-          <ScrollReveal delay={0.24} variant="blur">
-            <article>
-              <ThermometerSun />
-              <span>{isId ? 'Kompatibel dengan Grinder Anda' : 'Works with Your Grinder'}</span>
-              <h3>{isId ? 'Rekomendasi ukuran gilingan langsung dikonversi ke setelan mesin penggiling kopi favorit Anda di rumah.' : "Grind size recommendations are directly converted to your home grinder's click settings."}</h3>
-            </article>
-          </ScrollReveal>
+          {(isId ? [
+            ['Profil Rasa Personal', 'Pilih karakter rasa idaman Anda: Bright, Sweet, atau Body-forward. AI akan menyesuaikan seluruh parameter secara otomatis.'],
+            ['Panduan Langkah demi Langkah', 'Alur seduh yang tenang dan terstruktur — memandu Anda kapan membasahi, menuang, dan menyajikan tanpa tergesa.'],
+            ['Paham Karakter Biji Kopi', 'AI mengenali tingkat sangrai biji kopi Anda dan otomatis menyesuaikan suhu serta ukuran gilingan yang ideal.'],
+            ['Kopi Es yang Tetap Kaya Rasa', 'Nikmati kopi es yang kaya rasa tanpa encer, berkat perhitungan rasio es yang presisi dari AI.'],
+            ['Kompatibel dengan Grinder Anda', 'Rekomendasi gilingan langsung dikonversi ke setelan klik mesin penggiling kopi favorit Anda.'],
+          ] : [
+            ['Personal Flavor Profile', 'Choose your dream flavor: Bright, Sweet, or Body-forward. AI adjusts every parameter automatically.'],
+            ['Step-by-Step Guidance', 'Calm, structured brewing flow — guiding you when to bloom, pour, and serve at your own pace.'],
+            ['Bean-Aware Intelligence', "AI recognizes your beans' roast level and automatically adjusts the ideal temperature and grind size."],
+            ['Rich Iced Coffee, Never Watery', 'Enjoy iced coffee that stays rich and flavorful — thanks to precise ice dilution calculations.'],
+            ['Works with Your Grinder', "Grind size recommendations are directly converted to your home grinder's click settings."],
+          ]).map(([title, desc], index) => (
+            <ScrollReveal key={title} variant="blur" delay={index * 0.06}>
+              <article>
+                <span>{title.split(' ').slice(0, 2).join(' ')}</span>
+                <h3>{desc}</h3>
+              </article>
+            </ScrollReveal>
+          ))}
         </div>
       </section>
     </>

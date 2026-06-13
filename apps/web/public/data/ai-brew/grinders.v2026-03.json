@@ -2580,9 +2580,9 @@
       "name": "Kanso Hiku",
       "brand": "Kanso",
       "type": "Hand adjustment mechanism, 45 divisions",
-      "coarse": "1.95 - 2.2 clicks",
-      "medium": "1.4 - 1.8 clicks",
-      "fine": "0.65 - 0.85 clicks",
+      "coarse": "1.95 - 2.2 turns",
+      "medium": "1.4 - 1.8 turns",
+      "fine": "0.65 - 0.85 turns",
       "expertDescription": "Kanso Hiku calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Hand adjustment mechanism, 45 divisions. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
       "source": "curated_2026_master_calibration",
       "sourceUrls": [
@@ -3192,6 +3192,28 @@
       "catalogVersion": "2026.07.0-master-grinder-calibration"
     },
     {
+      "id": "mahlk-nig-ek-omnia",
+      "name": "Mahlkönig EK Omnia",
+      "brand": "Mahlkönig",
+      "type": "Automatic dial-in mechanism, 98mm flat cast steel burrs",
+      "coarse": "11.0 - 15.0 settings",
+      "medium": "5.0 - 7.5 settings",
+      "fine": "1.2 - 2.5 settings",
+      "expertDescription": "Mahlkönig EK Omnia calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: flat burr clarity/flow platform; Automatic dial-in mechanism, 98mm flat cast steel burrs. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
       "id": "mahlk-nig-ek43-0-16",
       "name": "Mahlkönig EK43 (0-16)",
       "brand": "Mahlkönig",
@@ -3376,6 +3398,28 @@
       "medium": "7.2 - 8.0 numbers",
       "fine": "4.0 - 4.4 numbers",
       "expertDescription": "Mazzer Omega calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External ring, 33 micron per click, true zero. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "mazzer-philos",
+      "name": "Mazzer Philos",
+      "brand": "Mazzer",
+      "type": "Stepless single-dosing mechanism, 64mm flat burrs",
+      "coarse": "70.0 - 85.0 settings",
+      "medium": "42.0 - 58.0 settings",
+      "fine": "15.0 - 25.0 settings",
+      "expertDescription": "Mazzer Philos calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: flat burr clarity/flow platform; Stepless single-dosing mechanism, 64mm flat burrs. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
       "source": "curated_2026_master_calibration",
       "sourceUrls": [
         "https://honestcoffeeguide.com/coffee-grind-size-chart/",
@@ -3618,6 +3662,28 @@
       "medium": "0.45 - 0.56 turns",
       "fine": "0.20 - 0.28 turns",
       "expertDescription": "Niche Zero calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Rotations from zero adjustment mechanism, 114 divisions. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "option-o-lagom-01",
+      "name": "Option-O Lagom 01",
+      "brand": "Option-O",
+      "type": "Stepless adjustment mechanism, 98mm or 102mm flat burrs",
+      "coarse": "8.0 - 9.5 settings",
+      "medium": "4.0 - 5.8 settings",
+      "fine": "0.8 - 1.8 settings",
+      "expertDescription": "Option-O Lagom 01 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: flat burr clarity/flow platform; Stepless adjustment mechanism, 98mm or 102mm flat burrs. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
       "source": "curated_2026_master_calibration",
       "sourceUrls": [
         "https://honestcoffeeguide.com/coffee-grind-size-chart/",

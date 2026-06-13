@@ -7150,7 +7150,7 @@
       "id": "kanso-hiku",
       "published": true,
       "publish_state": "published",
-      "search_text": "kanso hiku kanso hiku hand adjustment mechanism, 45 divisions espresso 0.65 - 0.85 clicks moka 0.95 - 1.15 clicks aeropress 1.05 - 1.45 clicks v60 origami kono 1.4 - 1.8 clicks ice brew finer 1.25 - 1.5 clicks kalita april melitta 1.75 - 2.1 clicks chemex 1.95 - 2.2 clicks french press cold brew batch 1.95 - 2.2 clicks",
+      "search_text": "kanso hiku kanso hiku hand adjustment mechanism, 45 divisions espresso 0.65 - 0.85 turns moka 0.95 - 1.15 turns aeropress 1.05 - 1.45 turns v60 origami kono 1.4 - 1.8 turns ice brew finer 1.25 - 1.5 turns kalita april melitta 1.75 - 2.1 turns chemex 1.95 - 2.2 turns french press cold brew batch 1.95 - 2.2 turns",
       "aliases": [
         "Kanso Hiku"
       ],
@@ -7175,9 +7175,9 @@
       "burr_size_mm": null,
       "step_type": "stepped",
       "recommended_range": {
-        "espresso": "0.65 - 0.85 clicks",
-        "pour_over": "1.4 - 1.8 clicks",
-        "french_press": "1.95 - 2.2 clicks"
+        "espresso": "0.65 - 0.85 turns",
+        "pour_over": "1.4 - 1.8 turns",
+        "french_press": "1.95 - 2.2 turns"
       },
       "retention_notes": "Master table reference only. Calibrate true zero, burr seasoning, RDT/static behavior, roast density, flow, brew time, and taste before treating the setting as exact.",
       "sources": [
@@ -8865,6 +8865,67 @@
       "updated_at": "2026-05-28"
     },
     {
+      "id": "mahlk-nig-ek-omnia",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "mahlkönig ek omnia mahlkönig ek omnia automatic dial-in mechanism, 98mm flat cast steel burrs espresso 1.2 - 2.5 settings moka 3.0 - 4.2 settings aeropress 3.5 - 5.2 settings v60 origami kono 5.0 - 7.5 settings ice brew finer 4.2 - 5.5 settings kalita april melitta 6.5 - 8.5 settings chemex 7.5 - 9.5 settings french press cold brew batch 11.0 - 15.0 settings",
+      "aliases": [
+        "Mahlkönig EK Omnia"
+      ],
+      "available_in": [
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia",
+        "Global"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 95
+      },
+      "brand": "Mahlkönig",
+      "model": "EK Omnia",
+      "grinder_type": "electric",
+      "burr_type": "flat",
+      "burr_material": "steel",
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "1.2 - 2.5 settings",
+        "pour_over": "5.0 - 7.5 settings",
+        "french_press": "11.0 - 15.0 settings"
+      },
+      "retention_notes": "Master table reference only. Calibrate true zero, burr seasoning, RDT/static behavior, roast density, flow, brew time, and taste before treating the setting as exact.",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "collected_at": "2026-05-28",
+          "confidence_score": 0.78
+        },
+        {
+          "source_type": "catalog_seed",
+          "source_url": "https://sca.coffee/research",
+          "collected_at": "2026-05-28",
+          "confidence_score": 0.7
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "collected_at": "2026-05-28",
+        "confidence_score": 0.78
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.78,
+      "manual_brew_capable": true,
+      "filter_priority": 855,
+      "availability_confidence": "medium",
+      "updated_at": "2026-05-28"
+    },
+    {
       "id": "mahlk-nig-ek43-0-16",
       "published": true,
       "publish_state": "published",
@@ -8921,7 +8982,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 855,
+      "filter_priority": 854,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -8982,7 +9043,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 854,
+      "filter_priority": 853,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9043,7 +9104,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 853,
+      "filter_priority": 852,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9104,7 +9165,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 852,
+      "filter_priority": 851,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9165,7 +9226,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 851,
+      "filter_priority": 850,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9226,7 +9287,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 850,
+      "filter_priority": 849,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9287,7 +9348,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 849,
+      "filter_priority": 848,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9348,7 +9409,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 848,
+      "filter_priority": 847,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9409,7 +9470,68 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 847,
+      "filter_priority": 846,
+      "availability_confidence": "medium",
+      "updated_at": "2026-05-28"
+    },
+    {
+      "id": "mazzer-philos",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "mazzer philos mazzer philos stepless single-dosing mechanism, 64mm flat burrs espresso 15.0 - 25.0 settings moka 28.0 - 36.0 settings aeropress 32.0 - 46.0 settings v60 origami kono 42.0 - 58.0 settings ice brew finer 38.0 - 48.0 settings kalita april melitta 55.0 - 68.0 settings chemex 64.0 - 72.0 settings french press cold brew batch 70.0 - 85.0 settings",
+      "aliases": [
+        "Mazzer Philos"
+      ],
+      "available_in": [
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia",
+        "Global"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 95
+      },
+      "brand": "Mazzer",
+      "model": "Philos",
+      "grinder_type": "electric",
+      "burr_type": "flat",
+      "burr_material": "steel",
+      "burr_size_mm": null,
+      "step_type": "stepless",
+      "recommended_range": {
+        "espresso": "15.0 - 25.0 settings",
+        "pour_over": "42.0 - 58.0 settings",
+        "french_press": "70.0 - 85.0 settings"
+      },
+      "retention_notes": "Master table reference only. Calibrate true zero, burr seasoning, RDT/static behavior, roast density, flow, brew time, and taste before treating the setting as exact.",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "collected_at": "2026-05-28",
+          "confidence_score": 0.78
+        },
+        {
+          "source_type": "catalog_seed",
+          "source_url": "https://sca.coffee/research",
+          "collected_at": "2026-05-28",
+          "confidence_score": 0.7
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "collected_at": "2026-05-28",
+        "confidence_score": 0.78
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.78,
+      "manual_brew_capable": true,
+      "filter_priority": 845,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9470,7 +9592,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 846,
+      "filter_priority": 844,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9531,7 +9653,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 845,
+      "filter_priority": 843,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9592,7 +9714,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 844,
+      "filter_priority": 842,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9653,7 +9775,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 843,
+      "filter_priority": 841,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9714,7 +9836,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 842,
+      "filter_priority": 840,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9776,7 +9898,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 841,
+      "filter_priority": 839,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9837,7 +9959,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 840,
+      "filter_priority": 838,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9898,7 +10020,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 839,
+      "filter_priority": 837,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -9959,7 +10081,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 838,
+      "filter_priority": 836,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10020,7 +10142,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 837,
+      "filter_priority": 835,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10081,7 +10203,68 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 836,
+      "filter_priority": 834,
+      "availability_confidence": "medium",
+      "updated_at": "2026-05-28"
+    },
+    {
+      "id": "option-o-lagom-01",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "option-o lagom 01 option-o lagom 01 stepless adjustment mechanism, 98mm or 102mm flat burrs espresso 0.8 - 1.8 settings moka 2.2 - 3.2 settings aeropress 2.5 - 4.0 settings v60 origami kono 4.0 - 5.8 settings ice brew finer 3.2 - 4.4 settings kalita april melitta 5.0 - 6.8 settings chemex 6.0 - 7.5 settings french press cold brew batch 8.0 - 9.5 settings",
+      "aliases": [
+        "Option-O Lagom 01"
+      ],
+      "available_in": [
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia",
+        "Global"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 95
+      },
+      "brand": "Option-O",
+      "model": "Lagom 01",
+      "grinder_type": "electric",
+      "burr_type": "flat",
+      "burr_material": "steel",
+      "burr_size_mm": null,
+      "step_type": "stepless",
+      "recommended_range": {
+        "espresso": "0.8 - 1.8 settings",
+        "pour_over": "4.0 - 5.8 settings",
+        "french_press": "8.0 - 9.5 settings"
+      },
+      "retention_notes": "Master table reference only. Calibrate true zero, burr seasoning, RDT/static behavior, roast density, flow, brew time, and taste before treating the setting as exact.",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "collected_at": "2026-05-28",
+          "confidence_score": 0.78
+        },
+        {
+          "source_type": "catalog_seed",
+          "source_url": "https://sca.coffee/research",
+          "collected_at": "2026-05-28",
+          "confidence_score": 0.7
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "collected_at": "2026-05-28",
+        "confidence_score": 0.78
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.78,
+      "manual_brew_capable": true,
+      "filter_priority": 833,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10142,7 +10325,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 835,
+      "filter_priority": 832,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10203,7 +10386,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 834,
+      "filter_priority": 831,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10264,7 +10447,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 833,
+      "filter_priority": 830,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10325,7 +10508,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 832,
+      "filter_priority": 829,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10388,7 +10571,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 831,
+      "filter_priority": 828,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10449,7 +10632,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 830,
+      "filter_priority": 827,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10510,7 +10693,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 829,
+      "filter_priority": 826,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10573,7 +10756,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 828,
+      "filter_priority": 825,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10636,7 +10819,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 827,
+      "filter_priority": 824,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10697,7 +10880,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 826,
+      "filter_priority": 823,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10758,7 +10941,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 825,
+      "filter_priority": 822,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10819,7 +11002,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 824,
+      "filter_priority": 821,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10880,7 +11063,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 823,
+      "filter_priority": 820,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -10941,7 +11124,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 822,
+      "filter_priority": 819,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11002,7 +11185,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 821,
+      "filter_priority": 818,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11063,7 +11246,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 820,
+      "filter_priority": 817,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11124,7 +11307,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 819,
+      "filter_priority": 816,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11185,7 +11368,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 818,
+      "filter_priority": 815,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11246,7 +11429,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 817,
+      "filter_priority": 814,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11307,7 +11490,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 816,
+      "filter_priority": 813,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11368,7 +11551,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 815,
+      "filter_priority": 812,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11429,7 +11612,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 814,
+      "filter_priority": 811,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11490,7 +11673,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 813,
+      "filter_priority": 810,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11551,7 +11734,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 812,
+      "filter_priority": 809,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11612,7 +11795,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 811,
+      "filter_priority": 808,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11673,7 +11856,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 810,
+      "filter_priority": 807,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11735,7 +11918,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 809,
+      "filter_priority": 806,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11796,7 +11979,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 808,
+      "filter_priority": 805,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11859,7 +12042,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 807,
+      "filter_priority": 804,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11921,7 +12104,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 806,
+      "filter_priority": 803,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -11982,7 +12165,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 805,
+      "filter_priority": 802,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12043,7 +12226,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 804,
+      "filter_priority": 801,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12104,7 +12287,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 803,
+      "filter_priority": 800,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12165,7 +12348,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 802,
+      "filter_priority": 799,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12226,7 +12409,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 801,
+      "filter_priority": 798,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12287,7 +12470,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 800,
+      "filter_priority": 797,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12348,7 +12531,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 799,
+      "filter_priority": 796,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12410,7 +12593,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 798,
+      "filter_priority": 795,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12471,7 +12654,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 797,
+      "filter_priority": 794,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12532,7 +12715,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 796,
+      "filter_priority": 793,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12593,7 +12776,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 795,
+      "filter_priority": 792,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12654,7 +12837,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 794,
+      "filter_priority": 791,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12715,7 +12898,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 793,
+      "filter_priority": 790,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12776,7 +12959,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 792,
+      "filter_priority": 789,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12837,7 +13020,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 791,
+      "filter_priority": 788,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12898,7 +13081,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 790,
+      "filter_priority": 787,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -12959,7 +13142,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 789,
+      "filter_priority": 786,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13020,7 +13203,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 788,
+      "filter_priority": 785,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13082,7 +13265,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 787,
+      "filter_priority": 784,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13143,7 +13326,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 786,
+      "filter_priority": 783,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13204,7 +13387,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 785,
+      "filter_priority": 782,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13265,7 +13448,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 784,
+      "filter_priority": 781,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13326,7 +13509,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 783,
+      "filter_priority": 780,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13389,7 +13572,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 782,
+      "filter_priority": 779,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13450,7 +13633,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 781,
+      "filter_priority": 778,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13511,7 +13694,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 780,
+      "filter_priority": 777,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13572,7 +13755,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 779,
+      "filter_priority": 776,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13633,7 +13816,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 778,
+      "filter_priority": 775,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13694,7 +13877,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 777,
+      "filter_priority": 774,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13755,7 +13938,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 776,
+      "filter_priority": 773,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13816,7 +13999,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 775,
+      "filter_priority": 772,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13877,7 +14060,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 774,
+      "filter_priority": 771,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13938,7 +14121,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 773,
+      "filter_priority": 770,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -13999,7 +14182,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 772,
+      "filter_priority": 769,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14060,7 +14243,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 771,
+      "filter_priority": 768,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14121,7 +14304,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 770,
+      "filter_priority": 767,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14182,7 +14365,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 769,
+      "filter_priority": 766,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14243,7 +14426,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 768,
+      "filter_priority": 765,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14304,7 +14487,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 767,
+      "filter_priority": 764,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14365,7 +14548,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 766,
+      "filter_priority": 763,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14426,7 +14609,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 765,
+      "filter_priority": 762,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14487,7 +14670,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 764,
+      "filter_priority": 761,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14548,7 +14731,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 763,
+      "filter_priority": 760,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14609,7 +14792,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 762,
+      "filter_priority": 759,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14670,7 +14853,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 761,
+      "filter_priority": 758,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14731,7 +14914,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 760,
+      "filter_priority": 757,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14792,7 +14975,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 759,
+      "filter_priority": 756,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14853,7 +15036,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 758,
+      "filter_priority": 755,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14914,7 +15097,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 757,
+      "filter_priority": 754,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -14975,7 +15158,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 756,
+      "filter_priority": 753,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -15036,7 +15219,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 755,
+      "filter_priority": 752,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     },
@@ -15097,7 +15280,7 @@
       "source_type": "community_reference",
       "confidence_score": 0.78,
       "manual_brew_capable": true,
-      "filter_priority": 754,
+      "filter_priority": 751,
       "availability_confidence": "medium",
       "updated_at": "2026-05-28"
     }

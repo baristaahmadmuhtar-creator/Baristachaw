@@ -1733,7 +1733,7 @@
       },
       "brand": "Balmuda",
       "model": "Coffee Mill",
-      "grinder_type": "electric",
+      "grinder_type": "hand",
       "burr_type": "conical",
       "burr_material": "steel",
       "burr_size_mm": null,
@@ -2874,7 +2874,7 @@
       "id": "bellelife-electric-coffee-grinder",
       "published": true,
       "publish_state": "published",
-      "search_text": "bellelife electric coffee grinder bellelife electric coffee grinder hand adjustment mechanism, 49 divisions espresso 2 - 6 clicks moka 7 - 11 clicks aeropress 9 - 15 clicks v60 origami kono 15 - 20 clicks ice brew finer 12 - 16 clicks kalita april melitta 20 - 25 clicks chemex 23 - 28 clicks french press cold brew batch 23 - 31 clicks",
+      "search_text": "bellelife electric coffee grinder bellelife electric coffee grinder electric adjustment mechanism, 49 divisions espresso 2 - 6 settings moka 7 - 11 settings aeropress 9 - 15 settings v60 origami kono 15 - 20 settings ice brew finer 12 - 16 settings kalita april melitta 20 - 25 settings chemex 23 - 28 settings french press cold brew batch 23 - 31 settings",
       "aliases": [
         "BelleLife Electric Coffee Grinder"
       ],
@@ -2893,15 +2893,15 @@
       },
       "brand": "BelleLife",
       "model": "Electric Coffee Grinder",
-      "grinder_type": "hand",
+      "grinder_type": "electric",
       "burr_type": "conical",
       "burr_material": "steel",
       "burr_size_mm": null,
       "step_type": "stepped",
       "recommended_range": {
-        "espresso": "2 - 6 clicks",
-        "pour_over": "15 - 20 clicks",
-        "french_press": "23 - 31 clicks"
+        "espresso": "2 - 6 settings",
+        "pour_over": "15 - 20 settings",
+        "french_press": "23 - 31 settings"
       },
       "retention_notes": "Master table reference only. Calibrate true zero, burr seasoning, RDT/static behavior, roast density, flow, brew time, and taste before treating the setting as exact.",
       "sources": [
@@ -6864,7 +6864,7 @@
       },
       "brand": "Kaldi",
       "model": "Ceramic Coffee Mill",
-      "grinder_type": "electric",
+      "grinder_type": "hand",
       "burr_type": "conical",
       "burr_material": "steel",
       "burr_size_mm": null,
@@ -6986,8 +6986,8 @@
       },
       "brand": "Kalita",
       "model": "DIA Coffee Mill",
-      "grinder_type": "electric",
-      "burr_type": "flat",
+      "grinder_type": "hand",
+      "burr_type": "conical",
       "burr_material": "steel",
       "burr_size_mm": null,
       "step_type": "stepped",
@@ -7150,7 +7150,7 @@
       "id": "kanso-hiku",
       "published": true,
       "publish_state": "published",
-      "search_text": "kanso hiku kanso hiku electric adjustment mechanism, 45 divisions espresso 0.65 - 0.85 settings moka 0.95 - 1.15 settings aeropress 1.05 - 1.45 settings v60 origami kono 1.4 - 1.8 settings ice brew finer 1.25 - 1.5 settings kalita april melitta 1.75 - 2.1 settings chemex 1.95 - 2.2 settings french press cold brew batch 1.95 - 2.2 settings",
+      "search_text": "kanso hiku kanso hiku hand adjustment mechanism, 45 divisions espresso 0.65 - 0.85 clicks moka 0.95 - 1.15 clicks aeropress 1.05 - 1.45 clicks v60 origami kono 1.4 - 1.8 clicks ice brew finer 1.25 - 1.5 clicks kalita april melitta 1.75 - 2.1 clicks chemex 1.95 - 2.2 clicks french press cold brew batch 1.95 - 2.2 clicks",
       "aliases": [
         "Kanso Hiku"
       ],
@@ -7169,15 +7169,15 @@
       },
       "brand": "Kanso",
       "model": "Hiku",
-      "grinder_type": "electric",
+      "grinder_type": "hand",
       "burr_type": "conical",
       "burr_material": "steel",
       "burr_size_mm": null,
       "step_type": "stepped",
       "recommended_range": {
-        "espresso": "0.65 - 0.85 settings",
-        "pour_over": "1.4 - 1.8 settings",
-        "french_press": "1.95 - 2.2 settings"
+        "espresso": "0.65 - 0.85 clicks",
+        "pour_over": "1.4 - 1.8 clicks",
+        "french_press": "1.95 - 2.2 clicks"
       },
       "retention_notes": "Master table reference only. Calibrate true zero, burr seasoning, RDT/static behavior, roast density, flow, brew time, and taste before treating the setting as exact.",
       "sources": [
@@ -7520,7 +7520,7 @@
       "id": "kingrinder-k4",
       "published": true,
       "publish_state": "published",
-      "search_text": "kingrinder k4 kingrinder k4 external ring, 60 clicks/rotation, 16 micron per click kingrinder k4 espresso 0.29 - 0.41 clicks moka 0.43 - 0.54 clicks aeropress 0.48 - 1.08 clicks v60 origami kono 1.06 - 1.22 clicks ice brew finer 0.58 - 1.10 clicks kalita april melitta 1.22 - 1.37 clicks chemex 1.31 - 1.43 clicks french press cold brew batch 1.30 - 1.53 clicks",
+      "search_text": "kingrinder k4 kingrinder k4 external ring, 60 clicks/rotation, 16 micron per click kingrinder k4 espresso 29 - 41 clicks moka 43 - 54 clicks aeropress 48 - 68 clicks v60 origami kono 66 - 82 clicks ice brew finer 58 - 70 clicks kalita april melitta 82 - 97 clicks chemex 91 - 103 clicks french press cold brew batch 90 - 113 clicks",
       "aliases": [
         "KINGrinder K4",
         "Kingrinder K4"
@@ -7546,9 +7546,9 @@
       "burr_size_mm": null,
       "step_type": "stepped",
       "recommended_range": {
-        "espresso": "0.29 - 0.41 clicks",
-        "pour_over": "1.06 - 1.22 clicks",
-        "french_press": "1.30 - 1.53 clicks"
+        "espresso": "29 - 41 clicks",
+        "pour_over": "66 - 82 clicks",
+        "french_press": "90 - 113 clicks"
       },
       "retention_notes": "Master table reference only. Calibrate true zero, burr seasoning, RDT/static behavior, roast density, flow, brew time, and taste before treating the setting as exact.",
       "sources": [
@@ -7643,7 +7643,7 @@
       "id": "kingrinder-k6",
       "published": true,
       "publish_state": "published",
-      "search_text": "kingrinder k6 kingrinder k6 external ring, 60 clicks/rotation, 16 micron per click kingrinder k6 espresso 0.29 - 0.41 clicks moka 0.43 - 0.54 clicks aeropress 0.48 - 1.08 clicks v60 origami kono 1.06 - 1.22 clicks ice brew finer 0.58 - 1.10 clicks kalita april melitta 1.22 - 1.37 clicks chemex 1.31 - 1.43 clicks french press cold brew batch 1.30 - 1.53 clicks",
+      "search_text": "kingrinder k6 kingrinder k6 external ring, 60 clicks/rotation, 16 micron per click kingrinder k6 espresso 29 - 41 clicks moka 43 - 54 clicks aeropress 48 - 68 clicks v60 origami kono 66 - 82 clicks ice brew finer 58 - 70 clicks kalita april melitta 82 - 97 clicks chemex 91 - 103 clicks french press cold brew batch 90 - 113 clicks",
       "aliases": [
         "KINGrinder K6",
         "Kingrinder K6"
@@ -7669,9 +7669,9 @@
       "burr_size_mm": null,
       "step_type": "stepped",
       "recommended_range": {
-        "espresso": "0.29 - 0.41 clicks",
-        "pour_over": "1.06 - 1.22 clicks",
-        "french_press": "1.30 - 1.53 clicks"
+        "espresso": "29 - 41 clicks",
+        "pour_over": "66 - 82 clicks",
+        "french_press": "90 - 113 clicks"
       },
       "retention_notes": "Master table reference only. Calibrate true zero, burr seasoning, RDT/static behavior, roast density, flow, brew time, and taste before treating the setting as exact.",
       "sources": [
@@ -11212,7 +11212,7 @@
       },
       "brand": "Saint Anthony Industries",
       "model": "Millwright Hand Grinder",
-      "grinder_type": "electric",
+      "grinder_type": "hand",
       "burr_type": "conical",
       "burr_material": "steel",
       "burr_size_mm": null,
@@ -11804,7 +11804,7 @@
       "id": "timemore-c3-esp-pro",
       "published": true,
       "publish_state": "published",
-      "search_text": "timemore c3 esp / pro timemore c3 esp / pro internal multipoint click ring timemore c3 esp timemore c3 esp pro espresso 0.71 - 1.01 clicks moka 1.02 - 1.32 clicks aeropress 1.20 - 1.70 clicks v60 origami kono 1.62 - 2.02 clicks ice brew finer 1.42 - 1.72 clicks kalita april melitta 2.01 - 2.41 clicks chemex 2.30 - 2.60 clicks french press cold brew batch 2.22 - 2.81 clicks",
+      "search_text": "timemore c3 esp / pro timemore c3 esp / pro internal multipoint click ring timemore c3 esp timemore c3 esp pro espresso 31 - 36 clicks moka 32 - 47 clicks aeropress 40 - 65 clicks v60 origami kono 62 - 62 clicks ice brew finer 52 - 67 clicks kalita april melitta 61 - 81 clicks chemex 75 - 90 clicks french press cold brew batch 72 - 101 clicks",
       "aliases": [
         "Timemore C3 ESP / Pro",
         "Timemore C3 ESP",
@@ -11831,9 +11831,9 @@
       "burr_size_mm": null,
       "step_type": "stepped",
       "recommended_range": {
-        "espresso": "0.71 - 1.01 clicks",
-        "pour_over": "1.62 - 2.02 clicks",
-        "french_press": "2.22 - 2.81 clicks"
+        "espresso": "31 - 36 clicks",
+        "pour_over": "62 - 62 clicks",
+        "french_press": "72 - 101 clicks"
       },
       "retention_notes": "Master table reference only. Calibrate true zero, burr seasoning, RDT/static behavior, roast density, flow, brew time, and taste before treating the setting as exact.",
       "sources": [
@@ -12234,7 +12234,7 @@
       "id": "timemore-c5-esp-pro",
       "published": true,
       "publish_state": "published",
-      "search_text": "timemore c5 esp pro timemore c5 esp pro internal multipoint click ring, c5 esp chassis espresso 0.54 - 0.81 clicks moka 0.84 - 1.10 clicks aeropress 0.94 - 1.33 clicks v60 origami kono 1.32 - 1.63 clicks ice brew finer 1.14 - 1.41 clicks kalita april melitta 1.63 - 1.93 clicks chemex 1.82 - 2.10 clicks french press cold brew batch 1.81 - 2.24 clicks",
+      "search_text": "timemore c5 esp pro timemore c5 esp pro internal multipoint click ring, c5 esp chassis espresso 29 - 41 clicks moka 35 - 44 clicks aeropress 48 - 49 clicks v60 origami kono 47 - 63 clicks ice brew finer 39 - 51 clicks kalita april melitta 63 - 78 clicks chemex 65 - 72 clicks french press cold brew batch 71 - 74 clicks",
       "aliases": [
         "Timemore C5 ESP PRO"
       ],
@@ -12259,9 +12259,9 @@
       "burr_size_mm": null,
       "step_type": "stepped",
       "recommended_range": {
-        "espresso": "0.54 - 0.81 clicks",
-        "pour_over": "1.32 - 1.63 clicks",
-        "french_press": "1.81 - 2.24 clicks"
+        "espresso": "29 - 41 clicks",
+        "pour_over": "47 - 63 clicks",
+        "french_press": "71 - 74 clicks"
       },
       "retention_notes": "Master table reference only. Calibrate true zero, burr seasoning, RDT/static behavior, roast density, flow, brew time, and taste before treating the setting as exact.",
       "sources": [
@@ -12295,7 +12295,7 @@
       "id": "timemore-c5-pro",
       "published": true,
       "publish_state": "published",
-      "search_text": "timemore c5 pro timemore c5 pro hand adjustment mechanism, 49 divisions espresso 4 - 5.2 clicks moka 6 - 7.2 clicks aeropress 7 - 9.2 clicks v60 origami kono 9.1 - 11.2 clicks ice brew finer 8.1 - 10 clicks kalita april melitta 11.2 - 13.2 clicks chemex 13 - 14.2 clicks french press cold brew batch 12.2 - 16 clicks",
+      "search_text": "timemore c5 pro timemore c5 pro hand adjustment mechanism, 49 divisions espresso 4 - 62 clicks moka 6 - 86 clicks aeropress 7 - 110 clicks v60 origami kono 109 - 134 clicks ice brew finer 10 - 97 clicks kalita april melitta 134 - 158 clicks chemex 13 - 170 clicks french press cold brew batch 16 - 146 clicks",
       "aliases": [
         "Timemore C5 Pro"
       ],
@@ -12320,9 +12320,9 @@
       "burr_size_mm": null,
       "step_type": "stepped",
       "recommended_range": {
-        "espresso": "4 - 5.2 clicks",
-        "pour_over": "9.1 - 11.2 clicks",
-        "french_press": "12.2 - 16 clicks"
+        "espresso": "4 - 62 clicks",
+        "pour_over": "109 - 134 clicks",
+        "french_press": "16 - 146 clicks"
       },
       "retention_notes": "Master table reference only. Calibrate true zero, burr seasoning, RDT/static behavior, roast density, flow, brew time, and taste before treating the setting as exact.",
       "sources": [
@@ -12784,7 +12784,7 @@
       "id": "timemore-s3-esp",
       "published": true,
       "publish_state": "published",
-      "search_text": "timemore s3 esp timemore s3 esp external top dial, espresso-optimized espresso 20 - 30 clicks moka 0.4 - 1.5 clicks aeropress 0.9 - 2.8 clicks v60 origami kono 2.6 - 4.2 clicks ice brew finer 1.8 - 3.0 clicks kalita april melitta 4.1 - 5.6 clicks chemex 5.1 - 6.3 clicks french press cold brew batch 4.9 - 7.2 clicks",
+      "search_text": "timemore s3 esp timemore s3 esp external top dial, espresso-optimized espresso 20 - 30 clicks moka 4 - 35 clicks aeropress 9 - 68 clicks v60 origami kono 66 - 122 clicks ice brew finer 38 - 90 clicks kalita april melitta 121 - 156 clicks chemex 151 - 183 clicks french press cold brew batch 129 - 212 clicks",
       "aliases": [
         "Timemore S3 ESP"
       ],
@@ -12810,8 +12810,8 @@
       "step_type": "stepped",
       "recommended_range": {
         "espresso": "20 - 30 clicks",
-        "pour_over": "2.6 - 4.2 clicks",
-        "french_press": "4.9 - 7.2 clicks"
+        "pour_over": "66 - 122 clicks",
+        "french_press": "129 - 212 clicks"
       },
       "retention_notes": "Master table reference only. Calibrate true zero, burr seasoning, RDT/static behavior, roast density, flow, brew time, and taste before treating the setting as exact.",
       "sources": [

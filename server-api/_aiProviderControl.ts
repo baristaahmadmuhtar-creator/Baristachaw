@@ -438,12 +438,18 @@ function keyEnvNames(provider: AiProviderId, keyClass: AiProviderKeyClass): stri
       `PAID_${provider}_API_KEY`,
     ];
   }
-  return [
+  const base = [
     `${provider}_API_KEY`,
     `AI_${provider}_API_KEY`,
     `AI_BREW_${provider}_API_KEY`,
     ...(provider === 'GEMINI' ? ['GOOGLE_GENAI_API_KEY', 'GOOGLE_API_KEY'] : []),
   ];
+  if (provider === 'OPENAI') {
+    for (let i = 1; i <= 10; i++) {
+      base.push(`OPENAI_API_KEY_FREE_${i}`);
+    }
+  }
+  return base;
 }
 
 function normalizeProvider(value: string): AiProviderId | null {

@@ -32,14 +32,36 @@ function readUrl(...names: string[]): string {
   return '';
 }
 
-function checkoutUrlForPlan(planCode: PlanCode): string {
+type BillingDuration = 'monthly' | 'quarterly' | 'yearly';
+
+const VALID_DURATIONS = new Set<BillingDuration>(['monthly', 'quarterly', 'yearly']);
+
+function normalizeDuration(value: unknown): BillingDuration {
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  return VALID_DURATIONS.has(raw as BillingDuration) ? raw as BillingDuration : 'monthly';
+}
+
+function normalizePromoCode(value: unknown): string {
+  if (typeof value !== 'string') return '';
+  const cleaned = value.trim().replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 20);
+  return cleaned.length >= 4 ? cleaned : '';
+}
+
+function checkoutUrlForPlan(planCode: PlanCode, duration: BillingDuration, promoCode: string): string {
   const suffix = planCode.toUpperCase();
-  return readUrl(
+  const durationSuffix = duration.toUpperCase();
+  let url = readUrl(
+    `BILLING_CHECKOUT_URL_${suffix}_${durationSuffix}`,
     `BILLING_CHECKOUT_URL_${suffix}`,
     `STRIPE_CHECKOUT_URL_${suffix}`,
     `REVENUECAT_CHECKOUT_URL_${suffix}`,
     'BILLING_CHECKOUT_URL',
   );
+  if (url && promoCode) {
+    const sep = url.includes('?') ? '&' : '?';
+    url = `${url}${sep}promo=${encodeURIComponent(promoCode)}`;
+  }
+  return url;
 }
 
 function providerForPlan(planCode: PlanCode): 'stripe' | 'revenuecat' | 'manual' {
@@ -92,7 +114,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  const url = checkoutUrlForPlan(planCode);
+  const duration = normalizeDuration(req.body?.duration);
+  const promoCode = normalizePromoCode(req.body?.promoCode);
+
+  const url = checkoutUrlForPlan(planCode, duration, promoCode);
   if (!url) {
     return res.status(503).json({
       ok: false,
@@ -107,6 +132,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ok: true,
     requestId,
     planCode,
+    duration,
+    promoCode: promoCode || undefined,
     provider: providerForPlan(planCode),
     mode: 'redirect',
     url,

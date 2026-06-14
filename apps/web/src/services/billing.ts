@@ -1,11 +1,15 @@
 import type { PlanCode } from './accountStatus';
 
+type BillingDuration = 'monthly' | 'quarterly' | 'yearly';
+
 type BillingRedirectResponse = {
   ok: true;
   requestId: string;
   mode: 'redirect';
   url: string;
   planCode?: PlanCode;
+  duration?: BillingDuration;
+  promoCode?: string;
   provider?: string;
 };
 
@@ -56,10 +60,30 @@ async function billingRequest(path: string, body: Record<string, unknown> = {}):
   return payload as BillingRedirectResponse;
 }
 
-export function startBillingCheckout(planCode: Exclude<PlanCode, 'free'>): Promise<BillingRedirectResponse> {
-  return billingRequest('/api/billing/checkout', { planCode });
+export function startBillingCheckout(
+  planCode: Exclude<PlanCode, 'free'>,
+  options?: { duration?: BillingDuration; promoCode?: string },
+): Promise<BillingRedirectResponse> {
+  return billingRequest('/api/billing/checkout', {
+    planCode,
+    duration: options?.duration ?? 'monthly',
+    ...(options?.promoCode ? { promoCode: options.promoCode } : {}),
+  });
 }
 
 export function openBillingPortal(): Promise<BillingRedirectResponse> {
   return billingRequest('/api/billing/portal');
 }
+
+const PLAN_DISPLAY_NAMES: Record<PlanCode, string> = {
+  free: 'Free',
+  starter: 'Barista Plus',
+  pro: 'Barista Pro',
+  team: 'Café Team',
+  enterprise: 'Enterprise',
+};
+
+export function planDisplayName(code: PlanCode): string {
+  return PLAN_DISPLAY_NAMES[code] ?? code;
+}
+

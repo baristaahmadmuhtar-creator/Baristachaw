@@ -70,7 +70,7 @@ test('paid AI access requires the minimum paid plan for free users', async () =>
   assert.equal(result.errorCode, 'paid_plan_required');
   assert.equal(result.retryable, false);
   assert.equal(result.minimumPlan?.code, 'starter');
-  assert.equal(result.minimumPlan?.name, 'Starter');
+  assert.equal(result.minimumPlan?.name, 'Barista Plus');
 });
 
 test('paid AI access lets starter and higher plans continue', async () => {

@@ -11,7 +11,7 @@ import { ScrollReveal } from './components/ScrollReveal';
 import { SupportChatWidget } from './components/SupportChatWidget';
 import { DataShowcase } from './components/DataShowcase';
 import { ToolsShowcase } from './components/ToolsShowcase';
-import { APP_LINKS, APK_URL } from './config';
+import { APP_LINKS, APK_URL, PRICING, formatCurrency } from './config';
 import { DownloadPage } from './pages/DownloadPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { SupportPage } from './pages/SupportPage';
@@ -60,55 +60,207 @@ function EvidenceSection({ language }: { language: 'id' | 'en' }) {
 
 function PricingSection({ language }: { language: 'id' | 'en' }) {
   const isId = language === 'id';
+  const [duration, setDuration] = useState<'monthly' | 'quarterly' | 'yearly'>('quarterly');
+  const [promoCode, setPromoCode] = useState('');
+  const [promoApplied, setPromoApplied] = useState(false);
+
+  const plusTier = PRICING.plus[duration];
+  const proTier = PRICING.pro[duration];
+
+  const durationLabels: Record<string, { id: string; en: string }> = {
+    monthly: { id: '1 Bulan', en: '1 Month' },
+    quarterly: { id: '3 Bulan', en: '3 Months' },
+    yearly: { id: '1 Tahun', en: '1 Year' },
+  };
+
+  const handlePromoApply = () => {
+    if (promoCode.trim().length >= 4) {
+      setPromoApplied(true);
+    }
+  };
+
   return (
     <section className="pricing section-shell" aria-labelledby="pricing-title">
       <ScrollReveal variant="dramatic">
         <div className="section-heading">
-          <p className="section-index">Access</p>
+          <p className="section-index">Pricing</p>
           <div>
-            <h2 id="pricing-title">{isId ? 'Akses Fleksibel untuk Setiap Barista.' : 'Flexible Access for Every Coffee Brewer.'}</h2>
-            <p>{isId ? 'Pilih paket yang sesuai dengan gaya menyeduh Anda — dari home brewer hingga profesional kedai.' : 'Choose a tier that matches your brewing setup — from casual home extraction to professional bar workflows.'}</p>
+            <h2 id="pricing-title">{isId ? 'Pilih Paket Terbaik untuk Ritual Kopi Anda.' : 'Choose the Perfect Plan for Your Coffee Ritual.'}</h2>
+            <p>{isId ? 'Dari home brewer hingga barista profesional — semua paket dirancang agar kopi Anda selalu sempurna.' : 'From casual home brewing to professional bar workflows — every plan is engineered for extraction excellence.'}</p>
           </div>
         </div>
       </ScrollReveal>
+
+      {/* Duration Toggle */}
+      <ScrollReveal variant="fade" delay={0.05}>
+        <div className="plan-duration-toggle" role="radiogroup" aria-label={isId ? 'Pilih durasi' : 'Select duration'}>
+          {(['monthly', 'quarterly', 'yearly'] as const).map((d) => (
+            <button
+              key={d}
+              role="radio"
+              aria-checked={duration === d}
+              className={duration === d ? 'active' : ''}
+              onClick={() => setDuration(d)}
+            >
+              {isId ? durationLabels[d].id : durationLabels[d].en}
+              {d === 'yearly' && <span className="toggle-save-chip">{isId ? 'Terbaik!' : 'Best!'}</span>}
+            </button>
+          ))}
+        </div>
+      </ScrollReveal>
+
       <div className="plan-list">
+        {/* FREE */}
         <ScrollReveal variant="slide-up" delay={0}>
-          <article>
-            <span>Free</span>
+          <article className="plan-card">
+            <span className="plan-tier-badge">Free</span>
             <h3>{isId ? 'Mulai Eksplorasi' : 'Start Exploring'}</h3>
+            <div className="plan-price-display">
+              <strong className="plan-price-main">{isId ? 'Gratis' : 'Free'}</strong>
+              <span className="plan-price-sub">{isId ? 'Selamanya' : 'Forever'}</span>
+            </div>
             <ul>
-              <li><Check /> {isId ? 'Coba AI Brew gratis' : 'Daily free AI Brew plans'}</li>
-              <li><Check /> {isId ? 'Panduan dasar menyeduh' : 'Real-time brew timer'}</li>
-              <li><Check /> {isId ? 'Simpan beberapa resep favorit' : 'Save up to 5 custom recipes'}</li>
+              <li><Check size={16} /> {isId ? 'Brew Timer interaktif' : 'Interactive Brew Timer'}</li>
+              <li><Check size={16} /> {isId ? 'Kalkulator Grind Size' : 'Grind Size Calculator'}</li>
+              <li><Check size={16} /> {isId ? 'Kalkulator Rasio Kopi' : 'Coffee Ratio Calculator'}</li>
+              <li><Check size={16} /> {isId ? 'Koleksi & Catatan Resep' : 'Recipe Collection & Notes'}</li>
+              <li><Check size={16} /> {isId ? 'AI Brew harian terbatas' : 'Limited daily AI Brew'}</li>
             </ul>
-            <a href={APP_LINKS.aiBrew}>{isId ? 'Mulai Sekarang' : 'Start Now'} <ArrowRight /></a>
+            <a className="plan-cta" href={APP_LINKS.aiBrew}>{isId ? 'Mulai Sekarang' : 'Start Now'} <ArrowRight size={16} /></a>
           </article>
         </ScrollReveal>
+
+        {/* BARISTA PLUS — Featured */}
         <ScrollReveal variant="scale" delay={0.08}>
-          <article className="plan-featured">
-            <span>Beta Barista</span>
-            <h3>{isId ? 'Barista Premium' : 'Premium Barista'}</h3>
+          <article className="plan-card plan-featured">
+            <div className="plan-best-value">{isId ? 'TERLARIS' : 'BEST VALUE'}</div>
+            <span className="plan-tier-badge">Barista Plus</span>
+            <h3>{isId ? 'Home Barista Serius' : 'Serious Home Barista'}</h3>
+            <div className="plan-price-display">
+              {plusTier.discountPct > 0 && (
+                <span className="plan-price-original">
+                  {formatCurrency(plusTier.original.idr, 'idr')}
+                </span>
+              )}
+              <strong className="plan-price-main">
+                {formatCurrency(plusTier.discounted.idr, 'idr')}
+              </strong>
+              <span className="plan-price-sub">
+                / {isId ? durationLabels[duration].id.toLowerCase() : durationLabels[duration].en.toLowerCase()}
+              </span>
+              <span className="plan-price-alt">
+                {formatCurrency(plusTier.discounted.bnd, 'bnd')} · {formatCurrency(plusTier.discounted.usd, 'usd')}
+              </span>
+            </div>
+            {plusTier.discountPct > 0 && (
+              <div className="plan-discount-badge">
+                {isId ? plusTier.saveLabel.id : plusTier.saveLabel.en}
+              </div>
+            )}
             <ul>
-              <li><Check /> {isId ? 'Profil rasa tak terbatas' : 'Unlimited flavor profiles (Sweet, Bright, Body)'}</li>
-              <li><Check /> {isId ? 'Kalibrasi presisi grinder Anda' : 'Grinder setting calculations & conversions'}</li>
-              <li><Check /> {isId ? 'Asisten AI kopi yang cerdas' : 'Unlimited AI Coffee Coach diagnostic chats'}</li>
+              <li><Check size={16} /> {isId ? 'Semua fitur Free' : 'All Free features'}</li>
+              <li><Check size={16} /> {isId ? 'AI Brew Unlimited (Basic + Advanced)' : 'Unlimited AI Brew (Basic + Advanced)'}</li>
+              <li><Check size={16} /> {isId ? 'AI Chat terbatas (15/hari)' : 'AI Chat limited (15/day)'}</li>
+              <li><Check size={16} /> {isId ? 'Kalibrasi grinder presisi' : 'Precision grinder calibration'}</li>
+              <li><Check size={16} /> {isId ? 'Profil rasa tak terbatas' : 'Unlimited flavor profiles'}</li>
             </ul>
-            <a href={APP_LINKS.register}>{isId ? 'Daftar Beta — Gratis' : 'Join Free Beta'} <ArrowRight /></a>
+            <a className="plan-cta plan-cta-primary" href={`${APP_LINKS.upgrade}?plan=starter&duration=${duration}`}>
+              {isId ? 'Pilih Barista Plus' : 'Get Barista Plus'} <ArrowRight size={16} />
+            </a>
           </article>
         </ScrollReveal>
-        <ScrollReveal variant="slide-up" delay={0.16}>
-          <article>
-            <span>Cafe Team</span>
-            <h3>{isId ? 'Kedai & Profesional' : 'Café & Professional'}</h3>
+
+        {/* BARISTA PRO — Premium Dark */}
+        <ScrollReveal variant="scale" delay={0.14}>
+          <article className="plan-card plan-pro-dark">
+            <span className="plan-tier-badge plan-tier-pro">Barista Pro</span>
+            <h3>{isId ? 'Barista Profesional' : 'Professional Barista'}</h3>
+            <div className="plan-price-display">
+              {proTier.discountPct > 0 && (
+                <span className="plan-price-original">
+                  {formatCurrency(proTier.original.idr, 'idr')}
+                </span>
+              )}
+              <strong className="plan-price-main">
+                {formatCurrency(proTier.discounted.idr, 'idr')}
+              </strong>
+              <span className="plan-price-sub">
+                / {isId ? durationLabels[duration].id.toLowerCase() : durationLabels[duration].en.toLowerCase()}
+              </span>
+              <span className="plan-price-alt">
+                {formatCurrency(proTier.discounted.bnd, 'bnd')} · {formatCurrency(proTier.discounted.usd, 'usd')}
+              </span>
+            </div>
+            {proTier.discountPct > 0 && (
+              <div className="plan-discount-badge plan-discount-pro">
+                {isId ? proTier.saveLabel.id : proTier.saveLabel.en}
+              </div>
+            )}
             <ul>
-              <li><Check /> {isId ? 'Standarisasi SOP resep kedai' : 'Standardize recipe SOPs for your team'}</li>
-              <li><Check /> {isId ? 'Mode batch brew cepat' : 'High-volume batch brew calculations'}</li>
-              <li><Check /> {isId ? 'Akses untuk seluruh tim barista' : 'Multi-seat team manager access'}</li>
+              <li><Check size={16} /> {isId ? 'Semua fitur Barista Plus' : 'All Barista Plus features'}</li>
+              <li><Check size={16} /> {isId ? 'AI Chat Unlimited' : 'Unlimited AI Chat'}</li>
+              <li><Check size={16} /> {isId ? 'AI Scan & Analisis Kopi' : 'AI Scan & Coffee Analysis'}</li>
+              <li><Check size={16} /> {isId ? 'AI Latte Art Generator' : 'AI Latte Art Generator'}</li>
+              <li><Check size={16} /> {isId ? 'Semua fitur mendatang' : 'All upcoming features'}</li>
             </ul>
-            <Link to="/support?topic=general">{isId ? 'Hubungi Kami' : 'Contact Us'} <ArrowRight /></Link>
+            <a className="plan-cta plan-cta-pro" href={`${APP_LINKS.upgrade}?plan=pro&duration=${duration}`}>
+              {isId ? 'Pilih Barista Pro' : 'Get Barista Pro'} <ArrowRight size={16} />
+            </a>
+          </article>
+        </ScrollReveal>
+
+        {/* CAFÉ TEAM */}
+        <ScrollReveal variant="slide-up" delay={0.2}>
+          <article className="plan-card plan-team">
+            <span className="plan-tier-badge">Café Team</span>
+            <h3>{isId ? 'Kedai & Profesional' : 'Café & Professional'}</h3>
+            <div className="plan-price-display">
+              <strong className="plan-price-main">{isId ? 'Custom' : 'Custom'}</strong>
+              <span className="plan-price-sub">{isId ? 'Hubungi kami' : 'Contact us'}</span>
+            </div>
+            <ul>
+              <li><Check size={16} /> {isId ? 'Semua fitur Barista Pro' : 'All Barista Pro features'}</li>
+              <li><Check size={16} /> {isId ? 'SOP resep standarisasi tim' : 'Team recipe SOP standardization'}</li>
+              <li><Check size={16} /> {isId ? 'Batch brew kalkulasi cepat' : 'High-volume batch calculations'}</li>
+              <li><Check size={16} /> {isId ? 'Multi-seat akses tim barista' : 'Multi-seat team access'}</li>
+              <li><Check size={16} /> {isId ? 'Dukungan prioritas 12 jam' : '12-hour priority support'}</li>
+            </ul>
+            <Link className="plan-cta" to="/support?topic=general">
+              {isId ? 'Hubungi Kami' : 'Contact Us'} <ArrowRight size={16} />
+            </Link>
           </article>
         </ScrollReveal>
       </div>
+
+      {/* Promo Code */}
+      <ScrollReveal variant="fade" delay={0.1}>
+        <div className="promo-section">
+          <p className="promo-label">{isId ? 'Punya kode promo?' : 'Have a promo code?'}</p>
+          <div className="promo-input-wrap">
+            <input
+              type="text"
+              className="promo-input"
+              placeholder={isId ? 'Masukkan kode promo...' : 'Enter promo code...'}
+              value={promoCode}
+              onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoApplied(false); }}
+              maxLength={20}
+              aria-label={isId ? 'Kode promo' : 'Promo code'}
+            />
+            <button
+              className="promo-apply"
+              onClick={handlePromoApply}
+              disabled={promoCode.trim().length < 4}
+            >
+              {promoApplied ? (isId ? '✓ Diterapkan' : '✓ Applied') : (isId ? 'Terapkan' : 'Apply')}
+            </button>
+          </div>
+          {promoApplied && (
+            <p className="promo-success">
+              {isId ? 'Kode promo akan diterapkan saat checkout.' : 'Promo code will be applied at checkout.'}
+            </p>
+          )}
+        </div>
+      </ScrollReveal>
     </section>
   );
 }

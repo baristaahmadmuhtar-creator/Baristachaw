@@ -304,7 +304,12 @@ const EN_ADMIN_COPY = {
   planLimitsPending: 'plan limits pending',
   customPrice: 'Custom',
   usersLabel: 'users',
+  generalInfo: 'General info',
+  accessSecurity: 'Access & security',
+  auditLogs: 'Audit logs',
+  launchChecklist: 'Launch checklist',
 } as const;
+
 
 export type AdminCopyKey = keyof typeof EN_ADMIN_COPY;
 
@@ -611,7 +616,12 @@ const ID_ADMIN_COPY: Record<AdminCopyKey, string> = {
   planLimitsPending: 'limit plan belum siap',
   customPrice: 'Custom',
   usersLabel: 'user',
+  generalInfo: 'Informasi umum',
+  accessSecurity: 'Akses & keamanan',
+  auditLogs: 'Log audit',
+  launchChecklist: 'Checklist launching',
 };
+
 
 const PARTIAL_ADMIN_COPY: Partial<Record<Language, Partial<Record<AdminCopyKey, string>>>> = {
   ar: {

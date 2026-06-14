@@ -185,17 +185,271 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .honesty-note { display: grid; grid-template-columns: 24px 1fr; gap: 16px; margin-top: 28px; padding: 22px 0; color: rgba(255,255,255,.7); border-bottom: 1px solid rgba(255,255,255,.14); }
 .honesty-note p { margin: 0; line-height: 1.65; }
 
-.plan-list { display: grid; grid-template-columns: repeat(3,1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.plan-list article { padding: 34px; border-right: 1px solid var(--line); }
-.plan-list article:last-child { border: 0; }
-.plan-list article > span { color: var(--blue); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; }
-.plan-list h3 { min-height: 62px; margin: 18px 0; font: 700 26px Manrope,sans-serif; letter-spacing: -.04em; }
-.plan-list ul { display: grid; gap: 13px; min-height: 126px; padding: 0; list-style: none; color: var(--muted); }
-.plan-list li { display: flex; align-items: center; gap: 8px; }
-.plan-list li svg { width: 16px; color: var(--blue); }
-.plan-list a { display: inline-flex; align-items: center; gap: 8px; color: var(--blue); font-weight: 800; }
-.plan-list a svg { width: 17px; }
-.plan-featured { background: #eaf2ff; }
+/* ── Duration Toggle ── */
+.plan-duration-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 48px;
+  padding: 4px;
+  background: var(--ice);
+  border-radius: 999px;
+  width: fit-content;
+  margin-inline: auto;
+}
+.plan-duration-toggle button {
+  position: relative;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all .25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.plan-duration-toggle button.active {
+  background: var(--blue);
+  color: white;
+  box-shadow: 0 6px 20px rgba(13,86,204,.35);
+}
+.plan-duration-toggle button:hover:not(.active) { color: var(--ink); }
+.toggle-save-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 800;
+  background: #ffd233;
+  color: #1a1a1a;
+  letter-spacing: .02em;
+  animation: chipPulse 2s ease-in-out infinite;
+}
+@keyframes chipPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* ── Plan Grid ── */
+.plan-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+.plan-card {
+  position: relative;
+  padding: 32px 28px;
+  border: 1px solid var(--line);
+  border-right: 0;
+  display: flex;
+  flex-direction: column;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.plan-card:last-child { border-right: 1px solid var(--line); }
+.plan-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,.08); z-index: 2; }
+.plan-tier-badge {
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+}
+.plan-tier-pro { color: #c9a2ff; }
+.plan-card h3 {
+  min-height: 52px;
+  margin: 14px 0;
+  font: 700 24px Manrope, sans-serif;
+  letter-spacing: -.04em;
+}
+
+/* ── Pricing Display ── */
+.plan-price-display {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 18px;
+  min-height: 56px;
+}
+.plan-price-original {
+  text-decoration: line-through;
+  color: #a8b4c8;
+  font-size: 14px;
+  font-weight: 600;
+  width: 100%;
+}
+.plan-price-main {
+  font: 800 28px Manrope, sans-serif;
+  letter-spacing: -.04em;
+  color: var(--ink);
+}
+.plan-price-sub {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.plan-price-alt {
+  display: block;
+  width: 100%;
+  font-size: 12px;
+  color: #7b8da8;
+  margin-top: 2px;
+}
+
+/* ── Discount Badge ── */
+.plan-discount-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #00c853, #009624);
+  color: white;
+  margin-bottom: 14px;
+  width: fit-content;
+  letter-spacing: .04em;
+  box-shadow: 0 4px 14px rgba(0,200,83,.25);
+}
+.plan-discount-pro {
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  box-shadow: 0 4px 14px rgba(168,85,247,.25);
+}
+
+/* ── Feature List ── */
+.plan-card ul { display: grid; gap: 11px; padding: 0; list-style: none; color: var(--muted); flex: 1; margin-bottom: 22px; }
+.plan-card li { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.plan-card li svg { flex-shrink: 0; color: var(--blue); }
+
+/* ── CTA Buttons ── */
+.plan-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--blue);
+  border: 1.5px solid var(--blue);
+  background: transparent;
+  transition: all .25s ease;
+  margin-top: auto;
+}
+.plan-cta:hover { background: var(--blue); color: white; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(13,86,204,.2); }
+.plan-cta-primary {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+  box-shadow: 0 10px 30px rgba(13,86,204,.3);
+}
+.plan-cta-primary:hover { background: #0a4fc0; box-shadow: 0 14px 38px rgba(13,86,204,.4); }
+.plan-cta-pro {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 10px 30px rgba(124,58,237,.3);
+}
+.plan-cta-pro:hover { background: linear-gradient(135deg, #6d28d9, #9333ea); box-shadow: 0 14px 38px rgba(124,58,237,.4); }
+
+/* ── Featured Card (Barista Plus) ── */
+.plan-featured {
+  background: linear-gradient(180deg, #eaf2ff 0%, #f0f4ff 100%);
+  border-color: rgba(13,86,204,.2) !important;
+  box-shadow: 0 0 0 1px rgba(13,86,204,.08);
+}
+.plan-featured:hover { box-shadow: 0 24px 60px rgba(13,86,204,.15); }
+.plan-best-value {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 18px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  background: linear-gradient(135deg, #ffd233, #ffb300);
+  color: #1a1a1a;
+  box-shadow: 0 6px 18px rgba(255,179,0,.35);
+  white-space: nowrap;
+}
+
+/* ── Pro Dark Card ── */
+.plan-pro-dark {
+  background: linear-gradient(170deg, #0d1b36, #16243f);
+  color: white;
+  border-color: rgba(168,85,247,.25) !important;
+}
+.plan-pro-dark h3 { color: white; }
+.plan-pro-dark .plan-price-main { color: white; }
+.plan-pro-dark .plan-price-sub { color: rgba(255,255,255,.55); }
+.plan-pro-dark .plan-price-original { color: rgba(255,255,255,.38); }
+.plan-pro-dark .plan-price-alt { color: rgba(255,255,255,.4); }
+.plan-pro-dark ul { color: rgba(255,255,255,.7); }
+.plan-pro-dark li svg { color: #c9a2ff; }
+.plan-pro-dark:hover { box-shadow: 0 24px 60px rgba(124,58,237,.2); }
+
+/* ── Team Card ── */
+.plan-team { background: #fafbfe; }
+
+/* ── Promo Code Section ── */
+.promo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+.promo-label { margin: 0; color: var(--muted); font-size: 14px; font-weight: 600; }
+.promo-input-wrap {
+  display: flex;
+  gap: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid var(--line);
+  transition: border-color .2s;
+  max-width: 380px;
+  width: 100%;
+}
+.promo-input-wrap:focus-within { border-color: var(--blue); }
+.promo-input {
+  flex: 1;
+  border: 0;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  background: white;
+  color: var(--ink);
+  outline: none;
+}
+.promo-input::placeholder { color: #b0bdd0; font-weight: 500; letter-spacing: .02em; }
+.promo-apply {
+  border: 0;
+  padding: 12px 22px;
+  background: var(--blue);
+  color: white;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .2s;
+  white-space: nowrap;
+}
+.promo-apply:hover:not(:disabled) { background: #0a4fc0; }
+.promo-apply:disabled { background: #b0bdd0; cursor: not-allowed; }
+.promo-success {
+  margin: 0;
+  color: #00963f;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
 .download-list { border-top: 1px solid var(--line); }
 .download-row { display: grid; grid-template-columns: 52px 1fr 28px; align-items: center; gap: 20px; min-height: 110px; padding: 18px 0; border-bottom: 1px solid var(--line); }
@@ -288,6 +542,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .engine-sticky { position: static; }
   .final-cta { grid-template-columns: 1fr; }
   .final-actions { justify-content: flex-start; }
+  .plan-list { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 760px) {
@@ -338,9 +593,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .evidence-section { padding: 90px 20px; }
   .evidence-grid { grid-template-columns: 1fr 1fr; }
   .evidence-grid div { min-height: 120px; padding: 20px; }
-  .plan-list { grid-template-columns: 1fr; }
-  .plan-list article { border-right: 0; border-bottom: 1px solid var(--line); }
-  .plan-list h3, .plan-list ul { min-height: 0; }
+  .plan-list { grid-template-columns: repeat(2, 1fr); }
+  .plan-card { border-right: 0; border-bottom: 1px solid var(--line); }
+  .plan-card:nth-child(odd) { border-right: 1px solid var(--line); }
+  .plan-card h3 { min-height: 0; }
+  .plan-duration-toggle { flex-wrap: wrap; }
   .download-row { grid-template-columns: 48px 1fr 20px; gap: 12px; }
   .download-row strong { font-size: 18px; }
   .download-row span { font-size: 12px; }

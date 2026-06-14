@@ -21,6 +21,8 @@ import {
   ListChecks,
   Lock,
   Mail,
+  Menu,
+  ChevronRight,
   Moon,
   PanelRightOpen,
   RefreshCcw,
@@ -713,10 +715,10 @@ function initialFeatureFlagMessage(flag: AdminFeatureFlag, patch: AdminFeatureFl
   return flag.message || '';
 }
 
-function StatusBadge({ value, label }: { value: string; label?: string }) {
+function StatusBadge({ value, label, className }: { value: string; label?: string; className?: string }) {
   const admin = useAdminCopy();
   return (
-    <span className={clsx('inline-flex min-h-7 items-center rounded-full px-2.5 text-[11px] font-semibold capitalize', statusTone(value))}>
+    <span className={clsx('inline-flex min-h-7 items-center rounded-full px-2.5 text-[11px] font-semibold capitalize', statusTone(value), className)}>
       {label || admin.enumLabel(value)}
     </span>
   );
@@ -740,13 +742,13 @@ function MetricTile({
   icon: typeof Gauge;
 }) {
   return (
-    <div className="min-h-[8.25rem] rounded-2xl border border-glass bg-surface-alpha px-4 py-4">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{label}</p>
-        <Icon size={18} className="text-blue-500" />
+    <div className="rounded-xl border border-glass bg-surface-alpha px-3 py-2.5 shadow-sm">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary truncate">{label}</p>
+        <Icon size={14} className="text-blue-500 shrink-0" />
       </div>
-      <p className="mt-4 text-3xl font-semibold tracking-normal text-primary">{value}</p>
-      <p className="mt-2 text-xs leading-5 text-secondary">{detail}</p>
+      <p className="mt-1.5 text-xl font-bold tracking-tight text-primary">{value}</p>
+      <p className="mt-0.5 text-[10px] leading-4 text-secondary truncate" title={detail}>{detail}</p>
     </div>
   );
 }
@@ -884,100 +886,100 @@ function AdminCommandCenter({
 
   return (
     <section className="grid gap-3 xl:grid-cols-[1.35fr_0.85fr]">
-      <div className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+      <div className="rounded-2xl border border-glass bg-[var(--bg-base)]/76 p-3 shadow-sm">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h2 className="text-base font-semibold text-primary">{admin.text('commandCenterTitle')}</h2>
-            <p className="mt-1 text-sm leading-6 text-secondary">
+            <h2 className="text-sm font-semibold text-primary">{admin.text('commandCenterTitle')}</h2>
+            <p className="text-[11px] text-secondary">
               {admin.text('commandCenterSubtitle')}
             </p>
           </div>
           <StatusBadge value={snapshot.degraded ? 'warn' : 'pass'} />
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="mt-3 grid gap-2.5 grid-cols-2 md:grid-cols-5">
           <button
             type="button"
             onClick={() => onOpenQueue('risk')}
-            className="rounded-2xl border border-glass bg-surface-alpha p-4 text-left transition-colors hover:bg-[var(--bg-base)]"
+            className="rounded-xl border border-glass bg-surface-alpha p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
           >
-            <AlertTriangle size={18} className="text-rose-500" />
-            <p className="mt-3 text-2xl font-semibold text-primary">{queues.riskUsers.length}</p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('riskCardTitle')}</p>
-            <p className="mt-2 text-xs leading-5 text-secondary">{admin.format('riskCardDetail', { count: admin.number(queues.pastDueUsers.length) })}</p>
+            <AlertTriangle size={15} className="text-rose-500" />
+            <p className="mt-1.5 text-lg font-bold text-primary">{queues.riskUsers.length}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-tertiary truncate">{admin.text('riskCardTitle')}</p>
+            <p className="text-[10px] text-secondary truncate mt-0.5">{admin.format('riskCardDetail', { count: admin.number(queues.pastDueUsers.length) })}</p>
           </button>
           <button
             type="button"
             onClick={() => onOpenQueue('recovery')}
-            className="rounded-2xl border border-glass bg-surface-alpha p-4 text-left transition-colors hover:bg-[var(--bg-base)]"
+            className="rounded-xl border border-glass bg-surface-alpha p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
           >
-            <KeyRound size={18} className="text-amber-500" />
-            <p className="mt-3 text-2xl font-semibold text-primary">{queues.recoveryUsers.length}</p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('recoveryCardTitle')}</p>
-            <p className="mt-2 text-xs leading-5 text-secondary">{admin.text('recoveryCardDetail')}</p>
+            <KeyRound size={15} className="text-amber-500" />
+            <p className="mt-1.5 text-lg font-bold text-primary">{queues.recoveryUsers.length}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-tertiary truncate">{admin.text('recoveryCardTitle')}</p>
+            <p className="text-[10px] text-secondary truncate mt-0.5">{admin.text('recoveryCardDetail')}</p>
           </button>
           <button
             type="button"
             onClick={() => onOpenQueue('billing')}
-            className="rounded-2xl border border-glass bg-surface-alpha p-4 text-left transition-colors hover:bg-[var(--bg-base)]"
+            className="rounded-xl border border-glass bg-surface-alpha p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
           >
-            <WalletCards size={18} className="text-blue-500" />
-            <p className="mt-3 text-2xl font-semibold text-primary">{queues.billingUsers.length}</p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('billingCardTitle')}</p>
-            <p className="mt-2 text-xs leading-5 text-secondary">{admin.text('billingCardDetail')}</p>
+            <WalletCards size={15} className="text-blue-500" />
+            <p className="mt-1.5 text-lg font-bold text-primary">{queues.billingUsers.length}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-tertiary truncate">{admin.text('billingCardTitle')}</p>
+            <p className="text-[10px] text-secondary truncate mt-0.5">{admin.text('billingCardDetail')}</p>
           </button>
           <button
             type="button"
             onClick={onOpenMaintenance}
-            className="rounded-2xl border border-glass bg-surface-alpha p-4 text-left transition-colors hover:bg-[var(--bg-base)]"
+            className="rounded-xl border border-glass bg-surface-alpha p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
           >
-            <Wrench size={18} className="text-blue-500" />
-            <p className="mt-3 text-2xl font-semibold text-primary">{queues.maintenanceFlags.length}</p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('flagsCardTitle')}</p>
-            <p className="mt-2 text-xs leading-5 text-secondary">{admin.text('flagsCardDetail')}</p>
+            <Wrench size={15} className="text-blue-500" />
+            <p className="mt-1.5 text-lg font-bold text-primary">{queues.maintenanceFlags.length}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-tertiary truncate">{admin.text('flagsCardTitle')}</p>
+            <p className="text-[10px] text-secondary truncate mt-0.5">{admin.text('flagsCardDetail')}</p>
           </button>
           <button
             type="button"
             onClick={() => onOpenQueue('paid')}
-            className="rounded-2xl border border-glass bg-surface-alpha p-4 text-left transition-colors hover:bg-[var(--bg-base)]"
+            className="rounded-xl border border-glass bg-surface-alpha p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
           >
-            <WalletCards size={18} className="text-emerald-500" />
-            <p className="mt-3 text-2xl font-semibold text-primary">{queues.paidUsers.length}</p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('paidCardTitle')}</p>
-            <p className="mt-2 text-xs leading-5 text-secondary">{admin.text('paidCardDetail')}</p>
+            <WalletCards size={15} className="text-emerald-500" />
+            <p className="mt-1.5 text-lg font-bold text-primary">{queues.paidUsers.length}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-tertiary truncate">{admin.text('paidCardTitle')}</p>
+            <p className="text-[10px] text-secondary truncate mt-0.5">{admin.text('paidCardDetail')}</p>
           </button>
         </div>
       </div>
 
-      <aside className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+      <aside className="rounded-2xl border border-glass bg-[var(--bg-base)]/76 p-3 shadow-sm">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-base font-semibold text-primary">{admin.text('handoffTitle')}</h2>
-            <p className="mt-1 text-sm text-secondary">{queues.criticalChecks.length} critical / {queues.warningChecks.length} warnings</p>
+            <h2 className="text-sm font-semibold text-primary">{admin.text('handoffTitle')}</h2>
+            <p className="text-[11px] text-secondary">{queues.criticalChecks.length} critical / {queues.warningChecks.length} warnings</p>
           </div>
           <StatusBadge value={queues.criticalChecks.length ? 'fail' : queues.warningChecks.length ? 'warn' : 'pass'} />
         </div>
-        <div className="mt-4 space-y-2">
+        <div className="mt-3 space-y-1.5">
           {handoffUsers.length ? handoffUsers.map((user) => (
             <button
               key={user.id}
               type="button"
               onClick={() => onOpenUser(user.id, isBillingAttentionUser(user) ? 'billing' : isRecoveryUser(user) ? 'recovery' : 'risk')}
-              className="flex w-full items-center justify-between gap-3 rounded-2xl bg-surface-alpha px-3 py-3 text-left transition-colors hover:bg-[var(--bg-base)]"
+              className="flex w-full items-center justify-between gap-3 rounded-xl bg-surface-alpha px-3 py-2 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
             >
               <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold text-primary">{user.name}</span>
-                <span className="mt-1 block truncate text-xs text-tertiary">{user.email}</span>
+                <span className="block truncate text-xs font-semibold text-primary">{user.name}</span>
+                <span className="block truncate text-[10px] text-tertiary mt-0.5">{user.email}</span>
               </span>
               <span className="shrink-0 text-right">
                 <StatusBadge value={isBillingAttentionUser(user) ? user.billing.status : isRecoveryUser(user) ? 'requested' : user.status} />
-                <span className="mt-1 block text-[11px] font-semibold text-secondary">{user.planName}</span>
+                <span className="mt-0.5 block text-[10px] font-semibold text-secondary">{user.planName}</span>
               </span>
             </button>
           )) : (
-            <div className="rounded-2xl bg-surface-alpha px-3 py-5 text-center">
-              <p className="text-sm font-semibold text-primary">{admin.text('noUrgentHandoff')}</p>
-              <p className="mt-1 text-xs text-secondary">{admin.text('queuesClear')}</p>
+            <div className="rounded-xl bg-surface-alpha px-3 py-4 text-center">
+              <p className="text-xs font-semibold text-primary">{admin.text('noUrgentHandoff')}</p>
+              <p className="mt-0.5 text-[10px] text-secondary">{admin.text('queuesClear')}</p>
             </div>
           )}
         </div>
@@ -1202,7 +1204,7 @@ function UserQueueChips({
   );
 }
 
-function UserAvatar({ user }: { user: AdminUserRecord }) {
+function UserAvatar({ user, className = 'h-9 w-9' }: { user: AdminUserRecord; className?: string }) {
   const [failed, setFailed] = useState(false);
   const label = (user.name || user.username || user.email || 'U').slice(0, 1).toUpperCase();
   const pictureUrl = isDisplayableAvatarUrl(user.picture) ? user.picture : '';
@@ -1212,12 +1214,12 @@ function UserAvatar({ user }: { user: AdminUserRecord }) {
         src={pictureUrl}
         alt=""
         onError={() => setFailed(true)}
-        className="h-9 w-9 rounded-full object-cover"
+        className={clsx('rounded-full object-cover', className)}
       />
     );
   }
   return (
-    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 text-sm font-semibold text-blue-600 dark:text-blue-300">
+    <div className={clsx('flex items-center justify-center rounded-full bg-blue-500/10 text-sm font-semibold text-blue-600 dark:text-blue-300', className)}>
       {label}
     </div>
   );
@@ -1621,85 +1623,85 @@ function UsersTable({
       <div className="overflow-x-auto">
         <table className={clsx(selectedUserId ? 'min-w-full' : 'min-w-[68rem]', 'w-full border-collapse text-left')}>
           <caption className="sr-only">{admin.text('usersTableCaption')}</caption>
-          <thead className="border-b border-glass bg-surface-alpha text-[11px] uppercase tracking-[0.14em] text-secondary">
+          <thead className="border-b border-glass bg-surface-alpha text-[10px] uppercase tracking-[0.12em] text-secondary">
             <tr>
-              <th className="px-4 py-3 font-semibold">{admin.text('account')}</th>
-              <th className="px-4 py-3 font-semibold">{admin.text('status')}</th>
-              <th className="px-4 py-3 font-semibold">{admin.text('plan')}</th>
-              <th className="px-4 py-3 font-semibold">{admin.text('billing')}</th>
-              <th className="px-4 py-3 font-semibold">{admin.text('role')}</th>
-              <th className="px-4 py-3 font-semibold">{admin.text('recovery')}</th>
+              <th className="px-3 py-2 font-semibold">{admin.text('account')}</th>
+              <th className="px-3 py-2 font-semibold">{admin.text('status')}</th>
+              <th className="px-3 py-2 font-semibold">{admin.text('plan')}</th>
+              <th className="px-3 py-2 font-semibold">{admin.text('billing')}</th>
+              <th className="px-3 py-2 font-semibold">{admin.text('role')}</th>
+              <th className="px-3 py-2 font-semibold">{admin.text('recovery')}</th>
               {!selectedUserId ? (
                 <>
-                  <th className="px-4 py-3 font-semibold">{admin.text('usageToday')}</th>
-                  <th className="px-4 py-3 font-semibold">{admin.text('risk')}</th>
-                  <th className="px-4 py-3 font-semibold">{admin.text('lastSeen')}</th>
+                  <th className="px-3 py-2 font-semibold">{admin.text('usageToday')}</th>
+                  <th className="px-3 py-2 font-semibold">{admin.text('risk')}</th>
+                  <th className="px-3 py-2 font-semibold">{admin.text('lastSeen')}</th>
                 </>
               ) : null}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-glass/40">
             {users.map((user) => (
-              <tr key={user.id} className={clsx('border-b border-glass transition-colors last:border-b-0 hover:bg-surface-alpha', selectedUserId === user.id && 'bg-blue-500/10')}>
-                <td className="px-4 py-4 align-top">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <UserAvatar user={user} />
+              <tr key={user.id} className={clsx('transition-colors hover:bg-surface-alpha/40', selectedUserId === user.id && 'bg-blue-500/10')}>
+                <td className="px-3 py-2 align-top">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <UserAvatar user={user} className="h-7 w-7 shrink-0" />
                     <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="truncate text-sm font-semibold text-primary">{user.name}</p>
-                        {user.isSample ? <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-800 dark:text-amber-300">{admin.text('preview')}</span> : null}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <p className="truncate text-xs font-semibold text-primary">{user.name}</p>
+                        {user.isSample ? <span className="rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-amber-800 dark:text-amber-300">{admin.text('preview')}</span> : null}
                       </div>
-                      <p className="truncate text-xs font-semibold text-blue-600 dark:text-blue-300">@{user.username || admin.text('unassigned')}</p>
-                      <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-tertiary">
-                        <span className="max-w-[13rem] truncate">{user.email}</span>
+                      <p className="truncate text-[10px] font-semibold text-blue-600 dark:text-blue-300">@{user.username || admin.text('unassigned')}</p>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-1 text-[10px] text-tertiary">
+                        <span className="max-w-[11rem] truncate">{user.email}</span>
                         <button
                           type="button"
                           onClick={() => onCopy(user.email, 'Email')}
-                          className="inline-flex h-6 w-6 items-center justify-center rounded-lg text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
+                          className="inline-flex h-5 w-5 items-center justify-center rounded text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
                           aria-label={`Copy email for ${user.email}`}
                         >
-                          <Copy size={12} />
+                          <Copy size={10} />
                         </button>
                       </div>
-                      <div className="mt-1 flex items-center gap-1.5 text-[11px] text-tertiary">
+                      <div className="mt-0.5 flex items-center gap-1 text-[10px] text-tertiary">
                         <span>{formatShortId(user.id)}</span>
                         <button
                           type="button"
                           onClick={() => onCopy(user.id, 'User ID')}
-                          className="inline-flex h-6 w-6 items-center justify-center rounded-lg text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
+                          className="inline-flex h-5 w-5 items-center justify-center rounded text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
                           aria-label={`Copy user id for ${user.email}`}
                         >
-                          <Copy size={12} />
+                          <Copy size={10} />
                         </button>
                       </div>
                       <button
                         type="button"
                         onClick={() => onSelect(user.id)}
                         className={clsx(
-                          'mt-2 inline-flex min-h-8 items-center gap-2 rounded-xl px-2.5 text-[11px] font-semibold transition-colors',
+                          'mt-1 inline-flex h-6 items-center gap-1 rounded-lg px-2 text-[10px] font-semibold transition-colors',
                           selectedUserId === user.id
                             ? 'bg-blue-600 text-white'
                             : 'border border-glass bg-[var(--bg-base)] text-secondary hover:text-primary',
                         )}
                       >
-                        <PanelRightOpen size={13} />
+                        <PanelRightOpen size={11} />
                         {admin.text('manage')}
                       </button>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-4 align-top">
+                <td className="px-3 py-2 align-top">
                   <select
                     value={user.status}
                     disabled={busyUserId === user.id}
                     onChange={(event) => onPatch(user.id, { status: event.currentTarget.value as AccountStatus })}
-                    className={clsx(selectedUserId ? 'w-28' : 'w-32', 'rounded-xl border border-glass bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary')}
+                    className={clsx(selectedUserId ? 'w-24' : 'w-28', 'h-7 rounded-lg border border-glass bg-[var(--bg-base)] px-1.5 text-[11px] font-semibold text-primary')}
                     aria-label={`Change status for ${user.email}`}
                   >
                     {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
                   </select>
                 </td>
-                <td className="px-4 py-4 align-top">
+                <td className="px-3 py-2 align-top">
                   <select
                     value={user.planCode}
                     disabled={busyUserId === user.id}
@@ -1708,59 +1710,59 @@ function UsersTable({
                       const nextPlan = plans.find((plan) => plan.code === nextPlanCode);
                       if (nextPlan) onPatch(user.id, buildPlanOverridePatch(user, nextPlan));
                     }}
-                    className={clsx(selectedUserId ? 'w-28' : 'w-32', 'rounded-xl border border-glass bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary')}
+                    className={clsx(selectedUserId ? 'w-24' : 'w-28', 'h-7 rounded-lg border border-glass bg-[var(--bg-base)] px-1.5 text-[11px] font-semibold text-primary')}
                     aria-label={`Change plan for ${user.email}`}
                   >
                     {plans.map((plan) => <option key={plan.code} value={plan.code}>{plan.name}</option>)}
                   </select>
                 </td>
-                <td className="px-4 py-4 align-top">
-                  <div className="flex flex-col gap-1.5">
-                    <StatusBadge value={user.billing.status} />
-                    <p className="text-[11px] capitalize text-tertiary">{admin.enumLabel(user.billing.provider)} / {admin.enumLabel(user.billing.market)}</p>
-                    {user.billing.paymentActionRequired ? <p className="text-[11px] font-semibold text-amber-600 dark:text-amber-300">{admin.text('actionRequired')}</p> : null}
+                <td className="px-3 py-2 align-top">
+                  <div className="flex flex-col gap-1">
+                    <StatusBadge value={user.billing.status} className="self-start text-[9px] py-0.5 px-1.5" />
+                    <p className="text-[10px] capitalize text-tertiary">{admin.enumLabel(user.billing.provider)} / {admin.enumLabel(user.billing.market)}</p>
+                    {user.billing.paymentActionRequired ? <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-300">{admin.text('actionRequired')}</p> : null}
                   </div>
                 </td>
-                <td className="px-4 py-4 align-top">
+                <td className="px-3 py-2 align-top">
                   <select
                     value={user.role}
                     disabled={busyUserId === user.id}
                     onChange={(event) => onPatch(user.id, { role: event.currentTarget.value as AdminRole })}
-                    className={clsx(selectedUserId ? 'w-28' : 'w-32', 'rounded-xl border border-glass bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary')}
+                    className={clsx(selectedUserId ? 'w-24' : 'w-28', 'h-7 rounded-lg border border-glass bg-[var(--bg-base)] px-1.5 text-[11px] font-semibold text-primary')}
                     aria-label={`Change role for ${user.email}`}
                   >
                     {ROLE_OPTIONS.map((role) => <option key={role} value={role}>{admin.enumLabel(role)}</option>)}
                   </select>
                 </td>
-                <td className="px-4 py-4 align-top">
-                  <div className="flex flex-col gap-1.5">
-                    <StatusBadge value={user.passwordResetRequired ? 'requested' : (user.accountRecoveryStatus || 'none')} />
-                    <p className="text-[11px] text-tertiary">
+                <td className="px-3 py-2 align-top">
+                  <div className="flex flex-col gap-1">
+                    <StatusBadge value={user.passwordResetRequired ? 'requested' : (user.accountRecoveryStatus || 'none')} className="self-start text-[9px] py-0.5 px-1.5" />
+                    <p className="text-[10px] text-tertiary">
                       {user.passwordResetRequired ? admin.text('passwordResetRequired') : admin.enumLabel(user.provider)}
                     </p>
                   </div>
                 </td>
                 {!selectedUserId ? (
                   <>
-                    <td className="px-4 py-4 align-top">
-                      <p className="text-sm font-semibold text-primary">{admin.number(user.usage.aiRequestsToday)} AI</p>
-                      <p className="text-xs text-secondary">{admin.number(user.usage.deepRequestsToday)} deep / {admin.number(user.usage.scannerRunsToday)} scans</p>
+                    <td className="px-3 py-2 align-top">
+                      <p className="text-xs font-semibold text-primary">{admin.number(user.usage.aiRequestsToday)} AI</p>
+                      <p className="text-[10px] text-secondary">{admin.number(user.usage.deepRequestsToday)} deep / {admin.number(user.usage.scannerRunsToday)} scans</p>
                     </td>
-                    <td className="px-4 py-4 align-top">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-20 overflow-hidden rounded-full bg-surface-alpha">
+                    <td className="px-3 py-2 align-top">
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-alpha">
                           <div
                             className={clsx('h-full rounded-full', user.riskScore >= 60 ? 'bg-rose-500' : user.riskScore >= 30 ? 'bg-amber-500' : 'bg-emerald-500')}
                             style={{ width: `${Math.min(100, Math.max(0, user.riskScore))}%` }}
                           />
                         </div>
-                        <span className="text-xs font-semibold text-secondary">{user.riskScore}</span>
+                        <span className="text-[10px] font-semibold text-secondary">{user.riskScore}</span>
                       </div>
-                      {user.flags.length ? <p className="mt-1 text-[11px] text-tertiary">{user.flags.join(', ')}</p> : null}
+                      {user.flags.length ? <p className="mt-0.5 text-[9px] text-tertiary">{user.flags.join(', ')}</p> : null}
                     </td>
-                    <td className="px-4 py-4 align-top">
-                      <p className="text-xs text-secondary">{admin.date(user.lastSeenAt)}</p>
-                      {busyUserId === user.id ? <p className="mt-1 text-[11px] text-blue-500">{admin.text('saving')}</p> : null}
+                    <td className="px-3 py-2 align-top">
+                      <p className="text-[10px] text-secondary">{admin.date(user.lastSeenAt)}</p>
+                      {busyUserId === user.id ? <p className="mt-0.5 text-[9px] text-blue-500">{admin.text('saving')}</p> : null}
                     </td>
                   </>
                 ) : null}
@@ -1789,15 +1791,15 @@ function PlanQuickControl({
 }) {
   const admin = useAdminCopy();
   return (
-    <div className="rounded-2xl border border-glass bg-surface-alpha p-3">
-      <div className="flex items-start justify-between gap-3">
+    <div className="rounded-lg border border-glass bg-surface-alpha/35 p-2 mt-2">
+      <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-primary">{admin.text('planQuickControl')}</p>
-          <p className="mt-1 text-xs leading-5 text-secondary">{admin.text('planQuickControlSubtitle')}</p>
+          <p className="text-[11px] font-bold text-primary">{admin.text('planQuickControl')}</p>
+          <p className="mt-0.5 text-[10px] leading-tight text-secondary">{admin.text('planQuickControlSubtitle')}</p>
         </div>
-        <WalletCards size={18} className="mt-0.5 shrink-0 text-blue-500" />
+        <WalletCards size={14} className="mt-0.5 shrink-0 text-blue-500" />
       </div>
-      <div className="mt-3 grid gap-2">
+      <div className="mt-2 grid gap-1.5">
         {plans.map((plan) => {
           const selected = plan.code === selectedPlanCode;
           const paidPlan = plan.code !== 'free';
@@ -1805,7 +1807,7 @@ function PlanQuickControl({
             <div
               key={plan.code}
               className={clsx(
-                'grid gap-2 rounded-xl border px-3 py-3 transition-colors',
+                'grid gap-1.5 rounded-lg border px-2 py-2 transition-colors',
                 selected ? 'border-blue-500/35 bg-blue-500/10' : 'border-glass bg-[var(--bg-base)]',
               )}
             >
@@ -1813,23 +1815,23 @@ function PlanQuickControl({
                 type="button"
                 onClick={() => onSelectPlan(plan)}
                 aria-pressed={selected}
-                className="grid gap-2 text-left"
+                className="grid gap-1 text-left"
               >
-                <span className="flex items-start justify-between gap-3">
+                <span className="flex items-start justify-between gap-2">
                   <span className="min-w-0">
-                    <span className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-primary">{plan.name}</span>
-                      {plan.recommended ? <BadgeCheck size={14} className="text-blue-500" /> : null}
+                    <span className="flex items-center gap-1.5">
+                      <span className="text-xs font-semibold text-primary">{plan.name}</span>
+                      {plan.recommended ? <BadgeCheck size={12} className="text-blue-500" /> : null}
                     </span>
-                    <span className="mt-1 block text-[11px] font-semibold uppercase tracking-[0.12em] text-tertiary">
+                    <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-wider text-tertiary">
                       {plan.displayPrice || admin.currencyUsd(plan.priceMonthlyUsd)}
                     </span>
                   </span>
-                  <StatusBadge value={selected ? 'selected' : plan.checkoutMode} />
+                  <StatusBadge value={selected ? 'selected' : plan.checkoutMode} className="text-[9px] py-0.5 px-1.5" />
                 </span>
-                <span className="text-xs leading-5 text-secondary">{formatPlanLimitLabel(plan, admin)}</span>
-                <span className="text-[11px] leading-5 text-tertiary">
-                  {admin.text('provider')} {admin.enumLabel(billingProviderForPlan(plan))} / {admin.enumLabel(billingMarketForPlan(plan, 'unknown'))} / {plan.paymentMethods.length ? plan.paymentMethods.join(', ') : admin.text('manualReview')}
+                <span className="text-[10px] leading-snug text-secondary">{formatPlanLimitLabel(plan, admin)}</span>
+                <span className="text-[9px] leading-snug text-tertiary">
+                  {admin.text('provider')} {admin.enumLabel(billingProviderForPlan(plan))} / {admin.enumLabel(billingMarketForPlan(plan, 'unknown'))}
                 </span>
               </button>
               <button
@@ -1837,13 +1839,13 @@ function PlanQuickControl({
                 onClick={() => onApplyPlan(plan)}
                 disabled={busy}
                 className={clsx(
-                  'inline-flex min-h-9 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold transition-colors disabled:opacity-50',
+                  'inline-flex h-7 items-center justify-center gap-1.5 rounded-lg px-2 text-[10px] font-semibold transition-colors disabled:opacity-50',
                   paidPlan
                     ? 'border border-blue-500/30 bg-blue-500/10 text-blue-800 hover:bg-blue-500/15 dark:text-blue-300'
                     : 'border border-glass bg-surface-alpha text-secondary hover:bg-[var(--bg-base)] hover:text-primary',
                 )}
               >
-                {paidPlan ? <ClipboardCheck size={14} /> : <CheckCircle2 size={14} />}
+                {paidPlan ? <ClipboardCheck size={12} /> : <CheckCircle2 size={12} />}
                 {paidPlan ? admin.text('applyProvisional') : admin.text('applyFree')}
               </button>
             </div>
@@ -2079,10 +2081,10 @@ function AccountInspector({
     <aside
       role="dialog"
       aria-labelledby={titleId}
-      className="fixed inset-x-3 bottom-3 z-[70] max-h-[86dvh] overflow-y-auto overscroll-contain rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/94 p-4 shadow-[var(--panel-elev-2)] backdrop-blur-xl xl:sticky xl:inset-auto xl:top-4 xl:z-auto xl:max-h-[calc(100dvh-8rem)] xl:bg-[var(--bg-base)]/82 xl:shadow-[var(--panel-elev-1)]"
+      className="fixed inset-x-3 bottom-3 z-[70] max-h-[86dvh] overflow-y-auto overscroll-contain rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/94 p-3 shadow-[var(--panel-elev-2)] backdrop-blur-xl xl:sticky xl:inset-auto xl:top-4 xl:z-auto xl:max-h-[calc(100dvh-8rem)] xl:bg-[var(--bg-base)]/82 xl:shadow-[var(--panel-elev-1)]"
     >
       <div className="mx-auto mb-3 h-1 w-12 rounded-full bg-surface-alpha xl:hidden" aria-hidden="true" />
-      <div className="sticky top-0 z-10 -mx-4 -mt-4 flex items-start justify-between gap-3 rounded-t-[1.4rem] border-b border-glass bg-[var(--bg-base)]/94 px-4 py-3 backdrop-blur-xl xl:static xl:mx-0 xl:mt-0 xl:border-b-0 xl:bg-transparent xl:px-0 xl:py-0 xl:backdrop-blur-0">
+      <div className="sticky top-0 z-10 -mx-3 -mt-3 flex items-start justify-between gap-3 rounded-t-[1.4rem] border-b border-glass bg-[var(--bg-base)]/94 px-3 py-2.5 backdrop-blur-xl xl:static xl:mx-0 xl:mt-0 xl:border-b-0 xl:bg-transparent xl:px-0 xl:py-0 xl:backdrop-blur-0">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
@@ -2104,187 +2106,196 @@ function AccountInspector({
         </button>
       </div>
 
-      <div className="mt-4 grid gap-2 text-xs">
-        <button type="button" onClick={() => onCopy(user.id, 'User ID')} className="flex min-h-10 items-center justify-between gap-3 rounded-xl border border-glass bg-surface-alpha px-3 text-left text-secondary">
-          <span className="inline-flex min-w-0 items-center gap-2"><Copy size={14} /> <span className="truncate">{formatShortId(user.id)}</span></span>
-          <span className="font-semibold text-primary">ID</span>
-        </button>
-        <button type="button" onClick={() => onCopy(user.email, 'Email')} className="flex min-h-10 items-center justify-between gap-3 rounded-xl border border-glass bg-surface-alpha px-3 text-left text-secondary">
-          <span className="inline-flex min-w-0 items-center gap-2"><Mail size={14} /> <span className="truncate">{user.email}</span></span>
-          <span className="font-semibold text-primary">Email</span>
-        </button>
-        <div className="flex min-h-10 items-center justify-between gap-3 rounded-xl border border-glass bg-surface-alpha px-3 text-secondary">
-          <span className="inline-flex min-w-0 items-center gap-2"><Clock3 size={14} /> <span className="truncate">{admin.date(user.createdAt)}</span></span>
-          <span className="font-semibold text-primary">{admin.text('created')}</span>
-        </div>
-      </div>
-
-      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-        <div className="rounded-xl border border-glass bg-surface-alpha px-3 py-2">
-          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('currentPlan')}</p>
-          <p className="mt-1 truncate font-semibold text-primary">{user.planName}</p>
-        </div>
-        <div className="rounded-xl border border-glass bg-surface-alpha px-3 py-2">
-          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('billing')}</p>
-          <p className="mt-1 truncate font-semibold text-primary">{admin.enumLabel(user.billing.status)} / {admin.enumLabel(user.billing.provider)}</p>
-        </div>
-        <div className="rounded-xl border border-glass bg-surface-alpha px-3 py-2">
-          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('usageToday')}</p>
-          <p className="mt-1 truncate font-semibold text-primary">{admin.number(user.usage.aiRequestsToday)} AI / {admin.number(user.usage.scannerRunsToday)} scans</p>
-        </div>
-        <div className="rounded-xl border border-glass bg-surface-alpha px-3 py-2">
-          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('risk')}</p>
-          <p className={clsx('mt-1 font-semibold', user.riskScore >= 60 ? 'text-rose-500' : user.riskScore >= 30 ? 'text-amber-500' : 'text-emerald-500')}>{user.riskScore}</p>
-        </div>
-      </div>
-
-      <div className="mt-4 grid gap-3">
-        <label className="grid gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('displayName')}</span>
-          <input value={displayName} onChange={(event) => setDisplayName(event.currentTarget.value)} className="glass-input min-h-10 rounded-xl px-3 text-sm" />
-        </label>
-        <label className="grid gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('username')}</span>
-          <div className="relative">
-            <AtSign size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" />
-            <input value={username} onChange={(event) => setUsername(event.currentTarget.value)} className="glass-input min-h-10 w-full rounded-xl pl-9 pr-3 text-sm" />
-          </div>
-        </label>
-
-        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-          <label className="grid gap-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('status')}</span>
-            <select value={status} onChange={(event) => setStatus(event.currentTarget.value as AccountStatus)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-              {STATUS_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
-            </select>
-          </label>
-          <label className="grid gap-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('role')}</span>
-            <select value={role} onChange={(event) => setRole(event.currentTarget.value as AdminRole)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-              {ROLE_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
-            </select>
-          </label>
-          <label className="grid gap-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('plan')}</span>
-            <select value={planCode} onChange={(event) => setPlanCode(event.currentTarget.value as PlanCode)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-              {plans.map((plan) => <option key={plan.code} value={plan.code}>{plan.name}</option>)}
-            </select>
-          </label>
-          <label className="grid gap-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('recovery')}</span>
-            <select value={recoveryStatus} onChange={(event) => setRecoveryStatus(event.currentTarget.value as AccountRecoveryStatus)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-              {RECOVERY_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
-            </select>
-          </label>
-        </div>
-
-        <div className="rounded-2xl border border-glass bg-surface-alpha p-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-primary">{admin.text('adminQuickActions')}</p>
-              <p className="mt-1 text-xs leading-5 text-secondary">{admin.text('adminQuickActionsSubtitle')}</p>
+      <div className="mt-3 flex flex-col gap-3">
+        {/* Card 1: General Info */}
+        <div className="rounded-xl border border-glass bg-surface-alpha/40 p-3">
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2 flex items-center gap-1.5 border-b border-glass pb-1.5">
+            <UserCog size={13} className="text-blue-500" />
+            {admin.text('generalInfo') || 'General Info'}
+          </h3>
+          <div className="grid gap-2 text-xs">
+            <button type="button" onClick={() => onCopy(user.id, 'User ID')} className="flex h-8 items-center justify-between gap-3 rounded-lg border border-glass bg-surface-alpha px-2.5 text-left text-secondary">
+              <span className="inline-flex min-w-0 items-center gap-1.5"><Copy size={11} /> <span className="truncate">{formatShortId(user.id)}</span></span>
+              <span className="font-semibold text-primary text-[10px]">ID</span>
+            </button>
+            <button type="button" onClick={() => onCopy(user.email, 'Email')} className="flex h-8 items-center justify-between gap-3 rounded-lg border border-glass bg-surface-alpha px-2.5 text-left text-secondary">
+              <span className="inline-flex min-w-0 items-center gap-1.5"><Mail size={11} /> <span className="truncate">{user.email}</span></span>
+              <span className="font-semibold text-primary text-[10px]">Email</span>
+            </button>
+            <div className="flex h-8 items-center justify-between gap-3 rounded-lg border border-glass bg-surface-alpha px-2.5 text-secondary">
+              <span className="inline-flex min-w-0 items-center gap-1.5"><Clock3 size={11} /> <span className="truncate">{admin.date(user.createdAt)}</span></span>
+              <span className="font-semibold text-primary text-[10px]">{admin.text('created')}</span>
             </div>
-            <ShieldCheck size={18} className="mt-0.5 shrink-0 text-emerald-500" />
           </div>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-            <button type="button" onClick={restoreAccount} disabled={busy || !canRestoreAccount} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-800 transition-colors hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300">
-              <CheckCircle2 size={14} />
-              {admin.text('restoreActive')}
-            </button>
-            <button type="button" onClick={suspendAccount} disabled={busy || status === 'suspended' || status === 'deleted'} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 text-xs font-semibold text-rose-800 transition-colors hover:bg-rose-500/15 disabled:opacity-50 dark:text-rose-300">
-              <Lock size={14} />
-              {admin.text('suspendReview')}
-            </button>
+          <div className="mt-3 grid gap-2">
+            <label className="grid gap-1">
+              <span className="text-[10px] font-semibold text-tertiary">{admin.text('displayName')}</span>
+              <input value={displayName} onChange={(event) => setDisplayName(event.currentTarget.value)} className="glass-input h-8 rounded-lg px-2.5 text-xs" />
+            </label>
+            <label className="grid gap-1">
+              <span className="text-[10px] font-semibold text-tertiary">{admin.text('username')}</span>
+              <div className="relative">
+                <AtSign size={13} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-tertiary" />
+                <input value={username} onChange={(event) => setUsername(event.currentTarget.value)} className="glass-input h-8 w-full rounded-lg pl-8 pr-2.5 text-xs" />
+              </div>
+            </label>
           </div>
         </div>
 
-        <PlanQuickControl
-          plans={plans}
-          selectedPlanCode={planCode}
-          busy={busy}
-          onSelectPlan={selectPlanPreset}
-          onApplyPlan={applyPlanEntitlement}
-        />
-
-        <div className="rounded-2xl border border-glass bg-surface-alpha p-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-primary">{admin.text('billingEntitlement')}</p>
-              <p className="mt-1 text-xs leading-5 text-secondary">{user.billing.recommendedAction}</p>
-              <p className="mt-1 text-[11px] leading-5 text-tertiary">
-                {admin.format('receiptModeDetail', { limit: provisionalLimitLabel })}
-              </p>
+        {/* Card 2: Access & Credentials */}
+        <div className="rounded-xl border border-glass bg-surface-alpha/40 p-3">
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2 flex items-center gap-1.5 border-b border-glass pb-1.5">
+            <ShieldCheck size={13} className="text-emerald-500" />
+            {admin.text('accessSecurity') || 'Access & Security'}
+          </h3>
+          <div className="grid gap-2">
+            <div className="grid grid-cols-2 gap-2">
+              <label className="grid gap-1">
+                <span className="text-[10px] font-semibold text-tertiary">{admin.text('status')}</span>
+                <select value={status} onChange={(event) => setStatus(event.currentTarget.value as AccountStatus)} className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-xs text-primary">
+                  {STATUS_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
+                </select>
+              </label>
+              <label className="grid gap-1">
+                <span className="text-[10px] font-semibold text-tertiary">{admin.text('role')}</span>
+                <select value={role} onChange={(event) => setRole(event.currentTarget.value as AdminRole)} className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-xs text-primary">
+                  {ROLE_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
+                </select>
+              </label>
             </div>
-            <StatusBadge value={user.billing.status} />
-          </div>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-            <label className="grid gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('billingStatus')}</span>
-              <select value={billingStatus} onChange={(event) => setBillingStatus(event.currentTarget.value as BillingStatus)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-                {BILLING_STATUS_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
-              </select>
-            </label>
-            <label className="grid gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('provider')}</span>
-              <select value={billingProvider} onChange={(event) => setBillingProvider(event.currentTarget.value as BillingProvider)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-                {BILLING_PROVIDER_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
-              </select>
-            </label>
-            <label className="grid gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('market')}</span>
-              <select value={billingMarket} onChange={(event) => setBillingMarket(event.currentTarget.value as BillingMarket)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-                {BILLING_MARKET_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
-              </select>
-            </label>
-            <label className="flex min-h-10 items-center justify-between gap-3 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-secondary">
-              <span>{admin.text('paymentActionRequired')}</span>
-              <input
-                type="checkbox"
-                checked={paymentActionRequired}
-                onChange={(event) => setPaymentActionRequired(event.currentTarget.checked)}
-                className="h-4 w-4 accent-blue-500"
-              />
-            </label>
-          </div>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-            <button type="button" onClick={markReceiptReceived} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 text-xs font-semibold text-blue-800 transition-colors hover:bg-blue-500/15 disabled:opacity-50 dark:text-blue-300">
-              <ClipboardCheck size={14} />
-              {admin.text('receiptReceived')}
-            </button>
-            <button type="button" onClick={markBillingResolved} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-800 transition-colors hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300">
-              <CheckCircle2 size={14} />
-              {admin.text('markPaid')}
-            </button>
-            <button type="button" onClick={markBillingPastDue} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 text-xs font-semibold text-amber-800 transition-colors hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300">
-              <AlertTriangle size={14} />
-              {admin.text('markPastDue')}
-            </button>
-          </div>
-          <div className="mt-3 grid gap-1 text-[11px] text-tertiary">
-            {user.billing.customerId ? <button type="button" onClick={() => onCopy(user.billing.customerId, 'Customer ID')} className="truncate text-left hover:text-primary">{admin.text('customer')}: {user.billing.customerId}</button> : null}
-            {user.billing.subscriptionId ? <button type="button" onClick={() => onCopy(user.billing.subscriptionId, 'Subscription ID')} className="truncate text-left hover:text-primary">{admin.text('subscription')}: {user.billing.subscriptionId}</button> : null}
-            {user.billing.currentPeriodEnd ? <span>{admin.format('renewsEnds', { date: admin.date(user.billing.currentPeriodEnd) })}</span> : null}
+            <div className="grid grid-cols-2 gap-2">
+              <label className="grid gap-1">
+                <span className="text-[10px] font-semibold text-tertiary">{admin.text('recovery')}</span>
+                <select value={recoveryStatus} onChange={(event) => setRecoveryStatus(event.currentTarget.value as AccountRecoveryStatus)} className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-xs text-primary">
+                  {RECOVERY_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
+                </select>
+              </label>
+              <label className="flex h-8 items-center justify-between gap-2 rounded-lg border border-glass bg-[var(--bg-base)] px-2.5 text-xs text-secondary mt-5">
+                <span className="text-[10px] font-semibold text-tertiary leading-none">{admin.text('requirePasswordReset')}</span>
+                <input
+                  type="checkbox"
+                  checked={passwordResetRequired}
+                  onChange={(event) => setPasswordResetRequired(event.currentTarget.checked)}
+                  className="h-3.5 w-3.5 accent-blue-500 shrink-0"
+                />
+              </label>
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button type="button" onClick={restoreAccount} disabled={busy || !canRestoreAccount} className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 text-[10px] font-semibold text-emerald-800 transition-colors hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300">
+                <CheckCircle2 size={12} />
+                {admin.text('restoreActive')}
+              </button>
+              <button type="button" onClick={suspendAccount} disabled={busy || status === 'suspended' || status === 'deleted'} className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-2 text-[10px] font-semibold text-rose-800 transition-colors hover:bg-rose-500/15 disabled:opacity-50 dark:text-rose-300">
+                <Lock size={12} />
+                {admin.text('suspendReview')}
+              </button>
+            </div>
           </div>
         </div>
 
-        <label className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-glass bg-surface-alpha px-3 text-sm text-secondary">
-          <span className="inline-flex items-center gap-2"><KeyRound size={15} /> {admin.text('requirePasswordReset')}</span>
-          <input
-            type="checkbox"
-            checked={passwordResetRequired}
-            onChange={(event) => setPasswordResetRequired(event.currentTarget.checked)}
-            className="h-4 w-4 accent-blue-500"
-          />
-        </label>
+        {/* Card 3: Entitlement & Billing */}
+        <div className="rounded-xl border border-glass bg-surface-alpha/40 p-3">
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2 flex items-center gap-1.5 border-b border-glass pb-1.5">
+            <WalletCards size={13} className="text-blue-500" />
+            {admin.text('billingEntitlement')}
+          </h3>
+          <div className="grid gap-2">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-lg border border-glass bg-surface-alpha px-2 py-1 text-center">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-tertiary">{admin.text('currentPlan')}</p>
+                <p className="mt-0.5 truncate text-[10px] font-semibold text-primary">{user.planName}</p>
+              </div>
+              <div className="rounded-lg border border-glass bg-surface-alpha px-2 py-1 text-center">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-tertiary">{admin.text('billing')}</p>
+                <p className="mt-0.5 truncate text-[10px] font-semibold text-primary">{admin.enumLabel(user.billing.status)}</p>
+              </div>
+              <div className="rounded-lg border border-glass bg-surface-alpha px-2 py-1 text-center">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-tertiary">{admin.text('risk')}</p>
+                <p className={clsx('mt-0.5 text-[10px] font-semibold', user.riskScore >= 60 ? 'text-rose-500' : user.riskScore >= 30 ? 'text-amber-500' : 'text-emerald-500')}>{user.riskScore}</p>
+              </div>
+            </div>
 
-        <label className="grid gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('internalNotes')}</span>
-          <textarea value={notes} onChange={(event) => setNotes(event.currentTarget.value)} className="min-h-20 resize-none rounded-xl border border-glass bg-[var(--bg-base)] px-3 py-2 text-sm leading-6 text-primary outline-none focus:border-blue-400" />
-        </label>
-        <label className="grid gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('supportNote')}</span>
-          <textarea value={supportNote} onChange={(event) => setSupportNote(event.currentTarget.value)} className="min-h-20 resize-none rounded-xl border border-glass bg-[var(--bg-base)] px-3 py-2 text-sm leading-6 text-primary outline-none focus:border-blue-400" />
-        </label>
+            <PlanQuickControl
+              plans={plans}
+              selectedPlanCode={planCode}
+              busy={busy}
+              onSelectPlan={selectPlanPreset}
+              onApplyPlan={applyPlanEntitlement}
+            />
+
+            <div className="mt-2 grid gap-2">
+              <div className="grid grid-cols-3 gap-2">
+                <label className="grid gap-1">
+                  <span className="text-[10px] font-semibold text-tertiary">{admin.text('billingStatus')}</span>
+                  <select value={billingStatus} onChange={(event) => setBillingStatus(event.currentTarget.value as BillingStatus)} className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-1.5 text-xs text-primary">
+                    {BILLING_STATUS_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
+                  </select>
+                </label>
+                <label className="grid gap-1">
+                  <span className="text-[10px] font-semibold text-tertiary">{admin.text('provider')}</span>
+                  <select value={billingProvider} onChange={(event) => setBillingProvider(event.currentTarget.value as BillingProvider)} className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-1.5 text-xs text-primary">
+                    {BILLING_PROVIDER_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
+                  </select>
+                </label>
+                <label className="grid gap-1">
+                  <span className="text-[10px] font-semibold text-tertiary">{admin.text('market')}</span>
+                  <select value={billingMarket} onChange={(event) => setBillingMarket(event.currentTarget.value as BillingMarket)} className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-1.5 text-xs text-primary">
+                    {BILLING_MARKET_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
+                  </select>
+                </label>
+              </div>
+              
+              <label className="flex h-8 items-center justify-between gap-3 rounded-lg border border-glass bg-[var(--bg-base)] px-2.5 text-xs text-secondary">
+                <span className="text-[10px] font-semibold text-tertiary leading-none">{admin.text('paymentActionRequired')}</span>
+                <input
+                  type="checkbox"
+                  checked={paymentActionRequired}
+                  onChange={(event) => setPaymentActionRequired(event.currentTarget.checked)}
+                  className="h-3.5 w-3.5 accent-blue-500 shrink-0"
+                />
+              </label>
+            </div>
+
+            <div className="mt-2 grid grid-cols-3 gap-1.5">
+              <button type="button" onClick={markReceiptReceived} disabled={busy} className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-blue-500/30 bg-blue-500/10 px-1 text-[10px] font-semibold text-blue-800 transition-colors hover:bg-blue-500/15 disabled:opacity-50 dark:text-blue-300">
+                <ClipboardCheck size={11} />
+                {admin.text('receiptReceived')}
+              </button>
+              <button type="button" onClick={markBillingResolved} disabled={busy} className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-1 text-[10px] font-semibold text-emerald-800 transition-colors hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300">
+                <CheckCircle2 size={11} />
+                {admin.text('markPaid')}
+              </button>
+              <button type="button" onClick={markBillingPastDue} disabled={busy} className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-1 text-[10px] font-semibold text-amber-800 transition-colors hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300">
+                <AlertTriangle size={11} />
+                {admin.text('markPastDue')}
+              </button>
+            </div>
+
+            <div className="mt-2 space-y-1 rounded-lg bg-surface-alpha p-2 text-[10px] text-tertiary leading-tight">
+              {user.billing.customerId ? <button type="button" onClick={() => onCopy(user.billing.customerId, 'Customer ID')} className="truncate text-left block w-full hover:text-primary">{admin.text('customer')}: {user.billing.customerId}</button> : null}
+              {user.billing.subscriptionId ? <button type="button" onClick={() => onCopy(user.billing.subscriptionId, 'Subscription ID')} className="truncate text-left block w-full hover:text-primary">{admin.text('subscription')}: {user.billing.subscriptionId}</button> : null}
+              {user.billing.currentPeriodEnd ? <span>{admin.format('renewsEnds', { date: admin.date(user.billing.currentPeriodEnd) })}</span> : null}
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: Notes & Auditing */}
+        <div className="rounded-xl border border-glass bg-surface-alpha/40 p-3">
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-secondary mb-2 flex items-center gap-1.5 border-b border-glass pb-1.5">
+            <Clock3 size={13} className="text-blue-500" />
+            {admin.text('internalNotes') || 'Notes & Auditing'}
+          </h3>
+          <div className="grid gap-3">
+            <label className="grid gap-1">
+              <span className="text-[10px] font-semibold text-tertiary">{admin.text('internalNotes')}</span>
+              <textarea value={notes} onChange={(event) => setNotes(event.currentTarget.value)} className="min-h-[3.5rem] resize-none rounded-lg border border-glass bg-[var(--bg-base)] px-2 py-1.5 text-xs leading-relaxed text-primary outline-none focus:border-blue-400" />
+            </label>
+            <label className="grid gap-1">
+              <span className="text-[10px] font-semibold text-tertiary">{admin.text('supportNote')}</span>
+              <textarea value={supportNote} onChange={(event) => setSupportNote(event.currentTarget.value)} className="min-h-[3.5rem] resize-none rounded-lg border border-glass bg-[var(--bg-base)] px-2 py-1.5 text-xs leading-relaxed text-primary outline-none focus:border-blue-400" />
+            </label>
+          </div>
+        </div>
       </div>
 
       {error ? (
@@ -2312,9 +2323,9 @@ function AccountInspector({
         </div>
       ) : null}
 
-      <div className="sticky bottom-0 z-10 -mx-4 -mb-4 mt-4 grid gap-2 border-t border-glass bg-[var(--bg-base)]/94 p-4 backdrop-blur-xl xl:static xl:mx-0 xl:mb-0 xl:border-t-0 xl:bg-transparent xl:p-0 xl:backdrop-blur-0">
+      <div className="sticky bottom-0 z-10 -mx-3 -mb-3 mt-3 grid gap-2 border-t border-glass bg-[var(--bg-base)]/94 p-3 backdrop-blur-xl xl:static xl:mx-0 xl:mb-0 xl:border-t-0 xl:bg-transparent xl:p-0 xl:backdrop-blur-0">
         {saveBlockedByReason ? (
-          <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-800 dark:text-amber-200">
+          <div className="rounded-lg border border-amber-500/25 bg-amber-500/10 px-2.5 py-1.5 text-[11px] leading-snug text-amber-800 dark:text-amber-200">
             {admin.text('entitlementNeedsNote')}
           </div>
         ) : null}
@@ -2322,18 +2333,18 @@ function AccountInspector({
           type="button"
           onClick={saveAccount}
           disabled={!dirty || busy || saveBlockedByReason}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white shadow-[0_6px_14px_rgba(37,99,235,0.18)] transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <Save size={16} />
+          <Save size={14} />
           {busy ? admin.text('saving') : admin.text('saveAccount')}
         </button>
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-          <button type="button" onClick={requirePasswordReset} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 text-xs font-semibold text-amber-800 transition-colors hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300">
-            <KeyRound size={14} />
+          <button type="button" onClick={requirePasswordReset} disabled={busy} className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 text-[10px] font-semibold text-amber-800 transition-colors hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300">
+            <KeyRound size={12} />
             {admin.text('requestReset')}
           </button>
-          <button type="button" onClick={clearRecovery} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-glass bg-surface-alpha px-3 text-xs font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary disabled:opacity-50">
-            <CheckCircle2 size={14} />
+          <button type="button" onClick={clearRecovery} disabled={busy} className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-glass bg-surface-alpha px-2 text-[10px] font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary disabled:opacity-50">
+            <CheckCircle2 size={12} />
             {admin.text('resolveRecovery')}
           </button>
         </div>
@@ -2656,86 +2667,86 @@ function CatalogDatabasePanel({
 
   return (
     <div className="mb-4 grid gap-3 xl:grid-cols-[1fr_1.1fr]">
-      <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
-        <div className="flex items-start justify-between gap-3">
+      <div className="rounded-xl border border-glass bg-surface-alpha p-3">
+        <div className="flex items-start justify-between gap-3 border-b border-glass pb-2">
           <div>
-            <p className="text-sm font-semibold text-primary">{admin.text('catalogOperations')}</p>
-            <p className="mt-1 text-xs text-secondary">{admin.text('catalogOperationsSubtitle')}</p>
+            <p className="text-xs font-semibold text-primary">{admin.text('catalogOperations')}</p>
+            <p className="mt-0.5 text-[10px] text-secondary">{admin.text('catalogOperationsSubtitle')}</p>
           </div>
-          <StatusBadge value={snapshot.catalog.ready ? 'pass' : 'warn'} />
+          <StatusBadge value={snapshot.catalog.ready ? 'pass' : 'warn'} className="text-[9px] min-h-6 h-6 px-1.5 shrink-0 self-start" />
         </div>
-        <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+        <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
           {snapshot.catalog.supportedKinds.map((item) => (
-            <div key={item} className="rounded-xl bg-[var(--bg-base)] p-2">
-              <p className="text-lg font-semibold text-primary">{admin.number(snapshot.catalog.publishedCounts[item])}</p>
-              <p className="text-tertiary">{admin.enumLabel(item)}</p>
+            <div key={item} className="rounded-lg bg-[var(--bg-base)] p-1.5">
+              <p className="text-base font-semibold text-primary">{admin.number(snapshot.catalog.publishedCounts[item])}</p>
+              <p className="text-[10px] text-tertiary">{admin.enumLabel(item)}</p>
             </div>
           ))}
         </div>
-        <div className="mt-3 rounded-xl bg-[var(--bg-base)] p-3 text-xs text-secondary">
-          <div className="flex flex-wrap gap-2">
-            <StatusBadge value="queued" label={admin.format('queuedCount', { count: admin.number(snapshot.catalog.reviewQueue.queued) })} />
-            <StatusBadge value="needs_source" label={admin.format('needsSourceCount', { count: admin.number(snapshot.catalog.reviewQueue.needsSource) })} />
-            <StatusBadge value="approved" label={admin.format('approvedCount', { count: admin.number(snapshot.catalog.reviewQueue.approved) })} />
+        <div className="mt-2.5 rounded-lg bg-[var(--bg-base)] p-2.5 text-[10px] text-secondary">
+          <div className="flex flex-wrap gap-1.5">
+            <StatusBadge value="queued" label={admin.format('queuedCount', { count: admin.number(snapshot.catalog.reviewQueue.queued) })} className="text-[9px] min-h-5 h-5 px-1.5" />
+            <StatusBadge value="needs_source" label={admin.format('needsSourceCount', { count: admin.number(snapshot.catalog.reviewQueue.needsSource) })} className="text-[9px] min-h-5 h-5 px-1.5" />
+            <StatusBadge value="approved" label={admin.format('approvedCount', { count: admin.number(snapshot.catalog.reviewQueue.approved) })} className="text-[9px] min-h-5 h-5 px-1.5" />
           </div>
-          {snapshot.catalog.gaps[0] ? <p className="mt-3 leading-5">{snapshot.catalog.gaps[0]}</p> : null}
+          {snapshot.catalog.gaps[0] ? <p className="mt-2.5 leading-normal text-[10px]">{snapshot.catalog.gaps[0]}</p> : null}
         </div>
-        <div className="mt-3 space-y-2">
+        <div className="mt-2.5 space-y-1.5">
           {snapshot.catalog.recentRequests.slice(0, 5).map((request) => (
-            <div key={request.id} className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+            <div key={request.id} className="rounded-lg bg-[var(--bg-base)] px-2.5 py-1.5">
               <div className="flex items-center justify-between gap-2">
-                <p className="truncate text-xs font-semibold text-primary">{request.title}</p>
-                <StatusBadge value={request.reviewStatus} />
+                <p className="truncate text-[11px] font-semibold text-primary">{request.title}</p>
+                <StatusBadge value={request.reviewStatus} className="text-[9px] min-h-5 h-5 px-1" />
               </div>
-              <p className="mt-1 truncate text-[11px] text-tertiary">{admin.enumLabel(request.kind)} / {request.payloadPreview || request.entityId || 'draft'}</p>
+              <p className="mt-0.5 truncate text-[10px] text-tertiary">{admin.enumLabel(request.kind)} / {request.payloadPreview || request.entityId || 'draft'}</p>
             </div>
           ))}
-          {!snapshot.catalog.recentRequests.length ? <p className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-xs text-tertiary">{admin.text('noCatalogRequests')}</p> : null}
+          {!snapshot.catalog.recentRequests.length ? <p className="rounded-lg bg-[var(--bg-base)] px-3 py-2 text-xs text-tertiary text-center">{admin.text('noCatalogRequests')}</p> : null}
         </div>
       </div>
 
-      <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-primary">{admin.text('newCatalogRequest')}</p>
+      <div className="rounded-xl border border-glass bg-surface-alpha p-3">
+        <div className="flex items-center justify-between gap-3 border-b border-glass pb-2">
+          <p className="text-xs font-semibold text-primary">{admin.text('newCatalogRequest')}</p>
           <button
             type="button"
             onClick={submit}
             disabled={!canSubmit}
-        className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-600 px-3 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-blue-600 px-2.5 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Save size={14} />
+            <Save size={13} />
             {busy ? admin.text('saving') : admin.text('queue')}
           </button>
         </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <label className="text-xs font-semibold text-secondary">
+        <div className="mt-3 grid gap-2.5 md:grid-cols-3">
+          <label className="text-[10px] font-semibold text-secondary">
             {admin.text('kind')}
-            <select value={kind} onChange={(event) => setKind(event.currentTarget.value as AdminCatalogKind)} className="mt-1 min-h-10 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+            <select value={kind} onChange={(event) => setKind(event.currentTarget.value as AdminCatalogKind)} className="mt-1 h-8 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-xs text-primary">
               {CATALOG_KIND_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
             </select>
           </label>
-          <label className="text-xs font-semibold text-secondary md:col-span-2">
+          <label className="text-[10px] font-semibold text-secondary md:col-span-2">
             {admin.text('title')}
-            <input value={title} onChange={(event) => setTitle(event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
+            <input value={title} onChange={(event) => setTitle(event.currentTarget.value)} className="glass-input mt-1 h-8 w-full rounded-lg px-2 text-xs" />
           </label>
         </div>
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
-          <label className="text-xs font-semibold text-secondary">
+        <div className="mt-2.5 grid gap-2.5 md:grid-cols-2">
+          <label className="text-[10px] font-semibold text-secondary">
             {admin.text('entityId')}
-            <input value={entityId} onChange={(event) => setEntityId(event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
+            <input value={entityId} onChange={(event) => setEntityId(event.currentTarget.value)} className="glass-input mt-1 h-8 w-full rounded-lg px-2 text-xs" />
           </label>
-          <label className="text-xs font-semibold text-secondary">
+          <label className="text-[10px] font-semibold text-secondary">
             {admin.text('sourceUrl')}
-            <input value={sourceUrl} onChange={(event) => setSourceUrl(event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
+            <input value={sourceUrl} onChange={(event) => setSourceUrl(event.currentTarget.value)} className="glass-input mt-1 h-8 w-full rounded-lg px-2 text-xs" />
           </label>
         </div>
-        <label className="mt-3 block text-xs font-semibold text-secondary">
+        <label className="mt-2.5 block text-[10px] font-semibold text-secondary">
           {admin.text('payloadJson')}
-          <textarea value={payloadText} onChange={(event) => setPayloadText(event.currentTarget.value)} className="glass-input mt-1 min-h-36 w-full rounded-xl px-3 py-2 font-mono text-xs" />
+          <textarea value={payloadText} onChange={(event) => setPayloadText(event.currentTarget.value)} className="glass-input mt-1 min-h-[5.5rem] w-full rounded-lg px-2 py-1.5 font-mono text-[10px]" />
         </label>
-        <label className="mt-3 block text-xs font-semibold text-secondary">
+        <label className="mt-2.5 block text-[10px] font-semibold text-secondary">
           {admin.text('operatorNote')}
-          <textarea value={operatorNote} onChange={(event) => setOperatorNote(event.currentTarget.value)} className="glass-input mt-1 min-h-20 w-full rounded-xl px-3 py-2 text-sm" />
+          <textarea value={operatorNote} onChange={(event) => setOperatorNote(event.currentTarget.value)} className="glass-input mt-1 min-h-[3rem] w-full rounded-lg px-2 py-1 text-xs" />
         </label>
         {parseError ? <p className="mt-2 text-xs font-semibold text-rose-600 dark:text-rose-300">{parseError}</p> : null}
       </div>
@@ -2784,17 +2795,17 @@ function MaintenancePanel({
       {flags.map((flag) => {
         const busy = busyFlagKey === flag.key;
         return (
-          <div key={flag.key} className="rounded-2xl border border-glass bg-surface-alpha p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div key={flag.key} className="rounded-xl border border-glass bg-surface-alpha p-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-primary">{flag.label}</p>
-                <p className="mt-1 text-xs text-tertiary">{flag.key} / updated {admin.date(flag.updatedAt)}</p>
+                <p className="text-xs font-semibold text-primary">{flag.label}</p>
+                <p className="mt-0.5 text-[10px] text-tertiary">{flag.key} / updated {admin.date(flag.updatedAt)}</p>
               </div>
               <select
                 value={flag.status}
                 disabled={busy}
                 onChange={(event) => onPatch(flag.key, { status: event.currentTarget.value as FeatureFlagStatus })}
-                className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-xs font-semibold text-primary"
+                className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-[11px] font-semibold text-primary"
                 aria-label={`Change status for ${flag.label}`}
               >
                 {FEATURE_STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
@@ -2807,24 +2818,24 @@ function MaintenancePanel({
               onChange={(event) => setDraftMessages((current) => ({ ...current, [flag.key]: event.currentTarget.value }))}
               onBlur={() => commitMessage(flag)}
               placeholder={admin.text('userFacingMaintenanceMessage')}
-              className="mt-4 min-h-20 w-full resize-none rounded-xl border border-glass bg-[var(--bg-base)] px-3 py-2 text-sm leading-6 text-primary outline-none transition-colors focus:border-blue-400"
+              className="mt-3 min-h-[3.5rem] w-full resize-none rounded-lg border border-glass bg-[var(--bg-base)] px-2 py-1.5 text-xs leading-relaxed text-primary outline-none transition-colors focus:border-blue-400"
             />
 
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-1.5">
               {FEATURE_SURFACE_OPTIONS.map((surface) => (
-                <label key={surface} className="inline-flex min-h-9 items-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-xs font-semibold text-secondary">
+                <label key={surface} className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-[10px] font-semibold text-secondary">
                   <input
                     type="checkbox"
                     checked={flag.surfaces.includes(surface)}
                     disabled={busy}
                     onChange={(event) => toggleSurface(flag, surface, event.currentTarget.checked)}
-                    className="h-3.5 w-3.5 accent-blue-500"
+                    className="h-3 w-3 accent-blue-500"
                   />
                   {admin.enumLabel(surface)}
                 </label>
               ))}
             </div>
-            {busy ? <p className="mt-3 text-xs font-semibold text-blue-500">{admin.text('savingMaintenanceControl')}</p> : null}
+            {busy ? <p className="mt-2 text-[10px] font-semibold text-blue-500">{admin.text('savingMaintenanceControl')}</p> : null}
           </div>
         );
       })}
@@ -2859,18 +2870,18 @@ function formatAiSuccessRate(usage: AdminAiUsageAggregate): string {
 function AiUsageMetricCard({ title, usage }: { title: string; usage: AdminAiUsageAggregate }) {
   const admin = useAdminCopy();
   return (
-    <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
-      <div className="flex items-start justify-between gap-3">
+    <div className="rounded-xl border border-glass bg-surface-alpha p-3">
+      <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{title}</p>
-          <p className="mt-2 text-2xl font-semibold text-primary">{admin.number(usage.requests)}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{title}</p>
+          <p className="mt-1 text-lg font-semibold text-primary">{admin.number(usage.requests)}</p>
         </div>
-        <StatusBadge value={usage.failures > 0 || usage.rateLimited > 0 ? 'warn' : usage.requests > 0 ? 'pass' : 'supabase'} label={formatAiSuccessRate(usage)} />
+        <StatusBadge value={usage.failures > 0 || usage.rateLimited > 0 ? 'warn' : usage.requests > 0 ? 'pass' : 'supabase'} label={formatAiSuccessRate(usage)} className="text-[9px] min-h-6 h-6 px-1.5" />
       </div>
-      <div className="mt-3 grid gap-2 text-xs text-secondary">
+      <div className="mt-2.5 grid gap-1.5 text-[11px] text-secondary">
         <p>{admin.text('aiUsageTokens')}: <span className="font-semibold text-primary">{admin.number(usage.totalTokens)}</span></p>
         <p>{admin.text('aiUsageCost')}: <span className="font-semibold text-primary">{formatAiCostUsd(usage.estimatedCostUsd)}</span></p>
-        <p>{admin.text('aiUsageFailures')}: <span className="font-semibold text-primary">{admin.number(usage.failures)}</span>{usage.rateLimited ? ` / ${admin.number(usage.rateLimited)} rate limit` : ''}</p>
+        <p>{admin.text('aiUsageFailures')}: <span className="font-semibold text-primary">{admin.number(usage.failures)}</span>{usage.rateLimited ? ` / ${admin.number(usage.rateLimited)} limit` : ''}</p>
         <p>{admin.text('aiUsageLatency')}: <span className="font-semibold text-primary">{usage.avgLatencyMs ? `${admin.number(usage.avgLatencyMs)}ms` : '-'}</span></p>
       </div>
     </div>
@@ -2933,162 +2944,163 @@ function AiProviderPanel({
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-2xl border border-blue-500/20 bg-blue-500/10 p-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+    <div className="space-y-3">
+      <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-3">
+        <div className="flex flex-col gap-2.5 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-sm font-semibold text-primary">{admin.text('aiNoSecretLeak')}</p>
-            <p className="mt-1 text-sm leading-6 text-secondary">{admin.text('aiProviderSecurityNote')}</p>
-            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700 dark:text-blue-200">{admin.text('aiFallbackPolicy')}</p>
+            <p className="text-xs font-semibold text-primary">{admin.text('aiNoSecretLeak')}</p>
+            <p className="mt-1 text-xs leading-relaxed text-secondary">{admin.text('aiProviderSecurityNote')}</p>
+            <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-blue-700 dark:text-blue-200">{admin.text('aiFallbackPolicy')}</p>
           </div>
-          <StatusBadge value={snapshot.ai.ready ? 'pass' : 'warn'} label={snapshot.ai.ready ? admin.text('aiProviderReady') : admin.text('aiNoKeys')} />
+          <StatusBadge value={snapshot.ai.ready ? 'pass' : 'warn'} label={snapshot.ai.ready ? admin.text('aiProviderReady') : admin.text('aiNoKeys')} className="text-[10px] h-6 px-2 shrink-0 self-start" />
         </div>
       </div>
 
       {snapshot.ai.warnings.length ? (
-        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3">
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2">
           {snapshot.ai.warnings.map((warning) => (
-            <p key={warning} className="text-sm leading-6 text-amber-800 dark:text-amber-200">{warning}</p>
+            <p key={warning} className="text-xs leading-relaxed text-amber-800 dark:text-amber-200">{warning}</p>
           ))}
         </div>
       ) : null}
 
       <div className="grid gap-3 sm:grid-cols-3">
         {stats.map((item) => (
-          <div key={item.label} className="rounded-2xl border border-glass bg-surface-alpha p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{item.label}</p>
-            <p className="mt-2 text-2xl font-semibold text-primary">{admin.number(item.value)}</p>
+          <div key={item.label} className="rounded-xl border border-glass bg-surface-alpha p-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{item.label}</p>
+            <p className="mt-1 text-lg font-semibold text-primary">{admin.number(item.value)}</p>
           </div>
         ))}
       </div>
 
-      <div className="rounded-2xl border border-glass bg-[var(--bg-base)]/70 p-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+      <div className="rounded-xl border border-glass bg-[var(--bg-base)]/70 p-3">
+        <div className="flex flex-col gap-2.5 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-sm font-semibold text-primary">{admin.text('aiBrewFallbackTitle')}</p>
-            <p className="mt-1 text-xs leading-5 text-secondary">{admin.text('aiBrewFallbackSubtitle')}</p>
-            <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">
+            <p className="text-xs font-semibold text-primary">{admin.text('aiBrewFallbackTitle')}</p>
+            <p className="mt-1 text-xs leading-relaxed text-secondary">{admin.text('aiBrewFallbackSubtitle')}</p>
+            <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">
               {admin.text('aiBrewFallbackThreshold')} {admin.number(snapshot.aiBrewFallbacks.thresholdPct || 8)}%
             </p>
           </div>
           <StatusBadge
             value={snapshot.aiBrewFallbacks.status || (snapshot.aiBrewFallbacks.totalEvents > 0 ? 'warn' : 'pass')}
             label={`${admin.text('aiBrewFallbackRate')} ${admin.number(snapshot.aiBrewFallbacks.fallbackRatePct)}%`}
+            className="text-[10px] h-6 px-2 shrink-0 self-start"
           />
         </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-4">
+        <div className="mt-3 grid gap-2 md:grid-cols-4">
           {[
             { label: admin.text('aiBrewFallbackOptimizerRejected'), value: snapshot.aiBrewFallbacks.optimizerRejected },
             { label: admin.text('aiBrewFallbackNoChange'), value: snapshot.aiBrewFallbacks.optimizerNoChange },
             { label: admin.text('aiBrewFallbackSequence'), value: snapshot.aiBrewFallbacks.sequenceFallback },
             { label: admin.text('aiBrewFallbackRecent'), value: snapshot.aiBrewFallbacks.totalEvents },
           ].map((item) => (
-            <div key={item.label} className="rounded-xl bg-surface-alpha px-3 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{item.label}</p>
-              <p className="mt-1 text-xl font-semibold text-primary">{admin.number(item.value)}</p>
+            <div key={item.label} className="rounded-lg bg-surface-alpha p-2">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{item.label}</p>
+              <p className="mt-0.5 text-base font-semibold text-primary">{admin.number(item.value)}</p>
             </div>
           ))}
         </div>
         {snapshot.aiBrewFallbacks.trend?.length ? (
-          <div className="mt-4 rounded-xl bg-surface-alpha px-3 py-3">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('aiBrewFallbackTrend')}</p>
-              <span className="text-xs font-semibold text-secondary">
+          <div className="mt-3 rounded-lg bg-surface-alpha p-2.5">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('aiBrewFallbackTrend')}</p>
+              <span className="text-[11px] font-semibold text-secondary">
                 {admin.number(snapshot.aiBrewFallbacks.trend[snapshot.aiBrewFallbacks.trend.length - 1]?.fallbackRatePct || 0)}%
               </span>
             </div>
-            <div className="grid grid-cols-7 gap-1.5">
+            <div className="grid grid-cols-7 gap-1">
               {snapshot.aiBrewFallbacks.trend.map((bucket) => (
-                <div key={bucket.date} className="flex min-h-20 flex-col justify-end gap-1">
-                  <div className="flex h-14 items-end rounded-lg bg-[var(--bg-base)]/72 px-1.5 py-1">
+                <div key={bucket.date} className="flex min-h-16 flex-col justify-end gap-1">
+                  <div className="flex h-10 items-end rounded-lg bg-[var(--bg-base)]/72 px-1 py-0.5">
                     <div
                       className={clsx('w-full rounded-md', bucket.status === 'fail' ? 'bg-rose-500' : bucket.status === 'warn' ? 'bg-amber-500' : 'bg-emerald-500')}
                       style={{ height: `${Math.max(6, Math.min(100, bucket.fallbackRatePct))}%` }}
                       title={`${bucket.date}: ${bucket.fallbackRatePct}% / ${bucket.totalEvents}`}
                     />
                   </div>
-                  <p className="truncate text-center text-[10px] font-medium text-tertiary">{bucket.date.slice(5)}</p>
+                  <p className="truncate text-center text-[9px] font-medium text-tertiary">{bucket.date.slice(5)}</p>
                 </div>
               ))}
             </div>
           </div>
         ) : null}
-        <div className="mt-4 space-y-2">
+        <div className="mt-3 space-y-1.5">
           {snapshot.aiBrewFallbacks.recentEvents.length ? snapshot.aiBrewFallbacks.recentEvents.slice(0, 5).map((event) => (
-            <div key={event.id} className="grid gap-1 rounded-xl bg-surface-alpha px-3 py-2 text-xs text-secondary sm:grid-cols-[auto_1fr_auto] sm:items-center">
+            <div key={event.id} className="grid gap-1 rounded-lg bg-surface-alpha px-2.5 py-1.5 text-[11px] text-secondary sm:grid-cols-[auto_1fr_auto] sm:items-center">
               <span className="font-semibold text-primary">{event.kind.replace(/_/g, ' ')}</span>
               <span className="min-w-0 truncate">{event.detail}</span>
-              <span className="text-tertiary sm:text-right">{admin.date(event.createdAt)}</span>
+              <span className="text-[10px] text-tertiary sm:text-right">{admin.date(event.createdAt)}</span>
             </div>
-          )) : <p className="rounded-xl bg-surface-alpha px-3 py-4 text-center text-sm text-secondary">{admin.text('aiBrewFallbackNoEvents')}</p>}
+          )) : <p className="rounded-lg bg-surface-alpha px-3 py-3 text-center text-xs text-secondary">{admin.text('aiBrewFallbackNoEvents')}</p>}
         </div>
       </div>
 
-      <div className="rounded-2xl border border-glass bg-[var(--bg-base)]/70 p-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+      <div className="rounded-xl border border-glass bg-[var(--bg-base)]/70 p-3">
+        <div className="flex flex-col gap-2.5 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-sm font-semibold text-primary">{admin.text('aiBrewUsageTitle')}</p>
-            <p className="mt-1 text-xs leading-5 text-secondary">{admin.text('aiBrewUsageSubtitle')}</p>
+            <p className="text-xs font-semibold text-primary">{admin.text('aiBrewUsageTitle')}</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-secondary">{admin.text('aiBrewUsageSubtitle')}</p>
           </div>
-          <StatusBadge value="supabase" label={admin.text('aiUsageEstimated')} />
+          <StatusBadge value="supabase" label={admin.text('aiUsageEstimated')} className="text-[9px] min-h-6 h-6 px-1.5 shrink-0 self-start" />
         </div>
-        <div className="mt-4 grid gap-3 lg:grid-cols-3">
+        <div className="mt-3 grid gap-2.5 lg:grid-cols-3">
           <AiUsageMetricCard title={admin.text('aiUsageToday')} usage={snapshot.ai.usage.today} />
           <AiUsageMetricCard title={admin.text('aiUsageMonth')} usage={snapshot.ai.usage.month} />
           <AiUsageMetricCard title={admin.text('aiUsageCustom')} usage={snapshot.ai.usage.custom} />
         </div>
-        <div className="mt-4 grid gap-3 rounded-2xl border border-glass bg-surface-alpha p-3 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
-          <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">
+        <div className="mt-3 grid gap-2.5 rounded-xl border border-glass bg-surface-alpha p-2.5 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
+          <label className="grid gap-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">
             {admin.text('aiUsageFrom')}
             <input
               type="date"
               value={usageFromDraft}
               onChange={(event) => setUsageFromDraft(event.currentTarget.value)}
-              className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm normal-case tracking-normal text-primary"
+              className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-xs normal-case tracking-normal text-primary"
             />
           </label>
-          <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">
+          <label className="grid gap-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">
             {admin.text('aiUsageTo')}
             <input
               type="date"
               value={usageToDraft}
               onChange={(event) => setUsageToDraft(event.currentTarget.value)}
-              className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm normal-case tracking-normal text-primary"
+              className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-xs normal-case tracking-normal text-primary"
             />
           </label>
           <button
             type="button"
             onClick={() => onApplyUsageRange({ aiFrom: usageFromDraft || undefined, aiTo: usageToDraft || undefined })}
-            className="min-h-10 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.24)] transition hover:bg-blue-500"
+            className="h-8 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white shadow-[0_6px_14px_rgba(37,99,235,0.18)] transition hover:bg-blue-500"
           >
             {admin.text('aiUsageApply')}
           </button>
         </div>
-        <div className="mt-4 grid gap-3 xl:grid-cols-2">
-          <div className="rounded-2xl border border-glass bg-surface-alpha p-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('aiUsageProviderBreakdown')}</p>
-            <div className="mt-3 space-y-2">
+        <div className="mt-3 grid gap-3 xl:grid-cols-2">
+          <div className="rounded-xl border border-glass bg-surface-alpha p-2.5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('aiUsageProviderBreakdown')}</p>
+            <div className="mt-2 space-y-1.5">
               {snapshot.ai.usage.month.providerBreakdown.length ? snapshot.ai.usage.month.providerBreakdown.slice(0, 6).map((item) => (
-                <div key={item.key} className="flex items-center justify-between gap-3 rounded-xl bg-[var(--bg-base)] px-3 py-2">
+                <div key={item.key} className="flex items-center justify-between gap-2.5 rounded-lg bg-[var(--bg-base)] px-2.5 py-1.5">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-primary">{item.label}</p>
-                    <p className="text-xs text-secondary">{admin.number(item.totalTokens)} token / {formatAiCostUsd(item.estimatedCostUsd)}</p>
+                    <p className="truncate text-xs font-semibold text-primary">{item.label}</p>
+                    <p className="text-[10px] text-secondary">{admin.number(item.totalTokens)} token / {formatAiCostUsd(item.estimatedCostUsd)}</p>
                   </div>
-                  <p className="shrink-0 text-sm font-semibold text-primary">{admin.number(item.requests)}</p>
+                  <p className="shrink-0 text-xs font-semibold text-primary">{admin.number(item.requests)}</p>
                 </div>
-              )) : <p className="py-4 text-center text-sm text-secondary">{admin.text('aiUsageNoEvents')}</p>}
+              )) : <p className="py-3 text-center text-xs text-secondary">{admin.text('aiUsageNoEvents')}</p>}
             </div>
           </div>
-          <div className="rounded-2xl border border-glass bg-surface-alpha p-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('aiUsageRecentEvents')}</p>
-            <div className="mt-3 space-y-2">
+          <div className="rounded-xl border border-glass bg-surface-alpha p-2.5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('aiUsageRecentEvents')}</p>
+            <div className="mt-2 space-y-1.5">
               {snapshot.ai.usage.recentEvents.length ? snapshot.ai.usage.recentEvents.slice(0, 6).map((event) => (
-                <div key={event.id} className="grid gap-1 rounded-xl bg-[var(--bg-base)] px-3 py-2 text-xs text-secondary sm:grid-cols-[1fr_auto] sm:items-center">
+                <div key={event.id} className="grid gap-0.5 rounded-lg bg-[var(--bg-base)] px-2.5 py-1.5 text-[11px] text-secondary sm:grid-cols-[1fr_auto] sm:items-center">
                   <div className="min-w-0">
                     <p className="truncate font-semibold text-primary">{event.providerLabel} / {event.model}</p>
-                    <p>{event.action}{event.mode ? ` / ${event.mode}` : ''} / {event.route}</p>
+                    <p className="text-[10px] text-tertiary">{event.action}{event.mode ? ` / ${event.mode}` : ''} / {event.route}</p>
                   </div>
-                  <p className="sm:text-right">
+                  <p className="sm:text-right text-[10px]">
                     <span className={clsx('font-semibold', event.outcome === 'success' ? 'text-emerald-600 dark:text-emerald-300' : 'text-amber-600 dark:text-amber-300')}>
                       {event.outcome.replace(/_/g, ' ')}
                     </span>
@@ -3096,11 +3108,11 @@ function AiProviderPanel({
                     {admin.number(event.totalTokens)} token / {formatAiCostUsd(event.estimatedCostUsd)}
                   </p>
                 </div>
-              )) : <p className="py-4 text-center text-sm text-secondary">{admin.text('aiUsageNoEvents')}</p>}
+              )) : <p className="py-3 text-center text-xs text-secondary">{admin.text('aiUsageNoEvents')}</p>}
             </div>
           </div>
         </div>
-        <p className="mt-3 text-xs leading-5 text-tertiary">{snapshot.ai.usage.estimationNote}</p>
+        <p className="mt-2 text-[10px] leading-relaxed text-tertiary">{snapshot.ai.usage.estimationNote}</p>
       </div>
 
       <div className="grid gap-3 xl:grid-cols-2">
@@ -3110,48 +3122,48 @@ function AiProviderPanel({
             ? 'belum ada request'
             : `${admin.date(provider.health.lastCheckedAt)}${provider.health.lastLatencyMs ? ` / ${admin.number(provider.health.lastLatencyMs)}ms` : ''}`;
           return (
-            <article key={provider.provider} className="rounded-2xl border border-glass bg-surface-alpha p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <article key={provider.provider} className="rounded-xl border border-glass bg-surface-alpha p-3">
+              <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-base font-semibold text-primary">{provider.label}</p>
-                    <StatusBadge value={healthTone(provider)} label={provider.health.status.replace(/_/g, ' ')} />
-                    <StatusBadge value={provider.status === 'available' ? 'pass' : 'warn'} label={admin.enumLabel(provider.status)} />
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <p className="text-sm font-semibold text-primary">{provider.label}</p>
+                    <StatusBadge value={healthTone(provider)} label={provider.health.status.replace(/_/g, ' ')} className="text-[9px] min-h-5 h-5 px-1.5" />
+                    <StatusBadge value={provider.status === 'available' ? 'pass' : 'warn'} label={admin.enumLabel(provider.status)} className="text-[9px] min-h-5 h-5 px-1.5" />
                   </div>
-                  <p className="mt-1 text-xs text-tertiary">{provider.provider} / priority {provider.priority} / {formatAiTierLabel(provider.tier)}</p>
+                  <p className="mt-0.5 text-[10px] text-tertiary">{provider.provider} / priority {provider.priority} / {formatAiTierLabel(provider.tier)}</p>
                 </div>
                 <select
                   value={provider.status}
                   disabled={busy}
                   onChange={(event) => onPatch(provider.featureFlagKey, { status: event.currentTarget.value as FeatureFlagStatus })}
-                  className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-xs font-semibold text-primary"
+                  className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-[11px] font-semibold text-primary shrink-0 self-start"
                   aria-label={`Change AI provider status for ${provider.label}`}
                 >
                   {FEATURE_STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
                 </select>
               </div>
 
-              <div className="mt-4 grid gap-3 md:grid-cols-2">
-                <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('aiPrimaryModel')}</p>
-                  <p className="mt-1 text-sm font-semibold text-primary">{provider.primaryModel}</p>
-                  {provider.fallbackModels.length ? <p className="mt-1 text-xs text-secondary">{provider.fallbackModels.join(', ')}</p> : null}
+              <div className="mt-3 grid gap-2 md:grid-cols-2">
+                <div className="rounded-lg bg-[var(--bg-base)] px-2.5 py-1.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('aiPrimaryModel')}</p>
+                  <p className="mt-0.5 text-xs font-semibold text-primary">{provider.primaryModel}</p>
+                  {provider.fallbackModels.length ? <p className="mt-0.5 text-[10px] text-secondary">{provider.fallbackModels.join(', ')}</p> : null}
                 </div>
-                <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('aiLastHealth')}</p>
-                  <p className="mt-1 text-sm font-semibold text-primary">{lastHealth}</p>
-                  <p className="mt-1 text-xs text-secondary">
+                <div className="rounded-lg bg-[var(--bg-base)] px-2.5 py-1.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('aiLastHealth')}</p>
+                  <p className="mt-0.5 text-xs font-semibold text-primary">{lastHealth}</p>
+                  <p className="mt-0.5 text-[10px] text-secondary">
                     {provider.health.successes} ok / {provider.health.failures} fail{provider.health.errorCode ? ` / ${provider.health.errorCode}` : ''}
                   </p>
                 </div>
-                <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('aiStandardKeys')} / {admin.text('aiPaidKeys')}</p>
-                  <p className="mt-1 text-sm font-semibold text-primary">{provider.standardKeyCount} / {provider.paidKeyCount}</p>
-                  <p className="mt-1 text-xs text-secondary">{provider.configured ? `${provider.keyCount} total server key` : admin.text('aiNoKeys')}</p>
+                <div className="rounded-lg bg-[var(--bg-base)] px-2.5 py-1.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('aiStandardKeys')} / {admin.text('aiPaidKeys')}</p>
+                  <p className="mt-0.5 text-xs font-semibold text-primary">{provider.standardKeyCount} / {provider.paidKeyCount}</p>
+                  <p className="mt-0.5 text-[10px] text-secondary">{provider.configured ? `${provider.keyCount} total server key` : admin.text('aiNoKeys')}</p>
                 </div>
-                <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('aiRecommendedFor')}</p>
-                  <p className="mt-1 text-sm font-semibold text-primary">{provider.recommendedFor.map(formatAiUsageLabel).join(', ')}</p>
+                <div className="rounded-lg bg-[var(--bg-base)] px-2.5 py-1.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('aiRecommendedFor')}</p>
+                  <p className="mt-0.5 text-xs font-semibold text-primary">{provider.recommendedFor.map(formatAiUsageLabel).join(', ')}</p>
                 </div>
               </div>
 
@@ -3161,9 +3173,9 @@ function AiProviderPanel({
                 onChange={(event) => setDraftMessages((current) => ({ ...current, [provider.featureFlagKey]: event.currentTarget.value }))}
                 onBlur={() => commitMessage(provider)}
                 placeholder={admin.text('maintenanceMessagePlaceholder')}
-                className="mt-4 min-h-16 w-full resize-none rounded-xl border border-glass bg-[var(--bg-base)] px-3 py-2 text-sm leading-6 text-primary outline-none transition-colors focus:border-blue-400"
+                className="mt-3 min-h-[3rem] w-full resize-none rounded-lg border border-glass bg-[var(--bg-base)] px-2.5 py-1.5 text-xs leading-relaxed text-primary outline-none transition-colors focus:border-blue-400"
               />
-              {busy ? <p className="mt-3 text-xs font-semibold text-blue-500">{admin.text('savingMaintenanceControl')}</p> : null}
+              {busy ? <p className="mt-2 text-[10px] font-semibold text-blue-500">{admin.text('savingMaintenanceControl')}</p> : null}
             </article>
           );
         })}
@@ -3183,69 +3195,69 @@ function RecipeLibraryPanel({ snapshot }: { snapshot: AdminSnapshot }) {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((item) => (
-          <div key={item.label} className="rounded-2xl border border-glass bg-surface-alpha p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{item.label}</p>
-            <p className="mt-2 text-2xl font-semibold text-primary">{admin.number(item.value)}</p>
+          <div key={item.label} className="rounded-xl border border-glass bg-surface-alpha p-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{item.label}</p>
+            <p className="mt-1 text-lg font-semibold text-primary">{admin.number(item.value)}</p>
           </div>
         ))}
       </div>
 
-      <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="rounded-xl border border-glass bg-surface-alpha p-3">
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-sm font-semibold text-primary">{admin.text('recipeLibraryReady')}</p>
-            <p className="mt-1 text-xs leading-5 text-secondary">
+            <p className="text-xs font-semibold text-primary">{admin.text('recipeLibraryReady')}</p>
+            <p className="mt-0.5 text-[11px] leading-relaxed text-secondary">
               {library.tables.join(', ')}
             </p>
           </div>
-          <StatusBadge value={library.ready ? 'pass' : 'warn'} />
+          <StatusBadge value={library.ready ? 'pass' : 'warn'} className="text-[9px] min-h-6 h-6 px-1.5 shrink-0 self-start" />
         </div>
         {library.gaps[0] ? (
-          <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-800 dark:text-amber-200">
+          <div className="mt-2.5 rounded-lg border border-amber-500/20 bg-amber-500/10 px-2.5 py-1.5 text-[11px] leading-relaxed text-amber-800 dark:text-amber-200">
             <span className="font-semibold">{admin.text('recipeLibraryGap')}: </span>
             {library.gaps[0]}
           </div>
         ) : null}
       </div>
 
-      <div className="rounded-2xl border border-glass bg-surface-alpha">
-        <div className="flex items-center justify-between gap-3 border-b border-glass px-4 py-3">
+      <div className="rounded-xl border border-glass bg-surface-alpha">
+        <div className="flex items-center justify-between gap-3 border-b border-glass px-3 py-2.5">
           <div>
-            <p className="text-sm font-semibold text-primary">{admin.text('recipeLibraryRecent')}</p>
-            <p className="mt-0.5 text-xs text-tertiary">{admin.text('recipeLibrarySubtitle')}</p>
+            <p className="text-xs font-semibold text-primary">{admin.text('recipeLibraryRecent')}</p>
+            <p className="mt-0.5 text-[10px] text-tertiary">{admin.text('recipeLibrarySubtitle')}</p>
           </div>
-          <Library size={18} className="shrink-0 text-blue-500" />
+          <Library size={15} className="shrink-0 text-blue-500" />
         </div>
         {library.recentItems.length ? (
           <div className="divide-y divide-[var(--panel-border-soft)]">
             {library.recentItems.map((item) => (
-              <article key={`${item.source}-${item.id}`} className="grid gap-3 px-4 py-4 md:grid-cols-[minmax(0,1fr)_10rem_8rem] md:items-center">
+              <article key={`${item.source}-${item.id}`} className="grid gap-2.5 px-3 py-2.5 md:grid-cols-[minmax(0,1fr)_10rem_8rem] md:items-center">
                 <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate text-sm font-semibold text-primary">{item.title}</p>
-                    {item.deletedAt ? <StatusBadge value="warn" label={admin.enumLabel('deleted')} /> : null}
-                    {item.feedbackRating ? <StatusBadge value="pass" label={admin.enumLabel(item.feedbackRating)} /> : null}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <p className="truncate text-xs font-semibold text-primary">{item.title}</p>
+                    {item.deletedAt ? <StatusBadge value="warn" label={admin.enumLabel('deleted')} className="text-[9px] min-h-5 h-5 px-1" /> : null}
+                    {item.feedbackRating ? <StatusBadge value="pass" label={admin.enumLabel(item.feedbackRating)} className="text-[9px] min-h-5 h-5 px-1" /> : null}
                   </div>
-                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-secondary">{item.summary}</p>
-                  <p className="mt-1 truncate text-[11px] text-tertiary">{item.userId}</p>
+                  <p className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-secondary">{item.summary}</p>
+                  <p className="mt-0.5 truncate text-[10px] text-tertiary">{item.userId}</p>
                 </div>
                 <div className="flex flex-wrap gap-1.5 md:justify-end">
-                  <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-semibold text-secondary">
+                  <span className="rounded-full bg-[var(--bg-base)] px-1.5 py-0.5 text-[9px] font-semibold text-secondary">
                     {admin.enumLabel(item.source)}
                   </span>
-                  <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-semibold text-secondary">
+                  <span className="rounded-full bg-[var(--bg-base)] px-1.5 py-0.5 text-[9px] font-semibold text-secondary">
                     {admin.enumLabel(item.itemType)}
                   </span>
                   {item.brewMode ? (
-                    <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-semibold text-secondary">
+                    <span className="rounded-full bg-[var(--bg-base)] px-1.5 py-0.5 text-[9px] font-semibold text-secondary">
                       {admin.enumLabel(item.brewMode)}
                     </span>
                   ) : null}
                 </div>
-                <p className="text-xs text-tertiary md:text-right">{admin.date(item.updatedAt)}</p>
+                <p className="text-[10px] text-tertiary md:text-right">{admin.date(item.updatedAt)}</p>
               </article>
             ))}
           </div>
@@ -3257,45 +3269,76 @@ function RecipeLibraryPanel({ snapshot }: { snapshot: AdminSnapshot }) {
   );
 }
 
-function AuditPanel({ audit }: { audit: AdminSnapshot['audit'] }) {
+function AuditPanel({ audit, onExport }: { audit: AdminSnapshot['audit']; onExport?: () => void }) {
   const admin = useAdminCopy();
   return (
-    <div className="rounded-2xl border border-glass bg-surface-alpha">
-      {audit.map((event, index) => (
-        <div key={event.id} className={clsx('grid gap-3 px-4 py-4 md:grid-cols-[11rem_1fr_8rem]', index > 0 && 'border-t border-glass')}>
-          <div className="text-xs text-tertiary">{admin.date(event.createdAt)}</div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-primary">{event.action.replace(/_/g, ' ')}</p>
-            <p className="mt-1 text-sm leading-5 text-secondary">{event.detail}</p>
-            <p className="mt-1 truncate text-[11px] text-tertiary">{event.actor} {'->'} {event.target}</p>
-          </div>
-          <div className="md:text-right">
-            <StatusBadge value={event.severity === 'info' ? 'pass' : event.severity === 'warning' ? 'warn' : 'fail'} />
-          </div>
+    <div className="space-y-4">
+      {onExport && (
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-sm font-semibold text-secondary">{admin.text('auditLogs') || 'Audit Logs'}</h3>
+          <button
+            type="button"
+            onClick={onExport}
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-glass bg-surface-alpha px-3 text-xs font-semibold text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
+          >
+            <Download size={13} />
+            {admin.text('auditCsv')}
+          </button>
         </div>
-      ))}
+      )}
+      <div className="rounded-2xl border border-glass bg-surface-alpha">
+        {audit.map((event, index) => (
+          <div key={event.id} className={clsx('grid gap-3 px-4 py-4 md:grid-cols-[11rem_1fr_8rem]', index > 0 && 'border-t border-glass')}>
+            <div className="text-xs text-tertiary">{admin.date(event.createdAt)}</div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-primary">{event.action.replace(/_/g, ' ')}</p>
+              <p className="mt-1 text-sm leading-5 text-secondary">{event.detail}</p>
+              <p className="mt-1 truncate text-[11px] text-tertiary">{event.actor} {'->'} {event.target}</p>
+            </div>
+            <div className="md:text-right">
+              <StatusBadge value={event.severity === 'info' ? 'pass' : event.severity === 'warning' ? 'warn' : 'fail'} />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-function LaunchPanel({ checklist }: { checklist: LaunchChecklistItem[] }) {
+function LaunchPanel({ checklist, onCopySummary }: { checklist: LaunchChecklistItem[]; onCopySummary?: () => void }) {
+  const admin = useAdminCopy();
   return (
-    <div className="grid gap-3 lg:grid-cols-2">
-      {checklist.map((item) => (
-        <div key={item.id} className="rounded-2xl border border-glass bg-surface-alpha p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 items-start gap-3">
-              <CheckIcon status={item.status} />
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-primary">{item.label}</p>
-                <p className="mt-1 text-xs text-tertiary">{item.owner} / {item.due.replace(/_/g, ' ')}</p>
-              </div>
-            </div>
-            <StatusBadge value={item.status} />
-          </div>
-          <p className="mt-4 text-sm leading-6 text-secondary">{item.action}</p>
+    <div className="space-y-4">
+      {onCopySummary && (
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-sm font-semibold text-secondary">{admin.text('launchChecklist') || 'Launch Checklist'}</h3>
+          <button
+            type="button"
+            onClick={onCopySummary}
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white shadow-[0_6px_14px_rgba(37,99,235,0.18)] transition-colors hover:bg-blue-700"
+          >
+            <ClipboardCheck size={13} />
+            {admin.text('copyHandoff')}
+          </button>
         </div>
-      ))}
+      )}
+      <div className="grid gap-3 lg:grid-cols-2">
+        {checklist.map((item) => (
+          <div key={item.id} className="rounded-2xl border border-glass bg-surface-alpha p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex min-w-0 items-start gap-3">
+                <CheckIcon status={item.status} />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-primary">{item.label}</p>
+                  <p className="mt-1 text-xs text-tertiary">{item.owner} / {item.due.replace(/_/g, ' ')}</p>
+                </div>
+              </div>
+              <StatusBadge value={item.status} />
+            </div>
+            <p className="mt-4 text-sm leading-6 text-secondary">{item.action}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -3338,6 +3381,7 @@ export function AdminManagement() {
   const [pendingFeatureFlagPatch, setPendingFeatureFlagPatch] = useState<PendingFeatureFlagPatch | null>(null);
   const [toast, setToast] = useState('');
   const [isDark, setIsDark] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [dirtyAccountIds, setDirtyAccountIds] = useState<Set<string>>(() => new Set());
   const [dirtyPlanCodes, setDirtyPlanCodes] = useState<Set<PlanCode>>(() => new Set());
   const refreshSequenceRef = useRef(0);
@@ -3817,10 +3861,9 @@ export function AdminManagement() {
   return (
     <AdminCopyContext.Provider value={admin}>
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.32, ease: [0.23, 1, 0.32, 1] }}
-      className="relative page-container desktop-noise-bg w-full"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="relative flex min-h-screen w-full bg-[var(--bg-base)] text-primary desktop-noise-bg overflow-x-hidden"
       aria-busy={loading || refreshing}
     >
       <a
@@ -3829,165 +3872,318 @@ export function AdminManagement() {
       >
         {admin.text('skipToAdminContent')}
       </a>
-      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 px-4 sm:px-6">
-        <header className="rounded-[1.6rem] border border-glass bg-[var(--bg-base)]/88 px-4 py-4 shadow-[var(--panel-elev-1)] backdrop-blur-xl">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500">
-                  <ShieldCheck size={20} />
-                </span>
-                <div>
-                  <h1 className="text-2xl font-semibold tracking-normal text-primary">{admin.text('pageTitle')}</h1>
-                  <p className="mt-1 text-sm text-secondary">{admin.text('pageSubtitle')}</p>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:border-r lg:border-glass lg:bg-[var(--bg-elevated)]/60 lg:backdrop-blur-xl z-20">
+        <div className="flex h-14 items-center px-4 border-b border-glass gap-2 shrink-0">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 shrink-0">
+            <ShieldCheck size={18} />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-xs font-bold tracking-tight text-primary truncate">Baristachaw Admin</h2>
+            <p className="text-[9px] text-tertiary truncate">Management Console</p>
+          </div>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
+          {TABS.map(({ id, labelKey, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => {
+                selectTab(id);
+                setIsMobileDrawerOpen(false);
+              }}
+              onKeyDown={(event) => handleTabKeyDown(event, id)}
+              id={`admin-tab-${id}`}
+              role="tab"
+              aria-selected={activeTab === id}
+              aria-controls={`admin-panel-${id}`}
+              className={clsx(
+                'w-full flex items-center justify-between min-h-9 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all group border-0 text-left',
+                activeTab === id
+                  ? 'bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.18)]'
+                  : 'text-secondary hover:bg-surface-alpha hover:text-primary'
+              )}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Icon size={14} className={activeTab === id ? 'text-white' : 'text-secondary group-hover:text-primary'} />
+                <span className="truncate">{admin.text(labelKey)}</span>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                {id === 'database' && criticalChecks > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 rounded-full bg-rose-500/15 text-rose-500 px-1 text-[9px] font-bold">
+                    {criticalChecks}
+                  </span>
+                )}
+                {id === 'users' && (adminQueues.riskUsers.length + adminQueues.recoveryUsers.length > 0) && (
+                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 rounded-full bg-amber-500/15 text-amber-500 px-1 text-[9px] font-bold">
+                    {adminQueues.riskUsers.length + adminQueues.recoveryUsers.length}
+                  </span>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <div className="p-3 border-t border-glass space-y-2 bg-[var(--bg-elevated)]/40 shrink-0">
+          <div className="flex items-center justify-between gap-2 px-1">
+            {snapshot ? (
+              <span className={clsx(
+                'inline-flex items-center gap-1.5 text-[10px] font-semibold text-secondary truncate max-w-[120px]',
+                liveRefreshPaused ? 'text-amber-500' : 'text-emerald-500'
+              )}>
+                <span className={clsx('h-1.5 w-1.5 rounded-full', liveRefreshPaused ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse')} />
+                {liveRefreshPaused ? admin.text('livePaused') : admin.text('live')} {snapshot.realtime.intervalSec}s
+              </span>
+            ) : null}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-glass bg-surface-alpha text-secondary hover:text-primary transition-colors"
+              title={isDark ? admin.text('switchToLight') : admin.text('switchToDark')}
+            >
+              {isDark ? <Sun size={13} /> : <Moon size={13} />}
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-glass bg-surface-alpha px-2 text-[10px] font-semibold text-secondary hover:bg-[var(--bg-base)] hover:text-primary transition-all"
+            >
+              <ArrowLeft size={11} />
+              <span>Exit</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => void refresh()}
+              className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg bg-blue-600 px-2 text-[10px] font-semibold text-white hover:bg-blue-700 transition-all"
+              disabled={refreshing}
+            >
+              <RefreshCcw size={11} className={refreshing ? 'animate-spin' : ''} />
+              <span>Sync</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile Drawer (with AnimatePresence) */}
+      <AnimatePresence>
+        {isMobileDrawerOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileDrawerOpen(false)}
+              className="fixed inset-0 z-[60] bg-black/60 lg:hidden"
+            />
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 z-[65] w-64 flex flex-col bg-[var(--bg-elevated)] border-r border-glass shadow-2xl lg:hidden"
+            >
+              <div className="flex h-14 items-center justify-between px-4 border-b border-glass shrink-0">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck size={18} className="text-blue-500" />
+                  <span className="text-xs font-bold text-primary">Baristachaw Admin</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileDrawerOpen(false)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-secondary hover:bg-surface-alpha hover:text-primary"
+                  aria-label="Close menu"
+                >
+                  <X size={17} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-3 space-y-0.5">
+                {TABS.map(({ id, labelKey, icon: Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => {
+                      selectTab(id);
+                      setIsMobileDrawerOpen(false);
+                    }}
+                    className={clsx(
+                      'w-full flex items-center justify-between min-h-9 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all group text-left border-0',
+                      activeTab === id
+                        ? 'bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.18)]'
+                        : 'text-secondary hover:bg-surface-alpha hover:text-primary'
+                    )}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Icon size={14} />
+                      <span className="truncate">{admin.text(labelKey)}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {id === 'database' && criticalChecks > 0 && (
+                        <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 rounded-full bg-rose-500/15 text-rose-500 px-1 text-[9px] font-bold">
+                          {criticalChecks}
+                        </span>
+                      )}
+                      {id === 'users' && (adminQueues.riskUsers.length + adminQueues.recoveryUsers.length > 0) && (
+                        <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 rounded-full bg-amber-500/15 text-amber-500 px-1 text-[9px] font-bold">
+                          {adminQueues.riskUsers.length + adminQueues.recoveryUsers.length}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <div className="p-3 border-t border-glass space-y-2 bg-[var(--bg-elevated)]/40 shrink-0">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-[10px] text-tertiary">
+                    Seq: #{snapshot?.realtime.sequence}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={toggleTheme}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-glass bg-surface-alpha text-secondary"
+                  >
+                    {isDark ? <Sun size={13} /> : <Moon size={13} />}
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileDrawerOpen(false);
+                      navigate('/');
+                    }}
+                    className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-glass bg-surface-alpha text-xs font-semibold text-secondary"
+                  >
+                    <ArrowLeft size={12} />
+                    <span>Exit</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileDrawerOpen(false);
+                      void refresh();
+                    }}
+                    className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg bg-blue-600 text-xs font-semibold text-white"
+                  >
+                    <RefreshCcw size={12} />
+                    <span>Sync</span>
+                  </button>
                 </div>
               </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {snapshot ? <StatusBadge value={snapshot.dataMode} /> : null}
-              {snapshot ? (
-                <span className={clsx(
-                  'inline-flex min-h-7 items-center gap-1.5 rounded-full px-2.5 text-[11px] font-semibold',
-                  liveRefreshPaused ? 'bg-amber-500/10 text-amber-800 dark:text-amber-300' : 'bg-surface-alpha text-secondary',
-                )}>
-                  <Activity size={13} />
-                  {liveRefreshPaused ? admin.text('livePaused') : admin.text('live')} {snapshot.realtime.intervalSec}s / #{snapshot.realtime.sequence}
-                </span>
-              ) : null}
-              {snapshot ? (
-                <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full bg-surface-alpha px-2.5 text-[11px] font-semibold text-secondary">
-                  <Clock3 size={13} />
-                  {admin.date(snapshot.generatedAt)}
-                </span>
-              ) : null}
-              <button
-                type="button"
-                onClick={() => navigate('/')}
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-glass bg-surface-alpha px-3 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary"
-                aria-label={admin.text('backToAppTitle')}
-                title={admin.text('backToAppTitle')}
-              >
-                <ArrowLeft size={16} />
-                <span>{admin.text('backToApp')}</span>
-              </button>
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-glass bg-surface-alpha px-3 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary"
-                aria-label={isDark ? admin.text('switchToLight') : admin.text('switchToDark')}
-                title={isDark ? admin.text('switchToLight') : admin.text('switchToDark')}
-              >
-                {isDark ? <Sun size={16} /> : <Moon size={16} />}
-                <span className="hidden sm:inline">{isDark ? admin.text('light') : admin.text('dark')}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => void refresh()}
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.24)] transition-colors hover:bg-blue-700"
-                disabled={refreshing}
-              >
-                <RefreshCcw size={15} className={refreshing ? 'animate-spin' : ''} />
-                {admin.text('refresh')}
-              </button>
-            </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Main Content Pane */}
+      <div className="flex-1 min-w-0 lg:pl-60 flex flex-col min-h-screen">
+        {/* Mobile sticky top bar */}
+        <header className="flex h-14 items-center justify-between px-4 border-b border-glass bg-[var(--bg-base)]/88 backdrop-blur-xl sticky top-0 z-30 lg:hidden shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              onClick={() => setIsMobileDrawerOpen(true)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-glass bg-surface-alpha text-secondary hover:text-primary shrink-0"
+              aria-label="Open navigation menu"
+            >
+              <Menu size={18} />
+            </button>
+            <h1 className="text-sm font-semibold text-primary truncate">
+              {admin.text(TABS.find((tab) => tab.id === activeTab)?.labelKey || 'tabOverview')}
+            </h1>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {snapshot ? <StatusBadge value={snapshot.dataMode} /> : null}
+            <button
+              type="button"
+              onClick={() => void refresh()}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white"
+              disabled={refreshing}
+            >
+              <RefreshCcw size={14} className={refreshing ? 'animate-spin' : ''} />
+            </button>
           </div>
         </header>
 
-        {loading && !snapshot ? (
-          <div className="grid gap-3 md:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <div key={index} className="h-32 rounded-2xl border border-glass bg-surface-alpha loading-shimmer" />
-            ))}
-          </div>
-        ) : null}
-
-        {error && !snapshot && !blockingError ? (
-          <section className="rounded-[1.4rem] border border-rose-500/25 bg-rose-500/10 p-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle size={18} className="text-rose-500" />
-                  <h2 className="text-base font-semibold text-primary">
-                    {error.errorCode ? admin.enumLabel(error.errorCode) : admin.text('adminRequestFailed')}
-                  </h2>
-                </div>
-                <p className="mt-2 text-sm leading-6 text-secondary">{error.message}</p>
-                {error.details ? <p className="mt-1 text-xs leading-5 text-tertiary">{error.details}</p> : null}
-              </div>
-              <button
-                type="button"
-                onClick={() => void refresh()}
-                className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.24)] transition-colors hover:bg-blue-700"
-              >
-                <RefreshCcw size={15} className={refreshing ? 'animate-spin' : ''} />
-                {admin.text('retry')}
-              </button>
+        {/* Content Body */}
+        <div className="flex-1 p-4 lg:p-6 space-y-4 max-w-7xl w-full mx-auto">
+          {/* Desktop Tab Header */}
+          <div className="hidden lg:flex items-center justify-between border-b border-glass pb-4 mb-2 shrink-0">
+            <div>
+              <h1 className="text-lg font-bold tracking-tight text-primary">
+                {admin.text(TABS.find((tab) => tab.id === activeTab)?.labelKey || 'tabOverview')}
+              </h1>
+              <p className="text-xs text-secondary mt-0.5">
+                {activeTab === 'users' ? admin.text('usersSearchPlaceholder') : admin.text('pageSubtitle')}
+              </p>
             </div>
-          </section>
-        ) : null}
+            <div className="flex items-center gap-2">
+              {snapshot ? (
+                <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full bg-surface-alpha px-2.5 text-[10px] font-semibold text-secondary">
+                  <Clock3 size={11} />
+                  {admin.date(snapshot.generatedAt)}
+                </span>
+              ) : null}
+            </div>
+          </div>
 
-        {snapshot ? (
-          <>
-            <MobileAdminCommandBar
-              activeTab={activeTab}
-              snapshot={snapshot}
-              queues={adminQueues}
-              refreshing={refreshing}
-              onSelectTab={selectTab}
-              onOpenQueue={openUserQueue}
-              onRefresh={() => void refresh()}
-            />
-
-            <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <MetricTile label={admin.text('metricTotalUsers')} value={admin.number(snapshot.metrics.totalUsers)} detail={admin.format('activeAccounts', { count: admin.number(snapshot.metrics.activeUsers) })} icon={Users} />
-              <MetricTile label={admin.text('metricPaidUsers')} value={admin.number(snapshot.metrics.paidUsers)} detail={admin.format('planConversion', { count: snapshot.metrics.planConversionRate })} icon={WalletCards} />
-              <MetricTile label={admin.text('metricAiToday')} value={admin.number(snapshot.metrics.aiRequestsToday)} detail={admin.format('deepRequests', { count: admin.number(snapshot.metrics.deepRequestsToday) })} icon={Sparkles} />
-              <MetricTile label={admin.text('metricLaunchGate')} value={`${criticalChecks}/${warningChecks}`} detail={admin.text('criticalWarnings')} icon={AlertTriangle} />
-            </section>
-
-            {error && !accountErrorUserId ? <AdminInlineError error={error} onDismiss={() => setError(null)} /> : null}
-
-            {snapshot.warnings.length ? (
-              <section className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3">
-                {snapshot.warnings.map((warning) => (
-                  <p key={warning} className="text-sm leading-6 text-amber-800 dark:text-amber-200">{warning}</p>
-                ))}
-              </section>
-            ) : null}
-
-            <AdminOpsExportPanel
-              snapshot={snapshot}
-              queues={adminQueues}
-              onExportUsers={exportUsersCsv}
-              onExportAudit={exportAuditCsv}
-              onCopySummary={copyLaunchSummary}
-            />
-
-            <nav className="flex gap-2 overflow-x-auto rounded-2xl border border-glass bg-surface-alpha p-1" role="tablist" aria-label={admin.text('adminNavigation')}>
-              {TABS.map(({ id, labelKey, icon: Icon }) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => selectTab(id)}
-                  onKeyDown={(event) => handleTabKeyDown(event, id)}
-                  id={`admin-tab-${id}`}
-                  role="tab"
-                  aria-selected={activeTab === id}
-                  aria-controls={`admin-panel-${id}`}
-                  className={clsx(
-                    'inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors',
-                    activeTab === id
-                      ? 'bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)]'
-                      : 'text-secondary hover:bg-[var(--bg-base)] hover:text-primary',
-                  )}
-                >
-                  <Icon size={16} />
-                  {admin.text(labelKey)}
-                </button>
+          {loading && !snapshot ? (
+            <div className="grid gap-3 md:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div key={index} className="h-28 rounded-2xl border border-glass bg-surface-alpha loading-shimmer" />
               ))}
-            </nav>
+            </div>
+          ) : null}
 
-            <main id="admin-main-content" className="min-w-0" aria-label={admin.text('adminContent')} tabIndex={-1}>
+          {error && !snapshot && !blockingError ? (
+            <section className="rounded-[1.4rem] border border-rose-500/25 bg-rose-500/10 p-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle size={18} className="text-rose-500" />
+                    <h2 className="text-base font-semibold text-primary">
+                      {error.errorCode ? admin.enumLabel(error.errorCode) : admin.text('adminRequestFailed')}
+                    </h2>
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-secondary">{error.message}</p>
+                  {error.details ? <p className="mt-1 text-xs leading-5 text-tertiary">{error.details}</p> : null}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void refresh()}
+                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.24)] transition-colors hover:bg-blue-700"
+                >
+                  <RefreshCcw size={15} className={refreshing ? 'animate-spin' : ''} />
+                  {admin.text('retry')}
+                </button>
+              </div>
+            </section>
+          ) : null}
+
+          {snapshot ? (
+            <>
+              {/* Compact Metrics Bar */}
+              <section className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+                <MetricTile label={admin.text('metricTotalUsers')} value={admin.number(snapshot.metrics.totalUsers)} detail={admin.format('activeAccounts', { count: admin.number(snapshot.metrics.activeUsers) })} icon={Users} />
+                <MetricTile label={admin.text('metricPaidUsers')} value={admin.number(snapshot.metrics.paidUsers)} detail={admin.format('planConversion', { count: snapshot.metrics.planConversionRate })} icon={WalletCards} />
+                <MetricTile label={admin.text('metricAiToday')} value={admin.number(snapshot.metrics.aiRequestsToday)} detail={admin.format('deepRequests', { count: admin.number(snapshot.metrics.deepRequestsToday) })} icon={Sparkles} />
+                <MetricTile label={admin.text('metricLaunchGate')} value={`${criticalChecks}/${warningChecks}`} detail={admin.text('criticalWarnings')} icon={AlertTriangle} />
+              </section>
+
+              {error && !accountErrorUserId ? <AdminInlineError error={error} onDismiss={() => setError(null)} /> : null}
+
+              {snapshot.warnings.length ? (
+                <section className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3">
+                  {snapshot.warnings.map((warning) => (
+                    <p key={warning} className="text-sm leading-6 text-amber-800 dark:text-amber-200">{warning}</p>
+                  ))}
+                </section>
+              ) : null}
+
+              <main id="admin-main-content" className="min-w-0" aria-label={admin.text('adminContent')} tabIndex={-1}>
             <AnimatePresence mode="wait">
               {activeTab === 'overview' ? (
                 <motion.section id="admin-panel-overview" aria-labelledby="admin-tab-overview" role="tabpanel" key="overview" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-4">
@@ -4042,37 +4238,37 @@ export function AdminManagement() {
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                     <label className="relative flex-1">
                       <span className="sr-only">{admin.text('usersSearchLabel')}</span>
-                      <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" />
+                      <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" />
                       <input
                         value={query}
                         onChange={(event) => setQuery(event.currentTarget.value)}
                         placeholder={admin.text('usersSearchPlaceholder')}
-                        className="glass-input min-h-11 w-full rounded-xl pl-9 pr-10 text-sm"
+                        className="glass-input h-9 w-full rounded-lg pl-9 pr-8 text-xs"
                       />
                       {query ? (
                         <button
                           type="button"
                           onClick={() => setQuery('')}
-                          className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-secondary hover:bg-surface-alpha hover:text-primary"
+                          className="absolute right-1 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded text-secondary hover:bg-surface-alpha hover:text-primary"
                           aria-label={admin.text('clearSearch')}
                         >
-                          <X size={15} />
+                          <X size={13} />
                         </button>
                       ) : null}
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      <select value={userQueueFilter} onChange={(event) => setUserQueueFilter(event.currentTarget.value as UserQueueFilter)} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary" aria-label={admin.text('queueFilterLabel')}>
+                      <select value={userQueueFilter} onChange={(event) => setUserQueueFilter(event.currentTarget.value as UserQueueFilter)} className="h-9 rounded-lg border border-glass bg-[var(--bg-base)] px-2.5 text-xs font-semibold text-primary" aria-label={admin.text('queueFilterLabel')}>
                         {USER_QUEUE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{admin.text(option.labelKey)}</option>)}
                       </select>
-                      <select value={statusFilter} onChange={(event) => setStatusFilter(event.currentTarget.value as AccountStatus | 'all')} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary" aria-label={admin.text('statusFilterLabel')}>
+                      <select value={statusFilter} onChange={(event) => setStatusFilter(event.currentTarget.value as AccountStatus | 'all')} className="h-9 rounded-lg border border-glass bg-[var(--bg-base)] px-2.5 text-xs font-semibold text-primary" aria-label={admin.text('statusFilterLabel')}>
                         <option value="all">{admin.text('allStatus')}</option>
                         {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
                       </select>
-                      <select value={planFilter} onChange={(event) => setPlanFilter(event.currentTarget.value as PlanCode | 'all')} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary" aria-label={admin.text('planFilterLabel')}>
+                      <select value={planFilter} onChange={(event) => setPlanFilter(event.currentTarget.value as PlanCode | 'all')} className="h-9 rounded-lg border border-glass bg-[var(--bg-base)] px-2.5 text-xs font-semibold text-primary" aria-label={admin.text('planFilterLabel')}>
                         <option value="all">{admin.text('allPlans')}</option>
                         {PLAN_OPTIONS.map((plan) => <option key={plan} value={plan}>{admin.enumLabel(plan)}</option>)}
                       </select>
-                      <select value={recoveryFilter} onChange={(event) => setRecoveryFilter(event.currentTarget.value as AccountRecoveryStatus | 'all')} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary" aria-label={admin.text('recoveryFilterLabel')}>
+                      <select value={recoveryFilter} onChange={(event) => setRecoveryFilter(event.currentTarget.value as AccountRecoveryStatus | 'all')} className="h-9 rounded-lg border border-glass bg-[var(--bg-base)] px-2.5 text-xs font-semibold text-primary" aria-label={admin.text('recoveryFilterLabel')}>
                         <option value="all">{admin.text('allRecovery')}</option>
                         {RECOVERY_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
                       </select>
@@ -4080,12 +4276,20 @@ export function AdminManagement() {
                         <button
                           type="button"
                           onClick={resetUserFilters}
-                          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-glass bg-surface-alpha px-3 text-sm font-semibold text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
+                          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-glass bg-surface-alpha px-2.5 text-xs font-semibold text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
                         >
-                          <RefreshCcw size={15} />
+                          <RefreshCcw size={13} />
                           {admin.text('clearFilters')}
                         </button>
                       ) : null}
+                      <button
+                        type="button"
+                        onClick={exportUsersCsv}
+                        className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-glass bg-surface-alpha px-2.5 text-xs font-semibold text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
+                      >
+                        <Download size={13} />
+                        {admin.text('usersCsv')}
+                      </button>
                     </div>
                     </div>
                     <UserQueueChips value={userQueueFilter} counts={userQueueCounts} onChange={setUserQueueFilter} />
@@ -4214,7 +4418,7 @@ export function AdminManagement() {
                     <h2 className="text-base font-semibold text-primary">{admin.text('auditTrail')}</h2>
                     <p className="mt-1 text-sm text-secondary">{admin.text('auditTrailSubtitle')}</p>
                   </div>
-                  <AuditPanel audit={snapshot.audit} />
+                  <AuditPanel audit={snapshot.audit} onExport={exportAuditCsv} />
                 </motion.section>
               ) : null}
 
@@ -4224,13 +4428,14 @@ export function AdminManagement() {
                     <h2 className="text-base font-semibold text-primary">{admin.text('launchGate')}</h2>
                     <p className="mt-1 text-sm text-secondary">{admin.text('launchGateSubtitle')}</p>
                   </div>
-                  <LaunchPanel checklist={snapshot.launchChecklist} />
+                  <LaunchPanel checklist={snapshot.launchChecklist} onCopySummary={copyLaunchSummary} />
                 </motion.section>
               ) : null}
             </AnimatePresence>
             </main>
           </>
         ) : null}
+      </div>
       </div>
 
       <AnimatePresence>

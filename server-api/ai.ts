@@ -1261,6 +1261,58 @@ async function callGeminiWithInlineData(
   return response.text || '';
 }
 
+async function callOpenAiVision(
+  key: string,
+  prompt: string,
+  base64Data: string,
+  mimeType: string,
+  model = 'gpt-4o-mini',
+): Promise<string> {
+  const url = 'https://api.openai.com/v1/chat/completions';
+  const response = await withTimeout(
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: prompt },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:${mimeType};base64,${base64Data}`,
+                },
+              },
+            ],
+          },
+        ],
+        max_tokens: 1500,
+        temperature: 0.4,
+      }),
+    }),
+    VISION_PROVIDER_TIMEOUT_MS,
+    'OPENAI',
+  );
+
+  if (!response.ok) {
+    const errText = await response.text().catch(() => '');
+    throw new Error(`OPENAI Vision HTTP ${response.status}: ${errText.slice(0, 200)}`);
+  }
+
+  const data: any = await response.json().catch(() => ({}));
+  const text = normalizeCompatText(data?.choices?.[0]?.message?.content);
+  if (!text) {
+    throw createApiError('provider_error', 'Empty response from OpenAI Vision', 502, true, 'OPENAI');
+  }
+  return text;
+}
+
 async function callGeminiSearch(
   key: string,
   prompt: string,
@@ -2507,24 +2559,52 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const visionModel = resolveGeminiVisionModel(selectedModel);
-      res.setHeader('X-Model', visionModel);
+      const openaiKeys = getAiProviderKeys('OPENAI');
+      const useOpenAi = openaiKeys.length > 0;
+
+      let text = '';
+      let activeProvider = 'GEMINI';
+      let activeModel = visionModel;
+
       res.setHeader('X-Attachment-Bytes', String(attachment.payload.byteLength));
       jsonHeartbeat = startJsonHeartbeatStream(res);
 
-      const text = await withRetry(
-        key =>
-          callGeminiWithInlineData(
-            key,
-            `As an expert barista AI (Baristachaw) adhering to SCA standards, analyze this image. ${promptForModel}`,
-            attachment.payload.data,
-            attachment.payload.mimeType,
-            visionModel,
-          ),
-        { provider: 'GEMINI', requestId, action, maxRetries: 1 },
-      );
+      if (useOpenAi) {
+        activeProvider = 'OPENAI';
+        activeModel = 'gpt-4o-mini';
+        res.setHeader('X-Model', activeModel);
+        res.setHeader('X-Provider', activeProvider);
 
-      console.info(`[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms`);
-      return jsonHeartbeat.end({ ok: true, requestId, action, text, provider: 'GEMINI', model: visionModel });
+        text = await withRetry(
+          key =>
+            callOpenAiVision(
+              key,
+              `As an expert barista AI (Baristachaw) adhering to SCA standards, analyze this image. ${promptForModel}`,
+              attachment.payload.data,
+              attachment.payload.mimeType,
+              activeModel,
+            ),
+          { provider: 'OPENAI', requestId, action, maxRetries: 1 },
+        );
+      } else {
+        res.setHeader('X-Model', visionModel);
+        res.setHeader('X-Provider', 'GEMINI');
+
+        text = await withRetry(
+          key =>
+            callGeminiWithInlineData(
+              key,
+              `As an expert barista AI (Baristachaw) adhering to SCA standards, analyze this image. ${promptForModel}`,
+              attachment.payload.data,
+              attachment.payload.mimeType,
+              visionModel,
+            ),
+          { provider: 'GEMINI', requestId, action, maxRetries: 1 },
+        );
+      }
+
+      console.info(`[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms provider=${activeProvider} model=${activeModel}`);
+      return jsonHeartbeat.end({ ok: true, requestId, action, text, provider: activeProvider, model: activeModel });
     }
 
     if (action === 'analyze_attachment') {

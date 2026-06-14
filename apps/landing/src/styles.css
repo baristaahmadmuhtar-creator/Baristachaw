@@ -589,8 +589,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .engine { padding: 90px 20px; gap: 48px; }
   .engine-panels article { min-height: 170px; padding-left: 52px; }
   .engine-panels h3 { font-size: 28px; }
-  .brewer-row { grid-template-columns: 32px 54px 1fr; min-height: 82px; }
-  .brewer-row p { display: none; }
+  .brewer-row { min-height: 82px; }
+  .brewer-row-summary { display: none; }
   .brewer-row h3 { font-size: 17px; }
   .feature-story { grid-template-columns: 1fr; }
   .feature-story .feature-large { grid-column: auto; }
@@ -608,7 +608,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     border: 1px solid var(--line) !important;
     border-radius: 20px;
     padding: 32px 24px;
-    background: rgba(7, 21, 47, 0.4);
+    background: white;
     backdrop-filter: blur(10px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
   }
@@ -625,6 +625,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .plan-featured {
     margin-top: 14px;
     background: linear-gradient(180deg, #eaf2ff 0%, #f0f4ff 100%);
+  }
+  .plan-pro-dark {
+    background: linear-gradient(170deg, #0d1b36, #16243f);
+  }
+  .plan-team {
+    background: #fafbfe;
   }
   .plan-duration-toggle { flex-wrap: wrap; }
   .download-row { grid-template-columns: 48px 1fr 20px; gap: 12px; }

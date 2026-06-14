@@ -115,7 +115,8 @@ function initializeThemeAndPwa() {
   const runtime = readRuntimeFlags();
   const runtimePwaProfile = runtime.isWebParity && runtime.uiProfile === 'pwa';
   const runtimeNativeShellProfile = runtime.isWebParity && runtime.uiProfile === 'native_shell';
-  const preferSystemTheme = runtimeNativeShellProfile || runtime.themeMode === 'system';
+  const hasUserTheme = Boolean(localStorage.getItem('BARISTA_THEME'));
+  const preferSystemTheme = runtimeNativeShellProfile || runtime.themeMode === 'system' || !hasUserTheme;
   const isPwa = !runtimeNativeShellProfile && (
     window.matchMedia('(display-mode: standalone)').matches
     || window.matchMedia('(display-mode: fullscreen)').matches

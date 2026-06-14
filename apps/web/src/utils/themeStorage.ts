@@ -21,9 +21,9 @@ export function ensureStoredTheme(
 ): AppTheme {
   const systemTheme = resolveSystemTheme();
   try {
+    if (options.preferSystem) return systemTheme;
     const existing = normalizeTheme(storage.getItem(THEME_STORAGE_KEY));
-    if (existing && !options.preferSystem) return existing;
-    if (!existing && !options.preferSystem) storage.setItem(THEME_STORAGE_KEY, systemTheme);
+    if (existing) return existing;
     return systemTheme;
   } catch {
     // Keep app boot resilient when storage is blocked (private mode/quota/policy).

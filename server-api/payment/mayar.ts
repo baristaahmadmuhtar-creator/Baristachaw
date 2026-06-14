@@ -26,14 +26,14 @@ interface CheckoutRequest {
 // Pricing table mirrors the landing page config
 const PRICING: Record<string, Record<BillingDuration, Record<CurrencyCode, number>>> = {
   plus: {
-    monthly: { idr: 61_000, bnd: 1.80, usd: 1.50 },
-    quarterly: { idr: 149_000, bnd: 4.50, usd: 3.75 },
-    yearly: { idr: 449_000, bnd: 14.00, usd: 11.50 },
+    monthly: { idr: 61_000, bnd: 4.99, usd: 3.99 },
+    quarterly: { idr: 149_000, bnd: 11.99, usd: 8.99 },
+    yearly: { idr: 449_000, bnd: 36.99, usd: 27.99 },
   },
   pro: {
-    monthly: { idr: 199_000, bnd: 6.00, usd: 4.99 },
-    quarterly: { idr: 399_000, bnd: 12.00, usd: 10.00 },
-    yearly: { idr: 999_000, bnd: 30.00, usd: 25.00 },
+    monthly: { idr: 199_000, bnd: 15.99, usd: 11.99 },
+    quarterly: { idr: 399_000, bnd: 32.99, usd: 23.99 },
+    yearly: { idr: 999_000, bnd: 81.99, usd: 59.99 },
   },
 };
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { AlertCircle, Bookmark, BookmarkCheck, Loader2, RefreshCw } from "lucide-react";
 import Markdown from "react-markdown";
 import { analyzeImage, editLatteArtImage } from "../services/gemini";
@@ -242,6 +242,77 @@ export function ImageComparisonSlider({
   );
 }
 
+function ScanningProgressTicker({ mode }: { mode: ScannerMode }) {
+  const [stepIndex, setStepIndex] = useState(0);
+
+  const autoSteps = [
+    "🔍 Reading visual image matrix...",
+    "☕ Detecting coffee extraction markers...",
+    "⚖️ Parsing bean quality & roast levels...",
+    "📜 Standardizing SCA quality records...",
+    "✍️ Drafting barista action plan...",
+  ];
+
+  const ocrSteps = [
+    "🔍 Reading label visual text...",
+    "📝 Running optical character recognition...",
+    "🏷️ Parsing roaster, origin & process...",
+    "🧪 Calculating starter brew ratio...",
+    "✍️ Formatting structured recipe...",
+  ];
+
+  const latteSteps = [
+    "🖼️ Isolating cup and foam boundaries...",
+    "🥛 Simulating microfoam fluid dynamics...",
+    "🎨 Designing requested pattern layout...",
+    "🖌️ Rendering photorealistic crema contrast...",
+    "✨ Retouching lighting and textures...",
+  ];
+
+  const steps = mode === "latte" ? latteSteps : mode === "ocr" ? ocrSteps : autoSteps;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStepIndex((prev) => Math.min(prev + 1, steps.length - 1));
+    }, 3200);
+    return () => clearInterval(interval);
+  }, [steps.length]);
+
+  return (
+    <div className="flex flex-col items-center justify-center space-y-3 text-center select-none py-1">
+      <div className="flex gap-2.5 items-center justify-center min-h-[30px] overflow-hidden">
+        <Loader2 className="animate-spin text-blue-500 shrink-0" size={20} />
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={stepIndex}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.35, ease: "easeInOut" }}
+            className="text-sm font-semibold text-primary block"
+          >
+            {steps[stepIndex]}
+          </motion.span>
+        </AnimatePresence>
+      </div>
+      <div className="flex space-x-1.5 justify-center mt-2 w-full">
+        {steps.map((_, idx) => (
+          <span
+            key={idx}
+            className={`h-1.5 rounded-full transition-all duration-500 ease-out ${
+              idx === stepIndex
+                ? "w-6 bg-blue-500 shadow-[0_0_8px_#3b82f6]"
+                : idx < stepIndex
+                ? "w-2 bg-emerald-500/80"
+                : "w-2 bg-gray-300 dark:bg-gray-700"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Scanner() {
   const { t, language } = useGlobalState();
   const [file, setFile] = useState<string | null>(null);
@@ -256,6 +327,7 @@ export function Scanner() {
   const [comparisonView, setComparisonView] = useState<"slider" | "side-by-side">("slider");
   const [error, setError] = useState<string | null>(null);
   const [latteRequest, setLatteRequest] = useState("");
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const {
     isAuthenticated,
     authChecking,
@@ -407,6 +479,8 @@ export function Scanner() {
     setError(null);
     setLoading(true);
     setSavedToCollection(false);
+    setGeneratedImage(null);
+    setResultMarkdown(null);
     try {
       if (isLatteMode) {
         const imageDataUrl = await editLatteArtImage(
@@ -582,6 +656,54 @@ export function Scanner() {
           </button>
         </div>
 
+        {/* Animated Description Block */}
+        <div className="text-center text-xs sm:text-sm text-secondary max-w-md lg:max-w-xl mx-auto mb-6 min-h-[44px] flex items-center justify-center px-4">
+          <AnimatePresence mode="wait">
+            {mode === "auto" && (
+              <motion.p
+                key="auto"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+                className="leading-relaxed font-medium"
+              >
+                {language === "id"
+                  ? "🔍 Menganalisis tingkat pemanggangan, kualitas ekstraksi, dan profil rasa dari foto seduhan atau biji kopi."
+                  : "🔍 Analyze roast levels, extraction quality, and flavor profiles from photos of brewed cups or coffee beans."}
+              </motion.p>
+            )}
+            {mode === "ocr" && (
+              <motion.p
+                key="ocr"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+                className="leading-relaxed font-medium"
+              >
+                {language === "id"
+                  ? "📝 Mengekstrak informasi merek roaster, asal biji, metode proses, dan menghitung resep rasio seduh awal."
+                  : "📝 Extract roaster brand, coffee origin, processing method, and auto-generate a starter brewing recipe."}
+              </motion.p>
+            )}
+            {mode === "latte" && (
+              <motion.p
+                key="latte"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+                className="leading-relaxed font-medium"
+              >
+                {language === "id"
+                  ? "✨ Menyempurnakan dan mendesain ulang visual latte art pada busa susu menjadi hasil tuangan kelas barista juara."
+                  : "✨ Enhance and redesign the visual pattern on your milk foam into a championship-grade barista pour."}
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </div>
+
         {authChecking && (
           <div className="mb-4 mx-auto flex w-fit items-center gap-2 rounded-full border border-border bg-surface-alpha px-3 py-2 text-xs font-medium text-secondary">
             <Loader2 size={14} className="animate-spin" />
@@ -592,7 +714,23 @@ export function Scanner() {
         {!file ? (
           <div
             onClick={openPrimaryPicker}
-            className="focus-soft glass-card flex-1 flex flex-col items-center justify-center gap-4 cursor-pointer border-dashed border-2 border-glass hover:border-blue-500/50 transition-colors group min-h-[200px]"
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDraggingOver(true);
+            }}
+            onDragLeave={() => setIsDraggingOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDraggingOver(false);
+              if (e.dataTransfer.files?.length) {
+                void handlePickedFile(e.dataTransfer.files[0]);
+              }
+            }}
+            className={`focus-soft glass-card flex-1 flex flex-col items-center justify-center gap-4 cursor-pointer border-dashed border-2 transition-all duration-300 group min-h-[200px] ${
+              isDraggingOver
+                ? "border-blue-500 bg-blue-500/5 shadow-[0_0_20px_rgba(59,130,246,0.15)] scale-[1.01]"
+                : "border-glass hover:border-blue-500/50"
+            }`}
             style={{ touchAction: "pan-y" }}
           >
             {isLatteMode ? (
@@ -729,14 +867,91 @@ export function Scanner() {
                 )}
               </div>
             ) : (
-              <div className="relative rounded-[2rem] overflow-hidden shadow-2xl bg-surface-alpha flex justify-center">
+              <div className="relative rounded-[2rem] overflow-hidden shadow-2xl bg-surface-alpha flex justify-center w-full max-w-[600px] mx-auto border border-white/10">
+                <style>{`
+                  @keyframes scan-line {
+                    0% { top: 0%; }
+                    50% { top: 100%; }
+                    100% { top: 0%; }
+                  }
+                  @keyframes pulse-soft {
+                    0%, 100% { opacity: 0.15; }
+                    50% { opacity: 0.35; }
+                  }
+                  @keyframes grid-glow {
+                    0%, 100% { opacity: 0.2; }
+                    50% { opacity: 0.45; }
+                  }
+                  @keyframes target-pulse {
+                    0%, 100% { transform: scale(1); opacity: 0.7; }
+                    50% { transform: scale(1.08); opacity: 1; }
+                  }
+                `}</style>
                 <img src={previewSrc || undefined} alt={t.scanResult} className="w-full h-auto max-h-[50vh] object-contain rounded-[2rem]" />
-                <button
-                  onClick={reset}
-                  className="absolute top-4 right-4 w-12 h-12 rounded-full bg-black/50 backdrop-blur-xl flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10 shadow-lg"
-                >
-                  <RefreshCw size={24} />
-                </button>
+                
+                {loading && (
+                  <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px] flex flex-col items-center justify-center p-4 z-10 transition-all duration-300">
+                    {/* High-tech grid overlay */}
+                    <div 
+                      className="absolute inset-0 bg-[linear-gradient(to_right,rgba(59,130,246,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(59,130,246,0.08)_1px,transparent_1px)] bg-[size:28px_28px] pointer-events-none"
+                      style={{
+                        animation: "grid-glow 4s ease-in-out infinite",
+                      }}
+                    />
+
+                    {/* Corner Crosshairs */}
+                    <div className="absolute inset-6 pointer-events-none border border-white/5">
+                      {/* Top-Left */}
+                      <div 
+                        className="absolute top-0 left-0 w-8 h-8 border-t-[3px] border-l-[3px] border-blue-500 rounded-tl-md"
+                        style={{ animation: "target-pulse 2s ease-in-out infinite" }}
+                      />
+                      {/* Top-Right */}
+                      <div 
+                        className="absolute top-0 right-0 w-8 h-8 border-t-[3px] border-r-[3px] border-blue-500 rounded-tr-md"
+                        style={{ animation: "target-pulse 2s ease-in-out infinite 0.5s" }}
+                      />
+                      {/* Bottom-Left */}
+                      <div 
+                        className="absolute bottom-0 left-0 w-8 h-8 border-b-[3px] border-l-[3px] border-blue-500 rounded-bl-md"
+                        style={{ animation: "target-pulse 2s ease-in-out infinite 1s" }}
+                      />
+                      {/* Bottom-Right */}
+                      <div 
+                        className="absolute bottom-0 right-0 w-8 h-8 border-b-[3px] border-r-[3px] border-blue-500 rounded-br-md"
+                        style={{ animation: "target-pulse 2s ease-in-out infinite 1.5s" }}
+                      />
+                    </div>
+
+                    {/* Glowing Laser line */}
+                    <div
+                      className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent shadow-[0_0_15px_rgba(59,130,246,0.8),0_0_30px_rgba(59,130,246,0.5),0_0_6px_rgba(59,130,246,1)]"
+                      style={{
+                        animation: "scan-line 3.2s ease-in-out infinite",
+                      }}
+                    />
+                    {/* Pulsing overlay */}
+                    <div
+                      className="absolute inset-0 bg-blue-500/10 pointer-events-none"
+                      style={{
+                        animation: "pulse-soft 2.5s ease-in-out infinite",
+                      }}
+                    />
+                    {/* Status Info Box */}
+                    <div className="glass-card px-5 py-4 rounded-2xl shadow-2xl max-w-sm w-full mx-4 border border-white/10 relative z-20">
+                      <ScanningProgressTicker mode={mode} />
+                    </div>
+                  </div>
+                )}
+
+                {!loading && (
+                  <button
+                    onClick={reset}
+                    className="absolute top-4 right-4 w-12 h-12 rounded-full bg-black/50 backdrop-blur-xl flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10 shadow-lg"
+                  >
+                    <RefreshCw size={24} />
+                  </button>
+                )}
               </div>
             )}
 
@@ -758,17 +973,24 @@ export function Scanner() {
                     className="w-full rounded-[1.35rem] border border-white/15 bg-white/55 dark:bg-white/5 px-4 py-3 text-sm text-primary dark:text-white placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500/30 resize-none"
                   />
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {lattePromptPresets.map((preset) => (
-                    <button
-                      key={preset.label}
-                      type="button"
-                      onClick={() => setLatteRequest(preset.prompt)}
-                      className="glass-button px-3 py-2 text-xs sm:text-sm font-medium"
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
+                <div className="flex flex-wrap gap-2.5">
+                  {lattePromptPresets.map((preset) => {
+                    const isActive = latteRequest === preset.prompt;
+                    return (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => setLatteRequest(preset.prompt)}
+                        className={`px-4 py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all duration-300 ${
+                          isActive
+                            ? "bg-blue-600 dark:bg-blue-500 text-white border-blue-600 shadow-[0_4px_12px_rgba(37,99,235,0.25)] scale-[1.03]"
+                            : "glass-button opacity-80 hover:opacity-100"
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    );
+                  })}
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-xs text-secondary">{t.scannerLattePromptHelp}</p>

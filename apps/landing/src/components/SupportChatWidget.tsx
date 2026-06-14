@@ -2,6 +2,7 @@ import { Bot, Bug, Download, Instagram, LifeBuoy, LogIn, MessageCircle, UserPlus
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { APK_URL, APP_LINKS } from '../config';
+import type { Language } from '../i18n';
 
 function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -17,8 +18,56 @@ function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-export function SupportChatWidget({ language }: { language: 'id' | 'en' }) {
-  const isId = language === 'id';
+/** Component-specific translations for the support widget */
+const local = {
+  triggerAriaLabel: {
+    id: 'Buka bantuan Baristachaw',
+    en: 'Open Baristachaw support',
+    bn: 'Buka bantuan Baristachaw',
+  },
+  subtitle: {
+    id: 'Panduan cepat, bukan human support 24/7',
+    en: 'Guided help, not 24/7 human support',
+    bn: 'Panduan pantas, bukan sokongan manusia 24/7',
+  },
+  greeting: {
+    id: 'Hai, perlu bantuan dengan brewing, akun, atau download?',
+    en: 'Hi, need help with brewing, account, or download?',
+    bn: 'Hai, perlu bantuan dengan seduhan, akaun, atau muat turun?',
+  },
+  register: {
+    id: 'Daftar',
+    en: 'Register',
+    bn: 'Daftar',
+  },
+  loginIssue: {
+    id: 'Masalah login',
+    en: 'Login issue',
+    bn: 'Masalah log masuk',
+  },
+  brewHelp: {
+    id: 'Bantuan resep',
+    en: 'Brew recipe help',
+    bn: 'Bantuan resipi seduhan',
+  },
+  reportBug: {
+    id: 'Laporkan bug',
+    en: 'Report bug',
+    bn: 'Laporkan pepijat',
+  },
+  contactSupport: {
+    id: 'Hubungi support',
+    en: 'Contact support',
+    bn: 'Hubungi sokongan',
+  },
+  note: {
+    id: 'Recipe adalah starting point. Kualitas cup akhir tetap memerlukan real brew.',
+    en: 'Recipes are starting points. Final cup quality still requires real brewing.',
+    bn: 'Resipi adalah titik permulaan. Kualiti cawan akhir masih memerlukan seduhan sebenar.',
+  },
+} satisfies Record<string, Record<Language, string>>;
+
+export function SupportChatWidget({ language }: { language: Language }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -55,12 +104,12 @@ export function SupportChatWidget({ language }: { language: 'id' | 'en' }) {
   const actions = [
     { icon: WhatsAppIcon, label: 'WhatsApp', href: 'https://wa.me/6738270093' },
     { icon: Instagram, label: 'Instagram', href: 'https://instagram.com/baristachaw' },
-    { icon: UserPlus, label: isId ? 'Daftar' : 'Register', href: APP_LINKS.register },
-    { icon: LogIn, label: isId ? 'Masalah login' : 'Login issue', href: APP_LINKS.login },
+    { icon: UserPlus, label: local.register[language], href: APP_LINKS.register },
+    { icon: LogIn, label: local.loginIssue[language], href: APP_LINKS.login },
     { icon: Download, label: 'Download APK', href: APK_URL },
-    { icon: Bot, label: isId ? 'Bantuan resep' : 'Brew recipe help', href: APP_LINKS.aiBrew },
-    { icon: Bug, label: isId ? 'Laporkan bug' : 'Report bug', href: '/support?topic=bug' },
-    { icon: LifeBuoy, label: isId ? 'Hubungi support' : 'Contact support', href: '/support' },
+    { icon: Bot, label: local.brewHelp[language], href: APP_LINKS.aiBrew },
+    { icon: Bug, label: local.reportBug[language], href: '/support?topic=bug' },
+    { icon: LifeBuoy, label: local.contactSupport[language], href: '/support' },
   ];
 
   return (
@@ -69,7 +118,7 @@ export function SupportChatWidget({ language }: { language: 'id' | 'en' }) {
         ref={triggerRef}
         className="support-trigger"
         type="button"
-        aria-label={isId ? 'Buka bantuan Baristachaw' : 'Open Baristachaw support'}
+        aria-label={local.triggerAriaLabel[language]}
         aria-expanded={open}
         onClick={() => setOpen(true)}
       >
@@ -90,12 +139,12 @@ export function SupportChatWidget({ language }: { language: 'id' | 'en' }) {
               </div>
               <div>
                 <strong id="support-title">Baristachaw Support</strong>
-                <span>{isId ? 'Panduan cepat, bukan human support 24/7' : 'Guided help, not 24/7 human support'}</span>
+                <span>{local.subtitle[language]}</span>
               </div>
               <button type="button" aria-label="Close support" onClick={() => setOpen(false)}><X /></button>
             </div>
             <p className="support-greeting">
-              {isId ? 'Hai, perlu bantuan dengan brewing, akun, atau download?' : 'Hi, need help with brewing, account, or download?'}
+              {local.greeting[language]}
             </p>
             <div className="support-actions">
               {actions.map(({ icon: Icon, label, href }) => (
@@ -107,7 +156,7 @@ export function SupportChatWidget({ language }: { language: 'id' | 'en' }) {
               ))}
             </div>
             <p className="support-note">
-              {isId ? 'Recipe adalah starting point. Kualitas cup akhir tetap memerlukan real brew.' : 'Recipes are starting points. Final cup quality still requires real brewing.'}
+              {local.note[language]}
             </p>
           </div>
         </div>

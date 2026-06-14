@@ -2,10 +2,12 @@ import { Menu, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { APP_LINKS } from '../config';
+import type { Language } from '../i18n';
+import { t } from '../i18n';
 
 type LandingHeaderProps = {
-  language: 'id' | 'en';
-  onLanguageChange: (language: 'id' | 'en') => void;
+  language: Language;
+  onLanguageChange: (language: Language) => void;
 };
 
 export function LandingHeader({ language, onLanguageChange }: LandingHeaderProps) {
@@ -31,18 +33,19 @@ export function LandingHeader({ language, onLanguageChange }: LandingHeaderProps
         <span>Baristachaw</span>
       </a>
       <nav className="desktop-nav" aria-label="Main navigation">
-        <a href="/#engine">{language === 'id' ? 'AI Brew' : 'AI Brew'}</a>
-        <a href="/#brewers">{language === 'id' ? 'Metode' : 'Methods'}</a>
-        <Link to="/download">{language === 'id' ? 'Unduh' : 'Download'}</Link>
-        <Link to="/support">Support</Link>
+        <a href="/#engine">{t('nav.aiBrew', language)}</a>
+        <a href="/#brewers">{t('nav.methods', language)}</a>
+        <Link to="/download">{t('nav.download', language)}</Link>
+        <Link to="/support">{t('nav.support', language)}</Link>
       </nav>
       <div className="header-actions">
         <div className="language-switch" aria-label="Language">
           <button type="button" onClick={() => onLanguageChange('id')} aria-pressed={language === 'id'}>ID</button>
           <button type="button" onClick={() => onLanguageChange('en')} aria-pressed={language === 'en'}>EN</button>
+          <button type="button" onClick={() => onLanguageChange('bn')} aria-pressed={language === 'bn'}>BN</button>
         </div>
-        <a className="header-login" href={APP_LINKS.login}>{language === 'id' ? 'Masuk' : 'Login'}</a>
-        <a className="button button-small button-light" href={APP_LINKS.aiBrew}>{language === 'id' ? 'Coba AI Brew' : 'Try AI Brew'}</a>
+        <a className="header-login" href={APP_LINKS.login}>{t('nav.login', language)}</a>
+        <a className="button button-small button-light" href={APP_LINKS.aiBrew}>{t('nav.tryAiBrew', language)}</a>
         <button
           ref={menuButtonRef}
           className="menu-button"
@@ -56,12 +59,12 @@ export function LandingHeader({ language, onLanguageChange }: LandingHeaderProps
       </div>
       {open ? (
         <nav className="mobile-menu" aria-label="Mobile navigation">
-          <a href="/#engine" onClick={() => setOpen(false)}>AI Brew</a>
-          <a href="/#brewers" onClick={() => setOpen(false)}>{language === 'id' ? 'Metode seduh' : 'Brewing methods'}</a>
-          <Link to="/download" onClick={() => setOpen(false)}>{language === 'id' ? 'Unduh aplikasi' : 'Download app'}</Link>
-          <Link to="/support" onClick={() => setOpen(false)}>Support</Link>
-          <a href={APP_LINKS.login}>{language === 'id' ? 'Masuk' : 'Login'}</a>
-          <a href={APP_LINKS.register}>{language === 'id' ? 'Daftar' : 'Register'}</a>
+          <a href="/#engine" onClick={() => setOpen(false)}>{t('nav.aiBrew', language)}</a>
+          <a href="/#brewers" onClick={() => setOpen(false)}>{t('nav.brewMethods', language)}</a>
+          <Link to="/download" onClick={() => setOpen(false)}>{t('nav.downloadApp', language)}</Link>
+          <Link to="/support" onClick={() => setOpen(false)}>{t('nav.support', language)}</Link>
+          <a href={APP_LINKS.login}>{t('nav.login', language)}</a>
+          <a href={APP_LINKS.register}>{t('nav.register', language)}</a>
         </nav>
       ) : null}
     </header>

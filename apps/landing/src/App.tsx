@@ -7,25 +7,27 @@ import { FeatureGraphics } from './components/FeatureGraphics';
 import { HeroSection } from './components/HeroSection';
 import { LandingHeader } from './components/LandingHeader';
 import { MethodSections } from './components/MethodSections';
+import { RegisterModal } from './components/RegisterModal';
 import { ScrollReveal } from './components/ScrollReveal';
 import { SupportChatWidget } from './components/SupportChatWidget';
 import { DataShowcase } from './components/DataShowcase';
 import { ToolsShowcase } from './components/ToolsShowcase';
-import { APP_LINKS, APK_URL, PRICING, formatCurrency } from './config';
+import { APP_LINKS, APK_URL, PRICING, type BillingDuration, formatCurrencyByLang, getCurrencyForLanguage } from './config';
+import type { Language } from './i18n';
+import { t } from './i18n';
 import { DownloadPage } from './pages/DownloadPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { SupportPage } from './pages/SupportPage';
 import { TermsPage } from './pages/TermsPage';
 
-function EvidenceSection({ language }: { language: 'id' | 'en' }) {
-  const isId = language === 'id';
-  const evidence = [
-    ['100%', isId ? 'Rasa Konsisten' : 'Flavor Consistency'],
-    ['36+', isId ? 'Alat Seduh Didukung' : 'Supported Brewers'],
-    ['99%', isId ? 'Kepuasan Pengguna' : 'User Satisfaction Rate'],
-    ['10.000+', isId ? 'Resep Terkalibrasi' : 'Calibrated Recipes'],
-    ['0', isId ? 'Tebak-Tebakan' : 'Guesswork Needed'],
-    ['Instan', isId ? 'Akses Kapan Saja' : 'App Access'],
+function EvidenceSection({ language }: { language: Language }) {
+  const evidence: [string, string][] = [
+    ['100%', t('evidence.consistency', language)],
+    ['36+', t('evidence.brewers', language)],
+    ['99%', t('evidence.satisfaction', language)],
+    ['10.000+', t('evidence.recipes', language)],
+    ['0', t('evidence.guesswork', language)],
+    [t('evidence.instant', language), t('evidence.access', language)],
   ];
   return (
     <section className="evidence-section" aria-labelledby="evidence-title">
@@ -33,7 +35,7 @@ function EvidenceSection({ language }: { language: 'id' | 'en' }) {
         <ScrollReveal variant="dramatic">
           <div>
             <p className="section-index section-index-light">05 / 06</p>
-            <h2 id="evidence-title">{isId ? 'Mengapa Barista dan Pencinta Kopi Memilih BaristaChaw' : 'Why Coffee Lovers Rely on BaristaChaw'}</h2>
+            <h2 id="evidence-title">{t('evidence.title', language)}</h2>
           </div>
         </ScrollReveal>
         <div className="evidence-grid">
@@ -46,11 +48,7 @@ function EvidenceSection({ language }: { language: 'id' | 'en' }) {
         <ScrollReveal variant="fade" delay={0.2}>
           <div className="honesty-note">
             <CircleAlert />
-            <p>
-              {isId
-                ? 'BaristaChaw dirancang untuk mendampingi ritual kopi harian Anda. Setiap rekomendasi disesuaikan secara dinamis agar Anda selalu mendapatkan cangkir kopi terbaik — di rumah, di kantor, atau di kedai favorit Anda.'
-                : 'BaristaChaw is crafted to elevate your daily coffee ritual. Each recommendation is dynamically tailored to your specific setup so you can unlock the best possible extraction — at home, at the office, or on the bar.'}
-            </p>
+            <p>{t('evidence.note', language)}</p>
           </div>
         </ScrollReveal>
       </div>
@@ -58,19 +56,24 @@ function EvidenceSection({ language }: { language: 'id' | 'en' }) {
   );
 }
 
-function PricingSection({ language }: { language: 'id' | 'en' }) {
-  const isId = language === 'id';
-  const [duration, setDuration] = useState<'monthly' | 'quarterly' | 'yearly'>('quarterly');
+type RegisterState = {
+  open: boolean;
+  plan: 'free' | 'plus' | 'pro' | 'team';
+};
+
+function PricingSection({ language, onRegister }: { language: Language; onRegister: (plan: 'free' | 'plus' | 'pro' | 'team') => void }) {
+  const [duration, setDuration] = useState<BillingDuration>('quarterly');
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
 
   const plusTier = PRICING.plus[duration];
   const proTier = PRICING.pro[duration];
+  const currency = getCurrencyForLanguage(language);
 
-  const durationLabels: Record<string, { id: string; en: string }> = {
-    monthly: { id: '1 Bulan', en: '1 Month' },
-    quarterly: { id: '3 Bulan', en: '3 Months' },
-    yearly: { id: '1 Tahun', en: '1 Year' },
+  const durationKeys: Record<BillingDuration, string> = {
+    monthly: 'pricing.1month',
+    quarterly: 'pricing.3months',
+    yearly: 'pricing.1year',
   };
 
   const handlePromoApply = () => {
@@ -83,17 +86,17 @@ function PricingSection({ language }: { language: 'id' | 'en' }) {
     <section className="pricing section-shell" aria-labelledby="pricing-title">
       <ScrollReveal variant="dramatic">
         <div className="section-heading">
-          <p className="section-index">Pricing</p>
+          <p className="section-index">{t('pricing.index', language)}</p>
           <div>
-            <h2 id="pricing-title">{isId ? 'Pilih Paket Terbaik untuk Ritual Kopi Anda.' : 'Choose the Perfect Plan for Your Coffee Ritual.'}</h2>
-            <p>{isId ? 'Dari home brewer hingga barista profesional — semua paket dirancang agar kopi Anda selalu sempurna.' : 'From casual home brewing to professional bar workflows — every plan is engineered for extraction excellence.'}</p>
+            <h2 id="pricing-title">{t('pricing.title', language)}</h2>
+            <p>{t('pricing.subtitle', language)}</p>
           </div>
         </div>
       </ScrollReveal>
 
       {/* Duration Toggle */}
       <ScrollReveal variant="fade" delay={0.05}>
-        <div className="plan-duration-toggle" role="radiogroup" aria-label={isId ? 'Pilih durasi' : 'Select duration'}>
+        <div className="plan-duration-toggle" role="radiogroup" aria-label={t('pricing.selectDuration', language)}>
           {(['monthly', 'quarterly', 'yearly'] as const).map((d) => (
             <button
               key={d}
@@ -102,8 +105,8 @@ function PricingSection({ language }: { language: 'id' | 'en' }) {
               className={duration === d ? 'active' : ''}
               onClick={() => setDuration(d)}
             >
-              {isId ? durationLabels[d].id : durationLabels[d].en}
-              {d === 'yearly' && <span className="toggle-save-chip">{isId ? 'Terbaik!' : 'Best!'}</span>}
+              {t(durationKeys[d], language)}
+              {d === 'yearly' && <span className="toggle-save-chip">{t('pricing.best', language)}</span>}
             </button>
           ))}
         </div>
@@ -111,122 +114,118 @@ function PricingSection({ language }: { language: 'id' | 'en' }) {
 
       <div className="plan-list">
         {/* FREE */}
-        <ScrollReveal variant="slide-up" delay={0}>
+        <ScrollReveal variant="slide-up" delay={0} className="pricing-reveal-wrap">
           <article className="plan-card">
-            <span className="plan-tier-badge">Free</span>
-            <h3>{isId ? 'Mulai Eksplorasi' : 'Start Exploring'}</h3>
+            <span className="plan-tier-badge">{t('plan.free.badge', language)}</span>
+            <h3>{t('plan.free.name', language)}</h3>
             <div className="plan-price-display">
-              <strong className="plan-price-main">{isId ? 'Gratis' : 'Free'}</strong>
-              <span className="plan-price-sub">{isId ? 'Selamanya' : 'Forever'}</span>
+              <strong className="plan-price-main">{t('plan.free.price', language)}</strong>
+              <span className="plan-price-sub">{t('plan.free.period', language)}</span>
             </div>
             <ul>
-              <li><Check size={16} /> {isId ? 'Brew Timer interaktif' : 'Interactive Brew Timer'}</li>
-              <li><Check size={16} /> {isId ? 'Kalkulator Grind Size' : 'Grind Size Calculator'}</li>
-              <li><Check size={16} /> {isId ? 'Kalkulator Rasio Kopi' : 'Coffee Ratio Calculator'}</li>
-              <li><Check size={16} /> {isId ? 'Koleksi & Catatan Resep' : 'Recipe Collection & Notes'}</li>
-              <li><Check size={16} /> {isId ? 'AI Brew harian terbatas' : 'Limited daily AI Brew'}</li>
+              <li><Check size={16} /> {t('plan.free.f1', language)}</li>
+              <li><Check size={16} /> {t('plan.free.f2', language)}</li>
+              <li><Check size={16} /> {t('plan.free.f3', language)}</li>
+              <li><Check size={16} /> {t('plan.free.f4', language)}</li>
+              <li><Check size={16} /> {t('plan.free.f5', language)}</li>
             </ul>
-            <a className="plan-cta" href={APP_LINKS.aiBrew}>{isId ? 'Mulai Sekarang' : 'Start Now'} <ArrowRight size={16} /></a>
+            <button className="plan-cta" type="button" onClick={() => onRegister('free')}>
+              {t('plan.free.cta', language)} <ArrowRight size={16} />
+            </button>
           </article>
         </ScrollReveal>
 
         {/* BARISTA PLUS — Featured */}
-        <ScrollReveal variant="scale" delay={0.08}>
+        <ScrollReveal variant="scale" delay={0.08} className="pricing-reveal-wrap">
           <article className="plan-card plan-featured">
-            <div className="plan-best-value">{isId ? 'TERLARIS' : 'BEST VALUE'}</div>
-            <span className="plan-tier-badge">Barista Plus</span>
-            <h3>{isId ? 'Home Barista Serius' : 'Serious Home Barista'}</h3>
+            <div className="plan-best-value">{t('pricing.bestValue', language)}</div>
+            <span className="plan-tier-badge">{t('plan.plus.badge', language)}</span>
+            <h3>{t('plan.plus.name', language)}</h3>
             <div className="plan-price-display">
               {plusTier.discountPct > 0 && (
                 <span className="plan-price-original">
-                  {formatCurrency(plusTier.original.idr, 'idr')}
+                  {formatCurrencyByLang(plusTier.original[currency], language)}
                 </span>
               )}
               <strong className="plan-price-main">
-                {formatCurrency(plusTier.discounted.idr, 'idr')}
+                {formatCurrencyByLang(plusTier.discounted[currency], language)}
               </strong>
               <span className="plan-price-sub">
-                / {isId ? durationLabels[duration].id.toLowerCase() : durationLabels[duration].en.toLowerCase()}
-              </span>
-              <span className="plan-price-alt">
-                {formatCurrency(plusTier.discounted.bnd, 'bnd')} · {formatCurrency(plusTier.discounted.usd, 'usd')}
+                / {t(durationKeys[duration], language).toLowerCase()}
               </span>
             </div>
             {plusTier.discountPct > 0 && (
               <div className="plan-discount-badge">
-                {isId ? plusTier.saveLabel.id : plusTier.saveLabel.en}
+                {plusTier.saveLabel[language]}
               </div>
             )}
             <ul>
-              <li><Check size={16} /> {isId ? 'Semua fitur Free' : 'All Free features'}</li>
-              <li><Check size={16} /> {isId ? 'AI Brew Unlimited (Basic + Advanced)' : 'Unlimited AI Brew (Basic + Advanced)'}</li>
-              <li><Check size={16} /> {isId ? 'AI Chat terbatas (15/hari)' : 'AI Chat limited (15/day)'}</li>
-              <li><Check size={16} /> {isId ? 'Kalibrasi grinder presisi' : 'Precision grinder calibration'}</li>
-              <li><Check size={16} /> {isId ? 'Profil rasa tak terbatas' : 'Unlimited flavor profiles'}</li>
+              <li><Check size={16} /> {t('plan.plus.f1', language)}</li>
+              <li><Check size={16} /> {t('plan.plus.f2', language)}</li>
+              <li><Check size={16} /> {t('plan.plus.f3', language)}</li>
+              <li><Check size={16} /> {t('plan.plus.f4', language)}</li>
+              <li><Check size={16} /> {t('plan.plus.f5', language)}</li>
             </ul>
-            <a className="plan-cta plan-cta-primary" href={`${APP_LINKS.upgrade}?plan=starter&duration=${duration}`}>
-              {isId ? 'Pilih Barista Plus' : 'Get Barista Plus'} <ArrowRight size={16} />
-            </a>
+            <button className="plan-cta plan-cta-primary" type="button" onClick={() => onRegister('plus')}>
+              {t('plan.plus.cta', language)} <ArrowRight size={16} />
+            </button>
           </article>
         </ScrollReveal>
 
         {/* BARISTA PRO — Premium Dark */}
-        <ScrollReveal variant="scale" delay={0.14}>
+        <ScrollReveal variant="scale" delay={0.14} className="pricing-reveal-wrap">
           <article className="plan-card plan-pro-dark">
-            <span className="plan-tier-badge plan-tier-pro">Barista Pro</span>
-            <h3>{isId ? 'Barista Profesional' : 'Professional Barista'}</h3>
+            <span className="plan-tier-badge plan-tier-pro">{t('plan.pro.badge', language)}</span>
+            <h3>{t('plan.pro.name', language)}</h3>
             <div className="plan-price-display">
               {proTier.discountPct > 0 && (
                 <span className="plan-price-original">
-                  {formatCurrency(proTier.original.idr, 'idr')}
+                  {formatCurrencyByLang(proTier.original[currency], language)}
                 </span>
               )}
               <strong className="plan-price-main">
-                {formatCurrency(proTier.discounted.idr, 'idr')}
+                {formatCurrencyByLang(proTier.discounted[currency], language)}
               </strong>
               <span className="plan-price-sub">
-                / {isId ? durationLabels[duration].id.toLowerCase() : durationLabels[duration].en.toLowerCase()}
-              </span>
-              <span className="plan-price-alt">
-                {formatCurrency(proTier.discounted.bnd, 'bnd')} · {formatCurrency(proTier.discounted.usd, 'usd')}
+                / {t(durationKeys[duration], language).toLowerCase()}
               </span>
             </div>
             {proTier.discountPct > 0 && (
               <div className="plan-discount-badge plan-discount-pro">
-                {isId ? proTier.saveLabel.id : proTier.saveLabel.en}
+                {proTier.saveLabel[language]}
               </div>
             )}
             <ul>
-              <li><Check size={16} /> {isId ? 'Semua fitur Barista Plus' : 'All Barista Plus features'}</li>
-              <li><Check size={16} /> {isId ? 'AI Chat Unlimited' : 'Unlimited AI Chat'}</li>
-              <li><Check size={16} /> {isId ? 'AI Scan & Analisis Kopi' : 'AI Scan & Coffee Analysis'}</li>
-              <li><Check size={16} /> {isId ? 'AI Latte Art Generator' : 'AI Latte Art Generator'}</li>
-              <li><Check size={16} /> {isId ? 'Semua fitur mendatang' : 'All upcoming features'}</li>
+              <li><Check size={16} /> {t('plan.pro.f1', language)}</li>
+              <li><Check size={16} /> {t('plan.pro.f2', language)}</li>
+              <li><Check size={16} /> {t('plan.pro.f3', language)}</li>
+              <li><Check size={16} /> {t('plan.pro.f4', language)}</li>
+              <li><Check size={16} /> {t('plan.pro.f5', language)}</li>
             </ul>
-            <a className="plan-cta plan-cta-pro" href={`${APP_LINKS.upgrade}?plan=pro&duration=${duration}`}>
-              {isId ? 'Pilih Barista Pro' : 'Get Barista Pro'} <ArrowRight size={16} />
-            </a>
+            <button className="plan-cta plan-cta-pro" type="button" onClick={() => onRegister('pro')}>
+              {t('plan.pro.cta', language)} <ArrowRight size={16} />
+            </button>
           </article>
         </ScrollReveal>
 
-        {/* CAFÉ TEAM */}
-        <ScrollReveal variant="slide-up" delay={0.2}>
+        {/* CAFE TEAM */}
+        <ScrollReveal variant="slide-up" delay={0.2} className="pricing-reveal-wrap">
           <article className="plan-card plan-team">
-            <span className="plan-tier-badge">Café Team</span>
-            <h3>{isId ? 'Kedai & Profesional' : 'Café & Professional'}</h3>
+            <span className="plan-tier-badge">{t('plan.team.badge', language)}</span>
+            <h3>{t('plan.team.name', language)}</h3>
             <div className="plan-price-display">
-              <strong className="plan-price-main">{isId ? 'Custom' : 'Custom'}</strong>
-              <span className="plan-price-sub">{isId ? 'Hubungi kami' : 'Contact us'}</span>
+              <strong className="plan-price-main">{t('plan.team.price', language)}</strong>
+              <span className="plan-price-sub">{t('plan.team.period', language)}</span>
             </div>
             <ul>
-              <li><Check size={16} /> {isId ? 'Semua fitur Barista Pro' : 'All Barista Pro features'}</li>
-              <li><Check size={16} /> {isId ? 'SOP resep standarisasi tim' : 'Team recipe SOP standardization'}</li>
-              <li><Check size={16} /> {isId ? 'Batch brew kalkulasi cepat' : 'High-volume batch calculations'}</li>
-              <li><Check size={16} /> {isId ? 'Multi-seat akses tim barista' : 'Multi-seat team access'}</li>
-              <li><Check size={16} /> {isId ? 'Dukungan prioritas 12 jam' : '12-hour priority support'}</li>
+              <li><Check size={16} /> {t('plan.team.f1', language)}</li>
+              <li><Check size={16} /> {t('plan.team.f2', language)}</li>
+              <li><Check size={16} /> {t('plan.team.f3', language)}</li>
+              <li><Check size={16} /> {t('plan.team.f4', language)}</li>
+              <li><Check size={16} /> {t('plan.team.f5', language)}</li>
             </ul>
             <Link className="plan-cta" to="/support?topic=general">
-              {isId ? 'Hubungi Kami' : 'Contact Us'} <ArrowRight size={16} />
+              {t('plan.team.cta', language)} <ArrowRight size={16} />
             </Link>
           </article>
         </ScrollReveal>
@@ -235,28 +234,28 @@ function PricingSection({ language }: { language: 'id' | 'en' }) {
       {/* Promo Code */}
       <ScrollReveal variant="fade" delay={0.1}>
         <div className="promo-section">
-          <p className="promo-label">{isId ? 'Punya kode promo?' : 'Have a promo code?'}</p>
+          <p className="promo-label">{t('promo.label', language)}</p>
           <div className="promo-input-wrap">
             <input
               type="text"
               className="promo-input"
-              placeholder={isId ? 'Masukkan kode promo...' : 'Enter promo code...'}
+              placeholder={t('promo.placeholder', language)}
               value={promoCode}
               onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoApplied(false); }}
               maxLength={20}
-              aria-label={isId ? 'Kode promo' : 'Promo code'}
+              aria-label={t('promo.ariaLabel', language)}
             />
             <button
               className="promo-apply"
               onClick={handlePromoApply}
               disabled={promoCode.trim().length < 4}
             >
-              {promoApplied ? (isId ? '✓ Diterapkan' : '✓ Applied') : (isId ? 'Terapkan' : 'Apply')}
+              {promoApplied ? t('promo.applied', language) : t('promo.apply', language)}
             </button>
           </div>
           {promoApplied && (
             <p className="promo-success">
-              {isId ? 'Kode promo akan diterapkan saat checkout.' : 'Promo code will be applied at checkout.'}
+              {t('promo.success', language)}
             </p>
           )}
         </div>
@@ -265,8 +264,19 @@ function PricingSection({ language }: { language: 'id' | 'en' }) {
   );
 }
 
-function LandingHome({ language }: { language: 'id' | 'en' }) {
-  const isId = language === 'id';
+function LandingHome({ language }: { language: Language }) {
+  const [registerState, setRegisterState] = useState<RegisterState>({ open: false, plan: 'free' });
+  const [duration] = useState<BillingDuration>('quarterly');
+
+  const openRegister = (plan: 'free' | 'plus' | 'pro' | 'team') => {
+    if (plan === 'team') {
+      // team goes to contact form
+      window.location.href = '/support?topic=general';
+      return;
+    }
+    setRegisterState({ open: true, plan });
+  };
+
   return (
     <main>
       <HeroSection language={language} />
@@ -276,42 +286,50 @@ function LandingHome({ language }: { language: 'id' | 'en' }) {
       <ToolsShowcase language={language} />
       <FeatureGraphics language={language} />
       <EvidenceSection language={language} />
-      <PricingSection language={language} />
+      <PricingSection language={language} onRegister={openRegister} />
       <DownloadSection language={language} />
       <ScrollReveal variant="blur">
         <section className="final-cta">
           <div>
-            <p>Baristachaw AI Brew</p>
-            <h2>{isId ? 'Mulai Seduh Kopi Terbaik Anda Hari Ini.' : 'Start Extracting Exceptional Coffee Today.'}</h2>
-            <span>{isId ? 'Bergabung dengan ribuan home barista dan profesional yang sudah merasakan kenyamanan menyeduh kopi yang konsisten, kaya rasa, dan menyenangkan — setiap hari.' : 'Join thousands of home brewers and coffee professionals who have elevated their morning rituals with consistent, flavorful, and repeatable extractions — every single day.'}</span>
+            <p>{t('final.brand', language)}</p>
+            <h2>{t('final.title', language)}</h2>
+            <span>{t('final.body', language)}</span>
           </div>
           <div className="final-actions">
-            <a className="button button-light" href={APP_LINKS.aiBrew}>{isId ? 'Coba AI Brew' : 'Try AI Brew'} <ArrowRight /></a>
-            <a className="button button-ghost" href={APP_LINKS.register}>{isId ? 'Daftar Gratis' : 'Register Free'}</a>
+            <a className="button button-light" href={APP_LINKS.aiBrew}>{t('final.tryAiBrew', language)} <ArrowRight /></a>
+            <button className="button button-ghost" type="button" onClick={() => openRegister('free')}>{t('final.registerFree', language)}</button>
             <a className="button button-ghost" href={APK_URL}>Download APK</a>
           </div>
         </section>
       </ScrollReveal>
+
+      {registerState.open && (
+        <RegisterModal
+          language={language}
+          plan={registerState.plan}
+          duration={duration}
+          onClose={() => setRegisterState({ open: false, plan: 'free' })}
+        />
+      )}
     </main>
   );
 }
 
-function SiteFooter({ language }: { language: 'id' | 'en' }) {
-  const isId = language === 'id';
+function SiteFooter({ language }: { language: Language }) {
   return (
     <footer className="site-footer">
       <div className="footer-brand">
         <img src="/assets/baristachaw-logo.png" alt="" />
-        <div><strong>Baristachaw</strong><span>{isId ? 'Asisten kopi cerdas untuk ritual seduh terbaik Anda.' : 'Your intelligent brewing companion for the perfect extraction.'}</span></div>
+        <div><strong>Baristachaw</strong><span>{t('footer.tagline', language)}</span></div>
       </div>
       <nav aria-label="Footer">
         <Link to="/privacy">Privacy</Link>
         <Link to="/terms">Terms</Link>
         <Link to="/support">Support</Link>
-        <Link to="/download">{isId ? 'Unduh' : 'Download'}</Link>
+        <Link to="/download">{t('nav.download', language)}</Link>
         <a href={APP_LINKS.home}>Web App</a>
       </nav>
-      <p>© 2026 Baristachaw. {isId ? 'Kopi terbaik dimulai dari ritual yang tepat.' : 'Exceptional coffee begins with a precise ritual.'}</p>
+      <p>&copy; 2026 Baristachaw. {t('footer.copyright', language)}</p>
     </footer>
   );
 }
@@ -323,20 +341,22 @@ function ScrollManager() {
 }
 
 export function App() {
-  const [language, setLanguage] = useState<'id' | 'en'>(() => {
+  const [language, setLanguage] = useState<Language>(() => {
     const stored = localStorage.getItem('baristachaw-marketing-language');
-    return stored === 'en' ? 'en' : 'id';
+    if (stored === 'en') return 'en';
+    if (stored === 'bn') return 'bn';
+    return 'id';
   });
   const location = useLocation();
 
-  const handleLanguageChange = (next: 'id' | 'en') => {
+  const handleLanguageChange = (next: Language) => {
     setLanguage(next);
     localStorage.setItem('baristachaw-marketing-language', next);
-    document.documentElement.lang = next;
+    document.documentElement.lang = next === 'bn' ? 'ms-BN' : next;
   };
 
   useEffect(() => {
-    document.documentElement.lang = language;
+    document.documentElement.lang = language === 'bn' ? 'ms-BN' : language;
   }, [language]);
 
   return (
@@ -355,8 +375,8 @@ export function App() {
       <SupportChatWidget language={language} />
       {location.pathname === '/' ? (
         <div className="mobile-sticky-cta" aria-label="Quick actions">
-          <a href={APP_LINKS.aiBrew}>{language === 'id' ? 'Coba AI Brew' : 'Try AI Brew'}</a>
-          <a href={APK_URL}>Download</a>
+          <a href={APP_LINKS.aiBrew}>{t('mobileCta.tryAiBrew', language)}</a>
+          <a href={APK_URL}>{t('mobileCta.download', language)}</a>
         </div>
       ) : null}
     </div>

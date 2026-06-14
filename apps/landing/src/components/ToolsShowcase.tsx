@@ -1,8 +1,34 @@
 import { BookOpen, Clock, FlaskConical, Gauge, MessageSquare, Settings } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 import { APP_LINKS } from '../config';
+import type { Language } from '../i18n';
 
-const TOOLS = {
+// ── Section-level copy ─────────────────────────────────────────────────────────
+
+const SECTION_COPY: Record<Language, { title: string; subtitle: string }> = {
+  id: {
+    title: 'Semua yang Anda Butuhkan, dalam Satu Aplikasi.',
+    subtitle:
+      'Dari kalkulator rasio yang gratis hingga AI Brew yang cerdas — setiap alat dirancang agar ritual kopi Anda lebih mudah dan menyenangkan.',
+  },
+  en: {
+    title: 'Everything You Need for a Perfect Cup, in One App.',
+    subtitle:
+      'From our free ratio calculator to intelligent AI-guided recipes, each tool is crafted to elevate your daily brewing ritual.',
+  },
+  bn: {
+    title: 'Semua yang Anda Perlukan, dalam Satu Aplikasi.',
+    subtitle:
+      'Dari kalkulator nisbah percuma hingga AI Brew yang pintar — setiap alat direka supaya ritual kopi anda lebih mudah dan menyeronokkan.',
+  },
+};
+
+// ── Tool cards ─────────────────────────────────────────────────────────────────
+
+const TOOLS: Record<
+  Language,
+  { icon: typeof FlaskConical; badge: string; title: string; body: string; link: string; cta: string }[]
+> = {
   id: [
     {
       icon: FlaskConical,
@@ -103,11 +129,61 @@ const TOOLS = {
       cta: 'View Collection',
     },
   ],
+  bn: [
+    {
+      icon: FlaskConical,
+      badge: 'AI',
+      title: 'AI Brew',
+      body: 'Masukkan biji kopi, pilih rasa, dan grinder anda. Dalam beberapa saat, AI meracik panduan seduh yang tepat — dari suhu air hingga saiz kisaran.',
+      link: APP_LINKS.aiBrew,
+      cta: 'Cuba AI Brew',
+    },
+    {
+      icon: Clock,
+      badge: 'PERCUMA',
+      title: 'Brew Timer',
+      body: 'Timer interaktif dengan panduan langkah demi langkah. Bloom, tuangan pertama, tuangan kedua — semua diatur masanya supaya anda tinggal ikut sahaja.',
+      link: APP_LINKS.home + '/tools?tab=timer',
+      cta: 'Buka Timer',
+    },
+    {
+      icon: Gauge,
+      badge: 'PERCUMA',
+      title: 'Kalkulator Nisbah',
+      body: 'Kira nisbah kopi-air yang ideal, tukar saiz kisaran ke setelan grinder anda, dan laraskan isipadu mengikut citarasa dalam satu skrin.',
+      link: APP_LINKS.home + '/tools?tab=ratio',
+      cta: 'Buka Kalkulator',
+    },
+    {
+      icon: Settings,
+      badge: 'PERCUMA',
+      title: 'Kalkulator Kisaran (Grinder Calc)',
+      body: 'Tukar saiz kisaran kopi antara grinder dengan senang. Pilih model grinder anda dan dapatkan klik kisaran yang tepat untuk kaedah seduhan pilihan anda.',
+      link: APP_LINKS.home + '/tools?tab=ratio&panel=grind-size',
+      cta: 'Buka Kalkulator Kisaran',
+    },
+    {
+      icon: MessageSquare,
+      badge: 'AI',
+      title: 'AI Coffee Coach',
+      body: 'Tanya apa sahaja pasal kopi. Kopi terlalu pahit? Biji kopi baru? Grinder baru? AI Coach sedia membantu anda mencari penyelesaiannya.',
+      link: APP_LINKS.home + '/chat',
+      cta: 'Tanya AI Coach',
+    },
+    {
+      icon: BookOpen,
+      badge: 'PERCUMA',
+      title: 'Koleksi Resipi',
+      body: 'Simpan resipi kegemaran anda dan kembali bila-bila masa. Bina perpustakaan resipi peribadi yang sentiasa ada di hujung jari.',
+      link: APP_LINKS.home + '/collection',
+      cta: 'Lihat Koleksi',
+    },
+  ],
 };
 
-export function ToolsShowcase({ language }: { language: 'id' | 'en' }) {
-  const isId = language === 'id';
-  const tools = isId ? TOOLS.id : TOOLS.en;
+export function ToolsShowcase({ language }: { language: Language }) {
+  const tools = TOOLS[language];
+  const copy = SECTION_COPY[language];
 
   return (
     <section className="tools-showcase section-shell" id="features" aria-labelledby="tools-title">
@@ -115,16 +191,8 @@ export function ToolsShowcase({ language }: { language: 'id' | 'en' }) {
         <div className="section-heading">
           <p className="section-index">Tools</p>
           <div>
-            <h2 id="tools-title">
-              {isId
-                ? 'Semua yang Anda Butuhkan, dalam Satu Aplikasi.'
-                : 'Everything You Need for a Perfect Cup, in One App.'}
-            </h2>
-            <p>
-              {isId
-                ? 'Dari kalkulator rasio yang gratis hingga AI Brew yang cerdas — setiap alat dirancang agar ritual kopi Anda lebih mudah dan menyenangkan.'
-                : 'From our free ratio calculator to intelligent AI-guided recipes, each tool is crafted to elevate your daily brewing ritual.'}
-            </p>
+            <h2 id="tools-title">{copy.title}</h2>
+            <p>{copy.subtitle}</p>
           </div>
         </div>
       </ScrollReveal>

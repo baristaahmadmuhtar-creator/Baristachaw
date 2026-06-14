@@ -1,4 +1,4 @@
-﻿import express from "express";
+import express from "express";
 import { createServer as createViteServer } from "vite";
 import cookieParser from "cookie-parser";
 import compression from "compression";
@@ -28,6 +28,7 @@ import billingCheckoutHandler from "./server-api/billing/checkout";
 import billingPortalHandler from "./server-api/billing/portal";
 import billingSyncHandler from "./server-api/billing/sync";
 import monitoringErrorHandler from "./server-api/monitoring/error";
+import paymentMayarHandler from "./server-api/payment/mayar";
 import { handleTestAuthLogin, handleTestAuthLogout } from "./lib/test-auth/handlers";
 import { buildLocalRuntimeAuthDefaults } from "./lib/test-auth/runtime-defaults";
 
@@ -161,6 +162,7 @@ app.all("/api/billing/checkout", wrapVercelHandler(billingCheckoutHandler as unk
 app.all("/api/billing/portal", wrapVercelHandler(billingPortalHandler as unknown as LocalApiHandler));
 app.all("/api/billing/sync", wrapVercelHandler(billingSyncHandler as unknown as LocalApiHandler));
 app.all("/api/monitoring/error", wrapVercelHandler(monitoringErrorHandler as unknown as LocalApiHandler));
+app.all("/api/payment/create-checkout", wrapVercelHandler(paymentMayarHandler as unknown as LocalApiHandler));
 
 // Also handle /auth/callback as alias (for older redirect URIs)
 app.get("/auth/callback", (req, res) => {

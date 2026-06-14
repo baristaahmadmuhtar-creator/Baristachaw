@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AlertCircle, Bookmark, BookmarkCheck, Loader2, RefreshCw } from "lucide-react";
+import { AlertCircle, Bookmark, BookmarkCheck, Loader2, RefreshCw, Download, Copy, Check } from "lucide-react";
 import Markdown from "react-markdown";
 import { analyzeImage, editLatteArtImage } from "../services/gemini";
 import { getByFeatureKey, setByFeatureKey } from "../services/offlineCache";
@@ -328,6 +328,7 @@ export function Scanner() {
   const [error, setError] = useState<string | null>(null);
   const [latteRequest, setLatteRequest] = useState("");
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [copied, setCopied] = useState(false);
   const {
     isAuthenticated,
     authChecking,
@@ -418,6 +419,7 @@ export function Scanner() {
     setGeneratedImage(null);
     setError(null);
     setSavedToCollection(false);
+    setCopied(false);
   };
 
   const handlePickedFile = async (selectedFile?: File | null) => {
@@ -564,6 +566,40 @@ export function Scanner() {
     clearMediaState();
   };
 
+  const handleDownloadImage = () => {
+    if (!generatedImage) return;
+    const link = document.createElement("a");
+    link.href = generatedImage;
+    link.download = `latte-art-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleCopyReport = async () => {
+    if (!resultMarkdown) return;
+    try {
+      await navigator.clipboard.writeText(resultMarkdown);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
+  };
+
+  const handleDownloadReport = () => {
+    if (!resultMarkdown) return;
+    const blob = new Blob([resultMarkdown], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `coffee-scan-${mode}-${Date.now()}.md`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const setModeAndReset = (nextMode: ScannerMode) => {
     setMode(nextMode);
     clearMediaState();
@@ -655,54 +691,7 @@ export function Scanner() {
             <span className={mode === "latte" ? "scanner-mode-active-label" : undefined}>{t.scannerModeLatte}</span>
           </button>
         </div>
-
-        {/* Animated Description Block */}
-        <div className="text-center text-xs sm:text-sm text-secondary max-w-md lg:max-w-xl mx-auto mb-6 min-h-[44px] flex items-center justify-center px-4">
-          <AnimatePresence mode="wait">
-            {mode === "auto" && (
-              <motion.p
-                key="auto"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25 }}
-                className="leading-relaxed font-medium"
-              >
-                {language === "id"
-                  ? "🔍 Menganalisis tingkat pemanggangan, kualitas ekstraksi, dan profil rasa dari foto seduhan atau biji kopi."
-                  : "🔍 Analyze roast levels, extraction quality, and flavor profiles from photos of brewed cups or coffee beans."}
-              </motion.p>
-            )}
-            {mode === "ocr" && (
-              <motion.p
-                key="ocr"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25 }}
-                className="leading-relaxed font-medium"
-              >
-                {language === "id"
-                  ? "📝 Mengekstrak informasi merek roaster, asal biji, metode proses, dan menghitung resep rasio seduh awal."
-                  : "📝 Extract roaster brand, coffee origin, processing method, and auto-generate a starter brewing recipe."}
-              </motion.p>
-            )}
-            {mode === "latte" && (
-              <motion.p
-                key="latte"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25 }}
-                className="leading-relaxed font-medium"
-              >
-                {language === "id"
-                  ? "✨ Menyempurnakan dan mendesain ulang visual latte art pada busa susu menjadi hasil tuangan kelas barista juara."
-                  : "✨ Enhance and redesign the visual pattern on your milk foam into a championship-grade barista pour."}
-              </motion.p>
-            )}
-          </AnimatePresence>
-        </div>
+        <div className="mb-4" />
 
         {authChecking && (
           <div className="mb-4 mx-auto flex w-fit items-center gap-2 rounded-full border border-border bg-surface-alpha px-3 py-2 text-xs font-medium text-secondary">
@@ -1022,31 +1011,42 @@ export function Scanner() {
                 )}
               </button>
             ) : isLatteMode ? (
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
                 <button
+                  type="button"
                   onClick={handleSaveToCollection}
                   disabled={savedToCollection || !generatedImage}
-                  className={`py-5 flex items-center justify-center gap-3 text-lg rounded-2xl font-medium transition-all disabled:opacity-60 disabled:cursor-not-allowed ${savedToCollection
-                    ? "bg-emerald-500/10 text-emerald-600"
+                  className={`py-4 flex items-center justify-center gap-2.5 text-base rounded-2xl font-medium transition-all disabled:opacity-60 disabled:cursor-not-allowed ${savedToCollection
+                    ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
                     : "glass-button"
                   }`}
                 >
-                  {savedToCollection ? <BookmarkCheck size={22} /> : <Bookmark size={22} />}
+                  {savedToCollection ? <BookmarkCheck size={20} /> : <Bookmark size={20} />}
                   <span>{savedToCollection ? t.scannerSaved : t.saveToCollection}</span>
                 </button>
                 <button
+                  type="button"
+                  onClick={handleDownloadImage}
+                  disabled={!generatedImage}
+                  className="glass-button py-4 flex items-center justify-center gap-2.5 text-base rounded-2xl font-medium transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <Download size={20} />
+                  <span>{language === "id" ? "Unduh Gambar" : "Download Image"}</span>
+                </button>
+                <button
+                  type="button"
                   onClick={handleScan}
                   disabled={loading}
-                  className="glass-button-primary py-5 flex items-center justify-center gap-3 text-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="glass-button-primary py-4 flex items-center justify-center gap-2.5 text-base disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <>
-                      <Loader2 size={22} className="animate-spin" />
+                      <Loader2 size={20} className="animate-spin" />
                       <span>{loadingLabel}</span>
                     </>
                   ) : (
                     <>
-                      <AppSparklesIcon size={24} variant="glyph" tone="neutral" style={currentColorIconStyle} />
+                      <AppSparklesIcon size={20} variant="glyph" tone="neutral" style={currentColorIconStyle} />
                       <span>{actionLabel}</span>
                     </>
                   )}
@@ -1058,19 +1058,40 @@ export function Scanner() {
                 animate={{ opacity: 1, y: 0 }}
                 className="glass-card p-8"
               >
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <h3 className="text-sm font-semibold text-secondary uppercase tracking-widest">{t.scannerResults}</h3>
-                  <button
-                    onClick={handleSaveToCollection}
-                    disabled={savedToCollection}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${savedToCollection
-                      ? "bg-emerald-500/10 text-emerald-600"
-                      : "bg-blue-500/10 text-blue-600 hover:bg-blue-500/20"
-                    }`}
-                  >
-                    {savedToCollection ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
-                    {savedToCollection ? t.scannerSaved : t.saveToCollection}
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleCopyReport}
+                      disabled={!resultMarkdown}
+                      className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 bg-white/5 hover:bg-white/10 text-primary border border-white/10 disabled:opacity-50"
+                    >
+                      {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                      <span>{copied ? (language === "id" ? "Tersalin!" : "Copied!") : (language === "id" ? "Salin" : "Copy")}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDownloadReport}
+                      disabled={!resultMarkdown}
+                      className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 bg-white/5 hover:bg-white/10 text-primary border border-white/10 disabled:opacity-50"
+                    >
+                      <Download size={14} />
+                      <span>{language === "id" ? "Unduh" : "Download"}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveToCollection}
+                      disabled={savedToCollection}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 ${savedToCollection
+                        ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+                        : "bg-blue-500/10 text-blue-600 hover:bg-blue-500/20"
+                      }`}
+                    >
+                      {savedToCollection ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                      <span>{savedToCollection ? t.scannerSaved : t.saveToCollection}</span>
+                    </button>
+                  </div>
                 </div>
                 <div className="prose prose-lg max-w-none text-primary chat-markdown search-result-markdown">
                   <Markdown>{resultMarkdown}</Markdown>

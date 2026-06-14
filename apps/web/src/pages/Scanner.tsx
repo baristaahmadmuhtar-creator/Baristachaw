@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { motion } from "motion/react";
 import { AlertCircle, Bookmark, BookmarkCheck, Loader2, RefreshCw } from "lucide-react";
 import Markdown from "react-markdown";
@@ -113,6 +113,135 @@ async function prepareScannerImage(file: File) {
   throw new Error("scanner_image_too_large");
 }
 
+interface ImageComparisonSliderProps {
+  beforeImage: string;
+  afterImage: string;
+  beforeLabel?: string;
+  afterLabel?: string;
+}
+
+export function ImageComparisonSlider({
+  beforeImage,
+  afterImage,
+  beforeLabel = "Before",
+  afterLabel = "After",
+}: ImageComparisonSliderProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [sliderPosition, setSliderPosition] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const handleMove = (clientX: number) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const position = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    setSliderPosition(position);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    handleMove(e.clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    if (e.touches.length > 0) {
+      handleMove(e.touches[0].clientX);
+    }
+  };
+
+  const handleStart = (e: React.MouseEvent | React.TouchEvent) => {
+    setIsDragging(true);
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    handleMove(clientX);
+  };
+
+  useEffect(() => {
+    const handleMouseUp = () => setIsDragging(false);
+    if (isDragging) {
+      window.addEventListener("mouseup", handleMouseUp);
+      window.addEventListener("touchend", handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("touchend", handleMouseUp);
+    };
+  }, [isDragging]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative select-none overflow-hidden rounded-[2rem] shadow-2xl bg-surface-alpha border border-white/10 mx-auto cursor-ew-resize"
+      style={{ width: "100%", maxWidth: "600px" }}
+      onMouseDown={handleStart}
+      onTouchStart={handleStart}
+      onMouseMove={handleMouseMove}
+      onTouchMove={handleTouchMove}
+    >
+      <img
+        src={afterImage}
+        alt={afterLabel}
+        className="w-full h-auto block pointer-events-none rounded-[2rem]"
+        draggable={false}
+      />
+      <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-white/90 tracking-wide uppercase pointer-events-none">
+        {afterLabel}
+      </div>
+
+      <div
+        className="absolute inset-y-0 left-0 overflow-hidden pointer-events-none border-r border-white/20"
+        style={{ width: `${sliderPosition}%` }}
+      >
+        <img
+          src={beforeImage}
+          alt={beforeLabel}
+          className="max-w-none h-full pointer-events-none"
+          style={{ width: containerWidth || "100%" }}
+          draggable={false}
+        />
+        <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-white/90 tracking-wide uppercase pointer-events-none">
+          {beforeLabel}
+        </div>
+      </div>
+
+      <div
+        className="absolute top-0 bottom-0 pointer-events-none flex items-center justify-center"
+        style={{ left: `${sliderPosition}%`, transform: "translateX(-50%)" }}
+      >
+        <div className="w-10 h-10 rounded-full bg-white text-gray-800 shadow-2xl border border-gray-200/50 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform pointer-events-auto">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-gray-700 pointer-events-none"
+          >
+            <path d="m9 18-6-6 6-6" />
+            <path d="m15 6 6 6-6 6" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Scanner() {
   const { t, language } = useGlobalState();
   const [file, setFile] = useState<string | null>(null);
@@ -124,6 +253,7 @@ export function Scanner() {
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<ScannerMode>("auto");
   const [savedToCollection, setSavedToCollection] = useState(false);
+  const [comparisonView, setComparisonView] = useState<"slider" | "side-by-side">("slider");
   const [error, setError] = useState<string | null>(null);
   const [latteRequest, setLatteRequest] = useState("");
   const {
@@ -154,31 +284,53 @@ export function Scanner() {
     return "Improve this latte art into a cleaner, symmetrical, photorealistic specialty cafe result with refined microfoam, natural crema contrast, and believable barista-level pour quality.";
   }, [language]);
 
-  const lattePromptPresets = useMemo(() => ([
-    {
-      label: t.scannerLattePresetTulip,
-      prompt: /^id(?:-|$)/i.test(language)
-        ? "Ubah menjadi tulip premium yang rapi, simetris, realistis, dengan microfoam halus dan presentasi kafe specialty."
-        : "Turn this into a premium symmetrical tulip with realistic microfoam and specialty cafe presentation.",
-    },
-    {
-      label: t.scannerLattePresetRosetta,
-      prompt: /^id(?:-|$)/i.test(language)
-        ? "Buat rosetta yang tegas, realistis, tajam, dengan kontras crema natural dan tekstur susu halus."
-        : "Create a sharp photorealistic rosetta with natural crema contrast and refined milk texture.",
-    },
-    {
-      label: t.scannerLattePresetHeart,
-      prompt: /^id(?:-|$)/i.test(language)
-        ? "Buat hati yang bersih, realistis, simetris, dan tampak seperti hasil pour barista profesional."
-        : "Create a clean realistic heart that looks like a professional barista pour.",
-    },
-  ]), [
-    language,
-    t.scannerLattePresetHeart,
-    t.scannerLattePresetRosetta,
-    t.scannerLattePresetTulip,
-  ]);
+  const lattePromptPresets = useMemo(() => {
+    const isIndonesian = /^id(?:-|$)/i.test(language);
+    return [
+      {
+        label: isIndonesian ? "🌷 Tulip Premium" : "🌷 Premium Tulip",
+        prompt: isIndonesian
+          ? "Ubah latte art ini menjadi bentuk tulip premium yang rapi, simetris, realistis, dengan microfoam halus dan presentasi kafe specialty."
+          : "Turn this into a premium symmetrical tulip with realistic microfoam and specialty cafe presentation.",
+      },
+      {
+        label: isIndonesian ? "🌿 Rosetta Tajam" : "🌿 Sharp Rosetta",
+        prompt: isIndonesian
+          ? "Buat rosetta yang tegas, realistis, tajam, dengan kontras crema natural dan tekstur susu halus."
+          : "Create a sharp photorealistic rosetta with natural crema contrast and refined milk texture.",
+      },
+      {
+        label: isIndonesian ? "💖 Hati Bersih" : "💖 Clean Heart",
+        prompt: isIndonesian
+          ? "Ubah latte art ini menjadi bentuk hati yang bersih, realistis, simetris, dan tampak seperti hasil tuangan barista profesional."
+          : "Create a clean realistic heart that looks like a professional barista pour.",
+      },
+      {
+        label: isIndonesian ? "🦢 Angsa Elegan" : "🦢 Elegant Swan",
+        prompt: isIndonesian
+          ? "Ubah latte art ini menjadi bentuk angsa (swan) yang elegan, artistik, realistis, dan bertekstur microfoam sangat halus."
+          : "Edit this latte art to feature an elegant, artistic, photorealistic swan design with ultra-fine microfoam texture.",
+      },
+      {
+        label: isIndonesian ? "🦄 Kuda Laut" : "🦄 Seahorse Art",
+        prompt: isIndonesian
+          ? "Ubah latte art ini menjadi bentuk kuda laut (seahorse) yang kreatif, realistis, artistik, dengan kontras crema yang natural."
+          : "Change this latte art to a creative, photorealistic seahorse pattern with realistic crema contrast.",
+      },
+      {
+        label: isIndonesian ? "🥞 Tulip 10 Tumpuk" : "🥞 10-Stack Tulip",
+        prompt: isIndonesian
+          ? "Ubah latte art ini menjadi tulip 10 tumpuk (10-stack tulip) yang simetris, realistis, presisi, dengan kontras crema yang tajam dan microfoam padat."
+          : "Transform this latte art into a symmetrical, realistic 10-stack tulip with sharp crema contrast and dense microfoam.",
+      },
+      {
+        label: isIndonesian ? "🥴 Tuangan Gagal" : "🥴 Messy Pour",
+        prompt: isIndonesian
+          ? "Ubah latte art ini menjadi bentuk tuangan susu yang gagal, berantakan, tidak beraturan, bergelembung besar, seperti buatan pemula yang baru belajar."
+          : "Make this latte art look like a failed, messy, amateur pour with large bubbles and distorted shapes, like a beginner's first try.",
+      },
+    ];
+  }, [language]);
 
   const selectedImageMeta = useMemo(() => {
     if (!fileName && !fileSize) return null;
@@ -505,27 +657,76 @@ export function Scanner() {
             </div>
 
             {isLatteMode && generatedImage ? (
-              <div className="grid gap-4 lg:grid-cols-2">
-                <div className="glass-card p-4">
-                  <div className="flex items-center justify-between gap-3 mb-3">
-                    <h3 className="text-sm font-semibold text-secondary uppercase tracking-widest">{t.scannerLatteBefore}</h3>
+              <div className="space-y-4">
+                <div className="flex justify-center">
+                  <div className="inline-flex p-1 bg-white/5 dark:bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg">
                     <button
-                      onClick={reset}
-                      className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-xl flex items-center justify-center text-white hover:bg-black/60 transition-colors shadow-lg"
+                      type="button"
+                      onClick={() => setComparisonView("slider")}
+                      className={`px-4 py-2 text-sm font-medium rounded-xl transition-all ${
+                        comparisonView === "slider"
+                          ? "bg-blue-600 text-white shadow-md"
+                          : "text-secondary hover:text-primary"
+                      }`}
                     >
-                      <RefreshCw size={18} />
+                      ↔️ Slider
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setComparisonView("side-by-side")}
+                      className={`px-4 py-2 text-sm font-medium rounded-xl transition-all ${
+                        comparisonView === "side-by-side"
+                          ? "bg-blue-600 text-white shadow-md"
+                          : "text-secondary hover:text-primary"
+                      }`}
+                    >
+                      🔲 Side-by-Side
                     </button>
                   </div>
-                  <div className="rounded-[1.75rem] overflow-hidden shadow-xl bg-surface-alpha flex justify-center">
-                    <img src={previewSrc || undefined} alt={t.scannerLatteBefore} className="w-full h-auto max-h-[50vh] object-contain rounded-[1.75rem]" />
-                  </div>
                 </div>
-                <div className="glass-card p-4">
-                  <h3 className="text-sm font-semibold text-secondary uppercase tracking-widest mb-3">{t.scannerLatteAfter}</h3>
-                  <div className="rounded-[1.75rem] overflow-hidden shadow-xl bg-surface-alpha flex justify-center">
-                    <img src={generatedImage} alt={t.scannerLatteAfter} className="w-full h-auto max-h-[50vh] object-contain rounded-[1.75rem]" />
+
+                {comparisonView === "slider" ? (
+                  <div className="glass-card p-4">
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <h3 className="text-sm font-semibold text-secondary uppercase tracking-widest">{t.scannerResults || "Scanner Results"}</h3>
+                      <button
+                        onClick={reset}
+                        className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-xl flex items-center justify-center text-white hover:bg-black/60 transition-colors shadow-lg"
+                      >
+                        <RefreshCw size={18} />
+                      </button>
+                    </div>
+                    <ImageComparisonSlider
+                      beforeImage={previewSrc || ""}
+                      afterImage={generatedImage}
+                      beforeLabel={t.scannerLatteBefore}
+                      afterLabel={t.scannerLatteAfter}
+                    />
                   </div>
-                </div>
+                ) : (
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <div className="glass-card p-4">
+                      <div className="flex items-center justify-between gap-3 mb-3">
+                        <h3 className="text-sm font-semibold text-secondary uppercase tracking-widest">{t.scannerLatteBefore}</h3>
+                        <button
+                          onClick={reset}
+                          className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-xl flex items-center justify-center text-white hover:bg-black/60 transition-colors shadow-lg"
+                        >
+                          <RefreshCw size={18} />
+                        </button>
+                      </div>
+                      <div className="rounded-[1.75rem] overflow-hidden shadow-xl bg-surface-alpha flex justify-center">
+                        <img src={previewSrc || undefined} alt={t.scannerLatteBefore} className="w-full h-auto max-h-[50vh] object-contain rounded-[1.75rem]" />
+                      </div>
+                    </div>
+                    <div className="glass-card p-4">
+                      <h3 className="text-sm font-semibold text-secondary uppercase tracking-widest mb-3">{t.scannerLatteAfter}</h3>
+                      <div className="rounded-[1.75rem] overflow-hidden shadow-xl bg-surface-alpha flex justify-center">
+                        <img src={generatedImage} alt={t.scannerLatteAfter} className="w-full h-auto max-h-[50vh] object-contain rounded-[1.75rem]" />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="relative rounded-[2rem] overflow-hidden shadow-2xl bg-surface-alpha flex justify-center">

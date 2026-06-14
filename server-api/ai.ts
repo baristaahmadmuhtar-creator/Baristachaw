@@ -808,7 +808,7 @@ const BREW_OPTIMIZE_PROVIDER_CHAIN: OpenAiCompatConfig[] = [
 
 const OPENAI_IMAGE_EDIT_URL = 'https://api.openai.com/v1/images/edits';
 const OPENAI_IMAGE_EDIT_DEFAULTS: OpenAiImageEditConfig = {
-  model: (process.env.OPENAI_IMAGE_EDIT_MODEL || process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1.5').trim() || 'gpt-image-1.5',
+  model: (process.env.OPENAI_IMAGE_EDIT_MODEL || process.env.OPENAI_IMAGE_MODEL || 'gpt-image-2-2026-04-21').trim() || 'gpt-image-2-2026-04-21',
   quality: 'high',
   size: 'auto',
   outputFormat: 'jpeg',
@@ -1483,7 +1483,7 @@ async function callOpenAiImageEdit(
   formData.append('size', config.size);
   formData.append('output_format', config.outputFormat);
   formData.append('output_compression', String(config.outputCompression));
-  if (config.model === 'gpt-image-1') {
+  if (config.model.startsWith('gpt-image-')) {
     formData.append('input_fidelity', config.inputFidelity);
   }
 

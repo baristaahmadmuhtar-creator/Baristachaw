@@ -277,7 +277,23 @@ export function FirstRunOnboarding() {
   const selectedDripper = dripperItems.find((item) => item.id === preferredDripperId);
   const selectedGrinder = grinderItems.find((item) => item.id === preferredGrinderId);
 
+function isPasswordRecoveryRequest() {
+  if (typeof window === 'undefined') return false;
+  try {
+    const url = new URL(window.location.href);
+    const hash = new URLSearchParams(url.hash.replace(/^#/, ''));
+    const type = hash.get('type') || url.searchParams.get('type') || '';
+    return url.searchParams.get('recovery') === '1' || type === 'recovery';
+  } catch {
+    return false;
+  }
+}
+
   useEffect(() => {
+    if (isPasswordRecoveryRequest()) {
+      setVisible(false);
+      return;
+    }
     setVisible(loadEquipmentPreferences() === null);
   }, []);
 

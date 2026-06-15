@@ -8,6 +8,7 @@ import { BillingApiError, startBillingCheckout } from '../../services/billing';
 import { getCurrencyForRegion, PRICING, formatCurrency } from '../../services/billingConfig';
 import { useGlobalState } from '../../context/GlobalState';
 import { modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
+import { CustomSelect } from '../ui/CustomSelect';
 
 type PlanGrowthSurfaceProps = {
   snapshot: AccountStatusSnapshot | null;
@@ -315,7 +316,7 @@ export function PlanGrowthSurface({
   const modalRef = useRef<HTMLDivElement | null>(null);
   const isRtl = direction === 'rtl';
 
-  const { region } = useGlobalState();
+  const { region, setRegion } = useGlobalState();
 
   const displayPlans = useMemo(() => snapshot ? resolveDisplayPlans(snapshot) : [], [snapshot]);
   const recommendedPlan = useMemo(() => snapshot ? resolveRecommendedPlan(snapshot) : null, [snapshot]);
@@ -498,21 +499,22 @@ export function PlanGrowthSurface({
 
               {/* Region Selector */}
               <div className="mt-8 flex justify-end">
-                <div className="relative inline-block">
-                  <select
+                <div className="w-44">
+                  <CustomSelect
                     value={region}
-                    onChange={(e) => setRegion(e.target.value as any)}
-                    className="absolute inset-0 h-full w-full opacity-0 cursor-pointer"
-                    aria-label="Select Region"
-                  >
-                    {['id','bn','my','sg','au','eu','us','global'].map(r => (
-                      <option key={r} value={r}>{getRegionName(r)}</option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none flex items-center gap-2 rounded-lg bg-surface-alpha px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-secondary shadow-sm border border-glass transition-colors">
-                    {getRegionName(region)}
-                    <ChevronDown size={14} className="opacity-50" />
-                  </div>
+                    onChange={(val) => setRegion(val as any)}
+                    position="top"
+                    options={[
+                      { value: 'id', label: 'Indonesia' },
+                      { value: 'bn', label: 'Brunei' },
+                      { value: 'my', label: 'Malaysia' },
+                      { value: 'sg', label: 'Singapore' },
+                      { value: 'au', label: 'Australia' },
+                      { value: 'eu', label: 'Europe' },
+                      { value: 'us', label: 'United States' },
+                      { value: 'global', label: 'Global' }
+                    ]}
+                  />
                 </div>
               </div>
 

@@ -225,7 +225,11 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
       const hash = new URLSearchParams(url.hash.replace(/^#/, ''));
       const type = hash.get('type') || url.searchParams.get('type') || '';
       const isRecovery = url.searchParams.get('recovery') === '1' || type === 'recovery';
-      if (isRecovery) {
+      
+      const pathname = url.pathname.toLowerCase().replace(/\/+$/, '');
+      const isAuthRoute = pathname === '/login' || pathname === '/masuk' || pathname === '/signin' || pathname === '/register' || pathname === '/signup' || pathname === '/daftar';
+      
+      if (isRecovery && !isAuthRoute) {
         openAuthModal({ source: 'recovery' });
       }
     } catch {

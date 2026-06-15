@@ -13,9 +13,10 @@ interface CustomSelectProps {
   options: Option[];
   placeholder?: string;
   className?: string;
+  position?: 'top' | 'bottom';
 }
 
-export function CustomSelect({ id, value, onChange, options, placeholder, className = '' }: CustomSelectProps) {
+export function CustomSelect({ id, value, onChange, options, placeholder, className = '', position = 'bottom' }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -44,7 +45,9 @@ export function CustomSelect({ id, value, onChange, options, placeholder, classN
       </button>
 
       {isOpen && (
-        <div className="absolute z-[9999] mt-2 w-full overflow-hidden rounded-xl border border-glass bg-[var(--bg-elevated)] p-1.5 shadow-xl backdrop-blur-2xl">
+        <div className={`absolute z-[9999] w-full overflow-hidden rounded-xl border border-glass bg-[var(--bg-elevated)] p-1.5 shadow-xl backdrop-blur-2xl ${
+          position === 'top' ? 'bottom-full mb-2' : 'mt-2'
+        }`}>
           <ul className="max-h-60 overflow-auto outline-none scrollbar-hide">
             {options.map((opt) => (
               <li key={opt.value}>

@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { useAuthModal } from '../context/AuthModalContext';
 import { useGlobalState } from '../context/GlobalState';
-import { CustomSelect } from '../components/ui/CustomSelect';
 import { EmailPasswordAuthForm } from '../components/auth/EmailPasswordAuthForm';
 import { AuthProgressMark } from '../components/auth/AuthProgressMark';
 import {
@@ -24,7 +23,7 @@ type AuthScreenAction = 'google' | 'facebook';
 const BARISTACHAW_ONBOARDING_SEEN = 'BARISTACHAW_ONBOARDING_SEEN';
 
 export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
-  const { t, language, setLanguage, region, setRegion } = useGlobalState();
+  const { t, language, region } = useGlobalState();
   const { isAuthenticated, authBusy, authError, isOffline, startGoogleAuth, startFacebookAuth } = useAuthModal();
   const [success, setSuccess] = useState('');
   const [activeAction, setActiveAction] = useState<AuthScreenAction | null>(null);
@@ -153,48 +152,6 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
             </AnimatePresence>
 
             <div className="auth-card-surface rounded-2xl p-4 sm:p-5">
-              <div className="mb-4 flex flex-col sm:flex-row gap-3 rounded-xl border border-glass bg-[var(--bg-base)]/72 p-3" data-testid="auth-language-step">
-                <div className="flex-1 relative">
-                  <label htmlFor="auth-language-select" className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-secondary">
-                    {t.authRouteLanguageTitle || 'Language'}
-                  </label>
-                  <div className="relative">
-                    <CustomSelect
-                      id="auth-language-select"
-                      value={language}
-                      onChange={setLanguage}
-                      options={[
-                        { value: 'en', label: 'English' },
-                        { value: 'id', label: 'Indonesia' }
-                      ]}
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex-1 relative">
-                  <label htmlFor="auth-region-select" className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-secondary">
-                    {language === 'id' ? 'Negara' : 'Country'}
-                  </label>
-                  <div className="relative">
-                    <CustomSelect
-                      id="auth-region-select"
-                      value={region}
-                      onChange={(val) => setRegion(val as any)}
-                      options={[
-                        { value: 'id', label: 'Indonesia' },
-                        { value: 'bn', label: 'Brunei' },
-                        { value: 'my', label: 'Malaysia' },
-                        { value: 'sg', label: 'Singapore' },
-                        { value: 'au', label: 'Australia' },
-                        { value: 'eu', label: 'Europe' },
-                        { value: 'us', label: 'United States' },
-                        { value: 'global', label: 'Global' }
-                      ]}
-                    />
-                  </div>
-                </div>
-              </div>
-
               <EmailPasswordAuthForm initialMode={intent} />
 
               <div className="my-5 flex items-center gap-3">

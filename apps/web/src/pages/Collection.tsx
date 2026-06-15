@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Folder, FolderPlus, Loader2, BookOpen, FileText, Trash2, ChevronRight, ArrowLeft, X, Edit3, MoreHorizontal, NotebookPen, Search } from 'lucide-react';
+import { Folder, FolderPlus, Loader2, BookOpen, FileText, Trash2, ChevronRight, ArrowLeft, X, Edit3, MoreHorizontal, NotebookPen, Search, Image } from 'lucide-react';
 import {
   listCollectionItems,
   softDeleteCollectionItem,
@@ -28,7 +28,7 @@ import {
   validateCollectionFolderName,
 } from '../features/collection/collectionViewModel';
 
-type FilterType = 'all' | 'recipe' | 'ai_canvas' | 'note';
+type FilterType = 'all' | 'recipe' | 'ai_canvas' | 'note' | 'image';
 type CollectionViewMode = 'home' | 'folders' | 'folder';
 type PendingDeleteTarget =
   | { kind: 'item'; id: string; label: string }
@@ -472,7 +472,8 @@ export function Collection() {
 
   const filteredItems = useMemo(() => items.filter((item) => {
     if (filter === 'note' && !isNoteItem(item)) return false;
-    if (filter !== 'all' && filter !== 'note' && item.type !== filter) return false;
+    if (filter === 'image' && !(isLatteArtItem(item) || (item.content as any)?.imageDataUrl)) return false;
+    if (filter !== 'all' && filter !== 'note' && filter !== 'image' && item.type !== filter) return false;
 
     if (debouncedSearchQuery) {
       const inTitle = normalizeSearchValue(item.title || '').includes(debouncedSearchQuery);
@@ -627,8 +628,8 @@ export function Collection() {
       {currentMode !== 'folders' && (
         <div className="flex gap-2 mb-4 overflow-x-auto hide-scrollbar pb-2 shrink-0 panel-soft rounded-2xl px-2 py-2">
           <button type="button" onClick={() => setFilter('all')} className={`${filterBtnClass('all')} whitespace-nowrap`}>{t.allItems}</button>
+          <button type="button" onClick={() => setFilter('image')} className={`${filterBtnClass('image')} whitespace-nowrap`}>Gambar</button>
           <button type="button" onClick={() => setFilter('recipe')} className={`${filterBtnClass('recipe')} whitespace-nowrap`}>{t.recipes}</button>
-          <button type="button" onClick={() => setFilter('ai_canvas')} className={`${filterBtnClass('ai_canvas')} whitespace-nowrap`}>{t.aiCanvas}</button>
           <button type="button" onClick={() => setFilter('note')} className={`${filterBtnClass('note')} whitespace-nowrap`}>{t.notes} ({noteCount})</button>
         </div>
       )}
@@ -814,7 +815,7 @@ export function Collection() {
                   <span className="ml-2">{(t.collectionFoldersHiddenBody || '{count} folders are hidden.').replace('{count}', String(visibleFolders.length))}</span>
                 </button>
               ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {folderPreview.preview.map((folder) => (
                 <div
                   key={folder.id}
@@ -1095,57 +1096,102 @@ export function Collection() {
               )}
             </section>
           )}
-          <div className="space-y-3">
+          <div className="space-y-6">
             {filteredItems.length === 0 ? (
               <div className="text-center py-16 text-secondary panel-soft rounded-3xl">
                 <p className="text-lg font-semibold text-primary">{debouncedSearchQuery ? (t.collectionNoSearchInFolder || t.collectionNoSearchResults) : (t.collectionFolderEmpty || t.noItems)}</p>
                 <p className="text-sm mt-2">{debouncedSearchQuery ? (t.collectionTryDifferentSearch || '') : (t.collectionFolderEmptyBody || 'Add the first note to this folder.')}</p>
               </div>
             ) : (
-              filteredItems.map((item) => (
-                <motion.div
-                  key={item.id}
-                  initial={disableEntranceMotion ? false : { opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="glass-card p-5 group cursor-pointer"
-                  onClick={() => setSelectedItem(item)}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item.type === 'recipe' ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-500'}`}>
-                      {item.type === 'recipe' ? <BookOpen size={18} /> : (isNoteItem(item) ? <NotebookPen size={18} /> : <FileText size={18} />)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold truncate">{item.title}</h3>
-                      <p className="text-sm text-secondary mt-1 line-clamp-2">
-                        {item.type === 'recipe'
-                          ? (item.content as any)?.description || ''
-                          : isLatteArtItem(item)
-                            ? (t.scannerLatteAfter || 'AI latte art result')
-                            : (item.content as any)?.markdown?.slice(0, 120) || ''}
-                      </p>
-                      <p className="text-xs text-secondary mt-1">{getItemLabel(item)}</p>
-                    </div>
-                    {isNoteItem(item) && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); openEditNote(item); }}
-                        className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-2 text-tertiary hover:text-primary transition-all"
-                        type="button"
-                        aria-label={(t.editNote || 'Edit note') + ` ${item.title}`}
-                      >
-                        <Edit3 size={16} />
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); requestDeleteItem(item); }}
-                      className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-2 text-tertiary hover:text-red-500 transition-all"
-                      aria-label={(t.delete || 'Delete') + ` ${item.title}`}
-                    >
-                      <Trash2 size={16} />
-                    </button>
+              <>
+                {/* Images Grid */}
+                {filteredItems.filter(item => isLatteArtItem(item) || (item.content as any)?.imageDataUrl).length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {filteredItems.filter(item => isLatteArtItem(item) || (item.content as any)?.imageDataUrl).map(item => (
+                       <motion.div
+                         key={item.id}
+                         initial={disableEntranceMotion ? false : { opacity: 0, y: 10 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         className="glass-card overflow-hidden group cursor-pointer"
+                         onClick={() => setSelectedItem(item)}
+                       >
+                         <div className="aspect-square relative bg-surface-alpha flex items-center justify-center">
+                           {(item.content as any)?.imageDataUrl ? (
+                             <img src={(item.content as any).imageDataUrl} alt={item.title || "Image"} className="w-full h-full object-cover" />
+                           ) : (
+                             <Image size={24} className="text-blue-500/50" />
+                           )}
+                           {/* Hover Actions */}
+                           <div className="absolute top-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
+                             <button
+                               type="button"
+                               onClick={(e) => { e.stopPropagation(); requestDeleteItem(item); }}
+                               className="p-1.5 rounded-lg bg-black/50 backdrop-blur text-white hover:text-red-400"
+                               aria-label={(t.delete || 'Delete')}
+                             >
+                               <Trash2 size={14} />
+                             </button>
+                           </div>
+                         </div>
+                         <div className="p-3">
+                           <h3 className="font-semibold text-sm truncate">{item.title || "Latte Art"}</h3>
+                           <p className="text-[10px] text-secondary mt-0.5 truncate">{getItemLabel(item)}</p>
+                         </div>
+                       </motion.div>
+                    ))}
                   </div>
-                </motion.div>
-              ))
+                )}
+                
+                {/* List Items */}
+                {filteredItems.filter(item => !(isLatteArtItem(item) || (item.content as any)?.imageDataUrl)).length > 0 && (
+                  <div className="space-y-3">
+                    {filteredItems.filter(item => !(isLatteArtItem(item) || (item.content as any)?.imageDataUrl)).map(item => (
+                      <motion.div
+                        key={item.id}
+                        initial={disableEntranceMotion ? false : { opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="glass-card p-5 group cursor-pointer"
+                        onClick={() => setSelectedItem(item)}
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item.type === 'recipe' ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-500'}`}>
+                            {item.type === 'recipe' ? <BookOpen size={18} /> : (isNoteItem(item) ? <NotebookPen size={18} /> : <FileText size={18} />)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold truncate">{item.title}</h3>
+                            <p className="text-sm text-secondary mt-1 line-clamp-2">
+                              {item.type === 'recipe'
+                                ? (item.content as any)?.description || ''
+                                : isNoteItem(item)
+                                  ? (item.content as any)?.markdown?.slice(0, 120) || ''
+                                  : ''}
+                            </p>
+                            <p className="text-xs text-secondary mt-1">{getItemLabel(item)}</p>
+                          </div>
+                          {isNoteItem(item) && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); openEditNote(item); }}
+                              className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-2 text-tertiary hover:text-primary transition-all"
+                              type="button"
+                              aria-label={(t.editNote || 'Edit note') + ` ${item.title}`}
+                            >
+                              <Edit3 size={16} />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); requestDeleteItem(item); }}
+                            className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-2 text-tertiary hover:text-red-500 transition-all"
+                            aria-label={(t.delete || 'Delete') + ` ${item.title}`}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </motion.div>

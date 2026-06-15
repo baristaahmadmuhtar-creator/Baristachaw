@@ -219,6 +219,21 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const url = new URL(window.location.href);
+      const hash = new URLSearchParams(url.hash.replace(/^#/, ''));
+      const type = hash.get('type') || url.searchParams.get('type') || '';
+      const isRecovery = url.searchParams.get('recovery') === '1' || type === 'recovery';
+      if (isRecovery) {
+        openAuthModal({ source: 'recovery' });
+      }
+    } catch {
+      // noop
+    }
+  }, [openAuthModal]);
+
+  useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;

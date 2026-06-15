@@ -249,10 +249,10 @@ export function FirstRunOnboarding() {
     languageBody: id
       ? 'Pilihan ini akan digunakan di seluruh aplikasi dan dapat diubah lagi di pengaturan.'
       : 'This choice applies across the app and can be changed later in settings.',
-    regionTitle: id ? 'Pilih wilayah (mata uang)' : 'Choose your region (currency)',
+    regionTitle: id ? 'Pilih negara Anda' : 'Choose your country',
     regionBody: id
-      ? 'Wilayah menentukan mata uang dan harga plan yang ditampilkan.'
-      : 'Region determines the currency and plan pricing displayed.',
+      ? 'Negara Anda akan digunakan untuk menyesuaikan harga plan yang ditampilkan.'
+      : 'Your country will be used to adjust the displayed plan pricing.',
     continue: id ? 'Lanjut' : 'Continue',
     equipmentTitle: id ? 'Atur alat favorit' : 'Set your favorite equipment',
     equipmentBody: id
@@ -421,8 +421,7 @@ export function FirstRunOnboarding() {
                         {opt.id === 'global' ? 'GL' : opt.id.toUpperCase()}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block text-xs font-semibold text-primary truncate">{opt.label}</span>
-                        <span className="block text-[10px] leading-4 text-secondary">{opt.detail}</span>
+                        <span className="block text-sm font-semibold text-primary truncate">{opt.label}</span>
                       </span>
                     </button>
                   );

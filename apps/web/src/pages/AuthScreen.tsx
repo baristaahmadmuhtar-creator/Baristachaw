@@ -23,7 +23,7 @@ type AuthScreenAction = 'google' | 'facebook';
 const BARISTACHAW_ONBOARDING_SEEN = 'BARISTACHAW_ONBOARDING_SEEN';
 
 export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
-  const { t, language, setLanguage, region, setRegion } = useGlobalState();
+  const { t } = useGlobalState();
   const { isAuthenticated, authBusy, authError, isOffline, startGoogleAuth, startFacebookAuth } = useAuthModal();
   const [success, setSuccess] = useState('');
   const [activeAction, setActiveAction] = useState<AuthScreenAction | null>(null);
@@ -152,61 +152,7 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
             </AnimatePresence>
 
             <div className="auth-card-surface rounded-2xl p-4 sm:p-5">
-              <div className="mb-4 rounded-xl border border-glass bg-[var(--bg-base)]/72 p-2.5" data-testid="auth-language-step">
-                <div className="flex items-center justify-between gap-4 mb-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-secondary">{t.authRouteLanguageTitle}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-2 mb-2">
-                  {([
-                    ['en', 'English'],
-                    ['id', 'Indonesia'],
-                  ] as const).map(([value, label]) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setLanguage(value)}
-                      className={`min-h-10 rounded-xl border px-3 text-sm font-semibold transition-colors ${
-                        language === value
-                          ? 'border-blue-500/25 bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.20)]'
-                          : 'panel-divider-subtle bg-surface-alpha text-primary hover:border-blue-500/20'
-                      }`}
-                      aria-pressed={language === value}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-secondary">Region (Currency)</p>
-                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
-                  {([
-                    ['id', 'IDR'],
-                    ['bn', 'BND'],
-                    ['my', 'MYR'],
-                    ['sg', 'SGD'],
-                    ['au', 'AUD'],
-                    ['eu', 'EUR'],
-                    ['us', 'USD'],
-                    ['global', 'GLB'],
-                  ] as const).map(([value, label]) => {
-                    return (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => setRegion(value)}
-                        className={`min-h-8 rounded-lg border px-1 text-[11px] font-bold transition-colors ${
-                          region === value
-                            ? 'border-blue-500/25 bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.20)]'
-                            : 'panel-divider-subtle bg-surface-alpha text-primary hover:border-blue-500/20'
-                        }`}
-                        aria-pressed={region === value}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+
               {isOffline ? (
                 <div className="mb-4 rounded-2xl border border-amber-500/25 bg-amber-500/12 px-4 py-3 text-sm font-medium text-amber-700 dark:text-amber-300">
                   {t.authModalOffline}

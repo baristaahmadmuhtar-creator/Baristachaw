@@ -2612,65 +2612,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         );
       }
 
-      const visionModel = resolveGeminiVisionModel(selectedModel);
       const openaiKeys = getAiProviderKeys('OPENAI');
       const useOpenAi = openaiKeys.length > 0;
 
-      let text = '';
-      let activeProvider = 'GEMINI';
-      let activeModel = visionModel;
+      if (!useOpenAi) {
+        throw createApiError('no_key', 'OPENAI_API_KEY or SCANNER_API_KEY is required for analyze_image', 401, false, 'OPENAI');
+      }
+
+      const activeProvider = 'OPENAI';
+      const activeModel = 'gpt-4o-mini';
 
       res.setHeader('X-Attachment-Bytes', String(attachment.payload.byteLength));
-
-      if (useOpenAi) {
-        activeProvider = 'OPENAI';
-        activeModel = 'gpt-4o-mini';
-      }
       res.setHeader('X-Model', activeModel);
       res.setHeader('X-Provider', activeProvider);
 
       jsonHeartbeat = startJsonHeartbeatStream(res);
 
-      if (useOpenAi) {
-        try {
-          text = await withRetry(
-            key =>
-              callOpenAiVision(
-                key,
-                `As an expert barista AI (Baristachaw) adhering to SCA standards, analyze this image. ${promptForModel}`,
-                attachment.payload.data,
-                attachment.payload.mimeType,
-                activeModel,
-              ),
-            { provider: 'OPENAI', requestId, action, maxRetries: 1 },
-          );
-        } catch (openaiVisionErr) {
-          console.warn(
-            `[api/ai][${requestId}] action=${action} OpenAI vision failed, falling back to Gemini: ${sanitizeErrorDetails(openaiVisionErr)}`,
-          );
-          activeProvider = 'GEMINI';
-          activeModel = visionModel;
-          text = '';
-        }
-      }
-
-      if (!text) {
-        activeProvider = 'GEMINI';
-        activeModel = visionModel;
-        // Headers already sent, so we don't set them again.
-        
-        text = await withRetry(
-          key =>
-            callGeminiWithInlineData(
-              key,
-              `As an expert barista AI (Baristachaw) adhering to SCA standards, analyze this image. ${promptForModel}`,
-              attachment.payload.data,
-              attachment.payload.mimeType,
-              visionModel,
-            ),
-          { provider: 'GEMINI', requestId, action, maxRetries: 1 },
-        );
-      }
+      const text = await withRetry(
+        key =>
+          callOpenAiVision(
+            key,
+            `As an expert barista AI (Baristachaw) adhering to SCA standards, analyze this image. ${promptForModel}`,
+            attachment.payload.data,
+            attachment.payload.mimeType,
+            activeModel,
+          ),
+        { provider: 'OPENAI', requestId, action, maxRetries: 1 },
+      );
 
       console.info(`[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms provider=${activeProvider} model=${activeModel}`);
       return jsonHeartbeat.end({ ok: true, requestId, action, text, provider: activeProvider, model: activeModel });
@@ -2810,56 +2778,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const openaiKeys = getAiProviderKeys('OPENAI');
       const useOpenAi = openaiKeys.length > 0;
 
-      if (useOpenAi) {
-        try {
-          const edited = await withRetry(
-            key => callOpenAiImageEdit(key, {
-              base64Image: attachment.payload.data,
-              mimeType: attachment.payload.mimeType,
-              prompt,
-            }),
-            { provider: 'OPENAI', requestId, action, maxRetries: 1 },
-          );
-
-          console.info(
-            `[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms provider=OPENAI model=${edited.model}`,
-          );
-          return jsonHeartbeat.end({
-            ok: true,
-            requestId,
-            action,
-            imageDataUrl: edited.imageDataUrl,
-            provider: 'OPENAI',
-            model: edited.model,
-          });
-        } catch (openaiErr) {
-          console.warn(
-            `[api/ai][${requestId}] action=${action} OpenAI image edit failed, falling back to Gemini: ${sanitizeErrorDetails(openaiErr)}`,
-          );
-        }
+      if (!useOpenAi) {
+        throw createApiError('no_key', 'OPENAI_API_KEY or SCANNER_API_KEY is required for edit_latte_art', 401, false, 'OPENAI');
       }
 
-      // Gemini fallback: use native image generation with the latte art prompt + source image as inline data
-      const lattePrompt = buildLatteArtEditPrompt(prompt);
-      const geminiLatteResult = await withRetry(
-        key => callGeminiImageEdit(key, lattePrompt, attachment.payload.data, attachment.payload.mimeType),
-        { provider: 'GEMINI', requestId, action, maxRetries: 1 },
+      const edited = await withRetry(
+        key => callOpenAiImageEdit(key, {
+          base64Image: attachment.payload.data,
+          mimeType: attachment.payload.mimeType,
+          prompt,
+        }),
+        { provider: 'OPENAI', requestId, action, maxRetries: 1 },
       );
 
-      if (!geminiLatteResult) {
-        throw createApiError('provider_error', 'Latte art generation returned no image from any provider', 502, true, 'GEMINI');
-      }
-
       console.info(
-        `[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms provider=GEMINI model=gemini-2.0-flash-exp fallback=true`,
+        `[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms provider=OPENAI model=${edited.model}`,
       );
       return jsonHeartbeat.end({
         ok: true,
         requestId,
         action,
-        imageDataUrl: geminiLatteResult,
-        provider: 'GEMINI',
-        model: 'gemini-2.0-flash-exp',
+        imageDataUrl: edited.imageDataUrl,
+        provider: 'OPENAI',
+        model: edited.model,
       });
     }
 

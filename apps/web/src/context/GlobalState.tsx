@@ -7,6 +7,7 @@ import {
     ChatSession,
     Folder,
     Language,
+    Region,
 } from '../types';
 import {
     DEFAULT_LANGUAGE,
@@ -43,6 +44,8 @@ import { getUserBio, saveUserBio, getStoredUserName } from '../services/gemini';
 interface GlobalStateContextType {
     language: Language;
     setLanguage: React.Dispatch<React.SetStateAction<Language>>;
+    region: Region;
+    setRegion: React.Dispatch<React.SetStateAction<Region>>;
     t: Translations;
     aiSettings: AiSettings;
     setAiSettings: React.Dispatch<React.SetStateAction<AiSettings>>;
@@ -85,6 +88,7 @@ const GlobalStateContext = createContext<GlobalStateContextType | undefined>(und
 const ACTIVE_SESSION_KEY = 'BARISTA_ACTIVE_SESSION_ID';
 const AI_SETTINGS_KEY = 'BARISTA_AI_SETTINGS';
 const LANGUAGE_KEY = 'BARISTA_LANGUAGE';
+const REGION_KEY = 'BARISTA_REGION';
 
 const genId = (prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 function safeGetLocalStorageItem(key: string): string | null {
@@ -160,9 +164,24 @@ function loadLanguage(): Language {
     return DEFAULT_LANGUAGE;
 }
 
+function loadRegion(): Region {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const requested = params.get('region');
+        if (requested === 'id' || requested === 'bn' || requested === 'my' || requested === 'sg' || requested === 'au' || requested === 'eu' || requested === 'us' || requested === 'global') {
+            safeSetLocalStorageItem(REGION_KEY, requested);
+            return requested as Region;
+        }
+    } catch { }
+    const stored = safeGetLocalStorageItem(REGION_KEY);
+    if (stored === 'id' || stored === 'bn' || stored === 'my' || stored === 'sg' || stored === 'au' || stored === 'eu' || stored === 'us' || stored === 'global') return stored as Region;
+    return 'id'; // default region
+}
+
 // ─── Provider ───
 export function GlobalProvider({ children }: { children: ReactNode }) {
     const [language, setLanguage] = useState<Language>(loadLanguage);
+    const [region, setRegion] = useState<Region>(loadRegion);
     const [aiSettings, setAiSettings] = useState<AiSettings>(loadAiSettings);
     const [sessions, setSessions] = useState<ChatSession[]>([]);
     const [chatFolders, setChatFolders] = useState<ChatFolder[]>([]);
@@ -185,6 +204,10 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         safeSetLocalStorageItem(LANGUAGE_KEY, language);
     }, [language]);
+
+    useEffect(() => {
+        safeSetLocalStorageItem(REGION_KEY, region);
+    }, [region]);
 
     useEffect(() => {
         if (aiSettings.language === language) return;
@@ -371,6 +394,8 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     const value: GlobalStateContextType = {
         language,
         setLanguage,
+        region,
+        setRegion,
         t,
         aiSettings,
         setAiSettings,

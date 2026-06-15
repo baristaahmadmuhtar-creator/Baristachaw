@@ -12,7 +12,7 @@ import { ScrollReveal } from './components/ScrollReveal';
 import { SupportChatWidget } from './components/SupportChatWidget';
 import { DataShowcase } from './components/DataShowcase';
 import { ToolsShowcase } from './components/ToolsShowcase';
-import { APP_LINKS, APK_URL, PRICING, type BillingDuration, formatCurrencyByLang, getCurrencyForLanguage } from './config';
+import { APP_LINKS, APK_URL, PRICING, type BillingDuration, formatCurrency, getCurrencyForRegion, type Region } from './config';
 import type { Language } from './i18n';
 import { t } from './i18n';
 import { DownloadPage } from './pages/DownloadPage';
@@ -61,14 +61,14 @@ type RegisterState = {
   plan: 'free' | 'plus' | 'pro' | 'team';
 };
 
-function PricingSection({ language, onRegister }: { language: Language; onRegister: (plan: 'free' | 'plus' | 'pro' | 'team') => void }) {
+function PricingSection({ language, region, onRegister }: { language: Language; region: Region; onRegister: (plan: 'free' | 'plus' | 'pro' | 'team') => void }) {
   const [duration, setDuration] = useState<BillingDuration>('quarterly');
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
 
   const plusTier = PRICING.plus[duration];
   const proTier = PRICING.pro[duration];
-  const currency = getCurrencyForLanguage(language);
+  const currency = getCurrencyForRegion(region);
 
   const durationKeys: Record<BillingDuration, string> = {
     monthly: 'pricing.1month',
@@ -144,11 +144,11 @@ function PricingSection({ language, onRegister }: { language: Language; onRegist
             <div className="plan-price-display">
               {plusTier.discountPct > 0 && (
                 <span className="plan-price-original">
-                  {formatCurrencyByLang(plusTier.original[currency], language)}
+                  {formatCurrency(plusTier.original[currency], currency)}
                 </span>
               )}
               <strong className="plan-price-main">
-                {formatCurrencyByLang(plusTier.discounted[currency], language)}
+                {formatCurrency(plusTier.discounted[currency], currency)}
               </strong>
               <span className="plan-price-sub">
                 / {t(durationKeys[duration], language).toLowerCase()}
@@ -180,11 +180,11 @@ function PricingSection({ language, onRegister }: { language: Language; onRegist
             <div className="plan-price-display">
               {proTier.discountPct > 0 && (
                 <span className="plan-price-original">
-                  {formatCurrencyByLang(proTier.original[currency], language)}
+                  {formatCurrency(proTier.original[currency], currency)}
                 </span>
               )}
               <strong className="plan-price-main">
-                {formatCurrencyByLang(proTier.discounted[currency], language)}
+                {formatCurrency(proTier.discounted[currency], currency)}
               </strong>
               <span className="plan-price-sub">
                 / {t(durationKeys[duration], language).toLowerCase()}
@@ -264,17 +264,16 @@ function PricingSection({ language, onRegister }: { language: Language; onRegist
   );
 }
 
-function LandingHome({ language }: { language: Language }) {
+function LandingHome({ language, region }: { language: Language; region: Region }) {
   const [registerState, setRegisterState] = useState<RegisterState>({ open: false, plan: 'free' });
   const [duration] = useState<BillingDuration>('quarterly');
 
   const openRegister = (plan: 'free' | 'plus' | 'pro' | 'team') => {
     if (plan === 'team') {
-      // team goes to contact form
       window.location.href = '/support?topic=general';
       return;
     }
-    setRegisterState({ open: true, plan });
+    window.location.href = `${APP_LINKS.register}?plan=${plan}&region=${region}&lang=${language}`;
   };
 
   return (
@@ -286,7 +285,7 @@ function LandingHome({ language }: { language: Language }) {
       <ToolsShowcase language={language} />
       <FeatureGraphics language={language} />
       <EvidenceSection language={language} />
-      <PricingSection language={language} onRegister={openRegister} />
+      <PricingSection language={language} region={region} onRegister={openRegister} />
       <DownloadSection language={language} />
       <ScrollReveal variant="blur">
         <section className="final-cta">
@@ -347,12 +346,24 @@ export function App() {
     if (stored === 'bn') return 'bn';
     return 'id';
   });
+
+  const [region, setRegion] = useState<Region>(() => {
+    const stored = localStorage.getItem('baristachaw-marketing-region');
+    if (stored) return stored as Region;
+    return 'global';
+  });
+
   const location = useLocation();
 
   const handleLanguageChange = (next: Language) => {
     setLanguage(next);
     localStorage.setItem('baristachaw-marketing-language', next);
     document.documentElement.lang = next === 'bn' ? 'ms-BN' : next;
+  };
+
+  const handleRegionChange = (next: Region) => {
+    setRegion(next);
+    localStorage.setItem('baristachaw-marketing-region', next);
   };
 
   useEffect(() => {
@@ -362,14 +373,19 @@ export function App() {
   return (
     <div className="marketing-app">
       <ScrollManager />
-      <LandingHeader language={language} onLanguageChange={handleLanguageChange} />
+      <LandingHeader 
+        language={language} 
+        onLanguageChange={handleLanguageChange} 
+        region={region} 
+        onRegionChange={handleRegionChange} 
+      />
       <Routes>
-        <Route path="/" element={<LandingHome language={language} />} />
+        <Route path="/" element={<LandingHome language={language} region={region} />} />
         <Route path="/support" element={<SupportPage language={language} />} />
         <Route path="/privacy" element={<PrivacyPage language={language} />} />
         <Route path="/terms" element={<TermsPage language={language} />} />
         <Route path="/download/*" element={<DownloadPage language={language} />} />
-        <Route path="*" element={<LandingHome language={language} />} />
+        <Route path="*" element={<LandingHome language={language} region={region} />} />
       </Routes>
       <SiteFooter language={language} />
       <SupportChatWidget language={language} />

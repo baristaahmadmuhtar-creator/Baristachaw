@@ -7,6 +7,7 @@ import { useAuthModal } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
 import { BillingApiError, startBillingCheckout } from '../../services/billing';
 import type { AccountPlan, PlanCode } from '../../services/accountStatus';
+import { getCurrencyForRegion, PRICING, formatCurrency } from '../../services/billingConfig';
 import { modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
 
 export type AiPaidFeature = 'chat' | 'scanner' | 'search' | 'brew';
@@ -89,7 +90,16 @@ function AiAccessGateDialog({
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const isUpgrade = state.mode === 'upgrade';
   const planName = plan?.name || t.aiGatePlanFallbackName;
-  const planPrice = plan?.displayPrice || t.aiGatePriceFallback;
+  
+  const { region } = useGlobalState();
+  const currency = getCurrencyForRegion(region);
+
+  let planPrice = plan?.displayPrice || t.aiGatePriceFallback;
+  if (plan && (plan.code === 'starter' || plan.code === 'pro')) {
+    const tier = PRICING[plan.code]['quarterly'];
+    planPrice = formatCurrency(tier.discounted[currency], currency) + ' / 3mo';
+  }
+
   const planIncludes = plan
     ? formatText(t.aiGatePlanIncludes, {
         ai: plan.aiDailyLimit,

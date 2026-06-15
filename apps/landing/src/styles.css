@@ -26,7 +26,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   outline-offset: 3px;
 }
 
-.marketing-app { min-height: 100vh; overflow: clip; }
+.marketing-app { min-height: 100vh; overflow: hidden; overflow: clip; }
 .site-header {
   position: absolute;
   inset: 0 0 auto;
@@ -44,9 +44,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .desktop-nav { margin-left: auto; display: flex; gap: 26px; color: rgba(255,255,255,.76); font-size: 14px; }
 .desktop-nav a:hover { color: white; }
 .header-actions { display: flex; align-items: center; gap: 12px; }
-.language-switch { display: flex; padding: 3px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; background: rgba(255,255,255,.08); }
-.language-switch button { border: 0; color: rgba(255,255,255,.64); background: transparent; border-radius: 999px; min-width: 34px; height: 28px; font-size: 11px; font-weight: 800; cursor: pointer; }
-.language-switch button[aria-pressed="true"] { color: var(--ink); background: white; }
+.language-switch { display: flex; gap: 8px; }
+.dropdown-group { display: flex; padding: 3px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; background: rgba(255,255,255,.08); }
+.header-select { -webkit-appearance: none; appearance: none; -webkit-tap-highlight-color: transparent; border: 0; color: white; background: transparent; border-radius: 999px; padding: 0 12px; height: 28px; font-size: 11px; font-weight: 800; cursor: pointer; text-align: center; outline: none; }
+.header-select option { color: var(--ink); background: white; font-weight: 600; }
 .header-login { font-size: 14px; font-weight: 700; }
 .menu-button { display: none; color: white; background: transparent; border: 0; padding: 8px; }
 .mobile-menu { display: none; }
@@ -57,7 +58,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .button-primary { color: white; background: var(--blue); box-shadow: 0 16px 40px rgba(23,105,255,.3); }
 .button-primary:hover { background: #0d5bea; }
 .button-light { color: var(--ink); background: white; box-shadow: 0 16px 40px rgba(0,0,0,.16); }
-.button-ghost { color: white; border-color: rgba(255,255,255,.32); background: rgba(255,255,255,.08); backdrop-filter: blur(14px); }
+.button-ghost { color: white; border-color: rgba(255,255,255,.32); background: rgba(255,255,255,.08); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .button-outline { border-color: var(--line); background: white; color: var(--ink); }
 
 .hero { position: relative; min-height: 100svh; height: max(780px, 100svh); color: white; background: #07152f; isolation: isolate; }
@@ -73,7 +74,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .hero-actions { display: flex; flex-wrap: wrap; gap: 11px; align-items: center; margin-top: 30px; }
 .hero-register { padding: 12px 8px; font-weight: 700; color: rgba(255,255,255,.82); border-bottom: 1px solid rgba(255,255,255,.3); }
 .hero-microcopy { margin-top: 22px; max-width: 560px; color: rgba(255,255,255,.5); font-size: 12px; letter-spacing: .02em; }
-.recipe-visual { position: absolute; z-index: 3; right: max(24px, calc((100vw - var(--max)) / 2)); top: 50%; width: 365px; padding: 23px; transform: translateY(-42%); border-radius: 30px; border: 1px solid rgba(255,255,255,.24); background: linear-gradient(145deg, rgba(255,255,255,.18), rgba(255,255,255,.06)); box-shadow: 0 30px 80px rgba(0,0,0,.32), inset 0 1px rgba(255,255,255,.25); backdrop-filter: blur(24px) saturate(125%); }
+.recipe-visual { position: absolute; z-index: 3; right: max(24px, calc((100vw - var(--max)) / 2)); top: 50%; width: 365px; padding: 23px; transform: translateY(-42%); border-radius: 30px; border: 1px solid rgba(255,255,255,.24); background: linear-gradient(145deg, rgba(255,255,255,.18), rgba(255,255,255,.06)); box-shadow: 0 30px 80px rgba(0,0,0,.32), inset 0 1px rgba(255,255,255,.25); -webkit-backdrop-filter: blur(24px) saturate(125%); backdrop-filter: blur(24px) saturate(125%); }
 .recipe-topline, .recipe-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; color: rgba(255,255,255,.7); }
 .confidence-chip { display: inline-flex; align-items: center; gap: 5px; color: #d9fbe8; }
 .recipe-numbers { display: grid; grid-template-columns: repeat(3,1fr); margin: 22px 0; border-block: 1px solid rgba(255,255,255,.14); }
@@ -156,7 +157,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .feature-recipe { color: white; background: radial-gradient(circle at 80% 35%, rgba(39,112,255,.64), transparent 28%), #07152f !important; }
 .input-output-graphic { display: grid; grid-template-columns: 1fr 100px 1fr; align-items: center; gap: 22px; margin-top: 66px; }
 .input-stack, .output-stack { display: grid; gap: 10px; }
-.input-stack span, .output-stack strong { padding: 14px 16px; border: 1px solid rgba(255,255,255,.16); border-radius: 14px; background: rgba(255,255,255,.08); backdrop-filter: blur(12px); }
+.input-stack span, .output-stack strong { padding: 14px 16px; border: 1px solid rgba(255,255,255,.16); border-radius: 14px; background: rgba(255,255,255,.08); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 .logic-beam { display: grid; place-items: center; height: 100%; color: #9cc5ff; }
 .logic-beam::before, .logic-beam::after { content: ""; width: 1px; height: 46px; background: linear-gradient(transparent,#79aeff); }
 .workflow-rail { margin: 68px 0 0; padding: 0; list-style: none; }
@@ -194,6 +195,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   padding: 4px;
   background: var(--ice);
   border-radius: 999px;
+  width: -webkit-fit-content;
   width: fit-content;
   margin-inline: auto;
 }
@@ -316,6 +318,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   background: linear-gradient(135deg, #00c853, #009624);
   color: white;
   margin-bottom: 14px;
+  width: -webkit-fit-content;
   width: fit-content;
   letter-spacing: .04em;
   box-shadow: 0 4px 14px rgba(0,200,83,.25);
@@ -484,7 +487,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .site-footer > p { grid-column: 1/-1; margin: 0; color: rgba(255,255,255,.62); font-size: 12px; }
 
 .support-trigger { position: fixed; z-index: 80; right: 22px; bottom: 22px; display: grid; place-items: center; width: 58px; height: 58px; color: white; border: 0; border-radius: 50%; background: var(--blue); box-shadow: 0 18px 50px rgba(23,105,255,.42); cursor: pointer; animation: supportPulse 4s ease-in-out infinite; }
-.support-backdrop { position: fixed; z-index: 90; inset: 0; display: flex; align-items: flex-end; justify-content: flex-end; padding: 20px; background: rgba(2,10,25,.35); backdrop-filter: blur(5px); }
+.support-backdrop { position: fixed; z-index: 90; inset: 0; display: flex; align-items: flex-end; justify-content: flex-end; padding: 20px; background: rgba(2,10,25,.35); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
 .support-panel { width: min(390px,100%); max-height: min(680px,calc(100dvh - 40px)); overflow: auto; padding: 20px; border: 1px solid rgba(255,255,255,.7); border-radius: 28px; background: rgba(249,251,255,.96); box-shadow: 0 30px 90px rgba(2,15,42,.28); }
 .support-panel-head { display: grid; grid-template-columns: 48px 1fr 36px; gap: 12px; align-items: center; }
 .support-ai-mark { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 16px; color: white; background: var(--blue); }
@@ -545,6 +548,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .menu-button { display: grid; }
   .mobile-menu { position: absolute; top: 72px; right: 18px; display: grid; width: min(320px,calc(100vw - 36px)); padding: 14px; border: 1px solid rgba(255,255,255,.18); border-radius: 22px; background: rgba(7,21,47,.96); box-shadow: 0 24px 60px rgba(0,0,0,.34); }
   .mobile-menu a { padding: 13px 12px; border-bottom: 1px solid rgba(255,255,255,.1); }
+  .mobile-menu-selectors { display: flex; gap: 8px; padding: 13px 12px; border-bottom: 1px solid rgba(255,255,255,.1); }
+  .mobile-menu-selectors select { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.1); color: white; font-size: 13px; }
+  .mobile-menu-selectors select option { color: var(--ink); background: white; }
   .recipe-visual { width: 330px; opacity: .86; }
   .hero-copy { width: min(560px,calc(100vw - 400px)); }
   .problem, .engine { grid-template-columns: 1fr; }
@@ -609,6 +615,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     border-radius: 20px;
     padding: 32px 24px;
     background: white;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
   }
@@ -643,7 +650,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .support-trigger { bottom: 74px; right: 16px; width: 52px; height: 52px; }
   .support-backdrop { padding: 10px; align-items: flex-end; }
   .support-panel { max-height: calc(100dvh - 20px - env(safe-area-inset-bottom)); }
-  .mobile-sticky-cta { position: fixed; z-index: 70; left: 10px; right: 10px; bottom: max(8px,env(safe-area-inset-bottom)); display: grid; grid-template-columns: 1.2fr .8fr; padding: 5px; border: 1px solid rgba(255,255,255,.75); border-radius: 999px; background: rgba(242,247,255,.9); box-shadow: 0 14px 50px rgba(3,18,48,.22); backdrop-filter: blur(18px); }
+  .mobile-sticky-cta { position: fixed; z-index: 70; left: 10px; right: 10px; bottom: max(8px,env(safe-area-inset-bottom)); display: grid; grid-template-columns: 1.2fr .8fr; padding: 5px; border: 1px solid rgba(255,255,255,.75); border-radius: 999px; background: rgba(242,247,255,.9); box-shadow: 0 14px 50px rgba(3,18,48,.22); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
   .mobile-sticky-cta a { display: grid; place-items: center; min-height: 44px; border-radius: 999px; font-size: 13px; font-weight: 800; }
   .mobile-sticky-cta a:first-child { color: white; background: var(--blue); }
   .utility-page { padding-top: 68px; }
@@ -737,7 +744,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   margin: 0 auto;
   width: 100%;
   padding-inline: 24px;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.52);
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
@@ -929,6 +936,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   justify-content: center;
   padding: 20px;
   background: rgba(2, 10, 25, 0.55);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   animation: registerFadeIn 0.25s ease;
 }

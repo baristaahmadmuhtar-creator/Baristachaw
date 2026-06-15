@@ -13,7 +13,7 @@ type EmailPasswordAuthFormProps = {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const currentColorIconStyle = { '--icon-glyph-color': 'currentColor' } as CSSProperties;
 
-type AuthFormStep = 'email' | 'password' | 'confirmation' | 'resetSent' | 'recovery';
+type AuthFormStep = 'email' | 'password' | 'confirmation' | 'resetSent' | 'recovery' | 'forgotEmail';
 type PendingAuthAction = 'password' | 'reset' | 'recovery';
 
 function readPasswordRecoveryRequest() {
@@ -155,7 +155,7 @@ export function EmailPasswordAuthForm({
   const handleRecoverySubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!recoveryRequest.accessToken) {
-      setLocalError(t.authRecoveryTokenMissing);
+      setLocalError(t.authRecoveryTokenMissing || 'Token reset password tidak ditemukan.');
       return;
     }
     if (password.length < 8) {
@@ -171,6 +171,7 @@ export function EmailPasswordAuthForm({
         password,
       });
       setPassword('');
+      // Optionally transition to a success step
     } catch {
       // AuthModalContext surfaces the localized server error.
     } finally {
@@ -187,13 +188,15 @@ export function EmailPasswordAuthForm({
 
   if (step === 'confirmation') {
     return (
-      <div className={`rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 ${className}`}>
-        <div className="flex items-start gap-3">
-          <CheckCircle className="mt-0.5 shrink-0" size={18} variant="glyph" tone="green" />
+      <div className={`rounded-[1.25rem] border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 p-5 shadow-inner ${className}`}>
+        <div className="flex items-start gap-4">
+          <div className="rounded-full bg-emerald-500/20 p-2 text-emerald-600 dark:text-emerald-400">
+            <CheckCircle className="shrink-0" size={24} variant="glyph" />
+          </div>
           <div>
-            <h3 className="text-sm font-semibold text-primary">{t.authEmailConfirmationTitle}</h3>
-            <p className="mt-1 text-sm leading-5 text-secondary">
-              {t.authEmailConfirmationBody.replace('{email}', email)}
+            <h3 className="text-base font-bold text-primary">{t.authEmailConfirmationTitle || 'Cek Email Anda'}</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-secondary">
+              {(t.authEmailConfirmationBody || 'Kami telah mengirimkan tautan konfirmasi ke {email}.').replace('{email}', email)}
             </p>
             <button
               type="button"
@@ -201,9 +204,9 @@ export function EmailPasswordAuthForm({
                 setMode('signIn');
                 setStep('password');
               }}
-              className="mt-3 text-sm font-semibold text-[var(--auth-accent)] hover:text-[var(--auth-accent-pressed)]"
+              className="mt-4 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:-translate-y-0.5 hover:bg-emerald-600 hover:shadow-emerald-500/40"
             >
-              {t.authEmailConfirmationCta}
+              {t.authEmailConfirmationCta || 'Masuk ke Akun'}
             </button>
           </div>
         </div>
@@ -213,13 +216,15 @@ export function EmailPasswordAuthForm({
 
   if (step === 'resetSent') {
     return (
-      <div className={`rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 ${className}`}>
-        <div className="flex items-start gap-3">
-          <CheckCircle className="mt-0.5 shrink-0" size={18} variant="glyph" tone="green" />
+      <div className={`rounded-[1.25rem] border border-blue-500/20 bg-gradient-to-br from-blue-500/10 to-blue-500/5 p-5 shadow-inner ${className}`}>
+        <div className="flex items-start gap-4">
+          <div className="rounded-full bg-blue-500/20 p-2 text-blue-600 dark:text-blue-400">
+            <CheckCircle className="shrink-0" size={24} variant="glyph" />
+          </div>
           <div>
-            <h3 className="text-sm font-semibold text-primary">{t.authResetEmailSentTitle}</h3>
-            <p className="mt-1 text-sm leading-5 text-secondary">
-              {t.authResetEmailSentBody.replace('{email}', resetSentEmail || email)}
+            <h3 className="text-base font-bold text-primary">{t.authResetEmailSentTitle || 'Instruksi Terkirim'}</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-secondary">
+              {(t.authResetEmailSentBody || 'Instruksi reset password telah dikirim ke {email}. Silakan cek kotak masuk Anda.').replace('{email}', resetSentEmail || email)}
             </p>
             <button
               type="button"
@@ -227,11 +232,44 @@ export function EmailPasswordAuthForm({
                 setMode('signIn');
                 setStep('password');
               }}
-              className="mt-3 text-sm font-semibold text-[var(--auth-accent)] hover:text-[var(--auth-accent-pressed)]"
+              className="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-blue-600/30 transition-all hover:-translate-y-0.5 hover:bg-blue-700"
             >
-              {t.authResetEmailSentCta}
+              {t.authResetEmailSentCta || 'Kembali ke Login'}
             </button>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'forgotEmail') {
+    return (
+      <div className={className}>
+        <div className="mb-6 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <UserRound size={28} variant="glyph" />
+          </div>
+          <h2 className="text-xl font-black tracking-tight text-primary">Lupa Email?</h2>
+          <p className="mt-2 text-sm leading-relaxed text-secondary">
+            Jika Anda lupa email yang terdaftar, coba periksa kotak masuk email lain Anda untuk pesan dari Baristachaw, atau hubungi tim support kami.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={() => window.location.href = '/support'}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-amber-500/30 transition-all hover:from-amber-600 hover:to-amber-700"
+          >
+            Hubungi Support
+          </button>
+          <button
+            type="button"
+            onClick={() => setStep('email')}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-glass bg-surface-alpha px-4 py-3.5 text-sm font-bold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary"
+          >
+            Kembali
+          </button>
         </div>
       </div>
     );
@@ -241,175 +279,43 @@ export function EmailPasswordAuthForm({
     return (
       <div className={className}>
         {!compact ? (
-          <div className="mb-3">
-            <h2 className="text-base font-semibold text-primary">{t.authRecoveryTitle}</h2>
-            <p className="mt-1 text-sm leading-5 text-secondary">{t.authRecoveryBody}</p>
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+              <Lock size={28} variant="glyph" />
+            </div>
+            <h2 className="text-xl font-black tracking-tight text-primary">{t.authRecoveryTitle || 'Buat Password Baru'}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-secondary">{t.authRecoveryBody || 'Kode diterima! Silakan masukkan password baru Anda di bawah ini.'}</p>
           </div>
         ) : null}
 
         {localError || !recoveryRequest.accessToken ? (
-          <div className="mb-3 flex items-start gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">
-            <AlertCircle size={16} className="mt-0.5 shrink-0" variant="glyph" tone="amber" />
-            <span>{localError || t.authRecoveryTokenMissing}</span>
+          <div className="mb-4 flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-400">
+            <AlertCircle size={18} className="mt-0.5 shrink-0" variant="glyph" tone="amber" />
+            <span>{localError || t.authRecoveryTokenMissing || 'Token reset password tidak valid atau sudah kadaluarsa.'}</span>
           </div>
         ) : null}
 
-        <form onSubmit={handleRecoverySubmit} className="flex flex-col gap-3">
-          <label className="block text-sm font-semibold text-primary" htmlFor={compact ? 'auth-modal-recovery-password' : 'auth-route-recovery-password'}>
-            {t.authRecoveryPasswordLabel}
-          </label>
-          <div className="auth-field-shell flex items-center gap-3 rounded-2xl px-4 py-3">
-            <Lock size={18} className="shrink-0" variant="glyph" tone="purple" />
-            <input
-              ref={recoveryPasswordInputRef}
-              id={compact ? 'auth-modal-recovery-password' : 'auth-route-recovery-password'}
-              type={showPassword ? 'text' : 'password'}
-              autoComplete="new-password"
-              value={password}
-              onChange={(event) => {
-                setPassword(event.target.value);
-                setLocalError('');
-                clearAuthError();
-              }}
-              placeholder={t.authPasswordPlaceholder}
-              disabled={disabled || !recoveryRequest.accessToken}
-              className="min-w-0 flex-1 bg-transparent text-base text-primary outline-none placeholder:text-tertiary disabled:opacity-60"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((value) => !value)}
-              className="rounded-full p-1.5 text-secondary hover:bg-surface-alpha hover:text-primary"
-              aria-label={showPassword ? t.authHidePassword : t.authShowPassword}
-            >
-              {showPassword ? <EyeOff size={16} variant="glyph" tone="neutral" /> : <Eye size={16} variant="glyph" tone="neutral" />}
-            </button>
-          </div>
-
-          <button
-            type="submit"
-            disabled={disabled || !recoveryRequest.accessToken}
-            className="auth-action-primary flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-base font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-55"
-          >
-            {isRecoveryBusy ? <AuthProgressMark /> : <Lock size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
-            {t.authRecoverySubmit}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setMode('signIn');
-              setPassword('');
-              setLocalError('');
-              setStep('email');
-            }}
-            className="w-full rounded-xl px-3 py-2 text-center text-sm font-semibold text-secondary transition-colors hover:bg-surface-alpha hover:text-primary disabled:opacity-55"
-          >
-            {t.authResetEmailSentCta}
-          </button>
-        </form>
-      </div>
-    );
-  }
-
-  return (
-    <div className={className}>
-      {localError ? (
-        <div className="mb-3 flex items-start gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">
-          <AlertCircle size={16} className="mt-0.5 shrink-0" variant="glyph" tone="amber" />
-          <span>{localError}</span>
-        </div>
-      ) : null}
-
-      {step === 'email' ? (
-        <form onSubmit={handleEmailSubmit} className="flex flex-col gap-3">
-          <label className="block text-sm font-semibold text-primary" htmlFor={compact ? 'auth-modal-email' : 'auth-route-email'}>
-            {t.authEmailLabel}
-          </label>
-          <div className="auth-field-shell flex items-center gap-3 rounded-2xl px-4 py-3">
-            <AtSign size={18} className="shrink-0" variant="glyph" tone="ice" />
-            <input
-              id={compact ? 'auth-modal-email' : 'auth-route-email'}
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              value={email}
-              onChange={(event) => {
-                setEmail(event.target.value);
-                setLocalError('');
-                clearAuthError();
-              }}
-              placeholder={t.authEmailPlaceholder}
-              disabled={disabled}
-              className="min-w-0 flex-1 bg-transparent text-base text-primary outline-none placeholder:text-tertiary disabled:opacity-60"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={disabled}
-            className="auth-action-primary flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-base font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-55"
-          >
-            {isPasswordBusy ? <AuthProgressMark /> : <UserRound size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
-            {t.authEmailContinue}
-          </button>
-        </form>
-      ) : (
-        <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={() => setStep('email')}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-secondary hover:text-primary"
-            >
-              <ArrowLeft size={14} variant="glyph" tone="neutral" />
-              {t.authBackToEmail}
-            </button>
-            <span className="truncate rounded-full bg-surface-alpha px-3 py-1 text-xs font-semibold text-secondary">
-              {email}
-            </span>
-          </div>
-
-          {isSignUp ? (
-            <div className="flex flex-col gap-2">
-              <label className="block text-sm font-semibold text-primary" htmlFor={compact ? 'auth-modal-name' : 'auth-route-name'}>
-                {t.authNameLabel}
-              </label>
-              <input
-                ref={displayNameInputRef}
-                id={compact ? 'auth-modal-name' : 'auth-route-name'}
-                type="text"
-                autoComplete="name"
-                value={displayName}
-                onChange={(event) => {
-                  setDisplayName(event.target.value);
-                  clearAuthError();
-                }}
-                placeholder={t.authNamePlaceholder}
-                disabled={disabled}
-                className="auth-field-shell w-full rounded-2xl px-4 py-3 text-base text-primary outline-none placeholder:text-tertiary disabled:opacity-60"
-              />
-            </div>
-          ) : null}
-
-          <div className="flex flex-col gap-2">
-            <label className="block text-sm font-semibold text-primary" htmlFor={compact ? 'auth-modal-password' : 'auth-route-password'}>
-              {t.authPasswordLabel}
+        <form onSubmit={handleRecoverySubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-bold text-primary" htmlFor={compact ? 'auth-modal-recovery-password' : 'auth-route-recovery-password'}>
+              {t.authRecoveryPasswordLabel || 'Password Baru'}
             </label>
-            <div className="auth-field-shell flex items-center gap-3 rounded-2xl px-4 py-3">
+            <div className="auth-field-shell flex items-center gap-3 rounded-2xl border border-glass bg-surface-alpha px-4 py-3.5 focus-within:border-purple-500/50 focus-within:bg-[var(--bg-base)]">
               <Lock size={18} className="shrink-0" variant="glyph" tone="purple" />
               <input
-                ref={passwordInputRef}
-                id={compact ? 'auth-modal-password' : 'auth-route-password'}
+                ref={recoveryPasswordInputRef}
+                id={compact ? 'auth-modal-recovery-password' : 'auth-route-recovery-password'}
                 type={showPassword ? 'text' : 'password'}
-                autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                autoComplete="new-password"
                 value={password}
                 onChange={(event) => {
                   setPassword(event.target.value);
                   setLocalError('');
                   clearAuthError();
                 }}
-                placeholder={t.authPasswordPlaceholder}
-                disabled={disabled}
-                className="min-w-0 flex-1 bg-transparent text-base text-primary outline-none placeholder:text-tertiary disabled:opacity-60"
+                placeholder={t.authPasswordPlaceholder || 'Minimal 8 karakter'}
+                disabled={disabled || !recoveryRequest.accessToken}
+                className="min-w-0 flex-1 bg-transparent text-[15px] font-semibold text-primary outline-none placeholder:font-medium placeholder:text-tertiary disabled:opacity-60"
               />
               <button
                 type="button"
@@ -424,31 +330,191 @@ export function EmailPasswordAuthForm({
 
           <button
             type="submit"
-            disabled={disabled}
-            className="auth-action-primary flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-base font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-55"
+            disabled={disabled || !recoveryRequest.accessToken}
+            className="auth-action-primary mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-purple-600 to-purple-500 px-4 py-3.5 text-[15px] font-extrabold text-white shadow-[0_12px_24px_rgba(168,85,247,0.25)] transition-all hover:from-purple-700 hover:to-purple-600 disabled:cursor-not-allowed disabled:opacity-55"
           >
-            {isPasswordBusy ? <AuthProgressMark /> : <Lock size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
-            {isSignUp ? t.authCreateAccount : t.authSignInWithPassword}
+            {isRecoveryBusy ? <AuthProgressMark /> : <Lock size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
+            {t.authRecoverySubmit || 'Simpan Password'}
           </button>
 
-          {!isSignUp ? (
+          <button
+            type="button"
+            onClick={() => {
+              setMode('signIn');
+              setPassword('');
+              setLocalError('');
+              setStep('email');
+            }}
+            className="w-full rounded-2xl px-4 py-3.5 text-center text-sm font-bold text-secondary transition-colors hover:bg-surface-alpha hover:text-primary disabled:opacity-55"
+          >
+            {t.authResetEmailSentCta || 'Kembali ke Login'}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  return (
+    <div className={className}>
+      {localError ? (
+        <div className="mb-4 flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-sm font-medium text-red-600 dark:text-red-400">
+          <AlertCircle size={18} className="mt-0.5 shrink-0" variant="glyph" tone="amber" />
+          <span>{localError}</span>
+        </div>
+      ) : null}
+
+      {step === 'email' ? (
+        <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-bold text-primary" htmlFor={compact ? 'auth-modal-email' : 'auth-route-email'}>
+              {t.authEmailLabel || 'Email'}
+            </label>
+            <div className="auth-field-shell flex items-center gap-3 rounded-2xl border border-glass bg-surface-alpha px-4 py-3.5 focus-within:border-blue-500/50 focus-within:bg-[var(--bg-base)]">
+              <AtSign size={18} className="shrink-0" variant="glyph" tone="ice" />
+              <input
+                id={compact ? 'auth-modal-email' : 'auth-route-email'}
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  setLocalError('');
+                  clearAuthError();
+                }}
+                placeholder={t.authEmailPlaceholder || 'nama@email.com'}
+                disabled={disabled}
+                className="min-w-0 flex-1 bg-transparent text-[15px] font-semibold text-primary outline-none placeholder:font-medium placeholder:text-tertiary disabled:opacity-60"
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            disabled={disabled}
+            className="auth-action-primary mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3.5 text-[15px] font-extrabold text-white shadow-[0_12px_24px_rgba(37,99,235,0.25)] transition-all hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-55"
+          >
+            {isPasswordBusy ? <AuthProgressMark /> : <UserRound size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
+            {t.authEmailContinue || 'Lanjutkan'}
+          </button>
+          <div className="text-center">
             <button
               type="button"
-              onClick={() => void handleSendPasswordReset()}
-              disabled={disabled}
-              className="w-full rounded-xl px-3 py-2 text-center text-sm font-semibold text-[var(--auth-accent)] transition-colors hover:bg-[color-mix(in_srgb,var(--auth-accent)_10%,transparent)] hover:text-[var(--auth-accent-pressed)] disabled:opacity-55"
+              onClick={() => setStep('forgotEmail')}
+              className="inline-block rounded-lg px-3 py-1.5 text-[13px] font-bold text-secondary hover:bg-surface-alpha hover:text-primary transition-colors"
             >
-              {isResetBusy ? t.authResetEmailSending : t.authForgotPassword}
+              Lupa Email?
             </button>
+          </div>
+        </form>
+      ) : (
+        <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
+          <div className="mb-2 flex items-center justify-between gap-3 rounded-2xl border border-glass bg-surface-alpha px-4 py-3">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--bg-base)] text-blue-500 shadow-sm">
+                <UserRound size={14} variant="glyph" />
+              </div>
+              <span className="truncate text-[13px] font-bold text-primary">
+                {email}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setStep('email')}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[var(--bg-base)] px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-widest text-secondary shadow-sm hover:text-primary transition-colors"
+            >
+              Ganti
+            </button>
+          </div>
+
+          {isSignUp ? (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-bold text-primary" htmlFor={compact ? 'auth-modal-name' : 'auth-route-name'}>
+                {t.authNameLabel || 'Nama Lengkap'}
+              </label>
+              <input
+                ref={displayNameInputRef}
+                id={compact ? 'auth-modal-name' : 'auth-route-name'}
+                type="text"
+                autoComplete="name"
+                value={displayName}
+                onChange={(event) => {
+                  setDisplayName(event.target.value);
+                  clearAuthError();
+                }}
+                placeholder={t.authNamePlaceholder || 'Cth: Budi Santoso'}
+                disabled={disabled}
+                className="auth-field-shell w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3.5 text-[15px] font-semibold text-primary outline-none placeholder:font-medium placeholder:text-tertiary focus-within:border-blue-500/50 focus-within:bg-[var(--bg-base)] disabled:opacity-60"
+              />
+            </div>
           ) : null}
+
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-bold text-primary" htmlFor={compact ? 'auth-modal-password' : 'auth-route-password'}>
+                {t.authPasswordLabel || 'Password'}
+              </label>
+              {!isSignUp ? (
+                <button
+                  type="button"
+                  onClick={() => void handleSendPasswordReset()}
+                  disabled={disabled}
+                  className="text-[12px] font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors disabled:opacity-55"
+                >
+                  {isResetBusy ? (t.authResetEmailSending || 'Mengirim...') : (t.authForgotPassword || 'Lupa Password?')}
+                </button>
+              ) : null}
+            </div>
+            <div className="auth-field-shell flex items-center gap-3 rounded-2xl border border-glass bg-surface-alpha px-4 py-3.5 focus-within:border-blue-500/50 focus-within:bg-[var(--bg-base)]">
+              <Lock size={18} className="shrink-0" variant="glyph" tone="purple" />
+              <input
+                ref={passwordInputRef}
+                id={compact ? 'auth-modal-password' : 'auth-route-password'}
+                type={showPassword ? 'text' : 'password'}
+                autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                value={password}
+                onChange={(event) => {
+                  setPassword(event.target.value);
+                  setLocalError('');
+                  clearAuthError();
+                }}
+                placeholder={t.authPasswordPlaceholder || 'Minimal 8 karakter'}
+                disabled={disabled}
+                className="min-w-0 flex-1 bg-transparent text-[15px] font-semibold text-primary outline-none placeholder:font-medium placeholder:text-tertiary disabled:opacity-60"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((value) => !value)}
+                className="rounded-full p-1.5 text-secondary hover:bg-surface-alpha hover:text-primary transition-colors"
+                aria-label={showPassword ? t.authHidePassword : t.authShowPassword}
+              >
+                {showPassword ? <EyeOff size={16} variant="glyph" tone="neutral" /> : <Eye size={16} variant="glyph" tone="neutral" />}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={disabled}
+            className="auth-action-primary mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3.5 text-[15px] font-extrabold text-white shadow-[0_12px_24px_rgba(37,99,235,0.25)] transition-all hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-55"
+          >
+            {isPasswordBusy ? <AuthProgressMark /> : <Lock size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
+            {isSignUp ? (t.authCreateAccount || 'Buat Akun') : (t.authSignInWithPassword || 'Masuk')}
+          </button>
+
+          <div className="relative mt-2 flex items-center justify-center py-2">
+            <div className="absolute inset-x-0 h-px bg-glass"></div>
+            <span className="relative bg-[var(--bg-elevated)] px-4 text-[11px] font-extrabold uppercase tracking-widest text-tertiary">
+              ATAU
+            </span>
+          </div>
 
           <button
             type="button"
             onClick={switchMode}
             disabled={disabled}
-            className="w-full rounded-xl px-3 py-2 text-center text-sm font-semibold text-secondary transition-colors hover:bg-surface-alpha hover:text-primary disabled:opacity-55"
+            className="w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3.5 text-center text-[14px] font-bold text-primary transition-colors hover:bg-[var(--bg-base)] disabled:opacity-55"
           >
-            {isSignUp ? t.authSwitchToPasswordSignin : t.authSwitchToPasswordSignup}
+            {isSignUp ? (t.authSwitchToPasswordSignin || 'Sudah punya akun? Masuk') : (t.authSwitchToPasswordSignup || 'Belum punya akun? Daftar')}
           </button>
         </form>
       )}

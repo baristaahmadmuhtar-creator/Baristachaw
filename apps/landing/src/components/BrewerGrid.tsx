@@ -279,9 +279,9 @@ export function BrewerGrid({ language }: { language: Language }) {
                       {brewer.summary[language]}
                     </p>
                   </div>
-                  <button className="brewer-row-toggle" aria-label="Toggle Details">
+                  <span className="brewer-row-toggle" aria-hidden="true">
                     {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                  </button>
+                  </span>
                 </div>
 
                 <AnimatePresence initial={false}>

@@ -10,8 +10,8 @@ test('renders the full landing contract without console errors or overflow', asy
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Seduh lebih presisi/);
-  await expect(page.getByRole('region', { name: /Seduh lebih presisi/ }).getByRole('link', { name: /Coba AI Brew/ })).toHaveAttribute(
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Seduh Kopi Sempurna/);
+  await expect(page.getByRole('region', { name: /Seduh Kopi Sempurna/ }).getByRole('link', { name: /Mulai Seduh/ })).toHaveAttribute(
     'href',
     'https://app.baristachaw.com/tools?tab=ai_brew',
   );
@@ -25,7 +25,7 @@ test('renders the full landing contract without console errors or overflow', asy
 
 test('support widget opens, traps focus, and routes to validated support form', async ({ page }) => {
   await page.getByRole('button', { name: 'Buka bantuan Baristachaw' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Baristachaw Support AI' });
+  const dialog = page.getByRole('dialog', { name: 'Baristachaw Support' });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByText(/bukan human support 24\/7/)).toBeVisible();
   await dialog.getByRole('link', { name: 'Hubungi support' }).click();
@@ -52,9 +52,9 @@ test('legal and download routes are direct, honest, and non-PWA', async ({ page 
 });
 
 test('language toggle changes the public interface without mixed primary copy', async ({ page }) => {
-  await page.getByRole('button', { name: 'EN', exact: true }).click();
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Brew smarter/);
-  await expect(page.getByRole('region', { name: /Brew smarter/ }).getByRole('link', { name: 'Try AI Brew' })).toBeVisible();
+  await page.getByLabel('Select Language').selectOption('en');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Brew the Perfect Cup/);
+  await expect(page.getByRole('region', { name: /Brew the Perfect Cup/ }).getByRole('link', { name: 'Start Brewing' })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 });
 

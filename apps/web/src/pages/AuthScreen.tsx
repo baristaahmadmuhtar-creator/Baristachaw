@@ -23,7 +23,7 @@ type AuthScreenAction = 'google' | 'facebook';
 const BARISTACHAW_ONBOARDING_SEEN = 'BARISTACHAW_ONBOARDING_SEEN';
 
 export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
-  const { t, language, setLanguage } = useGlobalState();
+  const { t, language, setLanguage, region, setRegion } = useGlobalState();
   const { isAuthenticated, authBusy, authError, isOffline, startGoogleAuth, startFacebookAuth } = useAuthModal();
   const [success, setSuccess] = useState('');
   const [activeAction, setActiveAction] = useState<AuthScreenAction | null>(null);
@@ -68,10 +68,15 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
   useEffect(() => {
     try {
       const url = new URL(window.location.href);
-      if (url.searchParams.get('confirmed') !== '1') return;
-      setSuccess(t.authEmailConfirmedBody);
-      url.searchParams.delete('confirmed');
-      window.history.replaceState(window.history.state, document.title, `${url.pathname}${url.search}${url.hash}`);
+      if (url.searchParams.get('confirmed') === '1') {
+        setSuccess(t.authEmailConfirmedBody);
+        url.searchParams.delete('confirmed');
+        window.history.replaceState(window.history.state, document.title, `${url.pathname}${url.search}${url.hash}`);
+      }
+      const plan = url.searchParams.get('plan');
+      if (plan) {
+        window.localStorage.setItem('BARISTACHAW_PENDING_PLAN', plan);
+      }
     } catch {
       // Non-blocking browser-only notice.
     }
@@ -148,8 +153,10 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
 
             <div className="auth-card-surface rounded-2xl p-4 sm:p-5">
               <div className="mb-4 rounded-xl border border-glass bg-[var(--bg-base)]/72 p-2.5" data-testid="auth-language-step">
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-secondary">{t.authRouteLanguageTitle}</p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center justify-between gap-4 mb-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-secondary">{t.authRouteLanguageTitle}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mb-2">
                   {([
                     ['en', 'English'],
                     ['id', 'Indonesia'],
@@ -168,6 +175,36 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
                       {label}
                     </button>
                   ))}
+                </div>
+                
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-secondary">Region (Currency)</p>
+                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                  {([
+                    ['id', 'IDR'],
+                    ['bn', 'BND'],
+                    ['my', 'MYR'],
+                    ['sg', 'SGD'],
+                    ['au', 'AUD'],
+                    ['eu', 'EUR'],
+                    ['us', 'USD'],
+                    ['global', 'GLB'],
+                  ] as const).map(([value, label]) => {
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setRegion(value)}
+                        className={`min-h-8 rounded-lg border px-1 text-[11px] font-bold transition-colors ${
+                          region === value
+                            ? 'border-blue-500/25 bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.20)]'
+                            : 'panel-divider-subtle bg-surface-alpha text-primary hover:border-blue-500/20'
+                        }`}
+                        aria-pressed={region === value}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               {isOffline ? (

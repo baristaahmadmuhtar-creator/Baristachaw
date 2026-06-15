@@ -4,6 +4,8 @@ import { AnimatePresence, motion } from 'motion/react';
 import { ArrowRight, Check, CreditCard, Crown, Gauge, RefreshCw, ShieldCheck, Sparkles, X } from '../icons';
 import type { AccountPlan, AccountStatusSnapshot, PlanCode } from '../../services/accountStatus';
 import { BillingApiError, startBillingCheckout } from '../../services/billing';
+import { getCurrencyForRegion, PRICING, formatCurrency } from '../../services/billingConfig';
+import { useGlobalState } from '../../context/GlobalState';
 import { modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
 
 type PlanGrowthSurfaceProps = {
@@ -134,7 +136,9 @@ function resolveRecommendedPlan(snapshot: AccountStatusSnapshot): AccountPlan {
 }
 
 function PlanCard({
-  plan,
+  planCode,
+  duration,
+  region,
   currentPlanCode,
   recommended,
   busy,
@@ -143,85 +147,136 @@ function PlanCard({
   language,
   locale,
 }: {
-  plan: AccountPlan;
+  planCode: 'free' | 'starter' | 'pro' | 'team';
+  duration: 'monthly' | 'quarterly' | 'yearly';
+  region: any;
   currentPlanCode: PlanCode;
   recommended: boolean;
   busy: boolean;
-  onChoose: (plan: AccountPlan) => void;
+  onChoose: (planCode: string) => void;
   t: Record<string, string>;
   language: string;
   locale: string;
 }) {
-  const active = currentPlanCode === plan.code;
-  const isFree = plan.code === 'free';
-  const benefits = planBenefits(plan, t, language, locale);
+  const active = currentPlanCode === planCode;
+  const isFree = planCode === 'free';
+  const currency = getCurrencyForRegion(region);
+
+  const getPlanDetails = () => {
+    switch (planCode) {
+      case 'free': return {
+        name: t.homePlanNameFree || 'Gratis',
+        badge: t.homePlanBadgeFree || 'Basic',
+        priceLabel: t.homePlanFreePrice || 'Free',
+        periodLabel: t.homePlanFreePeriod || 'Forever',
+        features: [t.homePlanFreeF1 || 'Basic scanner', t.homePlanFreeF2 || 'Limited AI Chat', t.homePlanFreeF3 || 'Local history'],
+        ctaLabel: t.homePlanContinueFree || 'Continue Free',
+        style: 'border-glass bg-surface-alpha'
+      };
+      case 'starter': {
+        const tier = PRICING.starter[duration];
+        return {
+          name: t.homePlanNameStarter || 'Starter',
+          badge: t.homePlanBadgeStarter || 'Popular',
+          priceOriginal: formatCurrency(tier.original[currency], currency),
+          priceMain: formatCurrency(tier.discounted[currency], currency),
+          discountPct: tier.discountPct,
+          saveLabel: tier.saveLabel[language as keyof typeof tier.saveLabel] || tier.saveLabel.en,
+          features: [t.homePlanStarterF1 || 'More AI quota', t.homePlanStarterF2 || 'Unlimited scans', t.homePlanStarterF3 || 'Cloud sync'],
+          ctaLabel: active ? t.homePlanActive : t.homePlanSelect.replace('{plan}', 'Starter'),
+          style: recommended ? 'border-blue-500/45 bg-blue-50/10 dark:bg-blue-900/10 shadow-[0_18px_45px_rgba(37,99,235,0.18)]' : 'border-glass bg-surface-alpha'
+        };
+      }
+      case 'pro': {
+        const tier = PRICING.pro[duration];
+        return {
+          name: t.homePlanNamePro || 'Barista Pro',
+          badge: t.homePlanBadgePro || 'Premium',
+          priceOriginal: formatCurrency(tier.original[currency], currency),
+          priceMain: formatCurrency(tier.discounted[currency], currency),
+          discountPct: tier.discountPct,
+          saveLabel: tier.saveLabel[language as keyof typeof tier.saveLabel] || tier.saveLabel.en,
+          features: [t.homePlanProF1 || 'Unlimited AI Brew', t.homePlanProF2 || 'Priority support', t.homePlanProF3 || 'Deep Mode'],
+          ctaLabel: active ? t.homePlanActive : t.homePlanSelect.replace('{plan}', 'Pro'),
+          style: 'border-purple-500/30 bg-slate-900 shadow-[0_18px_45px_rgba(168,85,247,0.18)]'
+        };
+      }
+      case 'team': return {
+        name: t.homePlanNameTeam || 'Team',
+        badge: t.homePlanBadgeTeam || 'For Cafes',
+        priceLabel: t.homePlanTeamPrice || 'Custom',
+        periodLabel: t.homePlanTeamPeriod || 'Billing',
+        features: [t.homePlanTeamF1 || 'Shared seats', t.homePlanTeamF2 || 'Manager roles', t.homePlanTeamF3 || 'Audit logs'],
+        ctaLabel: t.homePlanTeamCta || 'Contact Us',
+        style: 'border-glass bg-slate-50 dark:bg-slate-800'
+      };
+    }
+  };
+
+  const details = getPlanDetails();
+  const isDark = planCode === 'pro';
 
   return (
     <article
-      data-testid={`plan-card-${plan.code}`}
-      className={`relative flex min-h-[18rem] flex-col rounded-2xl border p-4 transition-all ${
-        recommended
-          ? 'border-blue-500/45 bg-blue-500/10 shadow-[0_18px_45px_rgba(37,99,235,0.18)]'
-          : 'border-glass bg-surface-alpha'
-      }`}
+      data-testid={`plan-card-${planCode}`}
+      className={`relative flex min-h-[18rem] flex-col rounded-[20px] border p-6 transition-all hover:-translate-y-1 hover:shadow-xl ${details.style} ${isDark ? 'text-white' : 'text-primary'}`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-lg font-bold text-primary">{formatPlanName(plan, language)}</h3>
-            {recommended ? (
-              <span className="rounded-full bg-blue-600 px-2.5 py-1 text-[11px] font-bold text-white">
-                {t.homePlanRecommended}
-              </span>
-            ) : null}
-            {active ? (
-              <span className="rounded-full bg-emerald-500/12 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
-                {t.homePlanCurrent}
-              </span>
-            ) : null}
-          </div>
-          <p className="mt-1 text-sm leading-5 text-secondary">{formatPlanDescription(plan, language)}</p>
+      {planCode === 'starter' && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gradient-to-br from-amber-400 to-amber-500 px-4 py-1 text-[10px] font-extrabold uppercase tracking-widest text-black shadow-md">
+          {t.homePlanBestValue || 'Best Value'}
         </div>
-        {recommended ? <Crown className="shrink-0" size={20} variant="glyph" tone="amber" /> : null}
+      )}
+
+      <span className={`text-[11px] font-extrabold uppercase tracking-widest ${isDark ? 'text-purple-300' : 'text-blue-600 dark:text-blue-400'}`}>
+        {details.badge}
+      </span>
+      <h3 className="mb-4 mt-2 text-2xl font-bold tracking-tight">
+        {details.name}
+      </h3>
+
+      <div className="mb-4 flex min-h-[56px] flex-wrap items-baseline gap-1.5">
+        {'priceOriginal' in details && details.discountPct! > 0 && (
+          <span className={`w-full text-sm font-semibold line-through ${isDark ? 'text-white/40' : 'text-secondary/60'}`}>
+            {details.priceOriginal}
+          </span>
+        )}
+        <strong className="text-[28px] font-extrabold tracking-tight">
+          {'priceMain' in details ? details.priceMain : details.priceLabel}
+        </strong>
+        <span className={`text-sm font-medium ${isDark ? 'text-white/60' : 'text-secondary'}`}>
+          {'priceMain' in details ? `/ ${duration === 'monthly' ? 'mo' : duration === 'quarterly' ? '3mo' : 'yr'}` : details.periodLabel}
+        </span>
       </div>
 
-      <div className="mt-4">
-        <p className="text-2xl font-black tracking-tight text-primary">{formatDisplayPrice(plan, language)}</p>
-        <p className="mt-1 text-xs font-semibold text-secondary">{t.homePlanPriceNote}</p>
-      </div>
+      {'discountPct' in details && details.discountPct! > 0 && (
+        <div className={`mb-4 w-fit rounded-full px-3 py-1 text-[11px] font-extrabold tracking-wide text-white shadow-sm ${isDark ? 'bg-gradient-to-br from-purple-500 to-purple-700' : 'bg-gradient-to-br from-emerald-400 to-emerald-600'}`}>
+          {details.saveLabel}
+        </div>
+      )}
 
-      <ul className="mt-4 flex flex-1 flex-col gap-2">
-        {benefits.map((benefit) => (
-          <li key={benefit} className="flex items-start gap-2 text-sm leading-5 text-secondary">
-            <Check size={15} className="mt-0.5 shrink-0" variant="glyph" tone="green" />
-            <span>{benefit}</span>
+      <ul className={`mb-6 mt-2 flex flex-1 flex-col gap-3 text-sm ${isDark ? 'text-white/70' : 'text-secondary'}`}>
+        {details.features.map((feature: string, idx: number) => (
+          <li key={idx} className="flex items-start gap-2">
+            <Check size={16} className={`mt-0.5 shrink-0 ${isDark ? 'text-purple-400' : 'text-blue-500'}`} variant="glyph" />
+            <span>{feature}</span>
           </li>
         ))}
       </ul>
 
       <button
         type="button"
-        onClick={() => onChoose(plan)}
+        onClick={() => onChoose(planCode)}
         disabled={busy || active}
-        className={`mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl px-4 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
-          recommended
-            ? 'bg-blue-600 text-white shadow-[0_12px_24px_rgba(37,99,235,0.24)] hover:bg-blue-700'
-            : 'border border-glass bg-[var(--bg-base)]/70 text-primary hover:bg-[var(--bg-base)]'
+        className={`mt-auto inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border-1.5 px-5 text-sm font-extrabold transition-all disabled:cursor-not-allowed disabled:opacity-60 ${
+          isDark 
+            ? 'border-transparent bg-gradient-to-br from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/30 hover:from-purple-700 hover:to-purple-600' 
+            : planCode === 'starter'
+              ? 'border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-600/30 hover:bg-blue-700'
+              : 'border-blue-600 bg-transparent text-blue-600 hover:bg-blue-600 hover:text-white'
         }`}
       >
-        {busy ? (
-          <RefreshCw size={16} className="animate-spin" variant="glyph" tone="ice" />
-        ) : isFree ? (
-          <ShieldCheck size={16} variant="glyph" tone="green" />
-        ) : (
-          <CreditCard
-            size={16}
-            variant="glyph"
-            tone={recommended ? 'neutral' : 'blue'}
-            style={recommended ? currentColorIconStyle : undefined}
-          />
-        )}
-        {active ? t.homePlanActive : isFree ? t.homePlanContinueFree : t.homePlanSelect.replace('{plan}', formatPlanName(plan, language))}
+        {busy ? <RefreshCw size={16} className="animate-spin" variant="glyph" /> : null}
+        {details.ctaLabel}
       </button>
     </article>
   );
@@ -237,10 +292,16 @@ export function PlanGrowthSurface({
   onOpen,
   onClose,
 }: PlanGrowthSurfaceProps) {
-  const [busyPlanCode, setBusyPlanCode] = useState<PlanCode | null>(null);
+  const [busyPlanCode, setBusyPlanCode] = useState<string | null>(null);
   const [actionError, setActionError] = useState('');
+  const [duration, setDuration] = useState<'monthly' | 'quarterly' | 'yearly'>('quarterly');
+  const [promoCode, setPromoCode] = useState('');
+  const [promoApplied, setPromoApplied] = useState(false);
+  
   const modalRef = useRef<HTMLDivElement | null>(null);
   const isRtl = direction === 'rtl';
+
+  const { region } = useGlobalState();
 
   const displayPlans = useMemo(() => snapshot ? resolveDisplayPlans(snapshot) : [], [snapshot]);
   const recommendedPlan = useMemo(() => snapshot ? resolveRecommendedPlan(snapshot) : null, [snapshot]);
@@ -265,40 +326,35 @@ export function PlanGrowthSurface({
 
   if (!snapshot || !recommendedPlan || !currentPlan) return null;
 
-  const handleChoosePlan = async (plan: AccountPlan) => {
+  const handleChoosePlan = async (planCode: string) => {
     setActionError('');
-    if (plan.code === 'free') {
+    if (planCode === 'free') {
       onClose();
       return;
     }
-
-    if (plan.checkoutMode === 'manual_invoice') {
-      setActionError(t.homePlanManualInvoice);
+    if (planCode === 'team') {
+      window.location.href = '/support?topic=general';
       return;
     }
 
-    if (plan.checkoutMode === 'disabled') {
-      setActionError(t.homePlanNoCheckout);
-      return;
-    }
-
-    setBusyPlanCode(plan.code);
+    setBusyPlanCode(planCode);
     try {
-      const response = await startBillingCheckout(plan.code as Exclude<PlanCode, 'free'>);
+      const response = await startBillingCheckout(`${planCode}_${duration}` as any);
       if (response.url) {
         window.location.assign(response.url);
         return;
       }
-      setActionError(t.homePlanCheckoutFailed);
+      setActionError(t.homePlanCheckoutFailed || 'Checkout failed');
     } catch (error) {
-      const message = error instanceof BillingApiError && error.errorCode === 'billing_not_configured'
-        ? t.homePlanNoCheckout
-        : error instanceof BillingApiError
-          ? error.message
-          : t.homePlanCheckoutFailed;
-      setActionError(message || t.homePlanCheckoutFailed);
+      setActionError(t.homePlanCheckoutFailed || 'Checkout failed');
     } finally {
       setBusyPlanCode(null);
+    }
+  };
+
+  const handlePromoApply = () => {
+    if (promoCode.trim().length >= 4) {
+      setPromoApplied(true);
     }
   };
 
@@ -349,38 +405,47 @@ export function PlanGrowthSurface({
               </button>
             </div>
 
-            <div className="overflow-y-auto px-5 py-5 sm:px-6" style={{ WebkitOverflowScrolling: 'touch' }}>
-              <div className="grid gap-3 md:grid-cols-3">
-                {([
-                  { icon: Sparkles, tone: 'blue', title: t.homePlanStepChoose, body: t.homePlanStepChooseBody },
-                  { icon: CreditCard, tone: 'amber', title: t.homePlanStepCheckout, body: t.homePlanStepCheckoutBody },
-                  { icon: ShieldCheck, tone: 'green', title: t.homePlanStepActivate, body: t.homePlanStepActivateBody },
-                ] as const).map((step) => {
-                  const StepIcon = step.icon;
-                  return (
-                    <div key={step.title} className="rounded-2xl border border-glass bg-surface-alpha p-4">
-                      <StepIcon className="mb-3" size={36} variant="tile" tone={step.tone} intensity="micro" />
-                      <h3 className="text-sm font-bold text-primary">{step.title}</h3>
-                      <p className="mt-1 text-sm leading-5 text-secondary">{step.body}</p>
-                    </div>
-                  );
-                })}
+            <div className="overflow-y-auto px-5 py-6 sm:px-6" style={{ WebkitOverflowScrolling: 'touch' }}>
+              
+              {/* Duration Toggle */}
+              <div className="mx-auto mb-8 flex w-fit justify-center gap-1 rounded-full bg-surface-alpha p-1 border border-glass shadow-sm">
+                {(['monthly', 'quarterly', 'yearly'] as const).map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setDuration(d)}
+                    className={`relative inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition-all ${
+                      duration === d
+                        ? 'bg-blue-600 text-white shadow-[0_6px_20px_rgba(37,99,235,0.35)]'
+                        : 'text-secondary hover:text-primary'
+                    }`}
+                  >
+                    {d === 'monthly' ? '1 Month' : d === 'quarterly' ? '3 Months' : '1 Year'}
+                    {d === 'yearly' && (
+                      <span className="inline-block animate-[chipPulse_2s_ease-in-out_infinite] rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-extrabold text-black">
+                        BEST
+                      </span>
+                    )}
+                  </button>
+                ))}
               </div>
 
               {actionError ? (
-                <div className="mt-4 rounded-2xl border border-amber-500/25 bg-amber-500/12 px-4 py-3 text-sm font-semibold text-amber-800 dark:text-amber-200">
+                <div className="mb-4 rounded-2xl border border-amber-500/25 bg-amber-500/12 px-4 py-3 text-sm font-semibold text-amber-800 dark:text-amber-200">
                   {actionError}
                 </div>
               ) : null}
 
-              <div className="mt-5 grid gap-4 lg:grid-cols-4">
-                {displayPlans.map((plan) => (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                {(['free', 'starter', 'pro', 'team'] as const).map((code) => (
                   <PlanCard
-                    key={plan.code}
-                    plan={plan}
+                    key={code}
+                    planCode={code}
+                    duration={duration}
+                    region={region}
                     currentPlanCode={currentPlanCode}
-                    recommended={plan.code === recommendedPlan.code && plan.code !== currentPlanCode}
-                    busy={busyPlanCode === plan.code}
+                    recommended={code === recommendedPlan.code && code !== currentPlanCode}
+                    busy={busyPlanCode === code}
                     onChoose={handleChoosePlan}
                     t={t}
                     language={language}
@@ -389,19 +454,34 @@ export function PlanGrowthSurface({
                 ))}
               </div>
 
-              <div className={`mt-5 flex flex-col gap-3 rounded-2xl border border-glass bg-surface-alpha p-4 text-sm text-secondary sm:flex-row sm:items-center sm:justify-between ${isRtl ? 'sm:flex-row-reverse text-right' : ''}`}>
-                <div className="flex items-start gap-2">
-                  <ShieldCheck size={16} className="mt-0.5 shrink-0" variant="glyph" tone="green" />
-                  <p>{t.homePlanTrustLine}</p>
+              {/* Promo Code Section */}
+              <div className="mt-10 flex flex-col items-center gap-3 border-t border-glass pt-8">
+                <p className="text-sm font-semibold text-secondary">Have a promo code?</p>
+                <div className="flex w-full max-w-[380px] overflow-hidden rounded-xl border-1.5 border-glass transition-colors focus-within:border-blue-500">
+                  <input
+                    type="text"
+                    placeholder="Enter code"
+                    value={promoCode}
+                    onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoApplied(false); }}
+                    className="flex-1 bg-[var(--bg-base)] px-4 py-3 text-sm font-bold tracking-widest text-primary outline-none"
+                    maxLength={20}
+                  />
+                  <button
+                    type="button"
+                    onClick={handlePromoApply}
+                    disabled={promoCode.trim().length < 4}
+                    className="bg-blue-600 px-5 text-sm font-extrabold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700"
+                  >
+                    {promoApplied ? 'Applied' : 'Apply'}
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="inline-flex min-h-10 items-center justify-center rounded-xl px-3 text-sm font-bold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary"
-                >
-                  {t.homePlanContinueFree}
-                </button>
+                {promoApplied && (
+                  <p className="flex items-center gap-1.5 text-[13px] font-bold text-emerald-600 dark:text-emerald-400">
+                    <Check size={14} variant="glyph" /> Code accepted
+                  </p>
+                )}
               </div>
+
             </div>
           </motion.div>
         </>

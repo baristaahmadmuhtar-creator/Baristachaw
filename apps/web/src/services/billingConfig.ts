@@ -1,23 +1,4 @@
-import type { Language } from './i18n';
-
-export const APP_ORIGIN = (import.meta.env.VITE_PUBLIC_APP_URL || 'https://app.baristachaw.com').replace(/\/+$/, '');
-export const MARKETING_ORIGIN = (import.meta.env.VITE_SITE_URL || 'https://baristachaw.com').replace(/\/+$/, '');
-export const RELEASE_VERSION = 'v1.0.2';
-export const APK_URL = import.meta.env.VITE_ANDROID_APK_URL
-  || 'https://github.com/baristaahmadmuhtar-creator/Baristachaw/releases/download/v1.0.2/BaristaChaw-v1.0.2.apk';
-export const RELEASE_URL = 'https://github.com/baristaahmadmuhtar-creator/Baristachaw/releases/tag/v1.0.2';
-export const SUPPORT_ISSUE_URL = 'https://github.com/baristaahmadmuhtar-creator/Baristachaw/issues/new';
-
-export const APP_LINKS = {
-  home: APP_ORIGIN,
-  aiBrew: `${APP_ORIGIN}/tools?tab=ai_brew`,
-  login: `${APP_ORIGIN}/login`,
-  register: `${APP_ORIGIN}/register`,
-  upgrade: `${APP_ORIGIN}/upgrade`,
-} as const;
-
-export type Region = 'id' | 'bn' | 'my' | 'sg' | 'us' | 'eu' | 'au' | 'global';
-export type CurrencyCode = 'idr' | 'bnd' | 'myr' | 'sgd' | 'usd' | 'eur' | 'aud';
+import type { Region, CurrencyCode } from '../types';
 export type BillingDuration = 'monthly' | 'quarterly' | 'yearly';
 
 export type PriceTier = {
@@ -29,17 +10,6 @@ export type PriceTier = {
 
 export type PlanPricing = Record<BillingDuration, PriceTier>;
 
-/** Map language selection to the corresponding currency (deprecated, use Region) */
-export function getCurrencyForLanguage(lang: Language): CurrencyCode {
-  switch (lang) {
-    case 'id': return 'idr';
-    case 'bn': return 'bnd';
-    case 'en': return 'usd';
-    default: return 'usd';
-  }
-}
-
-/** Map region selection to the corresponding currency */
 export function getCurrencyForRegion(region: Region): CurrencyCode {
   switch (region) {
     case 'id': return 'idr';
@@ -54,13 +24,8 @@ export function getCurrencyForRegion(region: Region): CurrencyCode {
   }
 }
 
-/** Format a currency amount for the active language */
-export function formatCurrencyByLang(amount: number, lang: Language): string {
-  return formatCurrency(amount, getCurrencyForLanguage(lang));
-}
-
-export const PRICING: Record<'plus' | 'pro', PlanPricing> = {
-  plus: {
+export const PRICING: Record<'starter' | 'pro', PlanPricing> = {
+  starter: {
     monthly: {
       original: { idr: 100_000, bnd: 7.99, myr: 25.99, sgd: 7.99, usd: 5.99, eur: 5.99, aud: 8.99 },
       discounted: { idr: 61_000, bnd: 4.99, myr: 15.99, sgd: 4.99, usd: 3.99, eur: 3.99, aud: 5.99 },

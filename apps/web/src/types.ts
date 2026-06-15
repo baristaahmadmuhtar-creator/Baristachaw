@@ -9,6 +9,8 @@ export enum ViewState {
 }
 
 export type Language = 'en' | 'id' | 'ar' | 'zh' | 'ja' | 'ko' | 'th' | 'vi' | 'ms';
+export type Region = 'id' | 'bn' | 'my' | 'sg' | 'us' | 'eu' | 'au' | 'global';
+export type CurrencyCode = 'idr' | 'bnd' | 'myr' | 'sgd' | 'usd' | 'eur' | 'aud';
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type ChatEngine = 'default' | 'barista_claw';
 export type ChatProfile = 'speed_default' | 'quality_strict';

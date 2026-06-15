@@ -168,10 +168,27 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     }
   };
 
-  const handleGoogleSignIn = () => {
-    // Redirect to app's Google OAuth flow with landing page returnTo parameter
-    const returnTo = window.location.origin + '/?login_success=1';
-    window.location.href = `${APP_ORIGIN}/api/auth/url?provider=google&returnTo=${encodeURIComponent(returnTo)}`;
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const returnTo = window.location.origin + '/?login_success=1';
+      const res = await fetch(`${APP_ORIGIN}/api/auth/url?provider=google&returnTo=${encodeURIComponent(returnTo)}`, {
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        throw new Error('Gagal memulai login Google');
+      }
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('Tautan login Google tidak ditemukan');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setLoading(false);
+    }
   };
 
   const handleLogout = async () => {

@@ -1575,7 +1575,7 @@ async function callOpenAiImageEdit(
   formData.append('size', config.size);
   formData.append('output_format', config.outputFormat);
   formData.append('output_compression', String(config.outputCompression));
-  if (config.model.startsWith('gpt-image-')) {
+  if (config.model !== 'gpt-image-2' && config.model.startsWith('gpt-image-')) {
     formData.append('input_fidelity', config.inputFidelity);
   }
 
@@ -2402,19 +2402,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  const openaiKeys = getAiProviderKeys('OPENAI');
-  const geminiKeys = getAiProviderKeys('GEMINI');
 
-  if (openaiKeys.length === 0 && geminiKeys.length === 0) {
-    return res.status(401).json({
-      ok: false,
-      requestId,
-      action,
-      error: 'AI API key is missing on server',
-      errorCode: 'no_key',
-      retryable: false,
-    });
-  }
 
   if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > 15000) {
     return sendBadRequest(

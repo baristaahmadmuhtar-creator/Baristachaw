@@ -1,5 +1,5 @@
-import { ArrowRight, Check, CircleAlert, ChevronDown } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ArrowRight, Check, CircleAlert, ChevronDown, Globe } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, Route, Routes, useLocation } from 'react-router-dom';
 import { BrewerGrid } from './components/BrewerGrid';
 import { DownloadSection } from './components/DownloadSection';
@@ -105,25 +105,13 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
               <h2 id="pricing-title">{t('pricing.title', language)}</h2>
               <p>{t('pricing.subtitle', language)}</p>
             </div>
-            <div className="region-selector-dropdown">
-              <select 
-                value={region} 
-                onChange={(e) => onRegionChange(e.target.value as Region)}
-                className="region-select"
-                aria-label="Select Region"
-              >
-                <option value="id">Indonesia</option>
-                <option value="bn">Brunei</option>
-                <option value="my">Malaysia</option>
-                <option value="sg">Singapore</option>
-                <option value="au">Australia</option>
-                <option value="us">United States</option>
-                <option value="eu">Europe</option>
-                <option value="global">Global</option>
-              </select>
-              <ChevronDown size={16} />
-            </div>
           </div>
+        </div>
+      </ScrollReveal>
+
+      <ScrollReveal variant="fade" delay={0.05}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+          <RegionDropdown region={region} onRegionChange={onRegionChange} language={language} />
         </div>
       </ScrollReveal>
 
@@ -294,25 +282,81 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
         </div>
       </ScrollReveal>
 
-      <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', paddingRight: '20px' }}>
-        <div style={{ position: 'relative', display: 'inline-block' }}>
-          <select
-            value={region}
-            onChange={(e) => onRegionChange(e.target.value as Region)}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
-            aria-label="Select Region"
-          >
-            {['id','bn','my','sg','au','eu','us','global'].map(r => (
-              <option key={r} value={r}>{getRegionName(r as Region)}</option>
-            ))}
-          </select>
-          <div style={{ pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', background: 'var(--bg-elevated)', border: '1px solid var(--line)', borderRadius: '8px' }}>
-            {getRegionName(region)}
-            <ChevronDown size={14} style={{ opacity: 0.5 }} />
-          </div>
-        </div>
-      </div>
+      </ScrollReveal>
     </section>
+  );
+}
+
+function RegionDropdown({ region, onRegionChange, language }: { region: Region; onRegionChange: (r: Region) => void; language: Language }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const regions = ['id', 'bn', 'my', 'sg', 'au', 'eu', 'us', 'global'] as const;
+
+  return (
+    <div ref={containerRef} style={{ position: 'relative', display: 'inline-block', zIndex: 50 }}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px',
+          fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em',
+          color: 'var(--text)', background: 'var(--bg-elevated)', border: '1px solid var(--line)',
+          borderRadius: '999px', cursor: 'pointer', transition: 'all 0.2s',
+          boxShadow: '0 4px 14px rgba(0,0,0,0.03)'
+        }}
+      >
+        <span>{language === 'id' ? 'Negara: ' : 'Country: '} <span style={{ color: 'var(--blue)' }}>{getRegionName(region)}</span></span>
+        <ChevronDown size={16} style={{ color: 'var(--muted)', transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+      </button>
+
+      {isOpen && (
+        <div style={{
+          position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: '8px',
+          width: '200px', background: 'var(--bg-elevated)', border: '1px solid var(--line)',
+          borderRadius: '16px', padding: '8px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+          maxHeight: '300px', overflowY: 'auto'
+        }}>
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'col', gap: '4px' }}>
+            {regions.map((r) => (
+              <li key={r}>
+                <button
+                  type="button"
+                  onClick={() => { onRegionChange(r as Region); setIsOpen(false); }}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '10px 12px', fontSize: '13px', fontWeight: 600,
+                    color: r === region ? 'var(--blue)' : 'var(--text)',
+                    background: r === region ? 'rgba(31, 105, 231, 0.1)' : 'transparent',
+                    border: 'none', borderRadius: '10px', cursor: 'pointer', textAlign: 'left',
+                    transition: 'all 0.1s'
+                  }}
+                  onMouseOver={(e) => {
+                    if (r !== region) (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-subtle)';
+                  }}
+                  onMouseOut={(e) => {
+                    if (r !== region) (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                  }}
+                >
+                  {getRegionName(r as Region)}
+                  {r === region && <Check size={14} style={{ color: 'var(--blue)' }} />}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
 

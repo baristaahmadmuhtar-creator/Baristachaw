@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
+import { CustomSelect } from '../ui/CustomSelect';
 import { getLanguageDirection } from '../../constants';
 import { modalExitTransition, modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
 import { EmailPasswordAuthForm } from './EmailPasswordAuthForm';
@@ -182,18 +183,15 @@ export function AuthEntryModal() {
                       {t.authRouteLanguageTitle || 'Language'}
                     </label>
                     <div className="relative">
-                      <select
+                      <CustomSelect
                         id="modal-language-select"
                         value={language}
-                        onChange={(e) => setLanguage(e.target.value)}
-                        className="w-full appearance-none rounded-lg border border-glass bg-surface-alpha px-3 py-2 text-sm font-semibold text-primary outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      >
-                        <option value="en">English</option>
-                        <option value="id">Indonesia</option>
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-secondary">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                      </div>
+                        onChange={setLanguage}
+                        options={[
+                          { value: 'en', label: 'English' },
+                          { value: 'id', label: 'Indonesia' }
+                        ]}
+                      />
                     </div>
                   </div>
                   
@@ -202,24 +200,21 @@ export function AuthEntryModal() {
                       {language === 'id' ? 'Negara' : 'Country'}
                     </label>
                     <div className="relative">
-                      <select
+                      <CustomSelect
                         id="modal-region-select"
                         value={region}
-                        onChange={(e) => setRegion(e.target.value as any)}
-                        className="w-full appearance-none rounded-lg border border-glass bg-surface-alpha px-3 py-2 text-sm font-semibold text-primary outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      >
-                        <option value="id">Indonesia</option>
-                        <option value="bn">Brunei</option>
-                        <option value="my">Malaysia</option>
-                        <option value="sg">Singapore</option>
-                        <option value="au">Australia</option>
-                        <option value="eu">Europe</option>
-                        <option value="us">United States</option>
-                        <option value="global">Global</option>
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-secondary">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                      </div>
+                        onChange={(val) => setRegion(val as any)}
+                        options={[
+                          { value: 'id', label: 'Indonesia' },
+                          { value: 'bn', label: 'Brunei' },
+                          { value: 'my', label: 'Malaysia' },
+                          { value: 'sg', label: 'Singapore' },
+                          { value: 'au', label: 'Australia' },
+                          { value: 'eu', label: 'Europe' },
+                          { value: 'us', label: 'United States' },
+                          { value: 'global', label: 'Global' }
+                        ]}
+                      />
                     </div>
                   </div>
                 </div>

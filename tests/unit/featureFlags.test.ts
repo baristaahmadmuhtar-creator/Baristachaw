@@ -7,6 +7,15 @@ const ORIGINAL_ENV = {
   APP_DISABLED_FEATURES: process.env.APP_DISABLED_FEATURES,
   MAINTENANCE_FEATURES: process.env.MAINTENANCE_FEATURES,
   APP_MAINTENANCE_FEATURES: process.env.APP_MAINTENANCE_FEATURES,
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+  AI_GEMINI_API_KEY: process.env.AI_GEMINI_API_KEY,
+  AI_BREW_GEMINI_API_KEY: process.env.AI_BREW_GEMINI_API_KEY,
+  GOOGLE_GENAI_API_KEY: process.env.GOOGLE_GENAI_API_KEY,
+  GOOGLE_API_KEY: process.env.GOOGLE_API_KEY,
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+  AI_OPENAI_API_KEY: process.env.AI_OPENAI_API_KEY,
+  AI_BREW_OPENAI_API_KEY: process.env.AI_BREW_OPENAI_API_KEY,
+  AI_SCANNER: process.env.AI_SCANNER,
 };
 
 function restoreEnv() {
@@ -21,6 +30,15 @@ test.beforeEach(() => {
   delete process.env.APP_DISABLED_FEATURES;
   delete process.env.MAINTENANCE_FEATURES;
   delete process.env.APP_MAINTENANCE_FEATURES;
+  delete process.env.GEMINI_API_KEY;
+  delete process.env.AI_GEMINI_API_KEY;
+  delete process.env.AI_BREW_GEMINI_API_KEY;
+  delete process.env.GOOGLE_GENAI_API_KEY;
+  delete process.env.GOOGLE_API_KEY;
+  delete process.env.OPENAI_API_KEY;
+  delete process.env.AI_OPENAI_API_KEY;
+  delete process.env.AI_BREW_OPENAI_API_KEY;
+  delete process.env.AI_SCANNER;
 });
 
 test.after(() => {

@@ -3863,7 +3863,7 @@ export function AdminManagement() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="relative flex min-h-screen w-full bg-[var(--bg-base)] text-primary desktop-noise-bg overflow-x-hidden"
+      className="relative flex h-full w-full bg-[var(--bg-base)] text-primary desktop-noise-bg overflow-hidden"
       aria-busy={loading || refreshing}
     >
       <a
@@ -4079,7 +4079,7 @@ export function AdminManagement() {
       </AnimatePresence>
 
       {/* Main Content Pane */}
-      <div className="flex-1 min-w-0 lg:pl-60 flex flex-col min-h-screen">
+      <div className="flex-1 min-w-0 lg:pl-60 flex flex-col h-full overflow-y-auto">
         {/* Mobile sticky top bar */}
         <header className="flex h-14 items-center justify-between px-4 border-b border-glass bg-[var(--bg-base)]/88 backdrop-blur-xl sticky top-0 z-30 lg:hidden shrink-0">
           <div className="flex items-center gap-2 min-w-0">

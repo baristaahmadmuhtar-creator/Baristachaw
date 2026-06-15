@@ -238,12 +238,30 @@ export function buildRuntimeFeatureFlags(patches?: Map<string, FeatureFlagPatch>
 
   return DEFAULT_FEATURE_FLAGS.map((flag) => {
     const patch = patches?.get(flag.key);
-    const statusFromEnv =
+    let statusFromEnv =
       (globalMaintenance && flag.key === 'global_app') || envListHasFlag(maintenanceKeys, flag)
         ? 'maintenance'
         : envListHasFlag(disabledKeys, flag)
           ? 'disabled'
           : flag.status;
+
+    if (statusFromEnv === 'disabled' && flag.key.startsWith('ai_provider_')) {
+      const provider = flag.key.replace(/^ai_provider_/, '').toUpperCase();
+      const envNames = [
+        `${provider}_API_KEY`,
+        `AI_${provider}_API_KEY`,
+        `AI_BREW_${provider}_API_KEY`,
+        ...(provider === 'GEMINI' ? ['GOOGLE_GENAI_API_KEY', 'GOOGLE_API_KEY'] : []),
+        ...(provider === 'OPENAI' ? ['AI_SCANNER'] : []),
+      ];
+      const hasValidKey = envNames.some((name) => {
+        const val = String(process.env[name] || '').trim();
+        return val.length > 5 && !val.toLowerCase().includes('mock-') && !val.toLowerCase().includes('placeholder');
+      });
+      if (hasValidKey) {
+        statusFromEnv = 'available';
+      }
+    }
     const messageFromEnv = statusFromEnv === 'available'
       ? flag.message
       : flag.key === 'global_app'

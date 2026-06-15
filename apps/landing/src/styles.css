@@ -100,7 +100,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .section-index-light { color: #8eb9ff; }
 .section-heading { display: grid; grid-template-columns: 140px 1fr; gap: 38px; margin-bottom: 72px; }
 .section-heading h2, .problem h2, .engine h2, .evidence-section h2, .final-cta h2, .utility-hero h1 { margin: 0; font: 800 clamp(38px, 5vw, 68px)/1.04 Manrope, sans-serif; letter-spacing: -.055em; text-wrap: balance; }
-.section-heading > div > p { max-width: 650px; margin: 20px 0 0; color: var(--muted); font-size: 18px; line-height: 1.65; }
+.section-heading > div > p, .pricing-title-row > div > p { max-width: 650px; margin: 20px 0 0; color: var(--muted); font-size: 18px; line-height: 1.65; }
+
+.pricing-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+.pricing-title-row > div:first-child { flex: 1; }
+.region-selector-dropdown { position: relative; display: inline-flex; align-items: center; }
+.region-select { appearance: none; -webkit-appearance: none; background: white; border: 1px solid var(--line); border-radius: 999px; padding: 10px 42px 10px 22px; font-family: inherit; font-size: 13px; font-weight: 800; color: var(--blue); cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 14px rgba(0,0,0,0.03); }
+.region-select:hover { border-color: var(--blue); }
+.region-select:focus { outline: 2px solid rgba(31,105,231,0.25); outline-offset: 2px; border-color: var(--blue); }
+.region-selector-dropdown svg { position: absolute; right: 18px; pointer-events: none; color: var(--blue); }
 
 .problem { display: grid; grid-template-columns: .9fr 1.1fr; gap: 90px; }
 .problem-title-wrap h2 { margin-top: 26px; }
@@ -598,6 +606,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .brewer-row { min-height: 82px; }
   .brewer-row-summary { display: none; }
   .brewer-row h3 { font-size: 17px; }
+  .pricing-title-row { flex-direction: column; }
   .feature-story { grid-template-columns: 1fr; }
   .feature-story .feature-large { grid-column: auto; }
   .feature-story article { min-height: 420px; padding: 26px; border-radius: 26px; }

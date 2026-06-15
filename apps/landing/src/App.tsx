@@ -100,9 +100,29 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
       <ScrollReveal variant="dramatic">
         <div className="section-heading">
           <p className="section-index">{t('pricing.index', language)}</p>
-          <div>
-            <h2 id="pricing-title">{t('pricing.title', language)}</h2>
-            <p>{t('pricing.subtitle', language)}</p>
+          <div className="pricing-title-row">
+            <div>
+              <h2 id="pricing-title">{t('pricing.title', language)}</h2>
+              <p>{t('pricing.subtitle', language)}</p>
+            </div>
+            <div className="region-selector-dropdown">
+              <select 
+                value={region} 
+                onChange={(e) => onRegionChange(e.target.value as Region)}
+                className="region-select"
+                aria-label="Select Region"
+              >
+                <option value="id">Indonesia</option>
+                <option value="bn">Brunei</option>
+                <option value="my">Malaysia</option>
+                <option value="sg">Singapore</option>
+                <option value="au">Australia</option>
+                <option value="us">United States</option>
+                <option value="eu">Europe</option>
+                <option value="global">Global</option>
+              </select>
+              <ChevronDown size={16} />
+            </div>
           </div>
         </div>
       </ScrollReveal>

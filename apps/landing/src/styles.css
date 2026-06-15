@@ -365,17 +365,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .plan-cta-pro:hover { background: linear-gradient(135deg, #6d28d9, #9333ea); box-shadow: 0 14px 38px rgba(124,58,237,.4); }
 
-.plan-region-label {
-  position: absolute;
-  bottom: 12px;
-  right: 18px;
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .1em;
-  opacity: 0.3;
-}
-
 /* ── Featured Card (Barista Plus) ── */
 .plan-featured {
   background: linear-gradient(180deg, #eaf2ff 0%, #f0f4ff 100%);

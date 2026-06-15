@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
+import { ChevronDown } from 'lucide-react';
 import { ArrowRight, Check, CreditCard, Crown, Gauge, RefreshCw, ShieldCheck, Sparkles, X } from '../icons';
 import type { AccountPlan, AccountStatusSnapshot, PlanCode } from '../../services/accountStatus';
 import { BillingApiError, startBillingCheckout } from '../../services/billing';
@@ -291,10 +292,6 @@ function PlanCard({
         {busy ? <RefreshCw size={16} className="animate-spin" variant="glyph" /> : null}
         {details.ctaLabel}
       </button>
-
-      <div className={`absolute bottom-3 right-4 text-[10px] font-extrabold uppercase tracking-widest ${isDark ? 'text-white/30' : 'text-primary/30'}`}>
-        {getRegionName(region)}
-      </div>
     </article>
   );
 }
@@ -497,6 +494,26 @@ export function PlanGrowthSurface({
                     <Check size={14} variant="glyph" /> Code accepted
                   </p>
                 )}
+              </div>
+
+              {/* Region Selector */}
+              <div className="mt-8 flex justify-end">
+                <div className="relative inline-block">
+                  <select
+                    value={region}
+                    onChange={(e) => setRegion(e.target.value as any)}
+                    className="absolute inset-0 h-full w-full opacity-0 cursor-pointer"
+                    aria-label="Select Region"
+                  >
+                    {['id','bn','my','sg','au','eu','us','global'].map(r => (
+                      <option key={r} value={r}>{getRegionName(r)}</option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none flex items-center gap-2 rounded-lg bg-surface-alpha px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-secondary shadow-sm border border-glass transition-colors">
+                    {getRegionName(region)}
+                    <ChevronDown size={14} className="opacity-50" />
+                  </div>
+                </div>
               </div>
 
             </div>

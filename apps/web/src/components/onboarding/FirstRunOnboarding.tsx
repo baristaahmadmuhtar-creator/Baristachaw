@@ -227,12 +227,9 @@ function EquipmentPickerDialog({
 }
 
 export function FirstRunOnboarding() {
-  const { language, setLanguage, region, setRegion } = useGlobalState();
+  const { catalog: globalCatalog, setLanguage, region, setRegion } = useGlobalState();
   const [visible, setVisible] = useState(false);
-  const [step, setStep] = useState<OnboardingStep>('language'); // Note: 'language' step now only shows region selector
-  const [selectedLanguage, setSelectedLanguage] = useState<Extract<Language, 'id' | 'en'>>(
-    language === 'id' ? 'id' : 'en',
-  );
+  const [step, setStep] = useState<OnboardingStep>('equipment');
   const [selectedRegion, setSelectedRegion] = useState<Region>(region);
   const [catalog, setCatalog] = useState<AiBrewCatalog | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(false);
@@ -243,7 +240,7 @@ export function FirstRunOnboarding() {
   const [saving, setSaving] = useState(false);
   const [picker, setPicker] = useState<PickerKind | null>(null);
 
-  const id = selectedLanguage === 'id';
+  const id = false; // Language is managed globally, default to en or use globalState t
   const copy = useMemo(() => ({
     languageTitle: id ? 'Pilih bahasa' : 'Choose your language',
     languageBody: id
@@ -290,18 +287,12 @@ export function FirstRunOnboarding() {
     };
   }, [visible]);
 
-  async function continueToEquipment() {
-    setLanguage(selectedLanguage);
-    setRegion(selectedRegion);
-    setStep('equipment');
-    if (catalog || catalogLoading) return;
-    setCatalogLoading(true);
-    try {
-      setCatalog(await loadAiBrewCatalog());
-    } finally {
-      setCatalogLoading(false);
+  useEffect(() => {
+    if (visible && !catalog && !catalogLoading) {
+      setCatalogLoading(true);
+      loadAiBrewCatalog().then(setCatalog).finally(() => setCatalogLoading(false));
     }
-  }
+  }, [visible, catalog, catalogLoading]);
 
   async function completeEquipment(skipped: boolean) {
     if (saving) return;
@@ -359,49 +350,7 @@ export function FirstRunOnboarding() {
           <span>Baristachaw</span>
         </div>
 
-        {step === 'language' ? (
-          <section data-testid="onboarding-language-step">
-            <div className="mt-2">
-              <h2 className="text-sm font-semibold text-primary">{copy.regionTitle}</h2>
-              <p className="text-xs text-secondary mt-1">{copy.regionBody}</p>
-              <div className="mt-4 grid grid-cols-2 gap-2.5">
-                {REGION_OPTIONS.map((opt) => {
-                  const active = selectedRegion === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => setSelectedRegion(opt.id)}
-                      className={`flex min-h-[58px] items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors ${
-                        active
-                          ? 'border-blue-500 bg-blue-500/10'
-                          : 'border-glass bg-surface-alpha hover:border-blue-500/35'
-                      }`}
-                    >
-                      <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-extrabold ${
-                        active ? 'bg-blue-600 text-white' : 'bg-[var(--bg-base)] text-secondary'
-                      }`}>
-                        {opt.id === 'global' ? 'GL' : opt.id.toUpperCase()}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-semibold text-primary truncate">{opt.label}</span>
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => { void continueToEquipment(); }}
-              className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700"
-            >
-              {copy.continue}
-              <ChevronRight size={17} />
-            </button>
-          </section>
-        ) : (
+        {step === 'equipment' && (
           <section data-testid="onboarding-equipment-step">
             <div className="text-center">
               <img src="/icons/icon-192.png" alt="" className="mx-auto h-6 w-6 rounded-md object-cover" />

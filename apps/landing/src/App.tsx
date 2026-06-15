@@ -1,4 +1,4 @@
-import { ArrowRight, Check, CircleAlert } from 'lucide-react';
+import { ArrowRight, Check, CircleAlert, ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Route, Routes, useLocation } from 'react-router-dom';
 import { BrewerGrid } from './components/BrewerGrid';
@@ -74,7 +74,7 @@ function getRegionName(region: Region): string {
   }
 }
 
-function PricingSection({ language, region, onRegister }: { language: Language; region: Region; onRegister: (plan: 'free' | 'plus' | 'pro' | 'team') => void }) {
+function PricingSection({ language, region, onRegionChange, onRegister }: { language: Language; region: Region; onRegionChange: (r: Region) => void; onRegister: (plan: 'free' | 'plus' | 'pro' | 'team') => void }) {
   const [duration, setDuration] = useState<BillingDuration>('quarterly');
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
@@ -145,7 +145,6 @@ function PricingSection({ language, region, onRegister }: { language: Language; 
             <button className="plan-cta" type="button" onClick={() => onRegister('free')}>
               {t('plan.free.cta', language)} <ArrowRight size={16} />
             </button>
-            <div className="plan-region-label">{getRegionName(region)}</div>
           </article>
         </ScrollReveal>
 
@@ -183,7 +182,6 @@ function PricingSection({ language, region, onRegister }: { language: Language; 
             <button className="plan-cta plan-cta-primary" type="button" onClick={() => onRegister('plus')}>
               {t('plan.plus.cta', language)} <ArrowRight size={16} />
             </button>
-            <div className="plan-region-label">{getRegionName(region)}</div>
           </article>
         </ScrollReveal>
 
@@ -220,7 +218,6 @@ function PricingSection({ language, region, onRegister }: { language: Language; 
             <button className="plan-cta plan-cta-pro" type="button" onClick={() => onRegister('pro')}>
               {t('plan.pro.cta', language)} <ArrowRight size={16} />
             </button>
-            <div className="plan-region-label">{getRegionName(region)}</div>
           </article>
         </ScrollReveal>
 
@@ -243,7 +240,6 @@ function PricingSection({ language, region, onRegister }: { language: Language; 
             <Link className="plan-cta" to="/support?topic=general">
               {t('plan.team.cta', language)} <ArrowRight size={16} />
             </Link>
-            <div className="plan-region-label">{getRegionName(region)}</div>
           </article>
         </ScrollReveal>
       </div>
@@ -277,11 +273,30 @@ function PricingSection({ language, region, onRegister }: { language: Language; 
           )}
         </div>
       </ScrollReveal>
+
+      <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', paddingRight: '20px' }}>
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <select
+            value={region}
+            onChange={(e) => onRegionChange(e.target.value as Region)}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+            aria-label="Select Region"
+          >
+            {['id','bn','my','sg','au','eu','us','global'].map(r => (
+              <option key={r} value={r}>{getRegionName(r as Region)}</option>
+            ))}
+          </select>
+          <div style={{ pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', background: 'var(--bg-elevated)', border: '1px solid var(--line)', borderRadius: '8px' }}>
+            {getRegionName(region)}
+            <ChevronDown size={14} style={{ opacity: 0.5 }} />
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
 
-function LandingHome({ language, region }: { language: Language; region: Region }) {
+function LandingHome({ language, region, onRegionChange }: { language: Language; region: Region; onRegionChange: (r: Region) => void }) {
   const [registerState, setRegisterState] = useState<RegisterState>({ open: false, plan: 'free' });
   const [duration] = useState<BillingDuration>('quarterly');
 
@@ -295,14 +310,14 @@ function LandingHome({ language, region }: { language: Language; region: Region 
 
   return (
     <main>
-      <HeroSection language={language} />
+      <HeroSection language={language} onRegister={() => setRegisterState({ open: true, plan: 'free' })} />
       <MethodSections language={language} />
       <DataShowcase language={language} />
       <BrewerGrid language={language} />
       <ToolsShowcase language={language} />
       <FeatureGraphics language={language} />
       <EvidenceSection language={language} />
-      <PricingSection language={language} region={region} onRegister={openRegister} />
+      <PricingSection language={language} region={region} onRegionChange={onRegionChange} onRegister={(plan) => setRegisterState({ open: true, plan })} />
       <DownloadSection language={language} />
       <ScrollReveal variant="blur">
         <section className="final-cta">
@@ -397,12 +412,12 @@ export function App() {
         onRegionChange={handleRegionChange} 
       />
       <Routes>
-        <Route path="/" element={<LandingHome language={language} region={region} />} />
+        <Route path="/" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} />} />
         <Route path="/support" element={<SupportPage language={language} />} />
         <Route path="/privacy" element={<PrivacyPage language={language} />} />
         <Route path="/terms" element={<TermsPage language={language} />} />
         <Route path="/download/*" element={<DownloadPage language={language} />} />
-        <Route path="*" element={<LandingHome language={language} region={region} />} />
+        <Route path="*" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} />} />
       </Routes>
       <SiteFooter language={language} />
       <SupportChatWidget language={language} />

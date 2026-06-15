@@ -385,6 +385,24 @@ export function Scanner() {
           : "Edit this latte art to feature an elegant, artistic, photorealistic swan design with ultra-fine microfoam texture.",
       },
       {
+        label: isIndonesian ? "🌿 Slow Rosetta" : "🌿 Slow Rosetta",
+        prompt: isIndonesian
+          ? "Ubah latte art ini menjadi slow pour rosetta dengan daun yang lebih lebar, gelombang yang tebal, dan crema yang sangat pekat."
+          : "Transform this latte art into a slow pour rosetta with wider leaves, thick waves, and deep rich crema.",
+      },
+      {
+        label: isIndonesian ? "🪽 Winged Tulip" : "🪽 Winged Tulip",
+        prompt: isIndonesian
+          ? "Ubah latte art ini menjadi winged tulip (tulip bersayap) yang sangat simetris, memukau, dengan lapisan dasar yang melingkar sempurna seperti sayap."
+          : "Change this latte art into a stunning symmetrical winged tulip, with a perfectly wrapped base layer resembling wings.",
+      },
+      {
+        label: isIndonesian ? "🐾 3D Cat/Bear" : "🐾 3D Cat/Bear",
+        prompt: isIndonesian
+          ? "Ubah gambar ini menjadi 3D latte art berbentuk kucing atau beruang lucu yang menyembul dari busa susu secara hiper-realistis."
+          : "Turn this image into a hyper-realistic 3D latte art featuring a cute cat or bear popping out of the milk foam.",
+      },
+      {
         label: isIndonesian ? "🦄 Kuda Laut" : "🦄 Seahorse Art",
         prompt: isIndonesian
           ? "Ubah latte art ini menjadi bentuk kuda laut (seahorse) yang kreatif, realistis, artistik, dengan kontras crema yang natural."
@@ -404,6 +422,24 @@ export function Scanner() {
       },
     ];
   }, [language]);
+
+  const finalLattePrompt = useMemo(() => {
+    const isIndonesian = /^id(?:-|$)/i.test(language);
+    const baseContext = isIndonesian
+      ? "Perbaiki dan ubah gambar latte art ini secara presisi dan realistis sesuai instruksi berikut, pastikan kualitas visual setara kafe premium dengan kontras crema yang baik: "
+      : "Improve and transform this latte art image realistically according to the following instruction, ensuring premium cafe visual quality and good crema contrast: ";
+    
+    const requestText = latteRequest.trim();
+    if (!requestText) {
+      return latteFallbackRequest;
+    }
+    
+    // Check if it's already a preset (we don't need to wrap presets if they are already well-written)
+    const isPreset = lattePromptPresets.some(p => p.prompt === requestText);
+    if (isPreset) return requestText;
+
+    return `${baseContext}"${requestText}"`;
+  }, [latteRequest, language, latteFallbackRequest, lattePromptPresets]);
 
   const selectedImageMeta = useMemo(() => {
     if (!fileName && !fileSize) return null;
@@ -488,7 +524,7 @@ export function Scanner() {
         const imageDataUrl = await editLatteArtImage(
           file,
           mimeType,
-          latteRequest.trim() || latteFallbackRequest,
+          finalLattePrompt,
         );
         setGeneratedImage(imageDataUrl);
         setResultMarkdown(null);
@@ -963,7 +999,7 @@ export function Scanner() {
                     onChange={(event) => setLatteRequest(event.target.value.slice(0, LATTE_REQUEST_MAX_CHARS))}
                     rows={4}
                     placeholder={t.scannerLattePromptPlaceholder}
-                    className="w-full rounded-[1.35rem] border border-white/15 bg-white/55 dark:bg-white/5 px-4 py-3 text-sm text-primary dark:text-white placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500/30 resize-none"
+                    className="w-full rounded-[1.35rem] border border-white/15 bg-white/55 dark:bg-white/5 px-4 py-3 text-[16px] md:text-sm text-primary dark:text-white placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500/30 resize-none"
                   />
                 </div>
                 <div className="flex flex-wrap gap-2.5">

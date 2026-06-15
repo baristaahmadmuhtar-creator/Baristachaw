@@ -326,7 +326,7 @@ function RegionDropdown({ region, onRegionChange, language }: { region: Region; 
           borderRadius: '16px', padding: '8px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
           maxHeight: '300px', overflowY: 'auto'
         }}>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'col', gap: '4px' }}>
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {regions.map((r) => (
               <li key={r}>
                 <button

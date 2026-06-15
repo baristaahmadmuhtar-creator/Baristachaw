@@ -1177,3 +1177,149 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     text-align: left;
   }
 }
+
+/* ── Redesigned Region Selector Dropdown ── */
+.region-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(13, 86, 204, 0.16);
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 18px rgba(13, 86, 204, 0.03), 0 2px 6px rgba(13, 86, 204, 0.01);
+  outline: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.region-dropdown-trigger:hover {
+  border-color: rgba(13, 86, 204, 0.45);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(13, 86, 204, 0.08), 0 3px 8px rgba(13, 86, 204, 0.02);
+}
+.region-dropdown-trigger:active {
+  transform: translateY(0);
+}
+.region-dropdown-label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+.region-dropdown-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.region-dropdown-flag {
+  font-size: 16px;
+  line-height: 1;
+}
+.region-dropdown-name {
+  color: var(--ink);
+  font-weight: 800;
+}
+.region-dropdown-currency-badge {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--blue);
+  background: rgba(13, 86, 204, 0.08);
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-left: 2px;
+  text-transform: uppercase;
+}
+
+.region-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 10px;
+  width: 250px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(13, 86, 204, 0.12);
+  border-radius: 20px;
+  padding: 6px;
+  box-shadow: 0 20px 45px rgba(7, 21, 47, 0.14);
+  max-height: 320px;
+  overflow-y: auto;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  animation: dropdownFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  z-index: 100;
+}
+.region-dropdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.region-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+.region-dropdown-item:hover {
+  background: rgba(13, 86, 204, 0.05);
+}
+.region-dropdown-item.selected {
+  font-weight: 700;
+  color: var(--blue);
+  background: rgba(13, 86, 204, 0.08);
+}
+.region-dropdown-item-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.region-dropdown-item-flag {
+  font-size: 18px;
+  line-height: 1;
+}
+.region-dropdown-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.region-dropdown-item-currency {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  background: rgba(0, 0, 0, 0.04);
+  padding: 2px 6px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+.region-dropdown-item.selected .region-dropdown-item-currency {
+  color: var(--blue);
+  background: rgba(13, 86, 204, 0.12);
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}

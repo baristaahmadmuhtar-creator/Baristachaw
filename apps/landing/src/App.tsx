@@ -286,6 +286,17 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
   );
 }
 
+const regionMetadata: Record<Region, { name: string; flag: string; currency: string }> = {
+  id: { name: 'Indonesia', flag: '🇮🇩', currency: 'IDR' },
+  bn: { name: 'Brunei', flag: '🇧🇳', currency: 'BND' },
+  my: { name: 'Malaysia', flag: '🇲🇾', currency: 'MYR' },
+  sg: { name: 'Singapore', flag: '🇸🇬', currency: 'SGD' },
+  au: { name: 'Australia', flag: '🇦🇺', currency: 'AUD' },
+  eu: { name: 'Europe', flag: '🇪🇺', currency: 'EUR' },
+  us: { name: 'United States', flag: '🇺🇸', currency: 'USD' },
+  global: { name: 'Global', flag: '🌐', currency: 'USD' },
+};
+
 function RegionDropdown({ region, onRegionChange, language }: { region: Region; onRegionChange: (r: Region) => void; language: Language }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -301,57 +312,51 @@ function RegionDropdown({ region, onRegionChange, language }: { region: Region; 
   }, []);
 
   const regions = ['id', 'bn', 'my', 'sg', 'au', 'eu', 'us', 'global'] as const;
+  const current = regionMetadata[region];
 
   return (
     <div ref={containerRef} style={{ position: 'relative', display: 'inline-block', zIndex: 50 }}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        style={{
-          display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px',
-          fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em',
-          color: 'var(--text)', background: 'var(--bg-elevated)', border: '1px solid var(--line)',
-          borderRadius: '999px', cursor: 'pointer', transition: 'all 0.2s',
-          boxShadow: '0 4px 14px rgba(0,0,0,0.03)'
-        }}
+        className="region-dropdown-trigger"
       >
-        <span>{language === 'id' ? 'Negara: ' : 'Country: '} <span style={{ color: 'var(--blue)' }}>{getRegionName(region)}</span></span>
-        <ChevronDown size={16} style={{ color: 'var(--muted)', transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+        <span className="region-dropdown-label">
+          {language === 'id' ? 'Wilayah:' : 'Region:'}
+        </span>
+        <div className="region-dropdown-value">
+          <span className="region-dropdown-flag">{current.flag}</span>
+          <span className="region-dropdown-name">{current.name}</span>
+          <span className="region-dropdown-currency-badge">{current.currency}</span>
+        </div>
+        <ChevronDown size={14} style={{ color: 'var(--muted)', transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.25s ease' }} />
       </button>
 
       {isOpen && (
-        <div style={{
-          position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: '8px',
-          width: '200px', background: 'var(--bg-elevated)', border: '1px solid var(--line)',
-          borderRadius: '16px', padding: '8px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-          maxHeight: '300px', overflowY: 'auto'
-        }}>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'col', gap: '4px' }}>
-            {regions.map((r) => (
-              <li key={r}>
-                <button
-                  type="button"
-                  onClick={() => { onRegionChange(r as Region); setIsOpen(false); }}
-                  style={{
-                    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '10px 12px', fontSize: '13px', fontWeight: 600,
-                    color: r === region ? 'var(--blue)' : 'var(--text)',
-                    background: r === region ? 'rgba(31, 105, 231, 0.1)' : 'transparent',
-                    border: 'none', borderRadius: '10px', cursor: 'pointer', textAlign: 'left',
-                    transition: 'all 0.1s'
-                  }}
-                  onMouseOver={(e) => {
-                    if (r !== region) (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-subtle)';
-                  }}
-                  onMouseOut={(e) => {
-                    if (r !== region) (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                  }}
-                >
-                  {getRegionName(r as Region)}
-                  {r === region && <Check size={14} style={{ color: 'var(--blue)' }} />}
-                </button>
-              </li>
-            ))}
+        <div className="region-dropdown-menu">
+          <ul className="region-dropdown-list">
+            {regions.map((r) => {
+              const meta = regionMetadata[r];
+              const isSelected = r === region;
+              return (
+                <li key={r}>
+                  <button
+                    type="button"
+                    onClick={() => { onRegionChange(r as Region); setIsOpen(false); }}
+                    className={`region-dropdown-item ${isSelected ? 'selected' : ''}`}
+                  >
+                    <div className="region-dropdown-item-content">
+                      <span className="region-dropdown-item-flag">{meta.flag}</span>
+                      <span>{meta.name}</span>
+                    </div>
+                    <div className="region-dropdown-item-meta">
+                      <span className="region-dropdown-item-currency">{meta.currency}</span>
+                      {isSelected && <Check size={14} style={{ color: 'var(--blue)', strokeWidth: 3 }} />}
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}

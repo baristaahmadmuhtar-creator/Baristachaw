@@ -2607,15 +2607,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       let activeModel = visionModel;
 
       res.setHeader('X-Attachment-Bytes', String(attachment.payload.byteLength));
+
+      if (useOpenAi) {
+        activeProvider = 'OPENAI';
+        activeModel = 'gpt-4o-mini';
+      }
+      res.setHeader('X-Model', activeModel);
+      res.setHeader('X-Provider', activeProvider);
+
       jsonHeartbeat = startJsonHeartbeatStream(res);
 
       if (useOpenAi) {
         try {
-          activeProvider = 'OPENAI';
-          activeModel = 'gpt-4o-mini';
-          res.setHeader('X-Model', activeModel);
-          res.setHeader('X-Provider', activeProvider);
-
           text = await withRetry(
             key =>
               callOpenAiVision(
@@ -2640,9 +2643,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!text) {
         activeProvider = 'GEMINI';
         activeModel = visionModel;
-        res.setHeader('X-Model', visionModel);
-        res.setHeader('X-Provider', 'GEMINI');
-
+        // Headers already sent, so we don't set them again.
+        
         text = await withRetry(
           key =>
             callGeminiWithInlineData(

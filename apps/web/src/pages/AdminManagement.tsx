@@ -3863,7 +3863,7 @@ export function AdminManagement() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="relative flex h-full w-full bg-[var(--bg-base)] text-primary desktop-noise-bg overflow-hidden"
+      className="relative flex h-full w-full min-h-0 bg-[var(--bg-base)] text-primary desktop-noise-bg overflow-hidden"
       aria-busy={loading || refreshing}
     >
       <a

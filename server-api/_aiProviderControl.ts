@@ -446,6 +446,7 @@ function keyEnvNames(provider: AiProviderId, keyClass: AiProviderKeyClass): stri
   ];
   if (provider === 'OPENAI') {
     base.push('AI_SCANNER');
+    base.push('SCANNER_API_KEY');
     for (let i = 1; i <= 10; i++) {
       base.push(`OPENAI_API_KEY_FREE_${i}`);
     }

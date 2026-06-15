@@ -27,7 +27,7 @@ function resolveSourceLabel(source: string, t: Record<string, string>) {
 type AuthModalAction = 'google' | 'facebook';
 
 export function AuthEntryModal() {
-  const { t, language } = useGlobalState();
+  const { t, language, setLanguage, region, setRegion } = useGlobalState();
   const {
     isOpen,
     source,
@@ -176,6 +176,54 @@ export function AuthEntryModal() {
               )}
 
               <div className="mt-5 flex flex-col gap-2">
+                <div className="mb-2 flex flex-col sm:flex-row gap-3 rounded-xl border border-glass bg-[var(--bg-base)]/72 p-3" data-testid="auth-language-step">
+                  <div className="flex-1 relative">
+                    <label htmlFor="modal-language-select" className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-secondary">
+                      {t.authRouteLanguageTitle || 'Language'}
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="modal-language-select"
+                        value={language}
+                        onChange={(e) => setLanguage(e.target.value)}
+                        className="w-full appearance-none rounded-lg border border-glass bg-surface-alpha px-3 py-2 text-sm font-semibold text-primary outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      >
+                        <option value="en">English</option>
+                        <option value="id">Indonesia</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-secondary">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 relative">
+                    <label htmlFor="modal-region-select" className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-secondary">
+                      {language === 'id' ? 'Negara' : 'Country'}
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="modal-region-select"
+                        value={region}
+                        onChange={(e) => setRegion(e.target.value as any)}
+                        className="w-full appearance-none rounded-lg border border-glass bg-surface-alpha px-3 py-2 text-sm font-semibold text-primary outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      >
+                        <option value="id">Indonesia</option>
+                        <option value="bn">Brunei</option>
+                        <option value="my">Malaysia</option>
+                        <option value="sg">Singapore</option>
+                        <option value="au">Australia</option>
+                        <option value="eu">Europe</option>
+                        <option value="us">United States</option>
+                        <option value="global">Global</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-secondary">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <EmailPasswordAuthForm compact initialMode={source === 'registration' ? 'signUp' : 'signIn'} />
 
                 <div className="flex items-center gap-3 py-1">

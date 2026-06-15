@@ -3,7 +3,7 @@ import { Check, ChevronRight, Languages, Loader2, Search, X } from 'lucide-react
 import { useGlobalState } from '../../context/GlobalState';
 import { loadAiBrewCatalog } from '../../features/ai-brew/catalog';
 import type { AiBrewCatalog } from '../../features/ai-brew/types';
-import type { Language } from '../../types';
+import type { Language, Region } from '../../types';
 import {
   loadEquipmentPreferences,
   saveEquipmentPreferences,
@@ -29,6 +29,17 @@ const LANGUAGE_OPTIONS: Array<{
   { id: 'id', label: 'Bahasa Indonesia', detail: 'Gunakan Bahasa Indonesia di seluruh aplikasi' },
   { id: 'en', label: 'English', detail: 'Use English throughout the app' },
 ];
+
+const REGION_OPTIONS = [
+  { id: 'id', label: 'Indonesia', detail: 'IDR (Rp)' },
+  { id: 'bn', label: 'Brunei', detail: 'BND (B$)' },
+  { id: 'my', label: 'Malaysia', detail: 'MYR (RM)' },
+  { id: 'sg', label: 'Singapore', detail: 'SGD (S$)' },
+  { id: 'au', label: 'Australia', detail: 'AUD (A$)' },
+  { id: 'eu', label: 'Europe', detail: 'EUR (€)' },
+  { id: 'us', label: 'United States', detail: 'USD ($)' },
+  { id: 'global', label: 'Global', detail: 'USD ($)' },
+] as const;
 
 const FAVORITE_DRIPPER_IDS = [
   'hario-v60',
@@ -216,12 +227,13 @@ function EquipmentPickerDialog({
 }
 
 export function FirstRunOnboarding() {
-  const { language, setLanguage } = useGlobalState();
+  const { language, setLanguage, region, setRegion } = useGlobalState();
   const [visible, setVisible] = useState(false);
   const [step, setStep] = useState<OnboardingStep>('language');
   const [selectedLanguage, setSelectedLanguage] = useState<Extract<Language, 'id' | 'en'>>(
     language === 'id' ? 'id' : 'en',
   );
+  const [selectedRegion, setSelectedRegion] = useState<Region>(region);
   const [catalog, setCatalog] = useState<AiBrewCatalog | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [preferredDripperId, setPreferredDripperId] = useState('');
@@ -237,6 +249,10 @@ export function FirstRunOnboarding() {
     languageBody: id
       ? 'Pilihan ini akan digunakan di seluruh aplikasi dan dapat diubah lagi di pengaturan.'
       : 'This choice applies across the app and can be changed later in settings.',
+    regionTitle: id ? 'Pilih wilayah (mata uang)' : 'Choose your region (currency)',
+    regionBody: id
+      ? 'Wilayah menentukan mata uang dan harga plan yang ditampilkan.'
+      : 'Region determines the currency and plan pricing displayed.',
     continue: id ? 'Lanjut' : 'Continue',
     equipmentTitle: id ? 'Atur alat favorit' : 'Set your favorite equipment',
     equipmentBody: id
@@ -276,6 +292,7 @@ export function FirstRunOnboarding() {
 
   async function continueToEquipment() {
     setLanguage(selectedLanguage);
+    setRegion(selectedRegion);
     setStep('equipment');
     if (catalog || catalogLoading) return;
     setCatalogLoading(true);
@@ -380,6 +397,39 @@ export function FirstRunOnboarding() {
                 );
               })}
             </div>
+
+            <div className="mt-8 border-t border-glass pt-6">
+              <h2 className="text-sm font-semibold text-primary">{copy.regionTitle}</h2>
+              <p className="text-xs text-secondary mt-1">{copy.regionBody}</p>
+              <div className="mt-4 grid grid-cols-2 gap-2.5">
+                {REGION_OPTIONS.map((opt) => {
+                  const active = selectedRegion === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setSelectedRegion(opt.id)}
+                      className={`flex min-h-[58px] items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors ${
+                        active
+                          ? 'border-blue-500 bg-blue-500/10'
+                          : 'border-glass bg-surface-alpha hover:border-blue-500/35'
+                      }`}
+                    >
+                      <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-extrabold ${
+                        active ? 'bg-blue-600 text-white' : 'bg-[var(--bg-base)] text-secondary'
+                      }`}>
+                        {opt.id === 'global' ? 'GL' : opt.id.toUpperCase()}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-xs font-semibold text-primary truncate">{opt.label}</span>
+                        <span className="block text-[10px] leading-4 text-secondary">{opt.detail}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <button
               type="button"
               onClick={() => { void continueToEquipment(); }}

@@ -61,6 +61,19 @@ type RegisterState = {
   plan: 'free' | 'plus' | 'pro' | 'team';
 };
 
+function getRegionName(region: Region): string {
+  switch (region) {
+    case 'id': return 'Indonesia';
+    case 'bn': return 'Brunei';
+    case 'my': return 'Malaysia';
+    case 'sg': return 'Singapore';
+    case 'eu': return 'Europe';
+    case 'au': return 'Australia';
+    case 'us': return 'United States';
+    default: return 'Global';
+  }
+}
+
 function PricingSection({ language, region, onRegister }: { language: Language; region: Region; onRegister: (plan: 'free' | 'plus' | 'pro' | 'team') => void }) {
   const [duration, setDuration] = useState<BillingDuration>('quarterly');
   const [promoCode, setPromoCode] = useState('');
@@ -132,6 +145,7 @@ function PricingSection({ language, region, onRegister }: { language: Language; 
             <button className="plan-cta" type="button" onClick={() => onRegister('free')}>
               {t('plan.free.cta', language)} <ArrowRight size={16} />
             </button>
+            <div className="plan-region-label">{getRegionName(region)}</div>
           </article>
         </ScrollReveal>
 
@@ -169,6 +183,7 @@ function PricingSection({ language, region, onRegister }: { language: Language; 
             <button className="plan-cta plan-cta-primary" type="button" onClick={() => onRegister('plus')}>
               {t('plan.plus.cta', language)} <ArrowRight size={16} />
             </button>
+            <div className="plan-region-label">{getRegionName(region)}</div>
           </article>
         </ScrollReveal>
 
@@ -205,6 +220,7 @@ function PricingSection({ language, region, onRegister }: { language: Language; 
             <button className="plan-cta plan-cta-pro" type="button" onClick={() => onRegister('pro')}>
               {t('plan.pro.cta', language)} <ArrowRight size={16} />
             </button>
+            <div className="plan-region-label">{getRegionName(region)}</div>
           </article>
         </ScrollReveal>
 
@@ -227,6 +243,7 @@ function PricingSection({ language, region, onRegister }: { language: Language; 
             <Link className="plan-cta" to="/support?topic=general">
               {t('plan.team.cta', language)} <ArrowRight size={16} />
             </Link>
+            <div className="plan-region-label">{getRegionName(region)}</div>
           </article>
         </ScrollReveal>
       </div>

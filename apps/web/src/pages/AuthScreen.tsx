@@ -153,6 +153,14 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
 
             <div className="auth-card-surface rounded-2xl p-4 sm:p-5">
 
+              <EmailPasswordAuthForm initialMode={intent} />
+
+              <div className="my-5 flex items-center gap-3">
+                <span className="h-px flex-1 bg-[var(--glass-border)]" />
+                <span className="text-xs font-semibold uppercase tracking-[0.16em] text-secondary">{t.authUseEmailDivider}</span>
+                <span className="h-px flex-1 bg-[var(--glass-border)]" />
+              </div>
+
               {isOffline ? (
                 <div className="mb-4 rounded-2xl border border-amber-500/25 bg-amber-500/12 px-4 py-3 text-sm font-medium text-amber-700 dark:text-amber-300">
                   {t.authModalOffline}
@@ -197,14 +205,6 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
                   </>
                 )}
               </button>
-
-              <div className="my-5 flex items-center gap-3">
-                <span className="h-px flex-1 bg-[var(--glass-border)]" />
-                <span className="text-xs font-semibold uppercase tracking-[0.16em] text-secondary">{t.authUseEmailDivider}</span>
-                <span className="h-px flex-1 bg-[var(--glass-border)]" />
-              </div>
-
-              <EmailPasswordAuthForm initialMode={intent} />
 
               <button
                 type="button"

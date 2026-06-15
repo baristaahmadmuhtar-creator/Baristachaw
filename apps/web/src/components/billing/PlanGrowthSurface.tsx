@@ -23,6 +23,19 @@ const currentColorIconStyle = { '--icon-glyph-color': 'currentColor' } as CSSPro
 
 const PLAN_ORDER: PlanCode[] = ['free', 'starter', 'pro', 'team'];
 
+function getRegionName(region: string): string {
+  switch (region) {
+    case 'id': return 'Indonesia';
+    case 'bn': return 'Brunei';
+    case 'my': return 'Malaysia';
+    case 'sg': return 'Singapore';
+    case 'eu': return 'Europe';
+    case 'au': return 'Australia';
+    case 'us': return 'United States';
+    default: return 'Global';
+  }
+}
+
 function formatCompactNumber(value: number, locale = 'en'): string {
   return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(value);
 }
@@ -278,6 +291,10 @@ function PlanCard({
         {busy ? <RefreshCw size={16} className="animate-spin" variant="glyph" /> : null}
         {details.ctaLabel}
       </button>
+
+      <div className={`absolute bottom-3 right-4 text-[10px] font-extrabold uppercase tracking-widest ${isDark ? 'text-white/30' : 'text-primary/30'}`}>
+        {getRegionName(region)}
+      </div>
     </article>
   );
 }

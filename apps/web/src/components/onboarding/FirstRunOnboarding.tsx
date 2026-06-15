@@ -229,7 +229,7 @@ function EquipmentPickerDialog({
 export function FirstRunOnboarding() {
   const { language, setLanguage, region, setRegion } = useGlobalState();
   const [visible, setVisible] = useState(false);
-  const [step, setStep] = useState<OnboardingStep>('language');
+  const [step, setStep] = useState<OnboardingStep>('language'); // Note: 'language' step now only shows region selector
   const [selectedLanguage, setSelectedLanguage] = useState<Extract<Language, 'id' | 'en'>>(
     language === 'id' ? 'id' : 'en',
   );
@@ -361,44 +361,7 @@ export function FirstRunOnboarding() {
 
         {step === 'language' ? (
           <section data-testid="onboarding-language-step">
-            <div className="text-center">
-              <Languages
-                data-testid="onboarding-language-icon"
-                aria-hidden="true"
-                className="mx-auto h-7 w-7 text-blue-500"
-              />
-              <h1 className="mt-4 text-2xl font-semibold text-primary">{copy.languageTitle}</h1>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-secondary">{copy.languageBody}</p>
-            </div>
-            <div className="mt-7 grid gap-3">
-              {LANGUAGE_OPTIONS.map((option) => {
-                const active = selectedLanguage === option.id;
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => setSelectedLanguage(option.id)}
-                    className={`flex min-h-[72px] w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors ${
-                      active
-                        ? 'border-blue-500 bg-blue-500/10'
-                        : 'border-glass bg-surface-alpha hover:border-blue-500/35'
-                    }`}
-                  >
-                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-                      active ? 'bg-blue-600 text-white' : 'bg-[var(--bg-base)] text-secondary'
-                    }`}>
-                      {active ? <Check size={17} /> : option.id.toUpperCase()}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-semibold text-primary">{option.label}</span>
-                      <span className="mt-0.5 block text-xs leading-5 text-secondary">{option.detail}</span>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="mt-8 border-t border-glass pt-6">
+            <div className="mt-2">
               <h2 className="text-sm font-semibold text-primary">{copy.regionTitle}</h2>
               <p className="text-xs text-secondary mt-1">{copy.regionBody}</p>
               <div className="mt-4 grid grid-cols-2 gap-2.5">

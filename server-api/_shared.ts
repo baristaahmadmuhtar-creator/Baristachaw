@@ -391,10 +391,10 @@ export function classifyProviderError(
   }
 
   if (status >= 500) {
-    return createApiError('provider_error', 'Upstream provider error', status, true, provider);
+    return createApiError('provider_error', `Upstream provider error: ${details}`, status, true, provider);
   }
 
-  return createApiError('internal_error', 'Unexpected AI provider error', 500, true, provider);
+  return createApiError('internal_error', `Unexpected AI provider error: ${details}`, 500, true, provider);
 }
 
 type JwtPayload = {

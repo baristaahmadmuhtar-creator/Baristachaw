@@ -421,7 +421,7 @@ export function estimateAiTokenCount(text: string): number {
 function splitKeys(raw: string): string[] {
   return raw
     .split(/[\n,;]+/g)
-    .map((value) => value.trim())
+    .map((value) => value.replace(/['"]/g, '').trim())
     .filter((value) => value.length > 5)
     .filter((value, index, list) => list.indexOf(value) === index);
 }

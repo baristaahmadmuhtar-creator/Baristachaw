@@ -59,6 +59,7 @@ function EvidenceSection({ language }: { language: Language }) {
 type RegisterState = {
   open: boolean;
   plan: 'free' | 'plus' | 'pro' | 'team';
+  duration: BillingDuration;
 };
 
 function getRegionName(region: Region): string {
@@ -74,7 +75,7 @@ function getRegionName(region: Region): string {
   }
 }
 
-function PricingSection({ language, region, onRegionChange, onRegister }: { language: Language; region: Region; onRegionChange: (r: Region) => void; onRegister: (plan: 'free' | 'plus' | 'pro' | 'team') => void }) {
+function PricingSection({ language, region, onRegionChange, onRegister }: { language: Language; region: Region; onRegionChange: (r: Region) => void; onRegister: (plan: 'free' | 'plus' | 'pro' | 'team', duration: BillingDuration) => void }) {
   const [duration, setDuration] = useState<BillingDuration>('quarterly');
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
@@ -148,7 +149,7 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
               <li><Check size={16} /> {t('plan.free.f4', language)}</li>
               <li><Check size={16} /> {t('plan.free.f5', language)}</li>
             </ul>
-            <button className="plan-cta" type="button" onClick={() => onRegister('free')}>
+            <button className="plan-cta" type="button" onClick={() => onRegister('free', duration)}>
               {t('plan.free.cta', language)} <ArrowRight size={16} />
             </button>
           </article>
@@ -185,7 +186,7 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
               <li><Check size={16} /> {t('plan.plus.f4', language)}</li>
               <li><Check size={16} /> {t('plan.plus.f5', language)}</li>
             </ul>
-            <button className="plan-cta plan-cta-primary" type="button" onClick={() => onRegister('plus')}>
+            <button className="plan-cta plan-cta-primary" type="button" onClick={() => onRegister('plus', duration)}>
               {t('plan.plus.cta', language)} <ArrowRight size={16} />
             </button>
           </article>
@@ -221,7 +222,7 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
               <li><Check size={16} /> {t('plan.pro.f4', language)}</li>
               <li><Check size={16} /> {t('plan.pro.f5', language)}</li>
             </ul>
-            <button className="plan-cta plan-cta-pro" type="button" onClick={() => onRegister('pro')}>
+            <button className="plan-cta plan-cta-pro" type="button" onClick={() => onRegister('pro', duration)}>
               {t('plan.pro.cta', language)} <ArrowRight size={16} />
             </button>
           </article>
@@ -284,84 +285,33 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
   );
 }
 
+import { CustomSelect } from './components/CustomSelect';
+
 function RegionDropdown({ region, onRegionChange, language }: { region: Region; onRegionChange: (r: Region) => void; language: Language }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   const regions = ['id', 'bn', 'my', 'sg', 'au', 'eu', 'us', 'global'] as const;
+  const options = regions.map(r => ({ value: r, label: getRegionName(r) }));
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', display: 'inline-block', zIndex: 50 }}>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        style={{
-          display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px',
-          fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em',
-          color: 'var(--text)', background: 'var(--bg-elevated)', border: '1px solid var(--line)',
-          borderRadius: '999px', cursor: 'pointer', transition: 'all 0.2s',
-          boxShadow: '0 4px 14px rgba(0,0,0,0.03)'
-        }}
-      >
-        <span>{language === 'id' ? 'Negara: ' : 'Country: '} <span style={{ color: 'var(--blue)' }}>{getRegionName(region)}</span></span>
-        <ChevronDown size={16} style={{ color: 'var(--muted)', transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-      </button>
-
-      {isOpen && (
-        <div style={{
-          position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: '8px',
-          width: '200px', background: 'var(--bg-elevated)', border: '1px solid var(--line)',
-          borderRadius: '16px', padding: '8px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-          maxHeight: '300px', overflowY: 'auto'
-        }}>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            {regions.map((r) => (
-              <li key={r}>
-                <button
-                  type="button"
-                  onClick={() => { onRegionChange(r as Region); setIsOpen(false); }}
-                  style={{
-                    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '10px 12px', fontSize: '13px', fontWeight: 600,
-                    color: r === region ? 'var(--blue)' : 'var(--text)',
-                    background: r === region ? 'rgba(31, 105, 231, 0.1)' : 'transparent',
-                    border: 'none', borderRadius: '10px', cursor: 'pointer', textAlign: 'left',
-                    transition: 'all 0.1s'
-                  }}
-                  onMouseOver={(e) => {
-                    if (r !== region) (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-subtle)';
-                  }}
-                  onMouseOut={(e) => {
-                    if (r !== region) (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                  }}
-                >
-                  {getRegionName(r as Region)}
-                  {r === region && <Check size={14} style={{ color: 'var(--blue)' }} />}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+    <div style={{ position: 'relative', display: 'inline-block', zIndex: 50, width: '220px' }}>
+      <CustomSelect 
+        value={region}
+        onChange={(val) => onRegionChange(val as Region)}
+        options={options}
+      />
     </div>
   );
 }
 
-function LandingHome({ language, region, onRegionChange, user, onLoginSuccess }: { language: Language; region: Region; onRegionChange: (r: Region) => void; user: any; onLoginSuccess: () => void }) {
-  const [registerState, setRegisterState] = useState<RegisterState>({ open: false, plan: 'free' });
-  const [duration] = useState<BillingDuration>('quarterly');
+function LandingHome({ language, region, onRegionChange, user, onLoginSuccess, initialRegisterState }: { language: Language; region: Region; onRegionChange: (r: Region) => void; user: any; onLoginSuccess: () => void; initialRegisterState?: RegisterState }) {
+  const [registerState, setRegisterState] = useState<RegisterState>(initialRegisterState || { open: false, plan: 'free', duration: 'quarterly' });
 
-  const openRegister = (plan: 'free' | 'plus' | 'pro' | 'team') => {
+  useEffect(() => {
+    if (initialRegisterState?.open) {
+      setRegisterState(initialRegisterState);
+    }
+  }, [initialRegisterState]);
+
+  const openRegister = (plan: 'free' | 'plus' | 'pro' | 'team', duration: BillingDuration = 'quarterly') => {
     if (plan === 'team') {
       window.location.href = '/support?topic=general';
       return;
@@ -370,7 +320,7 @@ function LandingHome({ language, region, onRegionChange, user, onLoginSuccess }:
       window.location.href = APP_ORIGIN;
       return;
     }
-    setRegisterState({ open: true, plan });
+    setRegisterState({ open: true, plan, duration });
   };
 
   return (
@@ -409,10 +359,10 @@ function LandingHome({ language, region, onRegionChange, user, onLoginSuccess }:
         <RegisterModal
           language={language}
           plan={registerState.plan}
-          duration={duration}
+          duration={registerState.duration}
           user={user}
           onLoginSuccess={onLoginSuccess}
-          onClose={() => setRegisterState({ open: false, plan: 'free' })}
+          onClose={() => setRegisterState({ ...registerState, open: false })}
         />
       )}
     </main>
@@ -460,6 +410,7 @@ export function App() {
 
   const [user, setUser] = useState<any>(null);
   const [userLoading, setUserLoading] = useState(true);
+  const [initialRegister, setInitialRegister] = useState<RegisterState | undefined>();
 
   const checkAuth = async () => {
     try {
@@ -499,6 +450,13 @@ export function App() {
     // If we just redirected from Google OAuth with success query param
     const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.get('login_success') === '1') {
+      const plan = searchParams.get('plan') as 'free' | 'plus' | 'pro' | 'team' | null;
+      const duration = searchParams.get('duration') as BillingDuration | null;
+      
+      if (plan && duration) {
+        setInitialRegister({ open: true, plan, duration });
+      }
+
       const nextUrl = window.location.pathname + window.location.hash;
       window.history.replaceState({}, document.title, nextUrl);
       checkAuth();
@@ -534,12 +492,12 @@ export function App() {
         onLogout={handleLogout}
       />
       <Routes>
-        <Route path="/" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} user={user} onLoginSuccess={checkAuth} />} />
+        <Route path="/" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} user={user} onLoginSuccess={checkAuth} initialRegisterState={initialRegister} />} />
         <Route path="/support" element={<SupportPage language={language} />} />
         <Route path="/privacy" element={<PrivacyPage language={language} />} />
         <Route path="/terms" element={<TermsPage language={language} />} />
         <Route path="/download/*" element={<DownloadPage language={language} />} />
-        <Route path="*" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} user={user} onLoginSuccess={checkAuth} />} />
+        <Route path="*" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} user={user} onLoginSuccess={checkAuth} initialRegisterState={initialRegister} />} />
       </Routes>
       <SiteFooter language={language} />
       <SupportChatWidget language={language} />

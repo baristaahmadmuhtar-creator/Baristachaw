@@ -172,7 +172,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     setLoading(true);
     setError(null);
     try {
-      const returnTo = window.location.origin + '/?login_success=1';
+      const returnTo = window.location.origin + `/?login_success=1&plan=${plan}&duration=${duration}`;
       const res = await fetch(`${APP_ORIGIN}/api/auth/url?provider=google&returnTo=${encodeURIComponent(returnTo)}`, {
         credentials: 'include'
       });

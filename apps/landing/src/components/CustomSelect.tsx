@@ -45,7 +45,7 @@ export function CustomSelect({ id, value, onChange, options, placeholder, classN
 
       {isOpen && (
         <div className="absolute z-[9999] mt-2 w-full overflow-hidden rounded-xl border border-glass bg-[var(--bg-elevated)] p-1.5 shadow-xl backdrop-blur-2xl">
-          <ul className="max-h-60 overflow-auto outline-none scrollbar-hide">
+          <ul className="max-h-60 overflow-auto outline-none custom-scrollbar">
             {options.map((opt) => (
               <li key={opt.value}>
                 <button

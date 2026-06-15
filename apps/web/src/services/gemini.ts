@@ -393,6 +393,9 @@ export function humanizeAiError(error: unknown): string {
       return "Ukuran gambar terlalu besar";
     }
     if (error.status === 429 || error.errorCode === 'quota_exceeded' || error.errorCode === 'rate_limited') {
+      if (error.provider === 'OPENAI') {
+        return "Limit OpenAI sedang penuh atau billing provider bermasalah. Cek OpenAI usage/limits dan coba lagi.";
+      }
       return "Limit AI sedang penuh, coba lagi nanti";
     }
     if (error.status === 400 || error.errorCode === 'bad_request' || error.errorCode === 'unsupported_model' || error.errorCode === 'validation_error') {

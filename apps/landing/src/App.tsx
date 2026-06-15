@@ -282,7 +282,6 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
         </div>
       </ScrollReveal>
 
-      </ScrollReveal>
     </section>
   );
 }

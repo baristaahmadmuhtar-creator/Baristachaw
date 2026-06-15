@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { randomUUID } from 'node:crypto';
-import { applyCors, applyRateLimitHeaders, checkRateLimit } from '../_shared.js';
+import { applyCors, applyRateLimitHeaders, checkRateLimit, getAllowedOrigins } from '../_shared.js';
 import { resolveAuthAppUrl } from './_origin.js';
 
 const AUTH_URL_RATE_LIMIT = {
@@ -39,13 +39,19 @@ function readProviderQuery(raw: string | string[] | undefined): WebOAuthProvider
 function readReturnToQuery(raw: string | string[] | undefined): string {
   const value = Array.isArray(raw) ? raw[0] : raw;
   const text = String(value || '').trim();
-  if (!text.startsWith('/') || text.startsWith('//')) return '/';
-  try {
-    const parsed = new URL(text, 'http://baristachaw.local');
-    return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/';
-  } catch {
-    return '/';
+  if (text.startsWith('/') && !text.startsWith('//')) {
+    return text;
   }
+  try {
+    const parsed = new URL(text);
+    const allowed = getAllowedOrigins();
+    if (allowed.includes(parsed.origin)) {
+      return text;
+    }
+  } catch {
+    // Ignore URL parse error
+  }
+  return '/';
 }
 
 function readFacebookGraphVersion(): string {

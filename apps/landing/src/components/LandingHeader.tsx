@@ -1,7 +1,7 @@
 import { Menu, X, Globe } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { APP_LINKS, type Region } from '../config';
+import { APP_LINKS, APP_ORIGIN, type Region } from '../config';
 import type { Language } from '../i18n';
 import { t } from '../i18n';
 
@@ -10,9 +10,11 @@ type LandingHeaderProps = {
   onLanguageChange: (language: Language) => void;
   region: Region;
   onRegionChange: (region: Region) => void;
+  user?: any;
+  onLogout?: () => void;
 };
 
-export function LandingHeader({ language, onLanguageChange, region, onRegionChange }: LandingHeaderProps) {
+export function LandingHeader({ language, onLanguageChange, region, onRegionChange, user, onLogout }: LandingHeaderProps) {
   const [open, setOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -72,8 +74,18 @@ export function LandingHeader({ language, onLanguageChange, region, onRegionChan
             </select>
           </div>
         </div>
-        <a className="header-login" href={APP_LINKS.login}>{t('nav.login', language)}</a>
-        <a className="button button-small button-light" href={APP_LINKS.aiBrew}>{t('nav.tryAiBrew', language)}</a>
+        {user ? (
+          <>
+            <span className="header-user-email" style={{ marginRight: '8px', fontSize: '13px', color: 'var(--text-secondary)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={user.email}>{user.email}</span>
+            <button className="header-login" onClick={onLogout} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}>{t('nav.logout', language)}</button>
+            <a className="button button-small button-light" href={APP_ORIGIN}>{t('nav.toApp', language)}</a>
+          </>
+        ) : (
+          <>
+            <a className="header-login" href={APP_LINKS.login}>{t('nav.login', language)}</a>
+            <a className="button button-small button-light" href={APP_LINKS.aiBrew}>{t('nav.tryAiBrew', language)}</a>
+          </>
+        )}
         <button
           ref={menuButtonRef}
           className="menu-button"
@@ -108,8 +120,18 @@ export function LandingHeader({ language, onLanguageChange, region, onRegionChan
               <option value="global">Global</option>
             </select>
           </div>
-          <a href={APP_LINKS.login}>{t('nav.login', language)}</a>
-          <a href={APP_LINKS.register}>{t('nav.register', language)}</a>
+          {user ? (
+            <>
+              <span className="mobile-user-email" style={{ padding: '8px 16px', fontSize: '13px', color: 'var(--text-secondary)' }}>{user.email}</span>
+              <a href={APP_ORIGIN}>{t('nav.toApp', language)}</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); onLogout?.(); setOpen(false); }}>{t('nav.logout', language)}</a>
+            </>
+          ) : (
+            <>
+              <a href={APP_LINKS.login}>{t('nav.login', language)}</a>
+              <a href={APP_LINKS.register}>{t('nav.register', language)}</a>
+            </>
+          )}
         </nav>
       ) : null}
     </header>

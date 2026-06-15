@@ -12,7 +12,7 @@ import { ScrollReveal } from './components/ScrollReveal';
 import { SupportChatWidget } from './components/SupportChatWidget';
 import { DataShowcase } from './components/DataShowcase';
 import { ToolsShowcase } from './components/ToolsShowcase';
-import { APP_LINKS, APK_URL, PRICING, type BillingDuration, formatCurrency, getCurrencyForRegion, type Region } from './config';
+import { APP_LINKS, APP_ORIGIN, APK_URL, PRICING, type BillingDuration, formatCurrency, getCurrencyForRegion, type Region } from './config';
 import type { Language } from './i18n';
 import { t } from './i18n';
 import { DownloadPage } from './pages/DownloadPage';
@@ -359,7 +359,7 @@ function RegionDropdown({ region, onRegionChange, language }: { region: Region; 
   );
 }
 
-function LandingHome({ language, region, onRegionChange }: { language: Language; region: Region; onRegionChange: (r: Region) => void }) {
+function LandingHome({ language, region, onRegionChange, user, onLoginSuccess }: { language: Language; region: Region; onRegionChange: (r: Region) => void; user: any; onLoginSuccess: () => void }) {
   const [registerState, setRegisterState] = useState<RegisterState>({ open: false, plan: 'free' });
   const [duration] = useState<BillingDuration>('quarterly');
 
@@ -368,19 +368,23 @@ function LandingHome({ language, region, onRegionChange }: { language: Language;
       window.location.href = '/support?topic=general';
       return;
     }
-    window.location.href = `${APP_LINKS.register}?plan=${plan}&region=${region}&lang=${language}`;
+    if (plan === 'free' && user) {
+      window.location.href = APP_ORIGIN;
+      return;
+    }
+    setRegisterState({ open: true, plan });
   };
 
   return (
     <main>
-      <HeroSection language={language} onRegister={() => setRegisterState({ open: true, plan: 'free' })} />
+      <HeroSection language={language} onRegister={() => openRegister('free')} />
       <MethodSections language={language} />
       <DataShowcase language={language} />
       <BrewerGrid language={language} />
       <ToolsShowcase language={language} />
       <FeatureGraphics language={language} />
       <EvidenceSection language={language} />
-      <PricingSection language={language} region={region} onRegionChange={onRegionChange} onRegister={(plan) => setRegisterState({ open: true, plan })} />
+      <PricingSection language={language} region={region} onRegionChange={onRegionChange} onRegister={openRegister} />
       <DownloadSection language={language} />
       <ScrollReveal variant="blur">
         <section className="final-cta">
@@ -390,8 +394,14 @@ function LandingHome({ language, region, onRegionChange }: { language: Language;
             <span>{t('final.body', language)}</span>
           </div>
           <div className="final-actions">
-            <a className="button button-light" href={APP_LINKS.aiBrew}>{t('final.tryAiBrew', language)} <ArrowRight /></a>
-            <button className="button button-ghost" type="button" onClick={() => openRegister('free')}>{t('final.registerFree', language)}</button>
+            {user ? (
+              <a className="button button-light" href={APP_ORIGIN}>{t('final.tryAiBrew', language)} <ArrowRight /></a>
+            ) : (
+              <>
+                <a className="button button-light" href={APP_LINKS.aiBrew}>{t('final.tryAiBrew', language)} <ArrowRight /></a>
+                <button className="button button-ghost" type="button" onClick={() => openRegister('free')}>{t('final.registerFree', language)}</button>
+              </>
+            )}
             <a className="button button-ghost" href={APK_URL}>Download APK</a>
           </div>
         </section>
@@ -402,6 +412,8 @@ function LandingHome({ language, region, onRegionChange }: { language: Language;
           language={language}
           plan={registerState.plan}
           duration={duration}
+          user={user}
+          onLoginSuccess={onLoginSuccess}
           onClose={() => setRegisterState({ open: false, plan: 'free' })}
         />
       )}
@@ -448,6 +460,53 @@ export function App() {
     return 'global';
   });
 
+  const [user, setUser] = useState<any>(null);
+  const [userLoading, setUserLoading] = useState(true);
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch(`${APP_ORIGIN}/api/auth/me?soft=1`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authenticated && data.user) {
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to check auth status', err);
+    } finally {
+      setUserLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${APP_ORIGIN}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      setUser(null);
+    } catch (err) {
+      console.warn('Failed to log out', err);
+    }
+  };
+
+  useEffect(() => {
+    checkAuth();
+    
+    // If we just redirected from Google OAuth with success query param
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get('login_success') === '1') {
+      const nextUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, document.title, nextUrl);
+      checkAuth();
+    }
+  }, []);
+
   const location = useLocation();
 
   const handleLanguageChange = (next: Language) => {
@@ -473,20 +532,22 @@ export function App() {
         onLanguageChange={handleLanguageChange} 
         region={region} 
         onRegionChange={handleRegionChange} 
+        user={user}
+        onLogout={handleLogout}
       />
       <Routes>
-        <Route path="/" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} />} />
+        <Route path="/" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} user={user} onLoginSuccess={checkAuth} />} />
         <Route path="/support" element={<SupportPage language={language} />} />
         <Route path="/privacy" element={<PrivacyPage language={language} />} />
         <Route path="/terms" element={<TermsPage language={language} />} />
         <Route path="/download/*" element={<DownloadPage language={language} />} />
-        <Route path="*" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} />} />
+        <Route path="*" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} user={user} onLoginSuccess={checkAuth} />} />
       </Routes>
       <SiteFooter language={language} />
       <SupportChatWidget language={language} />
       {location.pathname === '/' ? (
         <div className="mobile-sticky-cta" aria-label="Quick actions">
-          <a href={APP_LINKS.aiBrew}>{t('mobileCta.tryAiBrew', language)}</a>
+          <a href={user ? APP_ORIGIN : APP_LINKS.aiBrew}>{t('mobileCta.tryAiBrew', language)}</a>
           <a href={APK_URL}>{t('mobileCta.download', language)}</a>
         </div>
       ) : null}

@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
-import { applyRateLimitHeaders, checkRateLimit } from '../_shared.js';
+import { applyRateLimitHeaders, checkRateLimit, getAllowedOrigins } from '../_shared.js';
 import { decorateUserWithAdminClaims } from '../admin/_access.js';
 import { resolveAuthAppUrl } from './_origin.js';
 import { createMobileAuthGrant } from './mobile/grants.js';
@@ -81,13 +81,19 @@ function readOauthProvider(req: VercelRequest): WebOAuthProvider {
 
 function sanitizeReturnToPath(raw: string): string {
   const value = String(raw || '').trim();
-  if (!value.startsWith('/') || value.startsWith('//')) return '/';
-  try {
-    const parsed = new URL(value, 'http://baristachaw.local');
-    return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/';
-  } catch {
-    return '/';
+  if (value.startsWith('/') && !value.startsWith('//')) {
+    return value;
   }
+  try {
+    const parsed = new URL(value);
+    const allowed = getAllowedOrigins();
+    if (allowed.includes(parsed.origin)) {
+      return value;
+    }
+  } catch {
+    // Ignore URL parse error
+  }
+  return '/';
 }
 
 function readFacebookGraphVersion(): string {

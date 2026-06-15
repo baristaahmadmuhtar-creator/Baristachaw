@@ -199,8 +199,12 @@ export function getAllowedOrigins(): string[] {
   const base = [
     normalizeOrigin(process.env.APP_URL || ''),
     normalizeOrigin(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : ''),
+    'https://baristachaw.com',
+    'https://www.baristachaw.com',
     'http://localhost:5173',
     'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3002',
   ].filter(Boolean) as string[];
 
   const unique = new Set<string>();

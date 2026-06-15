@@ -61,7 +61,7 @@ test('Indonesian admin copy replaces raw operational enums with friendly labels'
   assert.equal(copy.text('manage'), 'Kelola');
   assert.equal(copy.enumLabel('past_due'), 'Terlambat bayar');
   assert.equal(copy.enumLabel('manual_invoice'), 'Invoice manual');
-  assert.equal(copy.format('aiDeepScanLimits', { ai: 120, deep: 12, scans: 40 }), '120 AI / 12 deep / 40 scan per hari');
+  assert.equal(copy.format('aiDeepScanLimits', { ai: 120, deep: 12, scans: 40 }), '120 AI / 12 deep / 40 scan AI per hari');
 });
 
 test('language-sensitive source files do not contain placeholder mojibake', () => {

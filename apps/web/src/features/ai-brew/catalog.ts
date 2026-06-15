@@ -653,11 +653,13 @@ function normalizeDripper(raw: RawDripperCatalogEntry, override?: MarketSignalRe
 
 export function normalizeGrinderDriveType(raw?: string | null, fallbackSearchText?: string): GrinderDriveType {
   const normalized = String(raw || '').toLowerCase().trim();
+  if (normalized === 'hybrid') return 'hybrid';
   if (normalized === 'hand' || normalized === 'manual') return 'hand';
   if (normalized === 'electric') return 'electric';
   
   if (fallbackSearchText) {
     const text = fallbackSearchText.toLowerCase();
+    if (/\bhybrid\b/.test(text)) return 'hybrid';
     if (/\b(hand|manual)\b/.test(text)) return 'hand';
     if (/\belectric\b/.test(text)) return 'electric';
     

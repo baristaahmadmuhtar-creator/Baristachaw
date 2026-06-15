@@ -668,7 +668,7 @@ export interface ParsedNumericRange {
   precision: number;
 }
 
-export type GrinderDriveType = 'hand' | 'electric' | 'unknown';
+export type GrinderDriveType = 'hand' | 'electric' | 'hybrid' | 'unknown';
 export type BurrType = 'conical' | 'flat' | 'hybrid' | 'unknown';
 export type GrinderWarningSeverity = 'safe' | 'info' | 'caution' | 'blocked';
 

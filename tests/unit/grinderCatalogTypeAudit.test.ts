@@ -7,8 +7,10 @@ test('normalizeGrinderDriveType correctly identifies drive types', () => {
   assert.equal(normalizeGrinderDriveType('manual'), 'hand');
   assert.equal(normalizeGrinderDriveType('electric'), 'electric');
   assert.equal(normalizeGrinderDriveType('Electric'), 'electric');
+  assert.equal(normalizeGrinderDriveType('hybrid'), 'hybrid');
   assert.equal(normalizeGrinderDriveType('', '1zpresso k-ultra manual grinder'), 'hand');
   assert.equal(normalizeGrinderDriveType('', 'niche zero electric grinder'), 'electric');
+  assert.equal(normalizeGrinderDriveType('', 'goat story arco hybrid grinder'), 'hybrid');
   assert.equal(normalizeGrinderDriveType('unknown'), 'unknown');
   assert.equal(normalizeGrinderDriveType('', ''), 'unknown');
 });

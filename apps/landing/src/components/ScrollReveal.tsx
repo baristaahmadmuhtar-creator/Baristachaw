@@ -1,9 +1,10 @@
 import { motion, type Variants } from 'motion/react';
-import type { ReactNode } from 'react';
+import type { ReactNode, CSSProperties } from 'react';
 
 interface ScrollRevealProps {
   children: ReactNode;
   className?: string;
+  style?: CSSProperties;
   /** Delay in seconds */
   delay?: number;
   /** Animation variant */
@@ -70,6 +71,7 @@ const variants: Record<string, Variants> = {
 export function ScrollReveal({
   children,
   className,
+  style,
   delay = 0,
   variant = 'slide-up',
   once = true,
@@ -78,6 +80,7 @@ export function ScrollReveal({
   return (
     <motion.div
       className={className}
+      style={style}
       initial="hidden"
       whileInView="visible"
       viewport={{ once, amount: 0.12, margin: '-60px' }}

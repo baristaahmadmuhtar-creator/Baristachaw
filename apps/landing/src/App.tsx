@@ -109,14 +109,12 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
         </div>
       </ScrollReveal>
 
-      <ScrollReveal variant="fade" delay={0.05}>
+      <ScrollReveal variant="fade" delay={0.05} style={{ position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
           <RegionDropdown region={region} onRegionChange={onRegionChange} language={language} />
         </div>
-      </ScrollReveal>
 
-      {/* Duration Toggle */}
-      <ScrollReveal variant="fade" delay={0.05}>
+        {/* Duration Toggle */}
         <div className="plan-duration-toggle" role="radiogroup" aria-label={t('pricing.selectDuration', language)}>
           {(['monthly', 'quarterly', 'yearly'] as const).map((d) => (
             <button

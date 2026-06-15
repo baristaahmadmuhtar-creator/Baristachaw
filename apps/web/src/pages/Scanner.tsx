@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { motion, AnimatePresence } from "motion/react";
 import { AlertCircle, Bookmark, BookmarkCheck, Loader2, RefreshCw, Download, Copy, Check } from "lucide-react";
 import Markdown from "react-markdown";
-import { analyzeImage, editLatteArtImage } from "../services/gemini";
+import { analyzeImage, editLatteArtImage, humanizeAiError } from "../services/gemini";
 import { getByFeatureKey, setByFeatureKey } from "../services/offlineCache";
 import { saveCollectionItem } from "../services/storageService";
 import { useAuthModal } from "../context/AuthModalContext";
@@ -505,7 +505,7 @@ export function Scanner() {
       setResultMarkdown(null);
       setError(
         scanError instanceof Error
-          ? scanError.message
+          ? humanizeAiError(scanError)
           : (isLatteMode ? t.scannerLatteGenerateFailed : t.scannerAnalyzeFailed),
       );
     } finally {

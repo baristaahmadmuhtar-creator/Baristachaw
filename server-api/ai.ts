@@ -2402,6 +2402,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
+  const openaiKeys = getAiProviderKeys('OPENAI');
+  const geminiKeys = getAiProviderKeys('GEMINI');
+
+  if (openaiKeys.length === 0 && geminiKeys.length === 0) {
+    return res.status(401).json({
+      ok: false,
+      requestId,
+      action,
+      error: 'AI API key is missing on server',
+      errorCode: 'no_key',
+      retryable: false,
+    });
+  }
+
   if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > 15000) {
     return sendBadRequest(
       res,
@@ -2780,6 +2794,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           errorCode: 'validation_error',
           retryable: false,
         });
+      }
+      if (!isSupportedInlineAttachmentMime(attachment.payload.mimeType)) {
+        return sendBadRequest(
+          res,
+          requestId,
+          action,
+          'Unsupported image mimeType for edit_latte_art',
+        );
       }
 
       res.setHeader('X-Attachment-Bytes', String(attachment.payload.byteLength));
@@ -3291,8 +3313,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       : classifyProviderError(error, 'GEMINI');
     const details = sanitizeErrorDetails(error);
 
+    const imgSize = image && typeof image === 'string' ? Math.round(image.length * 0.75) : 0;
+    const imgInfo = imgSize > 0 ? ` mimeType=${mimeType || 'unknown'} imgBytes=${imgSize}` : '';
+
     console.error(
-      `[api/ai][${requestId}] action=${action} failed code=${classified.code} status=${classified.statusCode} retryable=${classified.retryable} latency=${Date.now() - startedAt}ms details="${details}"`,
+      `[api/ai][${requestId}] action=${action} failed code=${classified.code} status=${classified.statusCode} retryable=${classified.retryable} latency=${Date.now() - startedAt}ms model=${selectedModel || 'unknown'}${imgInfo} details="${details}"`,
     );
     recordAiProviderFailure({
       provider: classified.provider || 'GEMINI',

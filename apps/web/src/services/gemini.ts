@@ -209,7 +209,7 @@ export interface ServerAiResponse {
   deepMeta?: DeepResponseMeta;
 }
 
-class ServerAiError extends Error {
+export class ServerAiError extends Error {
   requestId?: string;
   errorCode?: AiErrorCode | string;
   retryable?: boolean;
@@ -382,6 +382,35 @@ function normalizeServerError(
     status,
     degraded: payload?.degraded,
   });
+}
+
+export function humanizeAiError(error: unknown): string {
+  if (error instanceof ServerAiError) {
+    if (error.status === 401 || error.status === 403 || error.errorCode === 'invalid_key' || error.errorCode === 'no_key') {
+      return "AI service belum terkonfigurasi";
+    }
+    if (error.status === 413 || error.errorCode === 'payload_too_large') {
+      return "Ukuran gambar terlalu besar";
+    }
+    if (error.status === 429 || error.errorCode === 'quota_exceeded' || error.errorCode === 'rate_limited') {
+      return "Limit AI sedang penuh, coba lagi nanti";
+    }
+    if (error.status === 400 || error.errorCode === 'bad_request' || error.errorCode === 'unsupported_model' || error.errorCode === 'validation_error') {
+      return "Gambar/prompt tidak valid";
+    }
+    if (error.status && error.status >= 500) {
+      return "AI provider sedang bermasalah, coba lagi";
+    }
+    // Fallback if status code is missing but it's a known error
+    if (error.errorCode === 'provider_error' || error.errorCode === 'internal_error' || error.errorCode === 'provider_timeout') {
+      return "AI provider sedang bermasalah, coba lagi";
+    }
+    return error.message;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return "Terjadi kesalahan tidak terduga, coba lagi.";
 }
 
 async function serverAi(

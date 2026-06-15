@@ -22,6 +22,7 @@ export type AiErrorCode =
   | 'unsupported_model'
   | 'provider_error'
   | 'internal_error'
+  | 'payload_too_large'
   | 'no_key'
   | 'unknown_action'
   | 'validation_error'
@@ -380,6 +381,10 @@ export function classifyProviderError(
     details.includes('rate limit')
   ) {
     return createApiError('quota_exceeded', 'Provider quota or rate limit exceeded', 429, true, provider);
+  }
+
+  if (status === 413 || details.includes('payload too large') || details.includes('too large')) {
+    return createApiError('payload_too_large', 'Image or payload is too large', 413, false, provider);
   }
 
   if ((status === 400 || status === 404) && details.includes('model')) {

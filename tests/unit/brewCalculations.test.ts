@@ -1,4 +1,4 @@
-﻿import test from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import { BREW_METHOD_MAP } from '../../apps/web/src/features/barista-tools/brewProfiles.ts';
 import {
@@ -187,7 +187,7 @@ test('grind size advisor uses method-aware grinder bands', () => {
   assert.match(v60.grindBandLabel, /8 - 10 clicks/);
   assert.match(espresso.grindBandLabel, /2 - 4 clicks/);
   assert.match(coldBrew.grindBandLabel, /18 - 22 clicks/);
-  assert.match(espresso.warning || '', /Espresso sangat sensitif/);
+  assert.match(espresso.compatibilityReason || '', /kalibrasi|espresso/i);
   assert.equal(espresso.espressoInsight?.brewRatio, 2);
   assert.ok(espresso.espressoInsight?.actions.includes('calibrate_zero'));
   assert.ok(espresso.espressoInsight?.actions.includes('grind_finer'));

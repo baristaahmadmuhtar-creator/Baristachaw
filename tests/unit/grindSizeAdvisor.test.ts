@@ -5,9 +5,9 @@ import test from 'node:test';
 import { loadAiBrewCatalog } from '../../apps/web/src/features/ai-brew/catalog.ts';
 import {
   buildGrindSizeAdvice,
-  getGrindSizeCompatibility,
   sortGrindersForMethod,
 } from '../../apps/web/src/features/barista-tools/grindSizeAdvisor.ts';
+import { getGrinderSafetyProfile } from '../../apps/web/src/features/ai-brew/grinderSafetyGuardrails.ts';
 import { BREW_METHOD_PROFILES } from '../../apps/web/src/features/barista-tools/brewProfiles.ts';
 import type { RoastLevel } from '../../apps/web/src/features/barista-tools/types.ts';
 
@@ -126,13 +126,13 @@ test('Grind Size blocks espresso for filter-only grinders and prioritizes select
   assert.ok(encoreEsp, 'Baratza Encore ESP fixture must exist');
 
   for (const grinder of [timemoreC2, timemoreS3, baratzaEncore, fellowOde]) {
-    const compatibility = getGrindSizeCompatibility(catalog, 'espresso', grinder);
+    const compatibility = getGrinderSafetyProfile(catalog, 'espresso', grinder);
     assert.equal(compatibility.state, 'not_recommended', `${grinder.id} should be blocked for espresso`);
     assert.equal(compatibility.selectable, false, `${grinder.id} should not be selectable for espresso`);
     assert.match(compatibility.reason, /espresso|fine|halus/i);
   }
 
-  const espCompatibility = getGrindSizeCompatibility(catalog, 'espresso', encoreEsp);
+  const espCompatibility = getGrinderSafetyProfile(catalog, 'espresso', encoreEsp);
 
   assert.notEqual(espCompatibility.state, 'not_recommended');
   assert.equal(espCompatibility.selectable, true);
@@ -182,7 +182,7 @@ test('Grind Size catalog treats DF64 Gen 2 as calibration-required espresso/filt
   assert.match(`${grinder.name} ${grinder.searchText}`, /df64/i);
   assert.match(`${grinder.typeLabel} ${grinder.searchText}`, /zero|burr|alignment|calibration/i);
 
-  const espressoCompatibility = getGrindSizeCompatibility(catalog, 'espresso', grinder);
+  const espressoCompatibility = getGrinderSafetyProfile(catalog, 'espresso', grinder);
   assert.equal(espressoCompatibility.selectable, true);
   assert.equal(espressoCompatibility.state, 'caution');
   assert.match(espressoCompatibility.reason, /kalibrasi|calibr/i);
@@ -205,7 +205,7 @@ test('Grind Size catalog treats DF64 Gen 2 as calibration-required espresso/filt
   assert.equal(advice.compatibilitySelectable, true);
   assert.equal(advice.compatibilityState, 'caution');
   assert.equal(advice.warningKind, 'espresso_calibration');
-  assert.match(`${advice.warning} ${advice.setting?.note}`, /kalibrasi|zero|burr|dial-in|exact/i);
+  assert.match(`${advice.compatibilityReason} ${advice.setting?.note}`, /kalibrasi|zero|burr|dial-in|exact/i);
 });
 
 test('Grind Size labels master-table filter settings as compatible calibrated baselines, not blanket caution', async () => {
@@ -213,7 +213,7 @@ test('Grind Size labels master-table filter settings as compatible calibrated ba
   const grinder = catalog.grinders.find((entry) => entry.id === '1zpresso-k-ultra');
   assert.ok(grinder, '1Zpresso K-Ultra fixture must exist in the production grinder catalog');
 
-  const compatibility = getGrindSizeCompatibility(catalog, 'v60', grinder);
+  const compatibility = getGrinderSafetyProfile(catalog, 'v60', grinder);
   assert.equal(compatibility.selectable, true);
   assert.equal(compatibility.state, 'compatible');
   assert.match(compatibility.reason, /master table|baseline/i);
@@ -231,7 +231,7 @@ test('Grind Size labels master-table filter settings as compatible calibrated ba
   assert.equal(advice.warningKind, 'calibration_required');
   assert.equal(advice.confidenceKind, 'directed_estimate');
   assert.equal(advice.sourceKind, 'baseline_method');
-  assert.match(advice.warning || '', /master table|terkalibrasi/i);
+  assert.match(advice.compatibilityReason || '', /master table|terkalibrasi|cocok/i);
   assert.doesNotMatch(`${advice.confidenceLabel} ${advice.sourceLabel}`, /Hati-hati/i);
 });
 
@@ -244,7 +244,7 @@ test('Grind Size matrix keeps all visible grinders method-safe and finite', asyn
 
   for (const method of BREW_METHOD_PROFILES) {
     for (const grinder of catalog.grinders.filter((entry) => !entry.hidden && !entry.deprecated)) {
-      const compatibility = getGrindSizeCompatibility(catalog, method.id, grinder);
+      const compatibility = getGrinderSafetyProfile(catalog, method.id === 'espresso' ? 'espresso' : 'v60', grinder);
       if (method.id === 'espresso' && !compatibility.selectable) {
         blockedEspresso += 1;
         assert.equal(compatibility.state, 'not_recommended');

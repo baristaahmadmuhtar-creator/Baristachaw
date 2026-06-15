@@ -8,6 +8,7 @@ import type {
   AiBrewMethodFamily,
   ParsedNumericRange,
 } from './types.ts';
+import { isEspressoBlockedGrinder } from './grinderSafetyGuardrails.ts';
 
 type GrinderBandKey = 'coarse' | 'medium' | 'fine';
 
@@ -60,45 +61,7 @@ function isFeimaStyleGrinder(grinder: EquipmentCatalogEntry) {
   return haystackHasAny(haystack, [/\b600n\b/i, /\bfeima\b/i, /\blatina\b/i, /\bflying eagle\b/i, /\bmurane\b/i, /\bfomac\b/i, /\bkova\b/i]);
 }
 
-function isEspressoNotRecommendedGrinder(grinder: EquipmentCatalogEntry) {
-  const haystack = normalizeSearchHaystack([
-    grinder.id,
-    grinder.name,
-    grinder.brand,
-    grinder.typeLabel,
-    grinder.description,
-    grinder.searchText,
-    grinder.grindBands?.fine,
-    grinder.grindBands?.medium,
-    grinder.grindBands?.coarse,
-  ]);
-  return haystackHasAny(haystack, [
-    /\btimemore\s*c2\b/i,
-    /\btimemore\s*c3\b(?!\s*esp)/i,
-    /\btimemore\s*s3\b(?!\s*esp)/i,
-    /\bfellow\s*ode\b/i,
-    /\bbaratza\s*encore\b(?!\s*esp)/i,
-    /\bfeima\b/i,
-    /\b600n\b/i,
-    /\blatina\b/i,
-    /\bflying\s*eagle\b/i,
-    /\bmurane\b/i,
-    /\bfomac\b/i,
-    /\bkova\b/i,
-    /\bhario\b/i,
-    /\bporlex\b/i,
-    /\bq\s*air\b/i,
-    /\bq2\b/i,
-    /\bzp6\b/i,
-    /\bsculptor\s*078\b(?!\s*s)/i,
-    /\bbrew[-\s]?focused\b/i,
-    /\bunknown\s+manual\b/i,
-    /\bunknown\s+electric\b/i,
-    /\bfallback\s+manual\b/i,
-    /\bfallback\s+electric\b/i,
-    /\bmanual\s+calibration\b/i,
-  ]);
-}
+
 
 function formatParsedSetting(value: number, parsed: ParsedNumericRange) {
   const rounded = roundTo(value, parsed.precision);
@@ -321,14 +284,14 @@ export function resolveGrinderSettingReference(
   }
 
   const modeMatch = (entry: GrinderSettingReference) => entry.brewMode === brewMode || entry.brewMode === 'both';
-  const espressoNotRecommended = deviceProfile.methodFamily === 'espresso'
-    && isEspressoNotRecommendedGrinder(grinder);
+  const methodBlocked = grinder.avoidMethodFamilies?.includes(deviceProfile.methodFamily)
+    || (deviceProfile.methodFamily === 'espresso' && isEspressoBlockedGrinder(grinder));
   const exact = catalog.grinderSettings.find((entry) =>
     entry.grinderId === grinder.id
     && modeMatch(entry)
     && entry.profileIds.includes(deviceProfile.id),
   );
-  if (exact && !espressoNotRecommended) return exact;
+  if (exact && !methodBlocked) return exact;
 
   const familyIds = catalog.deviceProfiles
     .filter((entry) => !entry.exactMatch && entry.methodFamily === deviceProfile.methodFamily && entry.brewMode === brewMode)
@@ -339,7 +302,7 @@ export function resolveGrinderSettingReference(
     && modeMatch(entry)
     && entry.profileIds.some((profileId) => familyIds.includes(profileId)),
   );
-  if (familySetting && !espressoNotRecommended) return familySetting;
+  if (familySetting && !methodBlocked) return familySetting;
 
   const fallbackBand = selectFallbackGrinderBand(grinder, deviceProfile.methodFamily);
   if (!fallbackBand) return undefined;
@@ -354,8 +317,8 @@ export function resolveGrinderSettingReference(
     hasCatalogBandProvenance,
     band: fallbackBand.band,
     methodFamily: deviceProfile.methodFamily,
-  }) + (espressoNotRecommended
-    ? ' Hard warning: this grinder is not recommended for espresso because a safe espresso/fine range is not verified; choose an espresso-capable grinder for real shots.'
+  }) + (methodBlocked
+    ? ` Hard warning: this grinder is not recommended for ${deviceProfile.methodFamily}; a safe range is not verified.`
     : '');
 
   return {
@@ -370,12 +333,12 @@ export function resolveGrinderSettingReference(
     calibrationRequired: true,
     source: hasCatalogBandProvenance ? `catalog_${fallbackBand.band}_band` : 'derived_from_grinder_band',
     sourceUrls: grinder.sourceUrls,
-    verificationLevel: hasCatalogBandProvenance && !espressoNotRecommended ? grinder.verificationLevel : 'fallback',
+    verificationLevel: hasCatalogBandProvenance && !methodBlocked ? grinder.verificationLevel : 'fallback',
     verifiedAt: hasCatalogBandProvenance ? grinder.verifiedAt : catalog.catalogVersion,
     popularityTier: grinder.popularityTier,
     marketSegment: grinder.marketSegment,
     releaseStatus: grinder.releaseStatus,
-    confidence: hasCatalogBandProvenance && !espressoNotRecommended ? grinder.confidence : 'low',
+    confidence: hasCatalogBandProvenance && !methodBlocked ? grinder.confidence : 'low',
     catalogVersion: catalog.catalogVersion,
   } satisfies GrinderSettingReference;
 }

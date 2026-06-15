@@ -5108,13 +5108,104 @@ function buildExpertDescription(entry) {
   ].join(' ');
 }
 
+const ESPRESSO_READY_HINTS = [
+  /\bencore\s*esp\b/i,
+  /\bj[-\s]?ultra\b/i,
+  /\bj[-\s]?max\b/i,
+  /\bjx[-\s]?pro\b/i,
+  /\bkingrinder\s*k4\b/i,
+  /\bkinu\b/i,
+  /\bm47\b/i,
+  /\bbreville\s*smart\s*grinder\s*pro\b/i,
+  /\bvaria\s*vs3\b/i,
+  /\bfellow\s*opus\b/i,
+  /\bmazzer\b/i,
+  /\bomega\b/i,
+  /\btimemore\s*c3\s*esp\b/i,
+  /\btimemore\s*c5\s*esp\b/i,
+  /\bs3\s*esp\b/i,
+];
+
+const ESPRESSO_NOT_RECOMMENDED_HINTS = [
+  /\btimemore\s*c2\b/i,
+  /\btimemore\s*c3\b(?!\s*esp)/i,
+  /\btimemore\s*s3\b(?!\s*esp)/i,
+  /\bfellow\s*ode\b/i,
+  /\bbaratza\s*encore\b(?!\s*esp)/i,
+  /\bfeima\b/i,
+  /\b600n\b/i,
+  /\blatina\b/i,
+  /\bflying\s*eagle\b/i,
+  /\bmurane\b/i,
+  /\bfomac\b/i,
+  /\bkova\b/i,
+  /\bhario\b/i,
+  /\bporlex\b/i,
+  /\bq\s*air\b/i,
+  /\bq2\b/i,
+  /\bzp6\b/i,
+  /\bsculptor\s*078\b(?!\s*s)/i,
+  /\bbrew[-\s]?focused\b/i,
+  /\bunknown\s+manual\b/i,
+  /\bunknown\s+electric\b/i,
+  /\bfallback\s+manual\b/i,
+  /\bfallback\s+electric\b/i,
+  /\bmanual\s+calibration\b/i,
+];
+
+function hasAnyPattern(value, patterns) {
+  return patterns.some((pattern) => pattern.test(value));
+}
+
+function deriveSafetyData(entry) {
+  const haystack = [entry.name, entry.brand, entry.type].join(' ').toLowerCase();
+  const hasFine = Boolean(entry.espresso || entry.moka || entry.aeropress);
+  const isBlocked = !hasFine || hasAnyPattern(haystack, ESPRESSO_NOT_RECOMMENDED_HINTS);
+  const isReady = !isBlocked && hasAnyPattern(haystack, ESPRESSO_READY_HINTS);
+  
+  const idealMethodFamilies = [];
+  const avoidMethodFamilies = [];
+  const safetyTags = [];
+  
+  if (isBlocked) {
+    avoidMethodFamilies.push('espresso');
+    safetyTags.push('not-recommended-for-espresso');
+  } else if (isReady) {
+    idealMethodFamilies.push('espresso');
+    safetyTags.push('espresso-ready');
+  }
+  
+  let driveType = entry.grinderType || 'unknown';
+  if (driveType === 'unknown') {
+    if (/\b(electric|motor|breville|baratza|fellow|niche|mazzer|eureka|df64|sculptor|078)\b/i.test(haystack)) driveType = 'electric';
+    if (/\b(hand|manual|1zpresso|timemore|kingrinder|comandante|kinu|porlex|hario)\b/i.test(haystack)) driveType = 'hand';
+  }
+
+  return {
+    grinderType: driveType,
+    driveTypeConfidence: entry.grinderType ? 'high' : 'estimated',
+    burrType: entry.burrType === 'ceramic' ? 'conical' : (entry.burrType || 'unknown'),
+    safetyTags,
+    idealMethodFamilies,
+    avoidMethodFamilies
+  };
+}
+
 function buildPublicGrinder(entry) {
   const sourceUrls = uniq([...(entry.sourceUrls || []), ...(explicitSourceUrls.get(entry.name) || []), ...defaultMasterSourceUrls]);
+  const safetyData = deriveSafetyData(entry);
+  
   return {
     id: slugify(entry.name),
     name: entry.name,
     brand: entry.brand,
     type: entry.type,
+    grinderType: safetyData.grinderType,
+    driveTypeConfidence: safetyData.driveTypeConfidence,
+    burrType: safetyData.burrType,
+    safetyTags: safetyData.safetyTags,
+    idealMethodFamilies: safetyData.idealMethodFamilies,
+    avoidMethodFamilies: safetyData.avoidMethodFamilies,
     coarse: entry.coarse,
     medium: entry.coneHot,
     fine: rangeForRawFine(entry),

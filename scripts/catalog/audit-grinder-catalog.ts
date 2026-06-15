@@ -16,6 +16,11 @@ type RawGrinder = {
   name?: string;
   brand?: string;
   type?: string;
+  grinderType?: string;
+  driveTypeConfidence?: string;
+  safetyTags?: string[];
+  idealMethodFamilies?: string[];
+  avoidMethodFamilies?: string[];
   coarse?: string;
   medium?: string;
   fine?: string;
@@ -181,6 +186,8 @@ const aggregate = {
   byUnitFamily: {} as Record<string, number>,
   bySourceDomain: {} as Record<string, number>,
   byRangeParseability: {} as Record<string, number>,
+  byGrinderDriveType: {} as Record<string, number>,
+  byEspressoBlocked: {} as Record<string, number>,
   risks: {
     datasetUnverifiedLowConfidence: 0,
     sourceMissing: 0,
@@ -208,6 +215,8 @@ for (const grinder of grinders) {
   increment(aggregate.byConfidence, grinder.confidence || (verification === 'official' ? 'high' : 'missing'));
   increment(aggregate.byBrand, grinder.brand || 'missing');
   increment(aggregate.byGrinderType, grinder.type);
+  increment(aggregate.byGrinderDriveType, grinder.grinderType || 'missing');
+  increment(aggregate.byEspressoBlocked, (grinder.avoidMethodFamilies || []).includes('espresso') ? 'blocked' : 'selectable');
   increment(aggregate.byUnitFamily, unitStyle);
   increment(aggregate.byRangeParseability, parsedMedium || isExplicitReference(grinder.medium) ? 'parseable_or_reference' : 'unparseable');
   for (const domain of sourceDomains.length ? sourceDomains : ['missing']) increment(aggregate.bySourceDomain, domain);
@@ -410,6 +419,15 @@ console.log('Grinder catalog aggregate risk summary');
 for (const [status, count] of Object.entries(aggregate.risks).sort()) {
   console.log(`- ${status}: ${count}`);
 }
+console.log('Grinder Drive Types:');
+for (const [type, count] of Object.entries(aggregate.byGrinderDriveType).sort()) {
+  console.log(`- ${type}: ${count}`);
+}
+console.log('Espresso Readiness:');
+for (const [status, count] of Object.entries(aggregate.byEspressoBlocked).sort()) {
+  console.log(`- ${status}: ${count}`);
+}
+
 for (const row of rows.filter((item) => item.fatal || item.status === 'DUPLICATE_OR_AMBIGUOUS_MODEL')) {
   console.log(`[${row.status}] ${row.subject} :: ${row.detail}`);
 }

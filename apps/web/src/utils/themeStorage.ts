@@ -24,6 +24,7 @@ export function ensureStoredTheme(
     if (options.preferSystem) return systemTheme;
     const existing = normalizeTheme(storage.getItem(THEME_STORAGE_KEY));
     if (existing) return existing;
+    storage.setItem(THEME_STORAGE_KEY, systemTheme);
     return systemTheme;
   } catch {
     // Keep app boot resilient when storage is blocked (private mode/quota/policy).

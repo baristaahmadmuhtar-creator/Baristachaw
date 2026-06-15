@@ -637,6 +637,12 @@ export interface RawGrinderCatalogEntry {
   name: string;
   brand?: string;
   type: string;
+  grinderType?: string;
+  driveTypeConfidence?: 'high' | 'estimated';
+  burrType?: string;
+  safetyTags?: string[];
+  idealMethodFamilies?: AiBrewMethodFamily[];
+  avoidMethodFamilies?: AiBrewMethodFamily[];
   coarse: string;
   medium: string;
   fine: string;
@@ -662,11 +668,21 @@ export interface ParsedNumericRange {
   precision: number;
 }
 
+export type GrinderDriveType = 'hand' | 'electric' | 'unknown';
+export type BurrType = 'conical' | 'flat' | 'hybrid' | 'unknown';
+export type GrinderWarningSeverity = 'safe' | 'info' | 'caution' | 'blocked';
+
 export interface EquipmentCatalogEntry extends CatalogProvenance {
   id: string;
   kind: 'dripper' | 'grinder';
   name: string;
   brand?: string;
+  grinderDriveType?: GrinderDriveType;
+  driveTypeConfidence?: 'high' | 'estimated';
+  burrType?: BurrType;
+  safetyTags?: string[];
+  idealMethodFamilies?: AiBrewMethodFamily[];
+  avoidMethodFamilies?: AiBrewMethodFamily[];
   typeLabel: string;
   description?: string;
   expertDescription?: string;

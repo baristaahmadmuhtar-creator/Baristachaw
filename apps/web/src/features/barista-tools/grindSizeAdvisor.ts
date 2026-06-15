@@ -10,6 +10,18 @@ import type {
   GrinderSettingReference,
   VerificationLevel,
 } from '../ai-brew/types.ts';
+import {
+  getGrinderSafetyProfile,
+  getGrinderCapabilityKind,
+  buildGrinderSafetyWarning,
+  getGeneralSafetyWarnings,
+} from '../ai-brew/grinderSafetyGuardrails.ts';
+import type {
+  GrindSizeCompatibilityState,
+  GrindSizeCapabilityKind,
+  GrindSizeWarningKind,
+  GrindSizeCompatibility,
+} from '../ai-brew/grinderSafetyGuardrails.ts';
 
 export interface GrindSizeAdviceInput {
   catalog: AiBrewCatalog;
@@ -28,24 +40,7 @@ export type GrindSizeConfidenceKind =
   | 'safe_baseline'
   | 'directed_estimate';
 
-export type GrindSizeCapabilityKind =
-  | 'select_grinder'
-  | 'espresso_baseline'
-  | 'espresso_capable'
-  | 'check_fine'
-  | 'moka_fine_ready'
-  | 'moka_fine_baseline'
-  | 'wide_range'
-  | 'focused_method';
-
-export type GrindSizeWarningKind =
-  | 'no_reference'
-  | 'espresso_calibration'
-  | 'calibration_required'
-  | 'iced_adjustment';
-
 export type GrindSizeCorrectionKind = 'finer' | 'coarser' | 'neutral';
-export type GrindSizeCompatibilityState = 'compatible' | 'caution' | 'not_recommended' | 'unsupported';
 export type EspressoDialInAction =
   | 'calibrate_zero'
   | 'grind_finer'
@@ -72,11 +67,6 @@ export interface EspressoDialInInsight {
   severity: 'ok' | 'caution';
 }
 
-export interface GrindSizeCompatibility {
-  state: GrindSizeCompatibilityState;
-  selectable: boolean;
-  reason: string;
-}
 
 export interface GrindSizeAdvice {
   methodFamily: AiBrewMethodFamily;
@@ -90,8 +80,6 @@ export interface GrindSizeAdvice {
   correctionRange: string;
   correctionTip: string;
   confidenceLabel: string;
-  capabilityLabel: string;
-  warning?: string;
   sourceLabel: string;
   confidenceKind: GrindSizeConfidenceKind;
   sourceKind: GrindSizeConfidenceKind | 'baseline_method';
@@ -105,6 +93,7 @@ export interface GrindSizeAdvice {
   compatibilityState: GrindSizeCompatibilityState;
   compatibilitySelectable: boolean;
   compatibilityReason: string;
+  compatibilityTags?: string[];
   espressoInsight?: EspressoDialInInsight;
 }
 
@@ -152,49 +141,7 @@ const PREFERRED_DRIPPER_HINTS: Partial<Record<AiBrewMethodFamily, RegExp[]>> = {
   espresso: [/espresso/i],
 };
 
-const ESPRESSO_READY_HINTS = [
-  /\bencore\s*esp\b/i,
-  /\bj[-\s]?ultra\b/i,
-  /\bj[-\s]?max\b/i,
-  /\bjx[-\s]?pro\b/i,
-  /\bkingrinder\s*k4\b/i,
-  /\bkinu\b/i,
-  /\bm47\b/i,
-  /\bbreville\s*smart\s*grinder\s*pro\b/i,
-  /\bvaria\s*vs3\b/i,
-  /\bfellow\s*opus\b/i,
-  /\bmazzer\b/i,
-  /\bomega\b/i,
-  /\btimemore\s*c3\s*esp\b/i,
-  /\btimemore\s*c5\s*esp\b/i,
-];
 
-const ESPRESSO_NOT_RECOMMENDED_HINTS = [
-  /\btimemore\s*c2\b/i,
-  /\btimemore\s*c3\b(?!\s*esp)/i,
-  /\btimemore\s*s3\b(?!\s*esp)/i,
-  /\bfellow\s*ode\b/i,
-  /\bbaratza\s*encore\b(?!\s*esp)/i,
-  /\bfeima\b/i,
-  /\b600n\b/i,
-  /\blatina\b/i,
-  /\bflying\s*eagle\b/i,
-  /\bmurane\b/i,
-  /\bfomac\b/i,
-  /\bkova\b/i,
-  /\bhario\b/i,
-  /\bporlex\b/i,
-  /\bq\s*air\b/i,
-  /\bq2\b/i,
-  /\bzp6\b/i,
-  /\bsculptor\s*078\b(?!\s*s)/i,
-  /\bbrew[-\s]?focused\b/i,
-  /\bunknown\s+manual\b/i,
-  /\bunknown\s+electric\b/i,
-  /\bfallback\s+manual\b/i,
-  /\bfallback\s+electric\b/i,
-  /\bmanual\s+calibration\b/i,
-];
 
 export function getRatioMethodFamily(methodId: BrewMethodId): AiBrewMethodFamily {
   return METHOD_FAMILY_BY_RATIO_METHOD[methodId] || 'v60';
@@ -250,28 +197,7 @@ function resolveDeviceProfile(
   );
 }
 
-function grinderHaystack(grinder: EquipmentCatalogEntry) {
-  return [
-    grinder.id,
-    grinder.name,
-    grinder.brand,
-    grinder.typeLabel,
-    grinder.description,
-    grinder.searchText,
-    grinder.grindBands?.fine,
-    grinder.grindBands?.medium,
-    grinder.grindBands?.coarse,
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, ' ');
-}
 
-function hasAnyPattern(value: string, patterns: RegExp[]) {
-  return patterns.some((pattern) => pattern.test(value));
-}
 
 function toCorrectionKind(value?: GrindBias): GrindSizeCorrectionKind {
   if (value === 'finer') return 'finer';
@@ -289,90 +215,7 @@ function combineGrindBias(roastBias: GrindBias, targetBias: GrindBias | undefine
   return 'same';
 }
 
-export function getGrindSizeCompatibility(
-  catalog: AiBrewCatalog,
-  methodId: BrewMethodId,
-  grinder?: EquipmentCatalogEntry,
-): GrindSizeCompatibility {
-  const methodFamily = getRatioMethodFamily(methodId);
-  if (!grinder) {
-    return {
-      state: 'unsupported',
-      selectable: false,
-      reason: 'Pilih grinder terlebih dahulu.',
-    };
-  }
 
-  const haystack = grinderHaystack(grinder);
-  const hasFine = Boolean(grinder.grindBands?.fine?.trim());
-  const hasMedium = Boolean(grinder.grindBands?.medium?.trim());
-  const hasCoarse = Boolean(grinder.grindBands?.coarse?.trim());
-  const grinderSettings = Array.isArray(catalog.grinderSettings) ? catalog.grinderSettings : [];
-  const deviceProfiles = Array.isArray(catalog.deviceProfiles) ? catalog.deviceProfiles : [];
-  const matchingMethodSettingExists = grinderSettings.some((setting) =>
-    setting.grinderId === grinder.id
-    && setting.profileIds.some((profileId) => {
-      const profile = deviceProfiles.find((entry) => entry.id === profileId);
-      return profile?.methodFamily === methodFamily;
-    })
-  );
-  const exactSettingExists = grinderSettings.some((setting) =>
-    setting.grinderId === grinder.id
-    && !setting.calibrationRequired
-    && setting.profileIds.some((profileId) => {
-      const profile = deviceProfiles.find((entry) => entry.id === profileId);
-      return profile?.methodFamily === methodFamily;
-    })
-  );
-
-  if (methodFamily === 'espresso') {
-    if (!hasFine || hasAnyPattern(haystack, ESPRESSO_NOT_RECOMMENDED_HINTS)) {
-      return {
-        state: 'not_recommended',
-        selectable: false,
-        reason: 'Tidak disarankan untuk espresso: rentang fine/espresso grinder ini belum terverifikasi aman.',
-      };
-    }
-    if (hasAnyPattern(haystack, ESPRESSO_READY_HINTS) || exactSettingExists) {
-      return {
-        state: 'compatible',
-        selectable: true,
-        reason: 'Cocok sebagai starting point espresso, tetap wajib dial-in shot nyata.',
-      };
-    }
-    return {
-      state: 'caution',
-      selectable: true,
-      reason: 'Hati-hati untuk espresso: fine range ada, tetapi titik nol dan performa shot wajib dikalibrasi.',
-    };
-  }
-
-  if ((methodFamily === 'cold_brew' || methodFamily === 'french_press') && !hasCoarse) {
-    return {
-      state: 'caution',
-      selectable: true,
-      reason: 'Metode kasar butuh kalibrasi karena katalog grinder ini belum punya rentang coarse yang jelas.',
-    };
-  }
-
-  if ((methodFamily === 'v60' || methodFamily === 'chemex' || methodFamily === 'kalita_wave') && !hasMedium && !hasFine) {
-    return {
-      state: 'caution',
-      selectable: true,
-      reason: 'Metode filter butuh kalibrasi karena rentang medium/fine belum lengkap.',
-    };
-  }
-
-  return {
-    state: exactSettingExists || matchingMethodSettingExists ? 'compatible' : 'caution',
-    selectable: true,
-    reason: exactSettingExists
-      ? 'Cocok dengan referensi metode di katalog.'
-      : matchingMethodSettingExists
-        ? 'Cocok sebagai baseline master table; tetap dial-in dari rasa seduhan pertama.'
-      : 'Bisa dipakai sebagai baseline, tetapi tetap butuh koreksi dari rasa.',
-  };
-}
 
 function parsePrimarySetting(value: string) {
   const primary = value.match(/Starting grind:\s*(.*?)(?:\.\s+Correction range:|$)/i)?.[1]?.trim();
@@ -400,73 +243,7 @@ function verificationKind(value?: VerificationLevel): GrindSizeConfidenceKind {
   return 'safe_baseline';
 }
 
-function capabilityLabel(params: {
-  methodFamily: AiBrewMethodFamily;
-  setting?: GrinderSettingReference;
-  grinder?: EquipmentCatalogEntry;
-}) {
-  if (!params.grinder) return 'Pilih grinder';
-  const hasFine = Boolean(params.grinder.grindBands?.fine?.trim());
-  const hasMedium = Boolean(params.grinder.grindBands?.medium?.trim());
-  const hasCoarse = Boolean(params.grinder.grindBands?.coarse?.trim());
-  const hasFullBand = hasFine && hasMedium && hasCoarse;
-  if (params.methodFamily === 'espresso') {
-    if (params.setting?.calibrationRequired) return 'Espresso: baseline, wajib dial-in';
-    return hasFine ? 'Espresso-capable' : 'Cek kemampuan fine';
-  }
-  if (params.methodFamily === 'moka_pot') return hasFine ? 'Fine aman untuk moka' : 'Butuh baseline fine';
-  if (hasFullBand) return 'Luas: filter sampai coarse';
-  return 'Fokus metode tertentu';
-}
 
-function capabilityKind(params: {
-  methodFamily: AiBrewMethodFamily;
-  setting?: GrinderSettingReference;
-  grinder?: EquipmentCatalogEntry;
-}): GrindSizeCapabilityKind {
-  if (!params.grinder) return 'select_grinder';
-  const hasFine = Boolean(params.grinder.grindBands?.fine?.trim());
-  const hasMedium = Boolean(params.grinder.grindBands?.medium?.trim());
-  const hasCoarse = Boolean(params.grinder.grindBands?.coarse?.trim());
-  const hasFullBand = hasFine && hasMedium && hasCoarse;
-  if (params.methodFamily === 'espresso') {
-    if (params.setting?.calibrationRequired) return 'espresso_baseline';
-    return hasFine ? 'espresso_capable' : 'check_fine';
-  }
-  if (params.methodFamily === 'moka_pot') return hasFine ? 'moka_fine_ready' : 'moka_fine_baseline';
-  if (hasFullBand) return 'wide_range';
-  return 'focused_method';
-}
-
-function warningCopy(params: {
-  methodFamily: AiBrewMethodFamily;
-  setting?: GrinderSettingReference;
-  deviceProfile?: DeviceBrewProfile;
-}) {
-  if (!params.setting) return 'Belum ada referensi grinder. Gunakan rentang alat sebagai titik awal, lalu koreksi berdasarkan rasa.';
-  if (params.methodFamily === 'espresso' && params.setting.calibrationRequired) {
-    return 'Espresso sangat sensitif. Angka ini hanya acuan awal grinder, bukan jaminan hasil; kalibrasi titik nol, dosis, yield, dan waktu ekstraksi terlebih dahulu.';
-  }
-  if (params.setting.calibrationRequired) {
-    return 'Rentang pada tabel acuan ini adalah titik awal terkalibrasi. Uji pada seduhan pertama, lalu koreksi satu variabel berdasarkan rasa.';
-  }
-  if (params.deviceProfile?.brewMode === 'iced') {
-    return 'Untuk seduh es, mulai sedikit lebih halus daripada seduh panas jika hasilnya terasa tipis, tetapi jangan ubah air panas dan es sekaligus.';
-  }
-  return undefined;
-}
-
-function warningKind(params: {
-  methodFamily: AiBrewMethodFamily;
-  setting?: GrinderSettingReference;
-  deviceProfile?: DeviceBrewProfile;
-}): GrindSizeWarningKind | undefined {
-  if (!params.setting) return 'no_reference';
-  if (params.methodFamily === 'espresso' && params.setting.calibrationRequired) return 'espresso_calibration';
-  if (params.setting.calibrationRequired) return 'calibration_required';
-  if (params.deviceProfile?.brewMode === 'iced') return 'iced_adjustment';
-  return undefined;
-}
 
 function roundTo(value: number, digits = 2) {
   const factor = 10 ** digits;
@@ -525,7 +302,7 @@ export function buildGrindSizeAdvice(input: GrindSizeAdviceInput): GrindSizeAdvi
     || targetProfiles.find((entry) => entry.id === 'balance_clean')
     || targetProfiles[0];
   const grindBias = combineGrindBias(roastBias, targetProfile?.grindBias, methodFamily);
-  const compatibility = getGrindSizeCompatibility(input.catalog, input.methodId, grinder);
+  const compatibility = getGrinderSafetyProfile(input.catalog, methodFamily, grinder);
   const correctionKind = toCorrectionKind(grindBias);
 
   if (!compatibility.selectable) {
@@ -540,10 +317,8 @@ export function buildGrindSizeAdvice(input: GrindSizeAdviceInput): GrindSizeAdvi
       primarySetting: 'Tidak direkomendasikan untuk espresso',
       correctionRange: '',
       correctionTip: 'Pilih grinder espresso-capable, atau gunakan Moka Pot, AeroPress pekat, atau filter kuat sebagai alternatif.',
-      confidenceLabel: 'Guardrail keselamatan',
-      capabilityLabel: 'Tidak direkomendasikan untuk espresso',
-      warning: compatibility.reason,
-      sourceLabel: 'Guardrail keselamatan grinder',
+      confidenceLabel: '',
+      sourceLabel: '',
       confidenceKind: 'safe_baseline',
       sourceKind: 'baseline_method',
       capabilityKind: 'check_fine',
@@ -556,6 +331,7 @@ export function buildGrindSizeAdvice(input: GrindSizeAdviceInput): GrindSizeAdvi
       compatibilityState: compatibility.state,
       compatibilitySelectable: compatibility.selectable,
       compatibilityReason: compatibility.reason,
+      compatibilityTags: compatibility.tags,
       espressoInsight: undefined,
     };
   }
@@ -591,15 +367,13 @@ export function buildGrindSizeAdvice(input: GrindSizeAdviceInput): GrindSizeAdvi
     confidenceLabel: setting?.calibrationRequired
       ? 'Baseline terkalibrasi'
       : verificationLabel(setting?.verificationLevel),
-    capabilityLabel: capabilityLabel({ methodFamily, setting, grinder }),
-    warning: warningCopy({ methodFamily, setting, deviceProfile }),
     sourceLabel: setting?.calibrationRequired
       ? 'Master table + metode'
       : verificationLabel(setting?.verificationLevel),
     confidenceKind,
     sourceKind,
-    capabilityKind: capabilityKind({ methodFamily, setting, grinder }),
-    warningKind: warningKind({ methodFamily, setting, deviceProfile }),
+    capabilityKind: getGrinderCapabilityKind(grinder, methodFamily, setting),
+    warningKind: buildGrinderSafetyWarning({ methodFamily, setting, deviceProfile })?.warningKind,
     correctionKind,
     roastBiasKind: toCorrectionKind(roastBias),
     targetBiasKind: toCorrectionKind(targetProfile?.grindBias),
@@ -608,6 +382,7 @@ export function buildGrindSizeAdvice(input: GrindSizeAdviceInput): GrindSizeAdvi
     compatibilityState: compatibility.state,
     compatibilitySelectable: compatibility.selectable,
     compatibilityReason: compatibility.reason,
+    compatibilityTags: compatibility.tags,
     espressoInsight: methodFamily === 'espresso'
       ? deriveEspressoDialInInsight(input.espressoContext)
       : undefined,
@@ -622,7 +397,7 @@ export function sortGrindersForMethod(catalog: AiBrewCatalog, methodId: BrewMeth
     .sort((a, b) => {
       const score = (grinder: EquipmentCatalogEntry) => {
         let value = 0;
-        const compatibility = getGrindSizeCompatibility(catalog, methodId, grinder);
+        const compatibility = getGrinderSafetyProfile(catalog, family, grinder);
         if (compatibility.selectable) value += 100;
         if (compatibility.state === 'compatible') value += 30;
         if (compatibility.state === 'caution') value += 10;

@@ -5,8 +5,9 @@ import { loadAiBrewCatalog } from '../../apps/web/src/features/ai-brew/catalog.t
 import type { AiBrewCatalog, EquipmentCatalogEntry, ParsedNumericRange, VerificationLevel } from '../../apps/web/src/features/ai-brew/types.ts';
 import {
   buildGrindSizeAdvice,
-  getGrindSizeCompatibility,
+  getRatioMethodFamily,
 } from '../../apps/web/src/features/barista-tools/grindSizeAdvisor.ts';
+import { getGrinderSafetyProfile } from '../../apps/web/src/features/ai-brew/grinderSafetyGuardrails.ts';
 import { BREW_METHOD_PROFILES } from '../../apps/web/src/features/barista-tools/brewProfiles.ts';
 import type { RoastLevel } from '../../apps/web/src/features/barista-tools/types.ts';
 
@@ -106,6 +107,9 @@ function auditCatalogShape(catalog: AiBrewCatalog, failures: CoverageFailure[]) 
   let parsedAllBands = 0;
   let parsedAnyBand = 0;
   let methodSpecificGrinders = 0;
+  let handGrinders = 0;
+  let electricGrinders = 0;
+  let unknownType = 0;
   const settingsByGrinder = new Map<string, number>();
   for (const setting of catalog.grinderSettings) {
     settingsByGrinder.set(setting.grinderId, (settingsByGrinder.get(setting.grinderId) || 0) + 1);
@@ -135,6 +139,27 @@ function auditCatalogShape(catalog: AiBrewCatalog, failures: CoverageFailure[]) 
     if ([bands?.parsedCoarse, bands?.parsedMedium, bands?.parsedFine].some(hasRange)) parsedAnyBand += 1;
     if ([bands?.parsedCoarse, bands?.parsedMedium, bands?.parsedFine].every(hasRange)) parsedAllBands += 1;
     if ((settingsByGrinder.get(grinder.id) || 0) > 0) methodSpecificGrinders += 1;
+    
+    if (grinder.grinderDriveType === 'hand') handGrinders += 1;
+    else if (grinder.grinderDriveType === 'electric') electricGrinders += 1;
+    else unknownType += 1;
+
+    const nameText = grinder.name.toLowerCase();
+    const brandText = (grinder.brand || '').toLowerCase();
+    if (grinder.grinderDriveType === 'hand' && (brandText.includes('mahlkönig') || brandText.includes('eureka') || brandText.includes('mazzer'))) {
+      failures.push({
+        severity: 'blocker',
+        subject: grinder.name,
+        message: `Anomaly: ${grinder.brand} grinder marked as hand drive type.`,
+      });
+    }
+    if (grinder.grinderDriveType === 'electric' && (brandText.includes('1zpresso') || brandText.includes('kingrinder') || brandText.includes('comandante'))) {
+      failures.push({
+        severity: 'blocker',
+        subject: grinder.name,
+        message: `Anomaly: ${grinder.brand} grinder marked as electric drive type.`,
+      });
+    }
 
     if (!hasAllBands) {
       failures.push({
@@ -176,6 +201,9 @@ function auditCatalogShape(catalog: AiBrewCatalog, failures: CoverageFailure[]) 
     parsedAllBands,
     methodSpecificGrinders,
     totalSettings: catalog.grinderSettings.length,
+    handGrinders,
+    electricGrinders,
+    unknownType,
   };
 }
 
@@ -193,7 +221,7 @@ function evaluateMatrix(catalog: AiBrewCatalog, failures: CoverageFailure[]) {
   for (const method of BREW_METHOD_PROFILES) {
     const stats = { checked: 0, failures: 0, blocked: 0, caution: 0, compatible: 0 };
     for (const grinder of grinders) {
-      const compatibility = getGrindSizeCompatibility(catalog, method.id, grinder);
+      const compatibility = getGrinderSafetyProfile(catalog, getRatioMethodFamily(method.id), grinder);
       if (compatibility.state === 'compatible') stats.compatible += 1;
       if (compatibility.state === 'caution') stats.caution += 1;
       if (!compatibility.selectable) stats.blocked += 1;
@@ -245,9 +273,9 @@ function evaluateMatrix(catalog: AiBrewCatalog, failures: CoverageFailure[]) {
   }
 
   for (const grinder of grinders) {
-    const espresso = getGrindSizeCompatibility(catalog, 'espresso', grinder);
-    const v60 = getGrindSizeCompatibility(catalog, 'v60', grinder);
-    const frenchPress = getGrindSizeCompatibility(catalog, 'french_press', grinder);
+    const espresso = getGrinderSafetyProfile(catalog, getRatioMethodFamily('espresso'), grinder);
+    const v60 = getGrinderSafetyProfile(catalog, getRatioMethodFamily('v60'), grinder);
+    const frenchPress = getGrinderSafetyProfile(catalog, getRatioMethodFamily('french_press'), grinder);
     grinderRows.push([
       grinder.id,
       grinder.name,
@@ -386,6 +414,7 @@ try {
 
   console.log(`Grinder catalog coverage report: artifacts/grinder-catalog-audit/${sha}`);
   console.log(JSON.stringify(summary, null, 2));
+
 
   if (blockerCount > 0 || highCount > 0) {
     console.error(`FAIL: ${blockerCount} blocker and ${highCount} high-risk grinder coverage issue(s).`);

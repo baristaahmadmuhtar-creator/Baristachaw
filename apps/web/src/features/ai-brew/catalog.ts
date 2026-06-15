@@ -1,6 +1,7 @@
 import type {
   AiBrewCatalog,
   AiBrewMethodFamily,
+  BurrType,
   CatalogConfidence,
   CatalogMarketSegment,
   CatalogPopularityTier,
@@ -10,6 +11,7 @@ import type {
   CoffeeExtractionProfile,
   DeviceBrewProfile,
   EquipmentCatalogEntry,
+  GrinderDriveType,
   GrinderSettingReference,
   ManualBrewPreset,
   ParsedNumericRange,
@@ -649,6 +651,35 @@ function normalizeDripper(raw: RawDripperCatalogEntry, override?: MarketSignalRe
   };
 }
 
+export function normalizeGrinderDriveType(raw?: string | null, fallbackSearchText?: string): GrinderDriveType {
+  const normalized = String(raw || '').toLowerCase().trim();
+  if (normalized === 'hand' || normalized === 'manual') return 'hand';
+  if (normalized === 'electric') return 'electric';
+  
+  if (fallbackSearchText) {
+    const text = fallbackSearchText.toLowerCase();
+    if (/\b(hand|manual)\b/.test(text)) return 'hand';
+    if (/\belectric\b/.test(text)) return 'electric';
+    
+    // Brand fallbacks
+    if (/\b(1zpresso|kingrinder|comandante|orphan espresso|kinu|c40|k-max|j-max|q2|pietro|hario|porlex|knock|helor|wacaco|vssl|rok|oe lido|mavo|latina|kalita dia|kaldi|flair|etzinger|cafflano|bravo|mhw-3bomber|goat story|hongbei|montwave|pinecone)\b/.test(text)) return 'hand';
+    if (/\b(baratza|fellow|niche|mahlkönig|eureka|mazzer|df64|df83|df54|lagom|option-o|weber|timemore|femobook|varia|xbloom|zerno|fiorenzato|ceado|ode|opus|encore|wilfa|krups|de'?longhi|cuisinart|breville|acaia|bodum|balmuda|joy resolve|kalita next g|anfim|feima|600n|starseeker)\b/.test(text)) {
+      if (/\b(timemore (c2|c3|s3|chestnut|nano|slim))\b/.test(text)) return 'hand';
+      if (/\b(weber (hg-1|hg-2))\b/.test(text)) return 'hand';
+      return 'electric';
+    }
+  }
+  return 'unknown';
+}
+
+export function normalizeBurrType(raw?: string | null): BurrType {
+  const normalized = String(raw || '').toLowerCase().trim();
+  if (normalized === 'conical') return 'conical';
+  if (normalized === 'flat') return 'flat';
+  if (normalized === 'hybrid') return 'hybrid';
+  return 'unknown';
+}
+
 function normalizeGrinder(raw: RawGrinderCatalogEntry, override?: MarketSignalRecord): EquipmentCatalogEntry {
   const id = slugify(raw.name);
   const typeLabel = normalizeGrinderDisplayText(raw.type);
@@ -662,6 +693,12 @@ function normalizeGrinder(raw: RawGrinderCatalogEntry, override?: MarketSignalRe
     kind: 'grinder',
     name: raw.name,
     brand: raw.brand,
+    grinderDriveType: normalizeGrinderDriveType(raw.grinderType, `${raw.name} ${raw.type} ${override?.description || ''}`),
+    driveTypeConfidence: raw.driveTypeConfidence || 'estimated',
+    burrType: normalizeBurrType(raw.burrType),
+    safetyTags: Array.isArray(raw.safetyTags) ? raw.safetyTags : [],
+    idealMethodFamilies: Array.isArray(raw.idealMethodFamilies) ? raw.idealMethodFamilies : undefined,
+    avoidMethodFamilies: Array.isArray(raw.avoidMethodFamilies) ? raw.avoidMethodFamilies : undefined,
     typeLabel,
     description: override?.description,
     expertDescription: buildGrinderExpertDescription({

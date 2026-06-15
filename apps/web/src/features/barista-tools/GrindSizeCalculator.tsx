@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, CheckCircle2, Gauge, Search, SlidersHorizontal } from 'lucide-react';
 import { loadAiBrewCatalog } from '../ai-brew/catalog.ts';
 import type { AiBrewCatalog } from '../ai-brew/types.ts';
+import { getGrinderSafetyProfile } from '../ai-brew/grinderSafetyGuardrails.ts';
 import { useGlobalState } from '../../context/GlobalState';
 import { BREW_METHOD_PROFILES } from './brewProfiles.ts';
 import type { BrewMethodId, RoastLevel } from './types.ts';
@@ -9,7 +10,6 @@ import {
   buildGrindSizeAdvice,
   compactRangeLabel,
   formatMethodGrindBand,
-  getGrindSizeCompatibility,
   getRatioMethodFamily,
   sortGrindersForMethod,
 } from './grindSizeAdvisor.ts';
@@ -197,8 +197,11 @@ export function GrindSizeCalculator({
   const { t, language } = useGlobalState();
   const [catalog, setCatalog] = useState<AiBrewCatalog | null>(null);
   const [loadError, setLoadError] = useState('');
+type GrinderFilterMode = 'all' | 'hand' | 'electric' | 'espresso' | 'filter' | 'calibration';
+
   const [selectedGrinderId, setSelectedGrinderId] = useState(readStoredGrinderId);
   const [query, setQuery] = useState('');
+  const [filterMode, setFilterMode] = useState<GrinderFilterMode>('all');
   const [context, setContext] = useState(readStoredContext);
 
   useEffect(() => {
@@ -223,16 +226,13 @@ export function GrindSizeCalculator({
   useEffect(() => {
     if (!catalog) return;
     if (sortedGrinders.length === 0) return;
-    setSelectedGrinderId((current) => {
-      if (
-        current
-        && sortedGrinders.some((grinder) =>
-          grinder.id === current
-          && getGrindSizeCompatibility(catalog, methodId, grinder).selectable
-        )
-      ) return current;
-      return sortedGrinders.find((grinder) => getGrindSizeCompatibility(catalog, methodId, grinder).selectable)?.id
-        || sortedGrinders[0].id;
+    setSelectedGrinderId((previousGrinderId) => {
+      return sortedGrinders.find((grinder) =>
+        grinder.id === previousGrinderId
+        && getGrinderSafetyProfile(catalog, getRatioMethodFamily(methodId), grinder).selectable
+      )?.id
+        || sortedGrinders.find((grinder) => getGrinderSafetyProfile(catalog, getRatioMethodFamily(methodId), grinder).selectable)?.id
+        || sortedGrinders[0]?.id;
     });
   }, [catalog, methodId, sortedGrinders]);
 
@@ -272,18 +272,32 @@ export function GrindSizeCalculator({
   }, [catalog, context.beanAgeDays, context.pressureBar, context.shotTimeSec, context.zeroPointKnown, doseG, methodId, roastLevel, selectedGrinderId, yieldG]);
 
   const filteredGrinders = useMemo(() => {
+    let result = sortedGrinders;
+    
+    if (filterMode !== 'all') {
+      result = result.filter(g => {
+        const profile = getGrinderSafetyProfile(catalog!, getRatioMethodFamily(methodId), g);
+        if (filterMode === 'hand') return g.grinderDriveType === 'hand';
+        if (filterMode === 'electric') return g.grinderDriveType === 'electric';
+        if (filterMode === 'espresso') return profile.selectable && getRatioMethodFamily(methodId) === 'espresso';
+        if (filterMode === 'filter') return getRatioMethodFamily(methodId) !== 'espresso';
+        if (filterMode === 'calibration') return profile.state === 'caution';
+        return true;
+      });
+    }
+    
     const needle = normalizeSearch(query);
-    if (!needle) return sortedGrinders;
-    return sortedGrinders
+    if (!needle) return result;
+    return result
       .filter((grinder) => normalizeSearch(`${grinder.name} ${grinder.brand || ''} ${grinder.typeLabel} ${grinder.searchText}`).includes(needle))
       .slice(0, 32);
-  }, [query, sortedGrinders]);
+  }, [query, sortedGrinders, filterMode, catalog, methodId]);
 
   const grinderOptions = useMemo(() => {
     if (!catalog) return [];
     return filteredGrinders.map((grinder) => ({
       grinder,
-      compatibility: getGrindSizeCompatibility(catalog, methodId, grinder),
+      compatibility: getGrinderSafetyProfile(catalog, getRatioMethodFamily(methodId), grinder),
     }));
   }, [catalog, filteredGrinders, methodId]);
 
@@ -350,6 +364,25 @@ export function GrindSizeCalculator({
           <label className="text-xs font-semibold uppercase tracking-widest text-secondary" htmlFor="grind-size-search">
             {t.toolsGrindSizeGrinder}
           </label>
+          <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+            {(['all', 'hand', 'electric', 'espresso', 'filter', 'calibration'] as GrinderFilterMode[]).map(mode => (
+              <button
+                key={mode}
+                onClick={() => setFilterMode(mode)}
+                className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${filterMode === mode
+                  ? 'bg-blue-600 text-white shadow-[0_4px_14px_rgba(37,99,235,0.3)]'
+                  : 'bg-surface-alpha text-secondary hover:text-primary'
+                }`}
+              >
+                {mode === 'all' && 'All'}
+                {mode === 'hand' && 'Hand'}
+                {mode === 'electric' && 'Electric'}
+                {mode === 'espresso' && 'Espresso Ready'}
+                {mode === 'filter' && 'Filter/Brew'}
+                {mode === 'calibration' && 'Calibration Req'}
+              </button>
+            ))}
+          </div>
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" />
             <input
@@ -387,7 +420,14 @@ export function GrindSizeCalculator({
                   aria-describedby={!compatibility.selectable ? `grinder-compat-${grinder.id}` : undefined}
                 >
                   <span className="flex min-w-0 items-center justify-between gap-2">
-                    <span className="truncate text-sm font-semibold">{grinder.name}</span>
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span className="truncate text-sm font-semibold">{grinder.name}</span>
+                      {grinder.grinderDriveType !== 'unknown' && (
+                        <span className="shrink-0 rounded bg-surface-alpha px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-tertiary">
+                          {grinder.grinderDriveType}
+                        </span>
+                      )}
+                    </span>
                     <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${compatibility.state === 'compatible'
                       ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
                       : compatibility.state === 'caution'
@@ -402,8 +442,17 @@ export function GrindSizeCalculator({
                     </span>
                   </span>
                   <span className="block truncate text-[11px] text-tertiary">{grinder.typeLabel}</span>
+                  {(compatibility.tags?.length ?? 0) > 0 && (
+                    <div className="mt-1.5 flex flex-wrap gap-1">
+                      {compatibility.tags!.map(tag => (
+                        <span key={tag} className="rounded-md bg-surface-alpha px-1.5 py-0.5 text-[9px] font-medium text-secondary">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   {!compatibility.selectable && (
-                    <span id={`grinder-compat-${grinder.id}`} className="mt-1 block text-[11px] text-rose-600 dark:text-rose-300">
+                    <span id={`grinder-compat-${grinder.id}`} className="mt-1.5 block text-[11px] text-rose-600 dark:text-rose-300">
                       {compatibility.reason}
                     </span>
                   )}
@@ -484,6 +533,16 @@ export function GrindSizeCalculator({
                 </div>
               </div>
 
+              {(advice.compatibilityTags?.length ?? 0) > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {advice.compatibilityTags!.map(tag => (
+                    <span key={tag} className="rounded-md bg-surface-alpha px-2 py-1 text-[10px] font-medium text-secondary">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
               {advice.compatibilityState !== 'compatible' && (
                 <div className={`flex items-start gap-2 rounded-xl border px-3 py-2 text-sm ${advice.compatibilitySelectable
                   ? 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300'
@@ -495,9 +554,18 @@ export function GrindSizeCalculator({
               )}
 
               {warningText && (
-                <div className="flex items-start gap-2 rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
-                  <AlertTriangle size={15} className="mt-0.5 shrink-0" />
-                  <span>{warningText}</span>
+                <div className="flex flex-col gap-2 rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle size={15} className="mt-0.5 shrink-0" />
+                    <span>{warningText}</span>
+                  </div>
+                  {advice.warningKind === 'calibration_required' && (
+                    <ul className="ml-6 list-disc space-y-1 text-xs opacity-90">
+                      <li>{t.toolsGrindSizeCalibrationFindZero}</li>
+                      <li>{t.toolsGrindSizeCalibrationMarkZero}</li>
+                      <li>{t.toolsGrindSizeCalibrationAdjustFromZero}</li>
+                    </ul>
+                  )}
                 </div>
               )}
 

@@ -104,23 +104,7 @@ export function LandingHeader({ language, onLanguageChange, region, onRegionChan
           <a href="/#brewers" onClick={() => setOpen(false)}>{t('nav.brewMethods', language)}</a>
           <Link to="/download" onClick={() => setOpen(false)}>{t('nav.downloadApp', language)}</Link>
           <Link to="/support" onClick={() => setOpen(false)}>{t('nav.support', language)}</Link>
-          <div className="mobile-menu-selectors">
-            <select value={language} onChange={(e) => onLanguageChange(e.target.value as Language)}>
-              <option value="id">Bahasa Indonesia</option>
-              <option value="en">English</option>
-              <option value="bn">Bahasa Melayu (BN)</option>
-            </select>
-            <select value={region} onChange={(e) => onRegionChange(e.target.value as Region)}>
-              <option value="id">Indonesia (IDR)</option>
-              <option value="bn">Brunei (BND)</option>
-              <option value="my">Malaysia (MYR)</option>
-              <option value="sg">Singapore (SGD)</option>
-              <option value="au">Australia (AUD)</option>
-              <option value="eu">Europe (EUR)</option>
-              <option value="us">US (USD)</option>
-              <option value="global">Global</option>
-            </select>
-          </div>
+
           {user ? (
             <>
               <span className="mobile-user-email" style={{ padding: '8px 16px', fontSize: '13px', color: 'var(--text-secondary)' }}>{user.email}</span>

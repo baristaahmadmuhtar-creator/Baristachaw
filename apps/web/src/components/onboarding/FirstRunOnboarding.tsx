@@ -3,14 +3,14 @@ import { Check, ChevronRight, Languages, Loader2, Search, X } from 'lucide-react
 import { useGlobalState } from '../../context/GlobalState';
 import { loadAiBrewCatalog } from '../../features/ai-brew/catalog';
 import type { AiBrewCatalog } from '../../features/ai-brew/types';
-import type { Language, Region } from '../../types';
+import type { Language } from '../../types';
 import {
   loadEquipmentPreferences,
   saveEquipmentPreferences,
   submitCatalogSuggestion,
 } from '../../services/equipmentPreferences';
 
-type OnboardingStep = 'language' | 'equipment';
+type OnboardingStep = 'language' | 'region' | 'equipment';
 type PickerKind = 'dripper' | 'grinder';
 
 interface CatalogEquipmentItem {
@@ -31,14 +31,14 @@ const LANGUAGE_OPTIONS: Array<{
 ];
 
 const REGION_OPTIONS = [
-  { id: 'id', label: 'Indonesia', detail: 'IDR (Rp)' },
-  { id: 'bn', label: 'Brunei', detail: 'BND (B$)' },
-  { id: 'my', label: 'Malaysia', detail: 'MYR (RM)' },
-  { id: 'sg', label: 'Singapore', detail: 'SGD (S$)' },
-  { id: 'au', label: 'Australia', detail: 'AUD (A$)' },
-  { id: 'eu', label: 'Europe', detail: 'EUR (€)' },
-  { id: 'us', label: 'United States', detail: 'USD ($)' },
-  { id: 'global', label: 'Global', detail: 'USD ($)' },
+  { id: 'id', label: 'Indonesia' },
+  { id: 'bn', label: 'Brunei' },
+  { id: 'my', label: 'Malaysia' },
+  { id: 'sg', label: 'Singapore' },
+  { id: 'au', label: 'Australia' },
+  { id: 'eu', label: 'Europe' },
+  { id: 'us', label: 'United States' },
+  { id: 'global', label: 'Global' },
 ] as const;
 
 const FAVORITE_DRIPPER_IDS = [
@@ -227,9 +227,12 @@ function EquipmentPickerDialog({
 }
 
 export function FirstRunOnboarding() {
-  const { catalog: globalCatalog, setLanguage, region, setRegion } = useGlobalState();
+  const { language, setLanguage, region, setRegion } = useGlobalState();
   const [visible, setVisible] = useState(false);
-  const [step, setStep] = useState<OnboardingStep>('equipment');
+  const [step, setStep] = useState<OnboardingStep>('language');
+  const [selectedLanguage, setSelectedLanguage] = useState<Extract<Language, 'id' | 'en'>>(
+    language === 'id' ? 'id' : 'en',
+  );
   const [selectedRegion, setSelectedRegion] = useState<Region>(region);
   const [catalog, setCatalog] = useState<AiBrewCatalog | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(false);
@@ -240,7 +243,7 @@ export function FirstRunOnboarding() {
   const [saving, setSaving] = useState(false);
   const [picker, setPicker] = useState<PickerKind | null>(null);
 
-  const id = false; // Language is managed globally, default to en or use globalState t
+  const id = selectedLanguage === 'id';
   const copy = useMemo(() => ({
     languageTitle: id ? 'Pilih bahasa' : 'Choose your language',
     languageBody: id
@@ -287,12 +290,22 @@ export function FirstRunOnboarding() {
     };
   }, [visible]);
 
-  useEffect(() => {
-    if (visible && !catalog && !catalogLoading) {
-      setCatalogLoading(true);
-      loadAiBrewCatalog().then(setCatalog).finally(() => setCatalogLoading(false));
+  async function continueToRegion() {
+    setLanguage(selectedLanguage);
+    setStep('region');
+  }
+
+  async function continueToEquipment() {
+    setRegion(selectedRegion);
+    setStep('equipment');
+    if (catalog || catalogLoading) return;
+    setCatalogLoading(true);
+    try {
+      setCatalog(await loadAiBrewCatalog());
+    } finally {
+      setCatalogLoading(false);
     }
-  }, [visible, catalog, catalogLoading]);
+  }
 
   async function completeEquipment(skipped: boolean) {
     if (saving) return;
@@ -350,7 +363,96 @@ export function FirstRunOnboarding() {
           <span>Baristachaw</span>
         </div>
 
-        {step === 'equipment' && (
+        {step === 'language' ? (
+          <section data-testid="onboarding-language-step">
+            <div className="text-center">
+              <Languages
+                data-testid="onboarding-language-icon"
+                aria-hidden="true"
+                className="mx-auto h-7 w-7 text-blue-500"
+              />
+              <h1 className="mt-4 text-2xl font-semibold text-primary">{copy.languageTitle}</h1>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-secondary">{copy.languageBody}</p>
+            </div>
+            <div className="mt-7 grid gap-3">
+              {LANGUAGE_OPTIONS.map((option) => {
+                const active = selectedLanguage === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setSelectedLanguage(option.id)}
+                    className={`flex min-h-[72px] w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors ${
+                      active
+                        ? 'border-blue-500 bg-blue-500/10'
+                        : 'border-glass bg-surface-alpha hover:border-blue-500/35'
+                    }`}
+                  >
+                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                      active ? 'bg-blue-600 text-white' : 'bg-[var(--bg-base)] text-secondary'
+                    }`}>
+                      {active ? <Check size={17} /> : option.id.toUpperCase()}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-semibold text-primary">{option.label}</span>
+                      <span className="mt-0.5 block text-xs leading-5 text-secondary">{option.detail}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              onClick={() => { void continueToRegion(); }}
+              className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              {copy.continue}
+              <ChevronRight size={17} />
+            </button>
+          </section>
+        ) : step === 'region' ? (
+          <section data-testid="onboarding-region-step">
+            <div className="mt-2">
+              <h2 className="text-xl font-semibold text-primary text-center">{copy.regionTitle}</h2>
+              <p className="text-sm text-secondary mt-2 text-center">{copy.regionBody}</p>
+              <div className="mt-6 grid grid-cols-2 gap-2.5">
+                {REGION_OPTIONS.map((opt) => {
+                  const active = selectedRegion === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setSelectedRegion(opt.id as Region)}
+                      className={`flex min-h-[58px] items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors ${
+                        active
+                          ? 'border-blue-500 bg-blue-500/10'
+                          : 'border-glass bg-surface-alpha hover:border-blue-500/35'
+                      }`}
+                    >
+                      <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-extrabold ${
+                        active ? 'bg-blue-600 text-white' : 'bg-[var(--bg-base)] text-secondary'
+                      }`}>
+                        {opt.id === 'global' ? 'GL' : opt.id.toUpperCase()}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold text-primary truncate">{opt.label}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => { void continueToEquipment(); }}
+              className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              {copy.continue}
+              <ChevronRight size={17} />
+            </button>
+          </section>
+        ) : (
           <section data-testid="onboarding-equipment-step">
             <div className="text-center">
               <img src="/icons/icon-192.png" alt="" className="mx-auto h-6 w-6 rounded-md object-cover" />

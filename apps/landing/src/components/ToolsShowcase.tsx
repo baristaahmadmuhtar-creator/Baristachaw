@@ -7,19 +7,19 @@ import type { Language } from '../i18n';
 
 const SECTION_COPY: Record<Language, { title: string; subtitle: string }> = {
   id: {
-    title: 'Semua yang Anda Butuhkan, dalam Satu Aplikasi.',
+    title: 'Alat Seduh Praktis, dalam Satu Aplikasi.',
     subtitle:
-      'Dari kalkulator rasio yang gratis hingga AI Brew yang cerdas — setiap alat dirancang agar ritual kopi Anda lebih mudah dan menyenangkan.',
+      'Dari kalkulator rasio gratis hingga panduan AI Brew, setiap alat membantu Anda merencanakan, memeriksa, dan memperbaiki workflow seduh harian.',
   },
   en: {
-    title: 'Everything You Need for a Perfect Cup, in One App.',
+    title: 'Practical Brew Tools, in One App.',
     subtitle:
-      'From our free ratio calculator to intelligent AI-guided recipes, each tool is crafted to elevate your daily brewing ritual.',
+      'From our free ratio calculator to AI-guided recipes, each tool helps you plan, check, and improve your daily brewing workflow.',
   },
   bn: {
-    title: 'Semua yang Anda Perlukan, dalam Satu Aplikasi.',
+    title: 'Alat Bancuh Praktikal, dalam Satu Aplikasi.',
     subtitle:
-      'Dari kalkulator nisbah percuma hingga AI Brew yang pintar — setiap alat direka supaya ritual kopi anda lebih mudah dan menyeronokkan.',
+      'Daripada kalkulator nisbah percuma hingga panduan AI Brew, setiap alat membantu anda merancang, menyemak, dan memperbaiki workflow bancuhan harian.',
   },
 };
 
@@ -220,3 +220,4 @@ export function ToolsShowcase({ language }: { language: Language }) {
     </section>
   );
 }
+

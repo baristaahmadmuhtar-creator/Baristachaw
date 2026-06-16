@@ -586,7 +586,7 @@ const EN_TRANSLATIONS: Translations = {
     toolsTabTodo: 'Tasks',
     toolsLoadingAiBrew: 'Loading AI Brew...',
     coffeeBuilderTitle: 'Create Recipe',
-    coffeeBuilderSubtitle: 'Craft your perfect cup with AI precision.',
+    coffeeBuilderSubtitle: 'Plan a practical brew recipe with guided checks.',
     coffeeBuilderBrewMethod: 'Brew Method',
     coffeeBuilderRoastProfile: 'Roast Profile',
     coffeeBuilderFlavorNotes: 'Flavor Notes',

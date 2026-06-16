@@ -380,7 +380,7 @@ function methodCorrection(
     };
     if (rating === 'bitter' || rating === 'muddy' || rating === 'astringent') return {
       primaryCorrection: id ? 'Turunkan panas dan berhenti sebelum sputter.' : 'Lower heat and stop before sputter.',
-      backupCorrection: id ? 'Jaga basket rata penuh tanpa tamp.' : 'Keep the basket level and full without tamping.',
+      backupCorrection: id ? 'Jaga basket rata penuh; jangan tamp.' : 'Keep the basket level and full; use no tamp.',
     };
   }
 

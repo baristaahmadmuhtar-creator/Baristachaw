@@ -17,8 +17,8 @@ test('renders the full landing contract without console errors or overflow', asy
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Seduh Kopi Sempurna/);
-  await expect(page.getByRole('region', { name: /Seduh Kopi Sempurna/ }).getByRole('link', { name: /Mulai Seduh/ })).toHaveAttribute(
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Bangun rencana seduh yang lebih jelas/);
+  await expect(page.getByRole('region', { name: /Bangun rencana seduh yang lebih jelas/ }).getByRole('link', { name: /Mulai Seduh/ })).toHaveAttribute(
     'href',
     'https://app.baristachaw.com/tools?tab=ai_brew',
   );
@@ -53,16 +53,16 @@ test('legal and download routes are direct, honest, and non-PWA', async ({ page 
   await page.goto('/terms');
   await expect(page.getByRole('heading', { name: 'Ketentuan penggunaan' })).toBeVisible();
   await page.goto('/download');
-  await expect(page.getByRole('heading', { name: /Unduh Baristachaw/ })).toBeVisible();
-  await expect(page.getByText(/Origin app\.baristachaw\.com sudah tertanam/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Minta akses Baristachaw untuk Android/ })).toBeVisible();
+  await expect(page.getByText(/Origin app\.baristachaw\.com tertanam/)).toBeVisible();
   expect(await page.locator('link[rel="manifest"]').count()).toBe(0);
 });
 
 test('language toggle changes the public interface without mixed primary copy', async ({ page }) => {
   await page.getByLabel('Select Language').click();
   await page.getByRole('option', { name: 'English' }).click();
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Brew the Perfect Cup/);
-  await expect(page.getByRole('region', { name: /Brew the Perfect Cup/ }).getByRole('link', { name: 'Start Brewing' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Build a clearer brew plan/);
+  await expect(page.getByRole('region', { name: /Build a clearer brew plan/ }).getByRole('link', { name: 'Start Brewing' })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 });
 

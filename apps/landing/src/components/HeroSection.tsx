@@ -1,6 +1,6 @@
 import { ArrowRight, Download, ShieldCheck } from 'lucide-react';
 import { motion } from 'motion/react';
-import { APP_LINKS, APK_URL } from '../config';
+import { APK_AVAILABLE, APP_LINKS, APK_URL } from '../config';
 import type { Language } from '../i18n';
 import { t } from '../i18n';
 
@@ -36,8 +36,8 @@ export function HeroSection({ language, onRegister }: { language: Language; onRe
           <a className="button button-primary" href={APP_LINKS.aiBrew}>
             {t('hero.startBrew', language)} <ArrowRight size={18} />
           </a>
-          <a className="button button-ghost" href={APK_URL}>
-            <Download size={18} /> {t('hero.downloadApk', language)}
+          <a className="button button-ghost" href={APK_AVAILABLE ? APK_URL : '/support?topic=download'}>
+            <Download size={18} /> {APK_AVAILABLE ? t('hero.downloadApk', language) : 'Request access'}
           </a>
           <a 
             className="hero-register" 

@@ -8,8 +8,8 @@ import {
   sortGrindersForMethod,
 } from '../../apps/web/src/features/barista-tools/grindSizeAdvisor.ts';
 import { getGrinderSafetyProfile } from '../../apps/web/src/features/ai-brew/grinderSafetyGuardrails.ts';
-import { BREW_METHOD_PROFILES } from '../../apps/web/src/features/barista-tools/brewProfiles.ts';
-import type { RoastLevel } from '../../apps/web/src/features/barista-tools/types.ts';
+import { BREW_METHOD_PROFILES, dedupeBrewMethodProfilesById } from '../../apps/web/src/features/barista-tools/brewProfiles.ts';
+import type { BrewMethodProfile, RoastLevel } from '../../apps/web/src/features/barista-tools/types.ts';
 
 const ROOT = process.cwd();
 
@@ -39,6 +39,19 @@ async function loadCatalogForTest() {
     restore();
   }
 }
+
+test('brew method presets are deduped by stable method id', () => {
+  const ids = BREW_METHOD_PROFILES.map((profile) => profile.id);
+  assert.equal(new Set(ids).size, ids.length, 'visible brew presets must not contain duplicate method ids');
+
+  const duplicate: BrewMethodProfile = {
+    ...BREW_METHOD_PROFILES[0],
+    label: `${BREW_METHOD_PROFILES[0].label} Duplicate`,
+  };
+  const deduped = dedupeBrewMethodProfilesById([BREW_METHOD_PROFILES[0], duplicate, BREW_METHOD_PROFILES[1]]);
+  assert.equal(deduped.length, 2);
+  assert.equal(deduped[0].label, BREW_METHOD_PROFILES[0].label, 'dedupe should keep the first stable method definition');
+});
 
 test('Grind Size keeps 600N platform roast-aware instead of hardcoding one setting', async () => {
   const catalog = await loadCatalogForTest();

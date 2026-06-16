@@ -1,7 +1,7 @@
 import { Bot, Bug, Download, Instagram, LifeBuoy, LogIn, MessageCircle, UserPlus, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { APK_URL, APP_LINKS } from '../config';
+import { APK_AVAILABLE, APK_URL, APP_LINKS } from '../config';
 import type { Language } from '../i18n';
 
 function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -106,7 +106,7 @@ export function SupportChatWidget({ language }: { language: Language }) {
     { icon: Instagram, label: 'Instagram', href: 'https://instagram.com/baristachaw' },
     { icon: UserPlus, label: local.register[language], href: APP_LINKS.register },
     { icon: LogIn, label: local.loginIssue[language], href: APP_LINKS.login },
-    { icon: Download, label: 'Download APK', href: APK_URL },
+    { icon: Download, label: APK_AVAILABLE ? 'Download APK' : 'Request APK access', href: APK_AVAILABLE ? APK_URL : '/support?topic=download' },
     { icon: Bot, label: local.brewHelp[language], href: APP_LINKS.aiBrew },
     { icon: Bug, label: local.reportBug[language], href: '/support?topic=bug' },
     { icon: LifeBuoy, label: local.contactSupport[language], href: '/support' },

@@ -25,6 +25,14 @@ import {
   type AiProviderAdminSnapshot,
   type AiUsageRangeInput,
 } from '../_aiProviderControl.js';
+import { PLAN_CATALOG } from '@baristachaw/shared/planCatalog';
+import {
+  listManualPaymentRequests,
+  readManualPaymentInstructions,
+  updateManualPaymentStatus,
+  type ManualPaymentAction,
+  type ManualPaymentRequest,
+} from '../billing/manualPayments.js';
 
 type AdminRole = 'owner' | 'admin' | 'support' | 'analyst' | 'user';
 type AccountStatus = 'active' | 'trialing' | 'past_due' | 'suspended' | 'deleted';
@@ -257,6 +265,13 @@ type AdminSnapshot = {
     supportedMarkets: BillingMarket[];
     realtimeTables: string[];
     gaps: string[];
+    manualPayments: ManualPaymentRequest[];
+    manualQueueCounts: Record<'pending_review' | 'receipt_received' | 'verified_paid' | 'rejected' | 'expired', number>;
+    planParity: {
+      ok: boolean;
+      mismatches: string[];
+      sharedCatalogPlans: PlanCode[];
+    };
   };
   catalog: {
     ready: boolean;
@@ -415,11 +430,15 @@ const RUNTIME_PLAN_PATCHES = new Map<PlanCode, Omit<PlanPatch, 'operatorNote'>>(
 const RUNTIME_CATALOG_REQUESTS: AdminCatalogRequest[] = [];
 const RUNTIME_AUDIT: AdminAuditEvent[] = [];
 
+function sharedAdminPlan(code: PlanCode) {
+  return PLAN_CATALOG.find((plan) => plan.code === code) || PLAN_CATALOG[0];
+}
+
 const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
   {
     code: 'free',
-    name: 'Free',
-    description: 'Protected trial surface for new users and app review.',
+    name: sharedAdminPlan('free').displayName,
+    description: sharedAdminPlan('free').description,
     priceMonthlyUsd: 0,
     aiDailyLimit: 12,
     deepDailyLimit: 2,
@@ -427,7 +446,7 @@ const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
     storageMb: 64,
     seats: 1,
     supportSlaHours: 72,
-    features: ['Chat', 'basic scanner', 'local collection'],
+    features: [...sharedAdminPlan('free').features],
     billingProvider: 'none',
     billingProductId: '',
     billingPriceId: '',
@@ -439,72 +458,72 @@ const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
   },
   {
     code: 'starter',
-    name: 'Starter',
-    description: 'Entry paid plan for serious home baristas.',
-    priceMonthlyUsd: 4.99,
+    name: sharedAdminPlan('starter').displayName,
+    description: sharedAdminPlan('starter').description,
+    priceMonthlyUsd: sharedAdminPlan('starter').priceMonthlyUsd,
     aiDailyLimit: 60,
     deepDailyLimit: 10,
     scannerDailyLimit: 12,
     storageMb: 512,
     seats: 1,
     supportSlaHours: 48,
-    features: ['Higher AI quota', 'AI Brew journal', 'scanner history'],
-    billingProvider: 'revenuecat',
+    features: [...sharedAdminPlan('starter').features],
+    billingProvider: 'manual',
     billingProductId: 'baristachaw_starter_monthly',
     billingPriceId: 'STRIPE_PRICE_STARTER_MONTHLY',
     revenuecatEntitlementId: 'starter',
     market: 'global',
-    displayPrice: '$4.99 / Rp79k / B$7 monthly',
-    checkoutMode: 'external',
-    paymentMethods: ['Google Play', 'App Store', 'Stripe Checkout'],
+    displayPrice: 'Manual invoice',
+    checkoutMode: 'manual_invoice',
+    paymentMethods: ['Manual bank transfer', 'Admin review'],
   },
   {
     code: 'pro',
-    name: 'Pro',
-    description: 'Full workflow plan for baristas and creators.',
-    priceMonthlyUsd: 9.99,
+    name: sharedAdminPlan('pro').displayName,
+    description: sharedAdminPlan('pro').description,
+    priceMonthlyUsd: sharedAdminPlan('pro').priceMonthlyUsd,
     aiDailyLimit: 180,
     deepDailyLimit: 40,
     scannerDailyLimit: 60,
     storageMb: 2048,
     seats: 1,
     supportSlaHours: 24,
-    features: ['Deep mode', 'latte art edit', 'advanced collections', 'priority AI'],
+    features: [...sharedAdminPlan('pro').features],
     recommended: true,
-    billingProvider: 'revenuecat',
+    billingProvider: 'manual',
     billingProductId: 'baristachaw_pro_monthly',
     billingPriceId: 'STRIPE_PRICE_PRO_MONTHLY',
     revenuecatEntitlementId: 'pro',
     market: 'global',
-    displayPrice: '$9.99 / Rp159k / B$14 monthly',
-    checkoutMode: 'external',
-    paymentMethods: ['Google Play', 'App Store', 'Stripe Checkout'],
+    displayPrice: 'Manual invoice',
+    checkoutMode: 'manual_invoice',
+    paymentMethods: ['Manual bank transfer', 'Admin review'],
   },
   {
     code: 'team',
-    name: 'Team',
-    description: 'Cafe teams with shared operations and training.',
-    priceMonthlyUsd: 29.99,
+    name: sharedAdminPlan('team').displayName,
+    description: sharedAdminPlan('team').description,
+    priceMonthlyUsd: sharedAdminPlan('team').priceMonthlyUsd,
     aiDailyLimit: 800,
     deepDailyLimit: 160,
     scannerDailyLimit: 240,
     storageMb: 10240,
     seats: 8,
     supportSlaHours: 12,
-    features: ['Team seats', 'training notes', 'manager controls', 'audit export'],
-    billingProvider: 'revenuecat',
+    features: [...sharedAdminPlan('team').features],
+    billingProvider: 'manual',
     billingProductId: 'baristachaw_team_monthly',
     billingPriceId: 'STRIPE_PRICE_TEAM_MONTHLY',
     revenuecatEntitlementId: 'team',
     market: 'global',
-    displayPrice: '$29.99 / Rp479k / B$42 monthly',
-    checkoutMode: 'external',
-    paymentMethods: ['Google Play', 'App Store', 'Stripe Checkout', 'Manual invoice'],
+    displayPrice: 'Manual invoice',
+    checkoutMode: 'manual_invoice',
+    paymentMethods: ['Manual bank transfer', 'Admin review'],
   },
   {
     code: 'enterprise',
-    name: 'Enterprise',
-    description: 'Custom commercial deployment and support.',
+    name: sharedAdminPlan('enterprise').displayName,
+    description: sharedAdminPlan('enterprise').description,
     priceMonthlyUsd: 0,
     aiDailyLimit: 5000,
     deepDailyLimit: 1000,
@@ -512,7 +531,7 @@ const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
     storageMb: 102400,
     seats: 50,
     supportSlaHours: 4,
-    features: ['Custom quota', 'dedicated support', 'SLA review', 'private rollout'],
+    features: [...sharedAdminPlan('enterprise').features],
     billingProvider: 'manual',
     billingProductId: 'baristachaw_enterprise',
     billingPriceId: '',
@@ -1370,6 +1389,7 @@ function connectedBillingProviders(): BillingProvider[] {
   if (readEnv('STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'BILLING_CHECKOUT_URL')) providers.push('stripe');
   if (readEnv('MIDTRANS_SERVER_KEY', 'MIDTRANS_WEBHOOK_SECRET')) providers.push('midtrans');
   if (readEnv('XENDIT_SECRET_KEY', 'XENDIT_WEBHOOK_TOKEN')) providers.push('xendit');
+  if (readManualPaymentInstructions('Admin readiness check')) providers.push('manual');
   return providers;
 }
 
@@ -1384,9 +1404,46 @@ function billingSyncConfigured(): boolean {
   ));
 }
 
+function buildManualQueueCounts(requests: ManualPaymentRequest[]): AdminSnapshot['billing']['manualQueueCounts'] {
+  return requests.reduce<AdminSnapshot['billing']['manualQueueCounts']>((counts, request) => {
+    counts[request.status] += 1;
+    return counts;
+  }, {
+    pending_review: 0,
+    receipt_received: 0,
+    verified_paid: 0,
+    rejected: 0,
+    expired: 0,
+  });
+}
+
+function buildPlanParity(plans: AdminPlan[]): AdminSnapshot['billing']['planParity'] {
+  const mismatches: string[] = [];
+  const planByCode = new Map(plans.map((plan) => [plan.code, plan]));
+  for (const shared of PLAN_CATALOG) {
+    const local = planByCode.get(shared.code as PlanCode);
+    if (!local) {
+      mismatches.push(`${shared.code}: missing in admin plan catalog`);
+      continue;
+    }
+    const localFeatures = [...local.features].map((item) => item.trim()).sort();
+    const sharedFeatures = [...shared.features].map((item) => item.trim()).sort();
+    if (local.name !== shared.displayName) mismatches.push(`${shared.code}: name differs`);
+    if (localFeatures.join('|') !== sharedFeatures.join('|')) mismatches.push(`${shared.code}: features differ`);
+  }
+  return {
+    ok: mismatches.length === 0,
+    mismatches,
+    sharedCatalogPlans: PLAN_CATALOG.map((plan) => plan.code as PlanCode),
+  };
+}
+
 function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[], dataMode: DataMode): AdminSnapshot['billing'] {
   const connectedProviders = connectedBillingProviders();
   const hasSyncToken = billingSyncConfigured();
+  const manualPayments = listManualPaymentRequests();
+  const manualQueueCounts = buildManualQueueCounts(manualPayments);
+  const planParity = buildPlanParity(plans);
   const activeStatuses = new Set<BillingStatus>(['active', 'trialing']);
   const paidUsers = users.filter((user) => user.planCode !== 'free' && user.status !== 'deleted');
   const revenueMonthlyUsd = paidUsers
@@ -1409,6 +1466,9 @@ function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[], dataM
   if (!connectedProviders.includes('app_store')) {
     gaps.push('App Store purchase credentials are not configured for iOS parity.');
   }
+  if (!planParity.ok) {
+    gaps.push(`Plan catalog parity mismatch: ${planParity.mismatches.join('; ')}`);
+  }
 
   return {
     ready: dataMode === 'supabase' && connectedProviders.length > 0 && hasSyncToken,
@@ -1422,6 +1482,9 @@ function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[], dataM
     supportedMarkets: ['indonesia', 'brunei', 'global'],
     realtimeTables: ['app_users', 'app_plans', 'user_entitlements', 'payment_receipts', 'admin_audit_events', 'app_feature_flags', 'catalog_review_queue', 'ai_brew_journal', 'recipe_library_items'],
     gaps,
+    manualPayments,
+    manualQueueCounts,
+    planParity,
   };
 }
 
@@ -2668,6 +2731,19 @@ function auditRuntimeCatalogMutation(admin: AdminAccess, request: AdminCatalogRe
   RUNTIME_AUDIT.splice(RUNTIME_AUDIT_LIMIT);
 }
 
+function auditRuntimeManualPayment(admin: AdminAccess, request: ManualPaymentRequest, action: ManualPaymentAction, reason?: string): void {
+  RUNTIME_AUDIT.unshift({
+    id: `runtime_audit_manual_payment_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    actor: admin.email || admin.userId || 'admin',
+    target: request.id,
+    action: `manual_payment_${action}`,
+    createdAt: nowIso(),
+    detail: `Manual payment ${request.id} for ${request.planCode} is ${request.status}${reason ? `: ${reason}` : ''}`,
+    severity: action === 'rejected' || action === 'expired' ? 'warning' : 'info',
+  });
+  RUNTIME_AUDIT.splice(RUNTIME_AUDIT_LIMIT);
+}
+
 async function patchSupabaseUser(
   config: Extract<SupabaseConfig, { configured: true }>,
   admin: AdminAccess,
@@ -3000,6 +3076,71 @@ async function updatePlan(
   return buildAdminSnapshot(requestId, admin, rawUser);
 }
 
+function normalizeManualPaymentAction(value: unknown): ManualPaymentAction | '' {
+  const raw = normalizeText(value).toLowerCase();
+  if (
+    raw === 'receipt_received'
+    || raw === 'verified_paid'
+    || raw === 'rejected'
+    || raw === 'expired'
+    || raw === 'downgrade_free'
+  ) {
+    return raw;
+  }
+  return '';
+}
+
+async function updateManualPayment(
+  admin: AdminAccess,
+  rawUser: Record<string, unknown> | undefined,
+  paymentRequestId: string,
+  manualAction: ManualPaymentAction,
+  reason?: string,
+): Promise<AdminSnapshot> {
+  const requestId = `admin_manual_payment_${Date.now()}`;
+  const request = updateManualPaymentStatus(paymentRequestId, manualAction, reason);
+  if (!request) {
+    throw new AdminMutationError('Manual payment request was not found', {
+      statusCode: 404,
+      errorCode: 'manual_payment_not_found',
+    });
+  }
+
+  auditRuntimeManualPayment(admin, request, manualAction, reason);
+
+  if (manualAction === 'verified_paid') {
+    const patch: UserPatch = {
+      planCode: request.planCode as PlanCode,
+      status: 'active',
+      billingStatus: 'active',
+      billingProvider: 'manual',
+      billingMarket: 'global',
+      paymentActionRequired: false,
+      supportNote: `Manual payment verified: ${request.id}`,
+    };
+    const previous = RUNTIME_USER_PATCHES.get(request.userId) || {};
+    RUNTIME_USER_PATCHES.set(request.userId, { ...previous, ...patch });
+    auditRuntimeMutation(admin, request.userId, patch);
+  }
+
+  if (manualAction === 'downgrade_free') {
+    const patch: UserPatch = {
+      planCode: 'free',
+      status: 'active',
+      billingStatus: 'none',
+      billingProvider: 'none',
+      billingMarket: 'global',
+      paymentActionRequired: false,
+      supportNote: `Downgraded after manual payment review: ${request.id}`,
+    };
+    const previous = RUNTIME_USER_PATCHES.get(request.userId) || {};
+    RUNTIME_USER_PATCHES.set(request.userId, { ...previous, ...patch });
+    auditRuntimeMutation(admin, request.userId, patch);
+  }
+
+  return buildAdminSnapshot(requestId, admin, rawUser);
+}
+
 async function createCatalogRequest(
   admin: AdminAccess,
   rawUser: Record<string, unknown> | undefined,
@@ -3093,7 +3234,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === 'PATCH') {
       const action = normalizeText(req.body?.action);
-      if (action !== 'update_user' && action !== 'update_feature_flag' && action !== 'update_plan' && action !== 'create_catalog_request') {
+      if (action !== 'update_user' && action !== 'update_feature_flag' && action !== 'update_plan' && action !== 'create_catalog_request' && action !== 'update_manual_payment') {
         return res.status(400).json({
           ok: false,
           requestId,
@@ -3166,6 +3307,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           });
         }
         const snapshot = await createCatalogRequest(access.admin, access.auth.user, validated.patch);
+        return res.status(200).json({
+          ...snapshot,
+          requestId,
+        });
+      }
+      if (action === 'update_manual_payment') {
+        const paymentRequestId = normalizeText(req.body?.paymentRequestId);
+        const manualAction = normalizeManualPaymentAction(req.body?.manualAction);
+        const reason = normalizeText(req.body?.reason).slice(0, 240);
+        if (!paymentRequestId || !manualAction) {
+          return res.status(400).json({
+            ok: false,
+            requestId,
+            error: 'paymentRequestId and manualAction are required',
+            errorCode: 'validation_error',
+          });
+        }
+        if ((manualAction === 'rejected' || manualAction === 'downgrade_free') && reason.length < 3) {
+          return res.status(400).json({
+            ok: false,
+            requestId,
+            error: 'Reject and downgrade actions require a reason',
+            errorCode: 'operator_reason_required',
+          });
+        }
+        const authorization = authorizeUserMutation(access.admin, {
+          planCode: manualAction === 'verified_paid' || manualAction === 'downgrade_free' ? 'free' : undefined,
+        });
+        if (authorization) {
+          return res.status(authorization.statusCode).json({
+            ok: false,
+            requestId,
+            error: authorization.error,
+            errorCode: authorization.errorCode,
+            details: authorization.details,
+          });
+        }
+        const snapshot = await updateManualPayment(access.admin, access.auth.user, paymentRequestId, manualAction, reason);
         return res.status(200).json({
           ...snapshot,
           requestId,

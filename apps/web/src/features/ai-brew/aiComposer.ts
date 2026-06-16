@@ -590,7 +590,7 @@ function collectTechniqueNotes(plan: BrewPlan) {
       notes.push('Treat the liquid number as beverage yield, then stop by yield, time, and flow rather than by extra water.');
       break;
     case 'moka_pot':
-      notes.push('Keep heat moderate, do not tamp the basket, and remove from heat before harsh sputtering or boiling.');
+      notes.push('Keep heat moderate, use no tamp in the basket, and remove from heat before harsh sputtering or boiling.');
       break;
     case 'cold_brew':
       notes.push('Fully saturate the coarse bed, keep the long steep stable, then filter or decant cleanly before serving.');
@@ -1291,7 +1291,7 @@ function getBitterFix(plan: BrewPlan) {
     case 'espresso':
       return 'Stop the shot earlier by yield/flow or coarsen a small step; do not stretch the shot for more volume.';
     case 'moka_pot':
-      return 'Lower heat and remove earlier before sputter; keep the basket untamped.';
+      return 'Lower heat and remove earlier before sputter; use no tamp and keep the basket loose.';
     case 'cold_brew':
       return 'Shorten steep time or grind coarser for the next batch, then filter thoroughly.';
     case 'batch_brew':

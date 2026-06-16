@@ -524,7 +524,7 @@ export function Home() {
     setBillingBusy(true);
     try {
       const response = recommendedUpgrade.action === 'manage' ? await openBillingPortal() : null;
-      if (response?.url) {
+      if (response?.mode === 'redirect' && response.url) {
         window.location.assign(response.url);
         return;
       }

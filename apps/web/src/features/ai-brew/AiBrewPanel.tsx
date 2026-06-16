@@ -519,7 +519,7 @@ const COPY = {
     saved: 'Saved',
     favorite: 'Favorite',
     unfavorite: 'Unfavorite',
-    aiCoach: 'AI Coach',
+    aiCoach: 'AI BREW COACH',
     aiFinisher: 'Extraction Finisher',
     explain: 'Explain with AI',
     troubleshoot: 'Fix Taste',
@@ -1145,7 +1145,7 @@ const COPY = {
     saved: 'Tersimpan',
     favorite: 'Favorit',
     unfavorite: 'Hapus Favorit',
-    aiCoach: 'Panduan AI',
+    aiCoach: 'AI BREW COACH',
     aiFinisher: 'Finalisasi Ekstraksi',
     explain: 'Jelaskan dengan AI',
     troubleshoot: 'Perbaiki Rasa',
@@ -6477,6 +6477,8 @@ function PlanResultDialog({
   const [realBrewNotes, setRealBrewNotes] = useState('');
   const [realBrewSaving, setRealBrewSaving] = useState(false);
   const [realBrewStatus, setRealBrewStatus] = useState<string | null>(null);
+  const [coachInput, setCoachInput] = useState('');
+  const [coachLocalMessages, setCoachLocalMessages] = useState<Array<{ role: 'user' | 'assistant'; text: string }>>([]);
 
   useEffect(() => {
     if (!open) return;
@@ -6508,6 +6510,8 @@ function PlanResultDialog({
     });
     setRealBrewNotes('');
     setRealBrewStatus(null);
+    setCoachInput('');
+    setCoachLocalMessages([]);
   }, [plan?.id]);
 
   useEffect(() => {
@@ -6619,22 +6623,22 @@ function PlanResultDialog({
   const resultTabs: Array<{ id: ResultTab; label: string }> = [
     { id: 'plan', label: copy.planTab },
     { id: 'flow', label: id ? 'Seduh' : copy.flowTab },
-    { id: 'coach', label: id ? 'AI' : copy.coachTab },
+    { id: 'coach', label: copy.aiCoach },
     { id: 'details', label: copy.detailTab },
   ];
   const showLegacySourcesTab = false;
   const coachActions: Array<{ mode: AiCoachMode; label: string; hint: string }> = [
-    { mode: 'explain', label: copy.explain, hint: copy.coachExplainHint },
-    { mode: 'troubleshoot', label: copy.troubleshoot, hint: copy.coachTroubleshootHint },
+    { mode: 'explain', label: id ? 'Jelaskan cup' : 'Explain cup', hint: copy.coachExplainHint },
+    { mode: 'troubleshoot', label: id ? 'Perbaiki rasa' : 'Fix taste', hint: copy.coachTroubleshootHint },
+    { mode: 'adjust', label: id ? 'Atur cup berikutnya' : 'Adjust next cup', hint: copy.coachAdjustHint },
     { mode: 'rewrite', label: copy.rewriteGuide, hint: copy.aiNotesManualHint },
     { mode: 'deep_analysis', label: copy.deepAnalysis, hint: copy.coachAdjustHint },
-    { mode: 'adjust', label: copy.adjust, hint: copy.coachAdjustHint },
   ];
   const primaryAiAssistActions = coachActions.filter((action) => (
-    action.mode === 'explain' || action.mode === 'troubleshoot' || action.mode === 'rewrite'
+    action.mode === 'explain' || action.mode === 'troubleshoot' || action.mode === 'adjust'
   ));
   const advancedAiAssistActions = coachActions.filter((action) => (
-    action.mode === 'deep_analysis' || action.mode === 'adjust'
+    action.mode === 'deep_analysis' || action.mode === 'rewrite'
   ));
   const hasLowConfidenceCoachData = plan.provenanceAttentionNeeded
     || plan.grindSettingVerification !== 'official'
@@ -7059,6 +7063,60 @@ function PlanResultDialog({
     { rating: 'astringent', label: copy.feedbackAstringent },
   ];
   const activeFeedbackCorrection = feedback ? buildTasteFeedbackCorrection(plan, feedback.rating, language) : null;
+  const activeFeedbackLabel = feedback
+    ? (feedbackOptions.find((item) => item.rating === feedback.rating)?.label || feedback.rating)
+    : (id ? 'Belum ada feedback seduh nyata' : 'No real brew feedback yet');
+  const coachContextItems = [
+    { label: id ? 'Metode' : 'Method', value: plan.dripper.name },
+    { label: id ? 'Bean' : 'Bean', value: plan.coffeeName || buildLocalizedPlanRecipeName(plan, language) },
+    { label: id ? 'Dosis' : 'Dose', value: formatRoundedGrams(plan.doseG) },
+    { label: id ? 'Air' : 'Water', value: `${formatRoundedMl(plan.totalWaterMl)} / ${plan.waterBrandLabel || localizedWaterStyle}` },
+    { label: id ? 'Suhu' : 'Temperature', value: formatRoundedTemperature(plan.waterTempC) },
+    { label: id ? 'Gilingan' : 'Grind', value: localizedGrindHeadline },
+    { label: id ? 'Target rasa' : 'Taste target', value: localizedTargetProfileLabel },
+    { label: id ? 'Waktu' : 'Time', value: `${extractionTimeLabel} ${formatGuideTime(extractionSeconds)}` },
+    { label: id ? 'Feedback nyata' : 'Real feedback', value: activeFeedbackLabel },
+  ];
+  const coachBeanLabel = plan.coffeeName || buildLocalizedPlanRecipeName(plan, language);
+  const coachCurrentCupTitle = `${plan.dripper.name} - ${coachBeanLabel}`;
+  const coachCurrentCupMeta = `${formatRoundedGrams(plan.doseG)} ${id ? 'kopi' : 'coffee'} - ${formatRoundedMl(plan.totalWaterMl)} ${id ? 'air' : 'water'} - ${formatRoundedTemperature(plan.waterTempC)}`;
+  const coachInfoNote = id
+    ? 'Saran memakai context cup dan feedback rasa saat ini. AI online hanya berjalan saat quick action dipilih.'
+    : 'Suggestions are based on your current cup and taste feedback. Online AI only runs when a quick action is selected.';
+  const coachConfidenceNotes = [
+    predictionPrecisionLabel,
+    ...plan.confidenceNotes.slice(0, 2).map((note) => localizeAiBrewDynamicText(note, language)),
+    ...localizedWarnings.slice(0, 2),
+  ].filter(Boolean);
+  const coachIntroMessage = id
+    ? 'Saya membaca context cup saat ini dan menjaga angka recipe tetap dari planner deterministik. Tanyakan koreksi kecil, risiko rasa, atau cara seduh berikutnya.'
+    : 'I am reading the current cup context and keeping recipe numbers locked to the deterministic planner. Ask for small corrections, taste risks, or next-brew guidance.';
+  const buildLocalCoachReply = (question: string) => {
+    const feedbackLine = feedback
+      ? `${activeFeedbackLabel}${feedbackNoteDraft.trim() ? `: ${feedbackNoteDraft.trim()}` : ''}`
+      : (id ? 'Belum ada feedback seduh nyata; validasi cup pertama dulu sebelum koreksi besar.' : 'No real brew feedback yet; validate the first cup before making large corrections.');
+    const correctionLine = activeFeedbackCorrection
+      ? activeFeedbackCorrection
+      : (id ? 'Koreksi aman: ubah satu variabel kecil saja setelah mencicipi, biasanya gilingan 1 klik/angka atau suhu 1C.' : 'Safe correction: change one small variable after tasting, usually 1 grind click/number or 1C.');
+    return [
+      id ? 'Jawaban lokal AI BREW COACH:' : 'Local AI BREW COACH reply:',
+      `- ${id ? 'Pertanyaan' : 'Question'}: ${question}`,
+      `- ${id ? 'Context terkunci' : 'Locked context'}: ${plan.dripper.name}, ${formatRoundedGrams(plan.doseG)}, ${formatRoundedMl(plan.totalWaterMl)}, ${formatRoundedTemperature(plan.waterTempC)}, ${localizedGrindHeadline}.`,
+      `- ${id ? 'Feedback' : 'Feedback'}: ${feedbackLine}`,
+      `- ${id ? 'Koreksi' : 'Correction'}: ${correctionLine}`,
+      `- ${id ? 'Catatan' : 'Note'}: ${id ? 'Angka recipe tidak saya ubah di chat lokal ini; gunakan tombol online AI hanya bila ingin penjelasan tambahan.' : 'Recipe numbers are not changed in this local chat; use an online AI action only if you want extra explanation.'}`,
+    ].join('\n');
+  };
+  const handleCoachSend = () => {
+    const question = coachInput.trim();
+    if (!question) return;
+    setCoachLocalMessages((current) => [
+      ...current,
+      { role: 'user' as const, text: question },
+      { role: 'assistant' as const, text: buildLocalCoachReply(question) },
+    ].slice(-8));
+    setCoachInput('');
+  };
   const expectedCupItems = expectedCup ? [
     { label: copy.cupAcidity, value: expectedCup.acidity },
     { label: copy.cupSweetness, value: expectedCup.sweetness },
@@ -8766,17 +8824,54 @@ function PlanResultDialog({
                 data-testid="ai-brew-result-coach-panel"
               >
               <div className="min-w-0 max-w-full overflow-hidden rounded-[1.4rem] border panel-divider-subtle panel-soft p-4 [overflow-wrap:anywhere]">
-                <div className="mb-3 flex items-center gap-2">
-                  <Brain size={15} className="text-blue-500" />
-                  <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.aiCoach}</h4>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10 shadow-[0_0_24px_rgba(37,99,235,0.22)]">
+                      <img src="/icons/icon-192.png" alt="" className="h-8 w-8 rounded-full object-cover" />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-base font-extrabold uppercase tracking-[0.22em] text-primary">{copy.aiCoach}</h4>
+                      </div>
+                      <p className="mt-1 text-sm text-secondary">
+                        {id ? 'Panduan rasa untuk cup saat ini.' : 'Taste guidance for your current cup.'}
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`inline-flex shrink-0 items-center gap-2 rounded-xl border panel-divider-subtle px-3 py-1.5 text-xs font-bold ${isOffline ? 'bg-amber-500/10 text-amber-700 dark:text-amber-200' : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-200'}`}>
+                    <span className={`h-2.5 w-2.5 rounded-full ${isOffline ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                    {isOffline ? (id ? 'Offline' : 'Offline') : 'Online'}
+                  </span>
                 </div>
-                <div className="space-y-1 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2 text-xs leading-5 text-secondary">
-                  <p>{id ? 'Coach mengikuti rencana deterministik. Angka resep tidak diubah oleh AI.' : 'Coach follows the deterministic planner. AI does not change recipe numbers.'}</p>
-                  <p>{copy.coachCostHint}</p>
-                  {hasLowConfidenceCoachData && (
-                    <p>{id ? 'Sebagian data bersifat kurasi/estimasi; gunakan sebagai titik awal, bukan klaim final.' : 'Some data is curated/estimated; use it as a baseline, not a final factual claim.'}</p>
-                  )}
+
+                <div className="mt-4 flex items-center gap-3 rounded-2xl border border-blue-500/15 bg-blue-600/8 px-3 py-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600/10 text-blue-500">
+                    <Coffee size={21} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-primary">
+                      {id ? 'Cup saat ini' : 'Current cup'} - {coachCurrentCupTitle}
+                    </p>
+                    <p className="mt-0.5 text-sm leading-5 text-secondary">{coachCurrentCupMeta}</p>
+                  </div>
                 </div>
+
+                {coachConfidenceNotes.length > 0 && (
+                  <details className="group mt-3 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold text-secondary">
+                      <span>{id ? 'Catatan context' : 'Context notes'}</span>
+                      <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
+                    </summary>
+                    <div className="mt-2 space-y-1 text-xs leading-5 text-secondary">
+                      {coachConfidenceNotes.map((note) => <p key={note}>{note}</p>)}
+                      {hasLowConfidenceCoachData && (
+                        <p>{id ? 'Sebagian data bersifat kurasi/estimasi; pakai sebagai titik awal dan validasi dengan seduhan nyata.' : 'Some data is curated/estimated; use it as a starting point and validate with a real brew.'}</p>
+                      )}
+                      <p>{copy.coachCostHint}</p>
+                    </div>
+                  </details>
+                )}
+
                 <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
                   {primaryAiAssistActions.map((action) => (
                     <button
@@ -8784,11 +8879,16 @@ function PlanResultDialog({
                       type="button"
                       onClick={() => onRunAiCoach(action.mode)}
                       disabled={aiCoachDisabled}
-                      className="min-w-0 rounded-2xl border panel-divider-subtle bg-surface-alpha px-3 py-3 text-left transition-colors hover:bg-surface-alpha-hover disabled:cursor-not-allowed disabled:opacity-45"
+                      className="flex min-h-[64px] min-w-0 items-center gap-3 rounded-2xl border panel-divider-subtle bg-surface-alpha px-3 py-3 text-left transition-colors hover:border-blue-500/35 hover:bg-surface-alpha-hover disabled:cursor-not-allowed disabled:opacity-45"
                       data-testid={`ai-brew-ai-assist-${action.mode}`}
                     >
-                      <p className="text-sm font-semibold text-primary">{action.label}</p>
-                      <p className="mt-1 text-xs leading-5 text-secondary">{action.hint}</p>
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600/10 text-blue-500">
+                        {action.mode === 'explain' ? <Coffee size={18} /> : action.mode === 'troubleshoot' ? <Sparkles size={18} /> : <SlidersHorizontal size={18} />}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold text-primary">{action.label}</span>
+                        <span className="mt-0.5 block truncate text-xs leading-5 text-secondary">{action.hint}</span>
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -8816,11 +8916,89 @@ function PlanResultDialog({
                   </details>
                 )}
 
-                {aiCoachReason && !aiBusy && (
-                  <div className="mt-3 rounded-xl border border-blue-500/15 bg-blue-500/10 px-3 py-2 text-sm text-blue-700 dark:text-blue-300" role="status" aria-live="polite" aria-atomic="true">
-                    {aiCoachReason}
+                <div className="mt-4 space-y-3 rounded-[1.35rem] border panel-divider-subtle bg-[var(--bg-base)]/82 p-3">
+                  <div className="flex items-start gap-2">
+                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
+                      <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
+                    </span>
+                    <div className="mr-auto max-w-[82%] rounded-2xl rounded-tl-md bg-surface-alpha px-3 py-2 text-sm leading-6 text-primary">
+                      {coachIntroMessage}
+                    </div>
                   </div>
-                )}
+                  {aiCoachReason && !aiBusy && (
+                    <div className="flex items-start gap-2">
+                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
+                        <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
+                      </span>
+                      <div className="mr-auto max-w-[82%] rounded-2xl rounded-tl-md border border-blue-500/15 bg-blue-500/10 px-3 py-2 text-sm text-blue-700 dark:text-blue-300" role="status" aria-live="polite" aria-atomic="true">
+                        {aiCoachReason}
+                      </div>
+                    </div>
+                  )}
+                  {aiResponse && !aiBusy && (
+                    <div className="flex items-start gap-2">
+                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
+                        <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
+                      </span>
+                      <div className="mr-auto max-w-[82%] overflow-hidden rounded-2xl rounded-tl-md border panel-divider-subtle bg-surface-alpha px-3 py-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{aiResponse.title}</p>
+                        <div className="chat-markdown prose prose-sm mt-2 max-w-none break-words text-primary prose-headings:text-primary prose-strong:text-primary [overflow-wrap:anywhere]">
+                          <Suspense fallback={<p className="text-sm text-secondary">{copy.aiBusy}</p>}>
+                            <Markdown>{aiResponse.markdown}</Markdown>
+                          </Suspense>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {coachLocalMessages.map((message, index) => (
+                    <div
+                      key={`${message.role}-${index}-${message.text.slice(0, 16)}`}
+                      className={`flex items-start gap-2 ${message.role === 'user' ? 'justify-end' : ''}`}
+                    >
+                      {message.role === 'assistant' && (
+                        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
+                          <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
+                        </span>
+                      )}
+                      <div className={`${message.role === 'user' ? 'ml-auto max-w-[82%] rounded-tr-md bg-blue-600 text-white' : 'mr-auto max-w-[82%] rounded-tl-md bg-surface-alpha text-primary'} whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm leading-6`}>
+                        {message.text}
+                      </div>
+                    </div>
+                  ))}
+                  {aiBusy && (
+                    <div className="flex items-start gap-2">
+                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
+                        <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
+                      </span>
+                      <div className="mr-auto max-w-[82%] rounded-2xl rounded-tl-md border panel-divider-subtle bg-surface-alpha px-3 py-3 text-sm text-secondary" role="status" aria-live="polite" aria-atomic="true">
+                        <div className="flex items-center gap-2">
+                          <Loader2 size={15} className="animate-spin" />
+                          <span>{copy.aiBusy}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {aiError && !aiBusy && (
+                    <div className="flex items-start gap-2">
+                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
+                        <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
+                      </span>
+                      <div className="mr-auto max-w-[82%] rounded-2xl rounded-tl-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300" role="alert">
+                        {aiError}
+                      </div>
+                    </div>
+                  )}
+                  {!aiResponse && !aiError && !aiBusy && !aiCoachReason && coachLocalMessages.length === 0 && (
+                    <div className="flex items-start gap-2">
+                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
+                        <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
+                      </span>
+                      <div className="mr-auto max-w-[82%] rounded-2xl rounded-tl-md bg-surface-alpha px-3 py-2 text-sm text-secondary">
+                        {copy.coachEmpty}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {!isAuthenticated && !isOffline && (
                   <button
@@ -8832,37 +9010,36 @@ function PlanResultDialog({
                   </button>
                 )}
 
-                {aiBusy && (
-                  <div className="mt-3 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-3 text-sm text-secondary" role="status" aria-live="polite" aria-atomic="true">
-                    <div className="flex items-center gap-2">
-                      <Loader2 size={15} className="animate-spin" />
-                      <span>{copy.aiBusy}</span>
-                    </div>
-                  </div>
-                )}
-
-                {aiError && !aiBusy && (
-                  <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300" role="alert">
-                    {aiError}
-                  </div>
-                )}
-
-                {!aiResponse && !aiError && !aiBusy && !aiCoachReason && (
-                  <div className="mt-3 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-3 text-sm text-secondary">
-                    {copy.coachEmpty}
-                  </div>
-                )}
-
-                {aiResponse && !aiBusy && (
-                  <div className="mt-4 min-w-0 max-w-full overflow-hidden rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/82 p-4 [overflow-wrap:anywhere]">
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{aiResponse.title}</p>
-                    <div className="chat-markdown prose prose-sm mt-3 max-w-none break-words text-primary prose-headings:text-primary prose-strong:text-primary [overflow-wrap:anywhere]">
-                      <Suspense fallback={<p className="text-sm text-secondary">{copy.aiBusy}</p>}>
-                        <Markdown>{aiResponse.markdown}</Markdown>
-                      </Suspense>
-                    </div>
-                  </div>
-                )}
+                <form
+                  className="mt-3 flex min-w-0 items-center gap-2 rounded-2xl border panel-divider-subtle bg-[var(--bg-base)] px-2 py-2 focus-within:border-blue-500/50"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    handleCoachSend();
+                  }}
+                >
+                  <input
+                    value={coachInput}
+                    onChange={(event) => setCoachInput(event.target.value)}
+                    className="min-h-[42px] min-w-0 flex-1 bg-transparent px-2 text-sm text-primary outline-none placeholder:text-tertiary"
+                    placeholder={id ? 'Tanya Brew Coach tentang cup ini...' : 'Ask Brew Coach about this cup...'}
+                    maxLength={240}
+                  />
+                  <button type="submit" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-[0_8px_20px_rgba(37,99,235,0.24)] hover:bg-blue-700" aria-label={id ? 'Kirim pesan Brew Coach' : 'Send Brew Coach message'}>
+                    <ArrowRight size={18} className="-rotate-90" />
+                  </button>
+                </form>
+                <div className="mt-3 flex items-start gap-3 rounded-2xl border panel-divider-subtle bg-surface-alpha px-3 py-3 text-sm text-secondary">
+                  <Info size={18} className="mt-0.5 shrink-0 text-blue-500" />
+                  <p className="min-w-0 leading-5">{coachInfoNote}</p>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <button type="button" onClick={onSaveRecipe} disabled={saving} className="min-h-[54px] rounded-2xl bg-blue-600 px-4 text-sm font-extrabold text-white shadow-[0_12px_30px_rgba(37,99,235,0.22)] hover:bg-blue-700 disabled:opacity-50">
+                    {saveButtonLabel}
+                  </button>
+                  <button type="button" onClick={() => setActiveTab('flow')} className="min-h-[54px] rounded-2xl border panel-divider-subtle bg-[var(--bg-base)] px-4 text-sm font-extrabold text-primary hover:bg-surface-alpha">
+                    {id ? 'Seduh' : 'Brew'}
+                  </button>
+                </div>
               </div>
               </div>
             )}

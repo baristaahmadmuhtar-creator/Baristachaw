@@ -12,7 +12,7 @@ import { ScrollReveal } from './components/ScrollReveal';
 import { SupportChatWidget } from './components/SupportChatWidget';
 import { DataShowcase } from './components/DataShowcase';
 import { ToolsShowcase } from './components/ToolsShowcase';
-import { APP_LINKS, APP_ORIGIN, APK_URL, PRICING, type BillingDuration, formatCurrency, getCurrencyForRegion, type Region } from './config';
+import { APK_AVAILABLE, APK_URL, APP_LINKS, APP_ORIGIN, PLAN_CATALOG, PRICING, RELEASE_VERSION, type BillingDuration, formatCurrency, getCurrencyForRegion, type Region } from './config';
 import type { Language } from './i18n';
 import { t } from './i18n';
 import { DownloadPage } from './pages/DownloadPage';
@@ -22,12 +22,12 @@ import { TermsPage } from './pages/TermsPage';
 
 function EvidenceSection({ language }: { language: Language }) {
   const evidence: [string, string][] = [
-    ['100%', t('evidence.consistency', language)],
+    [RELEASE_VERSION, t('evidence.consistency', language)],
     ['36+', t('evidence.brewers', language)],
-    ['99%', t('evidence.satisfaction', language)],
-    ['10.000+', t('evidence.recipes', language)],
+    ['1000', t('evidence.satisfaction', language)],
+    ['1000', t('evidence.recipes', language)],
     ['0', t('evidence.guesswork', language)],
-    [t('evidence.instant', language), t('evidence.access', language)],
+    ['app.baristachaw.com', t('evidence.access', language)],
   ];
   return (
     <section className="evidence-section" aria-labelledby="evidence-title">
@@ -83,6 +83,12 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
   const plusTier = PRICING.plus[duration];
   const proTier = PRICING.pro[duration];
   const currency = getCurrencyForRegion(region);
+  const catalogFeatures = {
+    free: PLAN_CATALOG.find((plan) => plan.code === 'free')?.features || [],
+    plus: PLAN_CATALOG.find((plan) => plan.code === 'starter')?.features || [],
+    pro: PLAN_CATALOG.find((plan) => plan.code === 'pro')?.features || [],
+    team: PLAN_CATALOG.find((plan) => plan.code === 'team')?.features || [],
+  };
 
   const durationKeys: Record<BillingDuration, string> = {
     monthly: 'pricing.1month',
@@ -143,11 +149,9 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
               <span className="plan-price-sub">{t('plan.free.period', language)}</span>
             </div>
             <ul>
-              <li><Check size={16} /> {t('plan.free.f1', language)}</li>
-              <li><Check size={16} /> {t('plan.free.f2', language)}</li>
-              <li><Check size={16} /> {t('plan.free.f3', language)}</li>
-              <li><Check size={16} /> {t('plan.free.f4', language)}</li>
-              <li><Check size={16} /> {t('plan.free.f5', language)}</li>
+              {catalogFeatures.free.map((feature) => (
+                <li key={feature}><Check size={16} /> {feature}</li>
+              ))}
             </ul>
             <button className="plan-cta" type="button" onClick={() => onRegister('free', duration)}>
               {t('plan.free.cta', language)} <ArrowRight size={16} />
@@ -180,11 +184,9 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
               </div>
             )}
             <ul>
-              <li><Check size={16} /> {t('plan.plus.f1', language)}</li>
-              <li><Check size={16} /> {t('plan.plus.f2', language)}</li>
-              <li><Check size={16} /> {t('plan.plus.f3', language)}</li>
-              <li><Check size={16} /> {t('plan.plus.f4', language)}</li>
-              <li><Check size={16} /> {t('plan.plus.f5', language)}</li>
+              {catalogFeatures.plus.map((feature) => (
+                <li key={feature}><Check size={16} /> {feature}</li>
+              ))}
             </ul>
             <button className="plan-cta plan-cta-primary" type="button" onClick={() => onRegister('plus', duration)}>
               {t('plan.plus.cta', language)} <ArrowRight size={16} />
@@ -216,11 +218,9 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
               </div>
             )}
             <ul>
-              <li><Check size={16} /> {t('plan.pro.f1', language)}</li>
-              <li><Check size={16} /> {t('plan.pro.f2', language)}</li>
-              <li><Check size={16} /> {t('plan.pro.f3', language)}</li>
-              <li><Check size={16} /> {t('plan.pro.f4', language)}</li>
-              <li><Check size={16} /> {t('plan.pro.f5', language)}</li>
+              {catalogFeatures.pro.map((feature) => (
+                <li key={feature}><Check size={16} /> {feature}</li>
+              ))}
             </ul>
             <button className="plan-cta plan-cta-pro" type="button" onClick={() => onRegister('pro', duration)}>
               {t('plan.pro.cta', language)} <ArrowRight size={16} />
@@ -238,11 +238,9 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
               <span className="plan-price-sub">{t('plan.team.period', language)}</span>
             </div>
             <ul>
-              <li><Check size={16} /> {t('plan.team.f1', language)}</li>
-              <li><Check size={16} /> {t('plan.team.f2', language)}</li>
-              <li><Check size={16} /> {t('plan.team.f3', language)}</li>
-              <li><Check size={16} /> {t('plan.team.f4', language)}</li>
-              <li><Check size={16} /> {t('plan.team.f5', language)}</li>
+              {catalogFeatures.team.map((feature) => (
+                <li key={feature}><Check size={16} /> {feature}</li>
+              ))}
             </ul>
             <Link className="plan-cta" to="/support?topic=general">
               {t('plan.team.cta', language)} <ArrowRight size={16} />
@@ -353,7 +351,9 @@ function LandingHome({ language, region, onRegionChange, user, onLoginSuccess, i
                 <button className="button button-ghost" type="button" onClick={() => openRegister('free')}>{t('final.registerFree', language)}</button>
               </>
             )}
-            <a className="button button-ghost" href={APK_URL}>Download APK</a>
+            <a className="button button-ghost" href={APK_AVAILABLE ? APK_URL : '/support?topic=download'}>
+              {APK_AVAILABLE ? 'Download APK' : 'Request access'}
+            </a>
           </div>
         </section>
       </ScrollReveal>
@@ -507,7 +507,9 @@ export function App() {
       {location.pathname === '/' ? (
         <div className="mobile-sticky-cta" aria-label="Quick actions">
           <a href={user ? APP_ORIGIN : APP_LINKS.aiBrew}>{t('mobileCta.tryAiBrew', language)}</a>
-          <a href={APK_URL}>{t('mobileCta.download', language)}</a>
+          <a href={APK_AVAILABLE ? APK_URL : '/support?topic=download'}>
+            {APK_AVAILABLE ? t('mobileCta.download', language) : 'Request access'}
+          </a>
         </div>
       ) : null}
     </div>

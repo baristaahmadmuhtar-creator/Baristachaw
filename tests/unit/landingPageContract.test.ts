@@ -48,11 +48,25 @@ test('landing includes required brewer coverage and honest evidence', () => {
   ]) {
     assert.match(brewerGrid, new RegExp(brewer.replace('/', '\\/')));
   }
-  assert.match(app, /10\.000\+/);
+  assert.match(app, /RELEASE_VERSION/);
   assert.match(app, /36\+/);
-  assert.match(app, /100%/);
+  assert.match(app, /1000/);
+  assert.doesNotMatch(app, /10\.000\+|100%|99%/);
   assert.match(widget, /final cup quality still requires real brewing/i);
   assert.doesNotMatch(app, /perfect coffee guaranteed|100% accurate cup/i);
+});
+
+test('landing and app pricing consume the shared plan catalog', () => {
+  const landingConfig = read('apps/landing/src/config.ts');
+  const landingApp = read('apps/landing/src/App.tsx');
+  const appBillingConfig = read('apps/web/src/services/billingConfig.ts');
+  const sharedCatalog = read('packages/shared/src/planCatalog.ts');
+
+  assert.match(landingConfig, /@baristachaw\/shared\/planCatalog/);
+  assert.match(appBillingConfig, /@baristachaw\/shared\/planCatalog/);
+  assert.match(landingApp, /PLAN_CATALOG/);
+  assert.doesNotMatch(sharedCatalog, /Limited daily AI Brew/);
+  assert.match(sharedCatalog, /AI BREW COACH/);
 });
 
 test('support flow is explicit about its public issue fallback', () => {

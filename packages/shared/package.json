@@ -12,6 +12,7 @@
     "./domain": "./src/domain.ts",
     "./ai": "./src/ai.ts",
     "./parity": "./src/parity.ts",
-    "./scanner": "./src/scanner.ts"
+    "./scanner": "./src/scanner.ts",
+    "./planCatalog": "./src/planCatalog.ts"
   }
 }

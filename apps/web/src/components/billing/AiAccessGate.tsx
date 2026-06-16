@@ -350,8 +350,12 @@ export function useAiAccessGate(feature: AiPaidFeature): {
     setCheckoutError('');
     try {
       const response = await startBillingCheckout(minimumPaidPlan.code as Exclude<PlanCode, 'free'>);
-      if (response.url) {
+      if (response.mode === 'redirect' && response.url) {
         window.location.assign(response.url);
+        return;
+      }
+      if (response.mode === 'manual_invoice') {
+        setCheckoutError(t.homePlanManualInvoice);
         return;
       }
       setCheckoutError(t.aiGateCheckoutUnavailable);

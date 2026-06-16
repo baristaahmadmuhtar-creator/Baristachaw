@@ -26,6 +26,7 @@ import librarySyncHandler from "./server-api/library/sync";
 import adminManagementHandler from "./server-api/admin/management";
 import billingCheckoutHandler from "./server-api/billing/checkout";
 import billingPortalHandler from "./server-api/billing/portal";
+import billingProofHandler from "./server-api/billing/proof";
 import billingSyncHandler from "./server-api/billing/sync";
 import monitoringErrorHandler from "./server-api/monitoring/error";
 import paymentMayarHandler from "./server-api/payment/mayar";
@@ -160,6 +161,7 @@ app.all("/api/library/sync", wrapVercelHandler(librarySyncHandler as unknown as 
 app.all("/api/admin/management", wrapVercelHandler(adminManagementHandler as unknown as LocalApiHandler));
 app.all("/api/billing/checkout", wrapVercelHandler(billingCheckoutHandler as unknown as LocalApiHandler));
 app.all("/api/billing/portal", wrapVercelHandler(billingPortalHandler as unknown as LocalApiHandler));
+app.all("/api/billing/proof", wrapVercelHandler(billingProofHandler as unknown as LocalApiHandler));
 app.all("/api/billing/sync", wrapVercelHandler(billingSyncHandler as unknown as LocalApiHandler));
 app.all("/api/monitoring/error", wrapVercelHandler(monitoringErrorHandler as unknown as LocalApiHandler));
 app.all("/api/payment/create-checkout", wrapVercelHandler(paymentMayarHandler as unknown as LocalApiHandler));

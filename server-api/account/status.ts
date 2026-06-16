@@ -17,6 +17,7 @@ import {
   type AdminFeatureFlag,
   type FeatureSurface,
 } from '../admin/_featureFlags.js';
+import { PLAN_CATALOG } from '@baristachaw/shared/planCatalog';
 
 type AccountStatus = 'active' | 'trialing' | 'past_due' | 'suspended' | 'deleted';
 export type PlanCode = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
@@ -111,10 +112,14 @@ const ACCOUNT_RATE_LIMIT = {
 
 const ACCOUNT_POLL_INTERVAL_SEC = 60;
 
+function sharedPlan(code: PlanCode) {
+  return PLAN_CATALOG.find((plan) => plan.code === code) || PLAN_CATALOG[0];
+}
+
 const PLAN_BLUEPRINTS: AccountPlan[] = [
   {
     code: 'free',
-    name: 'Free',
+    name: sharedPlan('free').displayName,
     description: 'Free tools for exploring coffee brewing — timer, ratio calculator, grind size calculator, and recipe collection.',
     aiDailyLimit: 12,
     deepDailyLimit: 2,
@@ -122,14 +127,14 @@ const PLAN_BLUEPRINTS: AccountPlan[] = [
     storageMb: 64,
     seats: 1,
     supportSlaHours: 72,
-    features: ['Brew Timer', 'Ratio Calculator', 'Grind Size Calculator', 'Recipe Collection & Notes', 'Limited daily AI Brew'],
+    features: [...sharedPlan('free').features],
     priceMonthlyUsd: 0,
     displayPrice: 'Free',
     checkoutMode: 'disabled',
   },
   {
     code: 'starter',
-    name: 'Barista Plus',
+    name: sharedPlan('starter').displayName,
     description: 'For serious home baristas — unlimited AI Brew, limited AI Chat, precision grinder calibration, and unlimited flavor profiles.',
     aiDailyLimit: 999,
     deepDailyLimit: 40,
@@ -137,14 +142,14 @@ const PLAN_BLUEPRINTS: AccountPlan[] = [
     storageMb: 512,
     seats: 1,
     supportSlaHours: 48,
-    features: ['All Free features', 'Unlimited AI Brew (Basic + Advanced)', 'AI Chat (15/day)', 'Precision grinder calibration', 'Unlimited flavor profiles'],
-    priceMonthlyUsd: 2.50,
+    features: [...sharedPlan('starter').features],
+    priceMonthlyUsd: sharedPlan('starter').priceMonthlyUsd,
     displayPrice: 'Rp 61.000 / B$ 1.80 / $1.50 monthly',
-    checkoutMode: 'external',
+    checkoutMode: 'manual_invoice',
   },
   {
     code: 'pro',
-    name: 'Barista Pro',
+    name: sharedPlan('pro').displayName,
     description: 'Full professional toolkit — unlimited AI Chat, AI Scan, Latte Art Generator, and all upcoming features.',
     aiDailyLimit: 999,
     deepDailyLimit: 120,
@@ -152,10 +157,10 @@ const PLAN_BLUEPRINTS: AccountPlan[] = [
     storageMb: 2048,
     seats: 1,
     supportSlaHours: 24,
-    features: ['All Barista Plus features', 'Unlimited AI Chat', 'AI Scan & Coffee Analysis', 'AI Latte Art Generator', 'All upcoming features'],
-    priceMonthlyUsd: 4.99,
+    features: [...sharedPlan('pro').features],
+    priceMonthlyUsd: sharedPlan('pro').priceMonthlyUsd,
     displayPrice: 'Rp 199.000 / B$ 6.00 / $4.99 monthly',
-    checkoutMode: 'external',
+    checkoutMode: 'manual_invoice',
   },
   {
     code: 'team',
@@ -167,14 +172,14 @@ const PLAN_BLUEPRINTS: AccountPlan[] = [
     storageMb: 10240,
     seats: 8,
     supportSlaHours: 12,
-    features: ['All Barista Pro features', 'Team recipe SOP standardization', 'Batch brew calculations', 'Multi-seat team access', '12-hour priority support'],
-    priceMonthlyUsd: 29.99,
+    features: [...sharedPlan('team').features],
+    priceMonthlyUsd: sharedPlan('team').priceMonthlyUsd,
     displayPrice: 'Custom — contact us',
-    checkoutMode: 'external',
+    checkoutMode: 'manual_invoice',
   },
   {
     code: 'enterprise',
-    name: 'Enterprise',
+    name: sharedPlan('enterprise').displayName,
     description: 'Custom commercial deployment and support.',
     aiDailyLimit: 5000,
     deepDailyLimit: 1000,
@@ -182,7 +187,7 @@ const PLAN_BLUEPRINTS: AccountPlan[] = [
     storageMb: 102400,
     seats: 50,
     supportSlaHours: 4,
-    features: ['Custom quota', 'dedicated support', 'SLA review', 'private rollout'],
+    features: [...sharedPlan('enterprise').features],
     priceMonthlyUsd: 0,
     displayPrice: 'Custom invoice',
     checkoutMode: 'manual_invoice',

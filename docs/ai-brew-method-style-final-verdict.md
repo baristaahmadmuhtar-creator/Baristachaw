@@ -1,48 +1,57 @@
 # AI Brew Method + Style Final Verdict
 
-Generated: 2026-06-12T14:40:06.885Z
-Local SHA: e3b6de5bdb8112b11c68d91a788f6e52646071f7
-Remote main SHA: e3b6de5bdb8112b11c68d91a788f6e52646071f7
+Generated: 2026-06-16T12:44:39.191Z
+Local SHA: a1f3e492da1209a1beefb6e561a071ca69558e96
+Remote main SHA: a1f3e492da1209a1beefb6e561a071ca69558e96
 Branch: main
-Working tree status at generation: M .env.example
- M README.md
- M apps/mobile/.env.example
- M apps/mobile/app.config.ts
- M apps/mobile/eas.json
- M apps/mobile/src/config/env.ts
- M apps/mobile/src/screens/WebParityScreen.tsx
- M apps/web/package.json
- M apps/web/public/manifest.json
- M docs/admin-launch-action-list.md
- M docs/buku-developer-operator-baristachaw.md
- M docs/ios-web-wrapper-launch.md
- M docs/mobile-ios-runbook.md
- M docs/mobile-supabase-auth.md
- M docs/production-setup-operator-guide.md
- M package-lock.json
- M package.json
- M scripts/run-prod-gate.mjs
- M scripts/smoke-prod.mjs
- M server-api/ai.ts
- M server-api/chat.ts
- M tests/e2e/ai-brew-live-v60.spec.ts
- M tests/unit/aiInternalBaseUrl.test.ts
- M tests/unit/authEmailHandler.test.ts
- M tests/unit/authLogoutHandler.test.ts
- M tests/unit/authShared.test.ts
- M tests/unit/mobileAuthHandler.test.ts
- M tests/unit/mobileWebParityGate.test.ts
- M tests/unit/monitoringErrorHandler.test.ts
- M tests/unit/webAuthCallbackScript.test.ts
- M tests/unit/webAuthHandlers.test.ts
-?? apps/landing/
-?? docs/domain-migration-status.md
-?? docs/superpowers/
-?? playwright.landing.config.ts
-?? scratch/
-?? tests/e2e/landing.spec.ts
-?? tests/unit/landingPageContract.test.ts
-Artifact directory: `artifacts/ai-brew-audit/method-styles/e3b6de5bdb81`
+Working tree status at generation: M api/[...route].ts
+ M api/billing.ts
+ M apps/landing/package.json
+ M apps/landing/src/App.tsx
+ M apps/landing/src/components/DownloadSection.tsx
+ M apps/landing/src/components/HeroSection.tsx
+ M apps/landing/src/components/SupportChatWidget.tsx
+ M apps/landing/src/config.ts
+ M apps/landing/src/i18n.ts
+ M apps/landing/src/pages/DownloadPage.tsx
+ M apps/web/src/components/billing/AiAccessGate.tsx
+ M apps/web/src/components/billing/PlanGrowthSurface.tsx
+ M apps/web/src/features/ai-brew/AiBrewPanel.tsx
+ M apps/web/src/features/ai-brew/aiComposer.ts
+ M apps/web/src/features/ai-brew/experience.ts
+ M apps/web/src/features/ai-brew/mokaPlanner.ts
+ M apps/web/src/features/ai-brew/planner.ts
+ M apps/web/src/features/ai-brew/siphonPlanner.ts
+ M apps/web/src/features/ai-brew/workflowGuide.ts
+ M apps/web/src/features/ai-brew/workflowTutorials.ts
+ M apps/web/src/features/barista-tools/brewProfiles.ts
+ M apps/web/src/pages/AdminManagement.tsx
+ M apps/web/src/pages/Home.tsx
+ M apps/web/src/pages/Scanner.tsx
+ M apps/web/src/services/adminApi.ts
+ M apps/web/src/services/billing.ts
+ M apps/web/src/services/billingConfig.ts
+ M apps/web/src/services/gemini.ts
+ M docs/ai-brew-method-style-coverage-report.md
+ M docs/ai-brew-method-style-final-verdict.md
+ M docs/ai-brew-method-style-inventory.md
+ M docs/ai-brew-method-style-ui-ux-report.md
+ M docs/ai-brew-real-world-1000-report.md
+ M packages/shared/package.json
+ M packages/shared/src/index.ts
+ M server-api/account/status.ts
+ M server-api/admin/management.ts
+ M server-api/billing/checkout.ts
+ M server.ts
+ M tests/e2e/landing.spec.ts
+ M tests/unit/adminManagementHandler.test.ts
+ M tests/unit/grindSizeAdvisor.test.ts
+ M tests/unit/landingPageContract.test.ts
+?? packages/shared/src/planCatalog.ts
+?? server-api/billing/manualPayments.ts
+?? server-api/billing/proof.ts
+?? tests/unit/billingManualPaymentHandler.test.ts
+Artifact directory: `artifacts/ai-brew-audit/method-styles/a1f3e492da12`
 
 This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
 

@@ -1,6 +1,35 @@
 import type { PlanCode } from './accountStatus';
+import type { CurrencyCode } from './billingConfig';
 
-type BillingDuration = 'monthly' | 'quarterly' | 'yearly';
+export type BillingDuration = 'monthly' | 'quarterly' | 'yearly';
+
+export type ManualPaymentInstructions = {
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  whatsappNumber?: string;
+  whatsappUrl?: string;
+  supportEmail?: string;
+  notifyWebhookConfigured: boolean;
+};
+
+export type BillingManualInvoice = {
+  id: string;
+  status: 'pending_review' | 'receipt_received' | 'verified_paid' | 'rejected' | 'expired';
+  amount: number;
+  amountLabel: string;
+  currency: CurrencyCode;
+  instructions: ManualPaymentInstructions;
+  supportLinks?: {
+    whatsappUrl?: string;
+    supportEmail?: string;
+  };
+  proof: {
+    endpoint: string;
+    allowedTypes: string[];
+  };
+  message: string;
+};
 
 type BillingRedirectResponse = {
   ok: true;
@@ -11,6 +40,27 @@ type BillingRedirectResponse = {
   duration?: BillingDuration;
   promoCode?: string;
   provider?: string;
+};
+
+export type BillingManualInvoiceResponse = {
+  ok: true;
+  requestId: string;
+  mode: 'manual_invoice';
+  provider: 'manual';
+  paymentRequestId: string;
+  paymentActionRequired: true;
+  planCode: PlanCode;
+  duration: BillingDuration;
+  promoCode?: string;
+  manualInvoice: BillingManualInvoice;
+};
+
+export type BillingCheckoutResponse = BillingRedirectResponse | BillingManualInvoiceResponse;
+
+export type ManualPaymentProofSubmission = {
+  requestId: string;
+  mimeType: string;
+  sizeBytes: number;
 };
 
 export class BillingApiError extends Error {
@@ -39,7 +89,7 @@ async function parseJson(response: Response): Promise<any> {
   }
 }
 
-async function billingRequest(path: string, body: Record<string, unknown> = {}): Promise<BillingRedirectResponse> {
+async function billingRequest<TResponse = BillingCheckoutResponse>(path: string, body: Record<string, unknown> = {}): Promise<TResponse> {
   const response = await fetch(path, {
     method: 'POST',
     credentials: 'same-origin',
@@ -57,21 +107,35 @@ async function billingRequest(path: string, body: Record<string, unknown> = {}):
       requestId: payload?.requestId || response.headers.get('x-request-id') || undefined,
     });
   }
-  return payload as BillingRedirectResponse;
+  return payload as TResponse;
 }
 
 export function startBillingCheckout(
   planCode: Exclude<PlanCode, 'free'>,
-  options?: { duration?: BillingDuration; promoCode?: string },
-): Promise<BillingRedirectResponse> {
+  options?: { duration?: BillingDuration; promoCode?: string; currency?: CurrencyCode },
+): Promise<BillingCheckoutResponse> {
   return billingRequest('/api/billing/checkout', {
     planCode,
     duration: options?.duration ?? 'monthly',
     ...(options?.promoCode ? { promoCode: options.promoCode } : {}),
+    ...(options?.currency ? { currency: options.currency } : {}),
   });
 }
 
-export function openBillingPortal(): Promise<BillingRedirectResponse> {
+export function submitManualPaymentProof(input: ManualPaymentProofSubmission): Promise<{
+  ok: true;
+  requestId: string;
+  paymentRequestId: string;
+  status: BillingManualInvoice['status'];
+  proof: { generatedFileName: string; mimeType: string; sizeBytes: number; storage: 'metadata_only'; receivedAt: number };
+  paymentActionRequired: true;
+  entitlement: 'pending_admin_review';
+  message: string;
+}> {
+  return billingRequest('/api/billing/proof', input);
+}
+
+export function openBillingPortal(): Promise<BillingCheckoutResponse> {
   return billingRequest('/api/billing/portal');
 }
 
@@ -79,11 +143,10 @@ const PLAN_DISPLAY_NAMES: Record<PlanCode, string> = {
   free: 'Free',
   starter: 'Barista Plus',
   pro: 'Barista Pro',
-  team: 'Café Team',
+  team: 'Cafe Team',
   enterprise: 'Enterprise',
 };
 
 export function planDisplayName(code: PlanCode): string {
   return PLAN_DISPLAY_NAMES[code] ?? code;
 }
-

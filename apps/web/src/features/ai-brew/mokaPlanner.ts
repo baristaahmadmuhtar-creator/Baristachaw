@@ -91,7 +91,7 @@ export function resolveMokaPlanSelection(params: {
           kind: 'pour',
           share: 1.0,
           startSeconds: 0,
-          note: 'Fill the bottom chamber with room-temperature water up to just below the safety valve. Do not compress or tamp grounds.',
+          note: 'Fill the bottom chamber with room-temperature water up to just below the safety valve. No tamp: leave grounds loose and uncompressed.',
         },
         {
           id: 'heat_up',
@@ -125,7 +125,7 @@ export function resolveMokaPlanSelection(params: {
           kind: 'pour',
           share: 1.0,
           startSeconds: 0,
-          note: 'Fill bottom boiler with freshly boiled hot water up to the safety valve. Use silicone mitts or a dry towel to assemble the hot pot securely—do not tamp grounds.',
+          note: 'Fill bottom boiler with freshly boiled hot water up to the safety valve. Use silicone mitts or a dry towel to assemble the hot pot securely; no tamp, leave grounds loose.',
         },
         {
           id: 'fast_extraction',
@@ -159,7 +159,7 @@ export function resolveMokaPlanSelection(params: {
           kind: 'pour',
           share: 1.0,
           startSeconds: 0,
-          note: 'Wet a paper Aeropress filter and stick it to the upper metal filter screen. Fill boiler with warm water (60°C) below the safety valve. Level coffee without tamping.',
+          note: 'Wet a paper Aeropress filter and stick it to the upper metal filter screen. Fill boiler with warm water (60°C) below the safety valve. Level coffee with no tamp.',
         },
         {
           id: 'slow_cooking',
@@ -227,7 +227,7 @@ export function resolveMokaPlanSelection(params: {
           kind: 'pour',
           share: 1.0,
           startSeconds: 0,
-          note: 'Fill boiler to just below the safety valve. Dose coffee and level without tamping. Warning: high heat might cause bitterness or burnt taste.',
+          note: 'Fill boiler to just below the safety valve. Dose coffee and level with no tamp. Warning: high heat might cause bitterness or burnt taste.',
         },
         {
           id: 'high_thermal',

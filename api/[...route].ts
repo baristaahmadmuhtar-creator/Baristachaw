@@ -52,6 +52,7 @@ const ROUTE_LOADERS: Record<string, () => Promise<{ default: Handler }>> = {
   'admin/management': () => import('../server-api/admin/management.js'),
   'billing/checkout': () => import('../server-api/billing/checkout.js'),
   'billing/portal': () => import('../server-api/billing/portal.js'),
+  'billing/proof': () => import('../server-api/billing/proof.js'),
   'billing/sync': () => import('../server-api/billing/sync.js'),
   'monitoring/error': () => import('../server-api/monitoring/error.js'),
   'payment/create-checkout': () => import('../server-api/payment/mayar.js'),

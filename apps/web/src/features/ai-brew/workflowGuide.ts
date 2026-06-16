@@ -1577,7 +1577,7 @@ function buildMokaStyleGuideCopy(plan: BrewPlan): MethodStyleGuideCopy {
     },
     preheated_boiler: {
       setup: 'Isi ruang air dengan air panas, rakit moka memakai kain pelindung, lalu nyalakan panas lebih rendah.',
-      charge: 'Ratakan basket tanpa tamp agar tekanan tetap aman.',
+      charge: 'Ratakan basket; jangan tamp agar tekanan tetap aman.',
       main: 'Ekstraksi harus mulai lebih cepat; jaga panas rendah agar aliran tidak liar.',
       release: 'Kecilkan atau matikan panas saat aliran mulai penuh.',
       finish: 'Angkat sebelum semburan kasar dan dinginkan dasar sebentar bila perlu.',
@@ -1593,7 +1593,7 @@ function buildMokaStyleGuideCopy(plan: BrewPlan): MethodStyleGuideCopy {
     },
     iced_moka_concentrate: {
       setup: 'Siapkan moka panas dan es di gelas saji terpisah.',
-      charge: 'Isi basket rata tanpa tamp; targetnya konsentrat panas pendek.',
+      charge: 'Isi basket rata; jangan tamp. Targetnya konsentrat panas pendek.',
       main: 'Ekstrak di panas sedang sampai konsentrat keluar stabil.',
       release: 'Angkat sebelum semburan kasar agar konsentrat tidak terasa matang.',
       finish: 'Tuang konsentrat ke atas es dan aduk 5-8 detik.',

@@ -461,11 +461,11 @@ export function Scanner() {
   const handlePickedFile = async (selectedFile?: File | null) => {
     if (!selectedFile) return;
     if (!selectedFile.type.startsWith("image/")) {
-      setError(t.scannerImageOnlyError);
+      setError(`${t.scannerImageOnlyError} Credit tidak dikonsumsi.`);
       return;
     }
     if (selectedFile.size > MAX_SCANNER_SOURCE_IMAGE_BYTES) {
-      setError(t.scannerFileTooLarge);
+      setError(`${t.scannerFileTooLarge} Credit tidak dikonsumsi.`);
       return;
     }
 
@@ -481,7 +481,7 @@ export function Scanner() {
       setGeneratedImage(null);
       setSavedToCollection(false);
     } catch {
-      setError(t.scannerFileTooLarge);
+      setError(`${t.scannerFileTooLarge} Credit tidak dikonsumsi.`);
     } finally {
       setLoading(false);
     }

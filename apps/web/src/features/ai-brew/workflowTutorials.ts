@@ -1733,8 +1733,8 @@ const CHEMEX_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
 const MOKA_POT_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   traditional_stovetop: {
     setup: {
-      en: 'Fill the lower boiler with room-temperature water directly below the safety valve. Drop the coffee into the basket loosely—do not tamp it under any circumstance.',
-      id: 'Isi boiler bawah dengan air suhu ruang tepat di bawah katup pengaman. Masukkan kopi ke keranjang dengan longgar—jangan pernah memadatkannya.'
+      en: 'Fill the lower boiler with room-temperature water directly below the safety valve. Drop the coffee into the basket loosely; use no tamp under any circumstance.',
+      id: 'Isi boiler bawah dengan air suhu ruang tepat di bawah katup pengaman. Masukkan kopi ke keranjang dengan longgar; jangan tamp dalam kondisi apa pun.'
     },
     entry: {
       en: 'Assemble the unit securely. Place it on low-to-medium heat. The room-temperature water will slowly build steam pressure to drive a gentle extraction.',
@@ -1755,8 +1755,8 @@ const MOKA_POT_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wor
   },
   preheated_boiler: {
     setup: {
-      en: 'Preheat the water before filling the base below the safety valve. Load the coffee evenly—do not tamp.',
-      id: 'Panaskan air sebelum mengisi dasar boiler di bawah katup pengaman. Isi kopi secara merata—jangan di-tamp.'
+      en: 'Preheat the water before filling the base below the safety valve. Load the coffee evenly; use no tamp.',
+      id: 'Panaskan air sebelum mengisi dasar boiler di bawah katup pengaman. Isi kopi secara merata; jangan tamp.'
     },
     entry: {
       en: 'Seal the top chamber tightly using silicone mitts or a towel. Set to a moderate heat source to drive an accelerated but stable pressure ramp.',
@@ -1777,8 +1777,8 @@ const MOKA_POT_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wor
   },
   low_temp_controlled: {
     setup: {
-      en: 'Start with 70°C water in the base below the safety valve. Load the coffee loosely—do not tamp.',
-      id: 'Mulai dengan air 70°C di dasar di bawah katup pengaman. Masukkan kopi secara longgar—jangan di-tamp.'
+      en: 'Start with 70°C water in the base below the safety valve. Load the coffee loosely; use no tamp.',
+      id: 'Mulai dengan air 70°C di dasar di bawah katup pengaman. Masukkan kopi secara longgar; jangan tamp.'
     },
     entry: {
       en: 'Place on very low heat. The prolonged buildup gently hydrates the coffee puck before the heavy pressure forces liquid through.',
@@ -1799,8 +1799,8 @@ const MOKA_POT_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wor
   },
   iced_moka_concentrate: {
     setup: {
-      en: 'Load coffee loosely into the basket—do not tamp. Pack your serving vessel with heavy ice chunks. Note: this is an iced serving/concentrate, not a normal iced brew.',
-      id: 'Masukkan kopi secara longgar ke keranjang—jangan di-tamp. Isi wadah saji Anda dengan bongkahan es berat. Catatan: ini adalah penyajian es/konsentrat, bukan seduhan es biasa.'
+      en: 'Load coffee loosely into the basket; use no tamp. Pack your serving vessel with heavy ice chunks. Note: this is an iced serving/concentrate, not a normal iced brew.',
+      id: 'Masukkan kopi secara longgar ke keranjang; jangan tamp. Isi wadah saji Anda dengan bongkahan es berat. Catatan: ini adalah penyajian es/konsentrat, bukan seduhan es biasa.'
     },
     entry: {
       en: 'Brew over medium heat. The intense concentrate will strip all soluble solids quickly.',
@@ -1821,8 +1821,8 @@ const MOKA_POT_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wor
   },
   high_yield_robust: {
     setup: {
-      en: 'Fill the boiler to below the safety valve. Fill the basket fully with a slightly finer grind—do not tamp. High resistance increases extraction yield.',
-      id: 'Isi boiler di bawah katup pengaman. Isi keranjang penuh dengan gilingan sedikit lebih halus—jangan di-tamp. Hambatan tinggi meningkatkan hasil ekstraksi.'
+      en: 'Fill the boiler to below the safety valve. Fill the basket fully with a slightly finer grind; use no tamp. High resistance increases extraction yield.',
+      id: 'Isi boiler di bawah katup pengaman. Isi keranjang penuh dengan gilingan sedikit lebih halus; jangan tamp. Hambatan tinggi meningkatkan hasil ekstraksi.'
     },
     entry: {
       en: 'Utilize high heat. We are deliberately pushing the Moka Pot to its structural pressure limits.',

@@ -7,6 +7,10 @@ import {
   enforceTrustedRequestOrigin,
   requireAuth,
 } from '../_shared.js';
+import {
+  createManualPaymentRequest,
+  normalizeManualCurrency,
+} from './manualPayments.js';
 
 type PlanCode = 'starter' | 'pro' | 'team' | 'enterprise';
 
@@ -71,6 +75,11 @@ function providerForPlan(planCode: PlanCode): 'stripe' | 'revenuecat' | 'manual'
   return 'manual';
 }
 
+function authEmail(user: Record<string, unknown> | undefined): string | undefined {
+  const email = user?.email;
+  return typeof email === 'string' && email.includes('@') ? email.slice(0, 160) : undefined;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const requestId = createRequestId(req);
   applyCors(req, res, 'POST, OPTIONS');
@@ -116,9 +125,49 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const duration = normalizeDuration(req.body?.duration);
   const promoCode = normalizePromoCode(req.body?.promoCode);
+  const currency = normalizeManualCurrency(req.body?.currency);
 
   const url = checkoutUrlForPlan(planCode, duration, promoCode);
   if (!url) {
+    const manualRequest = createManualPaymentRequest({
+      userId: authResult.auth.userId,
+      email: authEmail(authResult.auth.user),
+      planCode,
+      duration,
+      currency,
+      promoCode: promoCode || undefined,
+    });
+    if (manualRequest) {
+      return res.status(200).json({
+        ok: true,
+        requestId,
+        planCode,
+        duration,
+        promoCode: promoCode || undefined,
+        provider: 'manual',
+        mode: 'manual_invoice',
+        paymentRequestId: manualRequest.id,
+        paymentActionRequired: true,
+        manualInvoice: {
+          id: manualRequest.id,
+          status: manualRequest.status,
+          amount: manualRequest.amount,
+          amountLabel: manualRequest.amountLabel,
+          currency: manualRequest.currency,
+          instructions: manualRequest.instructions,
+          supportLinks: {
+            whatsappUrl: manualRequest.instructions.whatsappUrl,
+            supportEmail: manualRequest.instructions.supportEmail,
+          },
+          proof: {
+            endpoint: '/api/billing/proof',
+            allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+          },
+          message: 'Manual payment is pending admin review. Paid entitlement is not granted until the payment is verified.',
+        },
+      });
+    }
+
     return res.status(503).json({
       ok: false,
       requestId,

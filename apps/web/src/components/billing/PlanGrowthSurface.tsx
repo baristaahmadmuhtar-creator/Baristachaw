@@ -4,8 +4,8 @@ import { AnimatePresence, motion } from 'motion/react';
 import { ChevronDown } from 'lucide-react';
 import { ArrowRight, Check, CreditCard, Crown, Gauge, RefreshCw, ShieldCheck, Sparkles, X } from '../icons';
 import type { AccountPlan, AccountStatusSnapshot, PlanCode } from '../../services/accountStatus';
-import { BillingApiError, startBillingCheckout } from '../../services/billing';
-import { getCurrencyForRegion, PRICING, formatCurrency } from '../../services/billingConfig';
+import { BillingApiError, planDisplayName, startBillingCheckout, submitManualPaymentProof, type BillingManualInvoiceResponse } from '../../services/billing';
+import { getCurrencyForRegion, PLAN_CATALOG, PRICING, formatCurrency } from '../../services/billingConfig';
 import { useGlobalState } from '../../context/GlobalState';
 import { modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
 import { CustomSelect } from '../ui/CustomSelect';
@@ -24,6 +24,10 @@ type PlanGrowthSurfaceProps = {
 const currentColorIconStyle = { '--icon-glyph-color': 'currentColor' } as CSSProperties;
 
 const PLAN_ORDER: PlanCode[] = ['free', 'starter', 'pro', 'team'];
+
+function catalogFeatures(planCode: 'free' | 'starter' | 'pro' | 'team'): string[] {
+  return PLAN_CATALOG.find((plan) => plan.code === planCode)?.features || [];
+}
 
 function getRegionName(region: string): string {
   switch (region) {
@@ -184,7 +188,7 @@ function PlanCard({
         badge: t.homePlanBadgeFree || 'Basic',
         priceLabel: t.homePlanFreePrice || 'Free',
         periodLabel: t.homePlanFreePeriod || 'Forever',
-        features: [t.homePlanFreeF1 || 'Basic scanner', t.homePlanFreeF2 || 'Limited AI Chat', t.homePlanFreeF3 || 'Local history'],
+        features: catalogFeatures('free'),
         ctaLabel: t.homePlanContinueFree || 'Continue Free',
         style: 'border-glass bg-surface-alpha'
       };
@@ -197,7 +201,7 @@ function PlanCard({
           priceMain: formatCurrency(tier.discounted[currency], currency),
           discountPct: tier.discountPct,
           saveLabel: tier.saveLabel[language as keyof typeof tier.saveLabel] || tier.saveLabel.en,
-          features: [t.homePlanStarterF1 || 'More AI quota', t.homePlanStarterF2 || 'Unlimited scans', t.homePlanStarterF3 || 'Cloud sync'],
+          features: catalogFeatures('starter'),
           ctaLabel: active ? t.homePlanActive : t.homePlanSelect.replace('{plan}', 'Starter'),
           style: recommended ? 'border-blue-500/45 bg-blue-50/10 dark:bg-blue-900/10 shadow-[0_18px_45px_rgba(37,99,235,0.18)]' : 'border-glass bg-surface-alpha'
         };
@@ -211,7 +215,7 @@ function PlanCard({
           priceMain: formatCurrency(tier.discounted[currency], currency),
           discountPct: tier.discountPct,
           saveLabel: tier.saveLabel[language as keyof typeof tier.saveLabel] || tier.saveLabel.en,
-          features: [t.homePlanProF1 || 'Unlimited AI Brew', t.homePlanProF2 || 'Priority support', t.homePlanProF3 || 'Deep Mode'],
+          features: catalogFeatures('pro'),
           ctaLabel: active ? t.homePlanActive : t.homePlanSelect.replace('{plan}', 'Pro'),
           style: 'border-purple-500/30 bg-slate-900 shadow-[0_18px_45px_rgba(168,85,247,0.18)]'
         };
@@ -221,8 +225,8 @@ function PlanCard({
         badge: t.homePlanBadgeTeam || 'For Cafes',
         priceLabel: t.homePlanTeamPrice || 'Custom',
         periodLabel: t.homePlanTeamPeriod || 'Billing',
-        features: [t.homePlanTeamF1 || 'Shared seats', t.homePlanTeamF2 || 'Manager roles', t.homePlanTeamF3 || 'Audit logs'],
-        ctaLabel: t.homePlanTeamCta || 'Contact Us',
+        features: catalogFeatures('team'),
+        ctaLabel: active ? t.homePlanActive : t.homePlanSelect.replace('{plan}', 'Team'),
         style: 'border-glass bg-slate-50 dark:bg-slate-800'
       };
     }
@@ -312,6 +316,9 @@ export function PlanGrowthSurface({
   const [duration, setDuration] = useState<'monthly' | 'quarterly' | 'yearly'>('quarterly');
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
+  const [manualInvoice, setManualInvoice] = useState<BillingManualInvoiceResponse | null>(null);
+  const [manualProofFile, setManualProofFile] = useState<File | null>(null);
+  const [manualProofStatus, setManualProofStatus] = useState<'idle' | 'submitting' | 'submitted'>('idle');
   
   const modalRef = useRef<HTMLDivElement | null>(null);
   const isRtl = direction === 'rtl';
@@ -328,6 +335,7 @@ export function PlanGrowthSurface({
   useEffect(() => {
     if (!isOpen) return;
     setActionError('');
+    setManualProofStatus('idle');
     const timer = window.setTimeout(() => modalRef.current?.focus(), 30);
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -343,20 +351,28 @@ export function PlanGrowthSurface({
 
   const handleChoosePlan = async (planCode: string) => {
     setActionError('');
+    setManualInvoice(null);
+    setManualProofFile(null);
+    setManualProofStatus('idle');
     if (planCode === 'free') {
       onClose();
-      return;
-    }
-    if (planCode === 'team') {
-      window.location.href = '/support?topic=general';
       return;
     }
 
     setBusyPlanCode(planCode);
     try {
-      const response = await startBillingCheckout(`${planCode}_${duration}` as any);
-      if (response.url) {
+      const currency = getCurrencyForRegion(region);
+      const response = await startBillingCheckout(planCode as Exclude<PlanCode, 'free'>, {
+        duration,
+        currency,
+        ...(promoApplied && promoCode.trim() ? { promoCode: promoCode.trim() } : {}),
+      });
+      if (response.mode === 'redirect' && response.url) {
         window.location.assign(response.url);
+        return;
+      }
+      if (response.mode === 'manual_invoice') {
+        setManualInvoice(response);
         return;
       }
       setActionError(t.homePlanCheckoutFailed || 'Checkout failed');
@@ -365,6 +381,33 @@ export function PlanGrowthSurface({
     } finally {
       setBusyPlanCode(null);
     }
+  };
+
+  const handleProofSubmit = async () => {
+    if (!manualInvoice || !manualProofFile) return;
+    setActionError('');
+    setManualProofStatus('submitting');
+    try {
+      await submitManualPaymentProof({
+        requestId: manualInvoice.paymentRequestId,
+        mimeType: manualProofFile.type,
+        sizeBytes: manualProofFile.size,
+      });
+      setManualProofStatus('submitted');
+    } catch (error) {
+      const message = error instanceof BillingApiError
+        ? `${error.message}${error.details ? `: ${error.details}` : ''}`
+        : (t.homePlanCheckoutFailed || 'Checkout failed');
+      setActionError(message);
+      setManualProofStatus('idle');
+    }
+  };
+
+  const copyManualAccount = async () => {
+    if (!manualInvoice) return;
+    const { bankName, accountName, accountNumber } = manualInvoice.manualInvoice.instructions;
+    const text = `${bankName}\n${accountName}\n${accountNumber}`;
+    await navigator.clipboard?.writeText(text).catch(() => undefined);
   };
 
   const handlePromoApply = () => {
@@ -448,6 +491,89 @@ export function PlanGrowthSurface({
               {actionError ? (
                 <div className="mb-4 rounded-2xl border border-amber-500/25 bg-amber-500/12 px-4 py-3 text-sm font-semibold text-amber-800 dark:text-amber-200">
                   {actionError}
+                </div>
+              ) : null}
+
+              {manualInvoice ? (
+                <div className="mb-6 rounded-2xl border border-blue-500/25 bg-blue-500/10 p-4 text-sm text-primary">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0">
+                      <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">
+                        Manual payment pending review
+                      </p>
+                      <h3 className="mt-1 text-lg font-black tracking-tight">
+                        {manualInvoice.manualInvoice.amountLabel} for {planDisplayName(manualInvoice.planCode)}
+                      </h3>
+                      <p className="mt-1 max-w-2xl text-secondary">
+                        Transfer manually, attach proof, then wait for admin verification. Paid entitlement is not active until this payment is marked verified paid.
+                      </p>
+                    </div>
+                    <span className="w-fit rounded-full bg-amber-500/15 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-amber-700 dark:text-amber-200">
+                      {manualInvoice.manualInvoice.status.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                  <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
+                    <div className="rounded-xl border border-glass bg-[var(--bg-base)]/70 p-3">
+                      <dl className="grid gap-2 sm:grid-cols-3">
+                        <div>
+                          <dt className="text-[11px] font-bold uppercase tracking-wide text-secondary">Bank</dt>
+                          <dd className="mt-1 font-bold">{manualInvoice.manualInvoice.instructions.bankName}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-[11px] font-bold uppercase tracking-wide text-secondary">Account name</dt>
+                          <dd className="mt-1 font-bold">{manualInvoice.manualInvoice.instructions.accountName}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-[11px] font-bold uppercase tracking-wide text-secondary">Account number</dt>
+                          <dd className="mt-1 font-mono text-base font-black">{manualInvoice.manualInvoice.instructions.accountNumber}</dd>
+                        </div>
+                      </dl>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={copyManualAccount}
+                      className="inline-flex min-h-11 items-center justify-center rounded-xl border border-blue-600 bg-blue-600 px-4 font-extrabold text-white transition-colors hover:bg-blue-700"
+                    >
+                      Copy account
+                    </button>
+                  </div>
+                  <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-end">
+                    <label className="block">
+                      <span className="text-[11px] font-bold uppercase tracking-wide text-secondary">Upload proof</span>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,application/pdf"
+                        onChange={(event) => {
+                          setManualProofFile(event.currentTarget.files?.[0] || null);
+                          setManualProofStatus('idle');
+                        }}
+                        className="mt-1 block w-full rounded-xl border border-glass bg-[var(--bg-base)]/70 px-3 py-2 text-sm font-semibold text-primary file:mr-3 file:rounded-lg file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-white"
+                      />
+                    </label>
+                    {manualInvoice.manualInvoice.instructions.whatsappUrl ? (
+                      <a
+                        className="inline-flex min-h-11 items-center justify-center rounded-xl border border-glass bg-[var(--bg-base)] px-4 font-bold text-primary transition-colors hover:bg-surface-alpha"
+                        href={manualInvoice.manualInvoice.instructions.whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Open WhatsApp
+                      </a>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={handleProofSubmit}
+                      disabled={!manualProofFile || manualProofStatus === 'submitting' || manualProofStatus === 'submitted'}
+                      className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-600 px-4 font-extrabold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {manualProofStatus === 'submitting' ? 'Submitting...' : manualProofStatus === 'submitted' ? 'Pending review' : 'Submit proof'}
+                    </button>
+                  </div>
+                  {manualProofStatus === 'submitted' ? (
+                    <p className="mt-3 rounded-xl bg-emerald-500/12 px-3 py-2 text-sm font-semibold text-emerald-700 dark:text-emerald-200">
+                      Proof received. Your plan stays pending until admin verification.
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
 

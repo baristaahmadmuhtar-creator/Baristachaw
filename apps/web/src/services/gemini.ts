@@ -386,27 +386,83 @@ function normalizeServerError(
 
 export function humanizeAiError(error: unknown): string {
   if (error instanceof ServerAiError) {
-    if (error.status === 401 || error.status === 403 || error.errorCode === 'invalid_key' || error.errorCode === 'no_key') {
-      return "AI service belum terkonfigurasi";
+    if (error.errorCode === 'auth_required') {
+      return localize(
+        "Please sign in to use AI.",
+        "Silakan masuk untuk menggunakan AI.",
+        "Silakan masuk untuk menggunakan AI.",
+      );
     }
-    if (error.status === 413 || error.errorCode === 'payload_too_large') {
-      return "Ukuran gambar terlalu besar";
+    if (error.errorCode === 'paid_plan_required' || error.errorCode === 'billing_attention_required') {
+      return localize(
+        "This AI mode needs an active paid plan.",
+        "Mode AI ini perlu paket berbayar aktif.",
+        "Mode AI ini perlu pelan berbayar aktif.",
+      );
     }
-    if (error.status === 429 || error.errorCode === 'quota_exceeded' || error.errorCode === 'rate_limited') {
-      if (error.provider === 'OPENAI') {
-        return "Limit OpenAI sedang penuh atau billing provider bermasalah. Cek OpenAI usage/limits dan coba lagi.";
+    if (error.errorCode === 'quota_exceeded') {
+      if (error.provider) {
+        return localize(
+          "The AI provider quota or rate limit is currently full. Please retry later. Credit was not consumed.",
+          "Quota atau rate limit AI provider sedang penuh. Coba lagi nanti. Credit tidak dikonsumsi.",
+          "Quota atau rate limit AI provider sedang penuh. Cuba lagi nanti. Credit tidak digunakan.",
+        );
       }
-      return "Limit AI sedang penuh, coba lagi nanti";
+      return localize(
+        "Your AI quota is exhausted for now. No extra credit was consumed by this failed result.",
+        "Kuota AI Anda habis untuk saat ini. Credit tambahan tidak dikonsumsi oleh hasil gagal ini.",
+        "Kuota AI anda habis buat masa ini. Credit tambahan tidak digunakan oleh hasil gagal ini.",
+      );
     }
-    if (error.status === 400 || error.errorCode === 'bad_request' || error.errorCode === 'unsupported_model' || error.errorCode === 'validation_error') {
-      return "Gambar/prompt tidak valid";
+    if (error.status === 401 || error.status === 403 || error.errorCode === 'invalid_key' || error.errorCode === 'no_key') {
+      return localize(
+        "AI provider key is missing or invalid. No credit was consumed.",
+        "Kunci AI provider belum ada atau tidak valid. Credit tidak dikonsumsi.",
+        "Kunci AI provider belum ada atau tidak sah. Credit tidak digunakan.",
+      );
+    }
+    if (error.status === 413 || error.errorCode === 'payload_too_large' || error.errorCode === 'scanner_image_too_large') {
+      return localize(
+        "The upload is too large. Resize it and try again. Credit was not consumed.",
+        "Upload terlalu besar. Kecilkan file lalu coba lagi. Credit tidak dikonsumsi.",
+        "Upload terlalu besar. Kecilkan fail lalu cuba lagi. Credit tidak digunakan.",
+      );
+    }
+    if (error.status === 429 || error.errorCode === 'rate_limited') {
+      return localize(
+        "The AI provider is rate limited. Please retry later. Credit was not consumed.",
+        "AI provider sedang rate limit. Coba lagi nanti. Credit tidak dikonsumsi.",
+        "AI provider sedang rate limit. Cuba lagi nanti. Credit tidak digunakan.",
+      );
+    }
+    if (error.errorCode === 'provider_timeout') {
+      return localize(
+        "The AI provider timed out. Please try again. Credit was not consumed.",
+        "AI provider timeout. Silakan coba lagi. Credit tidak dikonsumsi.",
+        "AI provider timeout. Sila cuba lagi. Credit tidak digunakan.",
+      );
+    }
+    if (error.status === 400 || error.errorCode === 'bad_request' || error.errorCode === 'unsupported_model' || error.errorCode === 'validation_error' || error.errorCode === 'invalid_image_payload') {
+      return localize(
+        "The image or prompt is not valid. Choose a clear image and try again.",
+        "Gambar atau prompt tidak valid. Pilih gambar yang jelas lalu coba lagi.",
+        "Gambar atau prompt tidak sah. Pilih gambar yang jelas lalu cuba lagi.",
+      );
     }
     if (error.status && error.status >= 500) {
-      return "AI provider sedang bermasalah, coba lagi";
+      return localize(
+        "The AI provider is temporarily unavailable. Please try again. Credit was not consumed.",
+        "AI provider sedang bermasalah. Coba lagi. Credit tidak dikonsumsi.",
+        "AI provider sedang bermasalah. Cuba lagi. Credit tidak digunakan.",
+      );
     }
     // Fallback if status code is missing but it's a known error
-    if (error.errorCode === 'provider_error' || error.errorCode === 'internal_error' || error.errorCode === 'provider_timeout') {
-      return "AI provider sedang bermasalah, coba lagi";
+    if (error.errorCode === 'provider_error' || error.errorCode === 'internal_error') {
+      return localize(
+        "The AI provider is temporarily unavailable. Please try again. Credit was not consumed.",
+        "AI provider sedang bermasalah. Coba lagi. Credit tidak dikonsumsi.",
+        "AI provider sedang bermasalah. Cuba lagi. Credit tidak digunakan.",
+      );
     }
     return error.message;
   }

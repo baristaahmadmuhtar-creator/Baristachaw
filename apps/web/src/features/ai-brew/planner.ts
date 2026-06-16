@@ -6875,8 +6875,8 @@ function buildMethodFamilyStepInstruction(params: {
         quickNote = fallbackNote;
         detail = fallbackNote;
       } else if (phase === 'bloom') {
-        quickNote = 'Fill the base correctly and level the basket without tamping.';
-        detail = 'Keep water below the safety valve and level the grounds loosely; do not tamp because the pot needs a safe pressure path.';
+        quickNote = 'Fill the base correctly and level the basket with no tamp.';
+        detail = 'Keep water below the safety valve and level the grounds loosely; use no tamp because the pot needs a safe pressure path.';
       } else if (phase === 'early_middle') {
         quickNote = 'Use low to medium heat and keep the flow calm.';
         detail = 'Heat gently so the first flow is steady, not sputtering; harsh heat turns the cup bitter fast.';
@@ -10175,7 +10175,7 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
         primaryValue: formatMethodBriefMl(plan.totalWaterMl),
         controlValue: id
           ? 'Isi base di bawah safety valve, basket jangan ditamp, lalu pakai panas moderat.'
-          : 'Fill the base below the safety valve, do not tamp the basket, then use moderate heat.',
+          : 'Fill the base below the safety valve, use no tamp in the basket, then use moderate heat.',
         successCue: id
           ? 'Angkat sebelum sputter kasar atau rasa rebus muncul.'
           : 'Remove from heat before harsh sputtering or boiled flavor appears.',

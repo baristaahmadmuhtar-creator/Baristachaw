@@ -12,6 +12,8 @@ export type BillingMarket = 'indonesia' | 'brunei' | 'global' | 'unknown';
 export type CheckoutMode = 'disabled' | 'external' | 'stripe_checkout' | 'play_billing' | 'app_store' | 'manual_invoice';
 export type AdminCatalogKind = 'water' | 'dripper' | 'grinder';
 export type AdminCatalogReviewStatus = 'queued' | 'approved' | 'published' | 'rejected' | 'needs_source';
+export type ManualPaymentStatus = 'pending_review' | 'receipt_received' | 'verified_paid' | 'rejected' | 'expired';
+export type ManualPaymentAction = 'receipt_received' | 'verified_paid' | 'rejected' | 'expired' | 'downgrade_free';
 
 export type AdminPlan = {
   code: PlanCode;
@@ -279,6 +281,39 @@ export type AdminAiProviderSnapshot = {
   warnings: string[];
 };
 
+export type AdminManualPaymentRequest = {
+  id: string;
+  userId: string;
+  email?: string;
+  planCode: Exclude<PlanCode, 'free'>;
+  duration: 'monthly' | 'quarterly' | 'yearly';
+  amount: number;
+  amountLabel: string;
+  currency: string;
+  promoCode?: string;
+  status: ManualPaymentStatus;
+  paymentActionRequired: true;
+  instructions: {
+    bankName: string;
+    accountName: string;
+    accountNumber: string;
+    whatsappNumber?: string;
+    whatsappUrl?: string;
+    supportEmail?: string;
+    notifyWebhookConfigured: boolean;
+  };
+  proof?: {
+    generatedFileName: string;
+    mimeType: string;
+    sizeBytes: number;
+    storage: 'metadata_only';
+    receivedAt: number;
+  };
+  reason?: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
 export type AdminSystemCheck = {
   id: string;
   label: string;
@@ -343,6 +378,13 @@ export type AdminSnapshot = {
     supportedMarkets: BillingMarket[];
     realtimeTables: string[];
     gaps: string[];
+    manualPayments: AdminManualPaymentRequest[];
+    manualQueueCounts: Record<ManualPaymentStatus, number>;
+    planParity: {
+      ok: boolean;
+      mismatches: string[];
+      sharedCatalogPlans: PlanCode[];
+    };
   };
   catalog: {
     ready: boolean;
@@ -526,6 +568,22 @@ export function updateAdminPlan(planCode: PlanCode, patch: AdminPlanPatch): Prom
       action: 'update_plan',
       planCode,
       patch,
+    }),
+  }, 18_000);
+}
+
+export function updateManualPayment(
+  paymentRequestId: string,
+  manualAction: ManualPaymentAction,
+  reason?: string,
+): Promise<AdminSnapshot> {
+  return adminRequest<AdminSnapshot>('/api/admin/management', {
+    method: 'PATCH',
+    body: JSON.stringify({
+      action: 'update_manual_payment',
+      paymentRequestId,
+      manualAction,
+      ...(reason ? { reason } : {}),
     }),
   }, 18_000);
 }

@@ -19,6 +19,29 @@ const ORIGINAL_ENV = {
   GROQ_API_KEY: process.env.GROQ_API_KEY,
   AI_PAID_OPENAI_API_KEY: process.env.AI_PAID_OPENAI_API_KEY,
   AI_BREW_PAID_GROQ_API_KEY: process.env.AI_BREW_PAID_GROQ_API_KEY,
+  REVENUECAT_WEBHOOK_SECRET: process.env.REVENUECAT_WEBHOOK_SECRET,
+  GOOGLE_PLAY_PACKAGE_NAME: process.env.GOOGLE_PLAY_PACKAGE_NAME,
+  GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON,
+  GOOGLE_PLAY_SERVICE_ACCOUNT_KEY: process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_KEY,
+  APP_STORE_CONNECT_ISSUER_ID: process.env.APP_STORE_CONNECT_ISSUER_ID,
+  APP_STORE_SHARED_SECRET: process.env.APP_STORE_SHARED_SECRET,
+  APPLE_APP_ID: process.env.APPLE_APP_ID,
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+  STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+  BILLING_CHECKOUT_URL: process.env.BILLING_CHECKOUT_URL,
+  BILLING_LIVE_MODE: process.env.BILLING_LIVE_MODE,
+  BILLING_SYNC_TOKEN: process.env.BILLING_SYNC_TOKEN,
+  BILLING_WEBHOOK_SECRET: process.env.BILLING_WEBHOOK_SECRET,
+  MIDTRANS_SERVER_KEY: process.env.MIDTRANS_SERVER_KEY,
+  MIDTRANS_WEBHOOK_SECRET: process.env.MIDTRANS_WEBHOOK_SECRET,
+  XENDIT_SECRET_KEY: process.env.XENDIT_SECRET_KEY,
+  XENDIT_WEBHOOK_TOKEN: process.env.XENDIT_WEBHOOK_TOKEN,
+  MANUAL_PAYMENT_ENABLED: process.env.MANUAL_PAYMENT_ENABLED,
+  MANUAL_PAYMENT_BANK_NAME: process.env.MANUAL_PAYMENT_BANK_NAME,
+  MANUAL_PAYMENT_ACCOUNT_NAME: process.env.MANUAL_PAYMENT_ACCOUNT_NAME,
+  MANUAL_PAYMENT_ACCOUNT_NUMBER: process.env.MANUAL_PAYMENT_ACCOUNT_NUMBER,
+  MANUAL_PAYMENT_WHATSAPP_NUMBER: process.env.MANUAL_PAYMENT_WHATSAPP_NUMBER,
+  MANUAL_PAYMENT_SUPPORT_EMAIL: process.env.MANUAL_PAYMENT_SUPPORT_EMAIL,
 };
 
 function restoreEnv() {
@@ -93,6 +116,29 @@ test.beforeEach(() => {
   delete process.env.GROQ_API_KEY;
   delete process.env.AI_PAID_OPENAI_API_KEY;
   delete process.env.AI_BREW_PAID_GROQ_API_KEY;
+  delete process.env.REVENUECAT_WEBHOOK_SECRET;
+  delete process.env.GOOGLE_PLAY_PACKAGE_NAME;
+  delete process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON;
+  delete process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_KEY;
+  delete process.env.APP_STORE_CONNECT_ISSUER_ID;
+  delete process.env.APP_STORE_SHARED_SECRET;
+  delete process.env.APPLE_APP_ID;
+  delete process.env.STRIPE_SECRET_KEY;
+  delete process.env.STRIPE_WEBHOOK_SECRET;
+  delete process.env.BILLING_CHECKOUT_URL;
+  delete process.env.BILLING_LIVE_MODE;
+  delete process.env.BILLING_SYNC_TOKEN;
+  delete process.env.BILLING_WEBHOOK_SECRET;
+  delete process.env.MIDTRANS_SERVER_KEY;
+  delete process.env.MIDTRANS_WEBHOOK_SECRET;
+  delete process.env.XENDIT_SECRET_KEY;
+  delete process.env.XENDIT_WEBHOOK_TOKEN;
+  delete process.env.MANUAL_PAYMENT_ENABLED;
+  delete process.env.MANUAL_PAYMENT_BANK_NAME;
+  delete process.env.MANUAL_PAYMENT_ACCOUNT_NAME;
+  delete process.env.MANUAL_PAYMENT_ACCOUNT_NUMBER;
+  delete process.env.MANUAL_PAYMENT_WHATSAPP_NUMBER;
+  delete process.env.MANUAL_PAYMENT_SUPPORT_EMAIL;
   resetAiProviderRuntimeStateForTests();
 });
 
@@ -141,8 +187,12 @@ test('admin management returns runtime snapshot for allowlisted owner', async ()
   assert.ok(body.users.every((user: any) => typeof user.username === 'string'));
   assert.ok(body.users.every((user: any) => user.billing && typeof user.billing.status === 'string'));
   assert.ok(body.plans.some((plan: any) => plan.code === 'pro'));
-  assert.ok(body.plans.some((plan: any) => plan.code === 'pro' && plan.billingProvider === 'revenuecat'));
-  assert.equal(body.billing.mode, 'not_configured');
+  assert.ok(body.plans.some((plan: any) => (
+    plan.code === 'pro'
+    && plan.billingProvider === 'manual'
+    && plan.checkoutMode === 'manual_invoice'
+  )));
+  assert.equal(body.billing.mode, body.billing.connectedProviders.length > 0 ? 'test' : 'not_configured');
   assert.ok(Array.isArray(body.billing.gaps));
   assert.ok(body.featureFlags.some((flag: any) => flag.key === 'chat'));
   assert.ok(body.featureFlags.some((flag: any) => flag.key === 'ai_brew_fallback' && flag.status === 'available'));

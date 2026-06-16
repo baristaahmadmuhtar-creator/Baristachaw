@@ -52,6 +52,7 @@ import {
   updateAdminPlan,
   updateAdminUser,
   updateFeatureFlag,
+  updateManualPayment,
   type AccountRecoveryStatus,
   type AccountStatus,
   type AdminAiUsageAggregate,
@@ -60,6 +61,7 @@ import {
   type AdminCatalogRequestPatch,
   type AdminFeatureFlag,
   type AdminFeatureFlagPatch,
+  type AdminManualPaymentRequest,
   type AdminPlan,
   type AdminPlanPatch,
   type AdminRole,
@@ -75,6 +77,7 @@ import {
   type FeatureFlagStatus,
   type FeatureSurface,
   type LaunchChecklistItem,
+  type ManualPaymentAction,
   type PlanCode,
 } from '../services/adminApi';
 
@@ -2353,9 +2356,96 @@ function AccountInspector({
   );
 }
 
-function BillingReadinessPanel({ snapshot }: { snapshot: AdminSnapshot }) {
+function ManualPaymentQueuePanel({
+  payments,
+  busyPaymentId,
+  onAction,
+}: {
+  payments: AdminManualPaymentRequest[];
+  busyPaymentId: string | null;
+  onAction: (paymentRequestId: string, action: ManualPaymentAction, reason?: string) => void;
+}) {
+  const visible = payments.slice(0, 8);
+  return (
+    <div className="mb-4 rounded-2xl border border-glass bg-surface-alpha p-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-primary">Manual payment queue</p>
+          <p className="mt-1 text-xs text-secondary">Proof review is provisional. Paid entitlement is granted only after verified paid.</p>
+        </div>
+        <StatusBadge value={payments.length ? 'warn' : 'pass'} label={`${payments.length} requests`} />
+      </div>
+      {visible.length ? (
+        <div className="mt-4 grid gap-3">
+          {visible.map((payment) => {
+            const busy = busyPaymentId === payment.id;
+            const reject = () => {
+              const reason = window.prompt('Reject reason');
+              if (reason && reason.trim().length >= 3) onAction(payment.id, 'rejected', reason.trim());
+            };
+            const downgrade = () => {
+              const reason = window.prompt('Downgrade reason');
+              if (reason && reason.trim().length >= 3) onAction(payment.id, 'downgrade_free', reason.trim());
+            };
+            return (
+              <div key={payment.id} className="rounded-xl border border-glass bg-[var(--bg-base)] p-3">
+                <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-mono text-xs font-bold text-primary">{payment.id}</p>
+                      <StatusBadge value={payment.status} label={payment.status.replace(/_/g, ' ')} />
+                      {payment.proof ? <StatusBadge value="receipt_received" label="proof attached" /> : null}
+                    </div>
+                    <p className="mt-1 text-sm font-semibold text-primary">
+                      {payment.email || payment.userId} / {payment.planCode} / {payment.duration} / {payment.amountLabel}
+                    </p>
+                    <p className="mt-1 text-xs text-secondary">
+                      {payment.instructions.bankName} / {payment.instructions.accountName} / {payment.instructions.accountNumber}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {payment.instructions.whatsappUrl ? (
+                      <a className="inline-flex h-9 items-center rounded-lg border border-glass px-3 text-xs font-semibold text-primary hover:bg-surface-alpha" href={payment.instructions.whatsappUrl} target="_blank" rel="noopener noreferrer">
+                        WhatsApp
+                      </a>
+                    ) : null}
+                    <button type="button" disabled={busy} onClick={() => onAction(payment.id, 'receipt_received')} className="inline-flex h-9 items-center rounded-lg border border-glass px-3 text-xs font-semibold text-primary hover:bg-surface-alpha disabled:opacity-50">
+                      Receipt received
+                    </button>
+                    <button type="button" disabled={busy} onClick={() => onAction(payment.id, 'verified_paid')} className="inline-flex h-9 items-center rounded-lg bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50">
+                      Verify paid
+                    </button>
+                    <button type="button" disabled={busy} onClick={reject} className="inline-flex h-9 items-center rounded-lg border border-red-500/30 px-3 text-xs font-semibold text-red-700 hover:bg-red-500/10 disabled:opacity-50">
+                      Reject
+                    </button>
+                    <button type="button" disabled={busy} onClick={downgrade} className="inline-flex h-9 items-center rounded-lg border border-amber-500/30 px-3 text-xs font-semibold text-amber-700 hover:bg-amber-500/10 disabled:opacity-50">
+                      Downgrade Free
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="mt-4 rounded-xl bg-[var(--bg-base)] p-3 text-sm text-secondary">No manual payment requests are pending in this runtime.</p>
+      )}
+    </div>
+  );
+}
+
+function BillingReadinessPanel({
+  snapshot,
+  busyPaymentId,
+  onManualPaymentAction,
+}: {
+  snapshot: AdminSnapshot;
+  busyPaymentId: string | null;
+  onManualPaymentAction: (paymentRequestId: string, action: ManualPaymentAction, reason?: string) => void;
+}) {
   const admin = useAdminCopy();
   return (
+    <>
     <div className="mb-4 grid gap-3 lg:grid-cols-[1fr_1fr_1fr]">
       <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
         <div className="flex items-start justify-between gap-3">
@@ -2391,6 +2481,9 @@ function BillingReadinessPanel({ snapshot }: { snapshot: AdminSnapshot }) {
       </div>
       <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
         <p className="text-sm font-semibold text-primary">{admin.text('realtimeContract')}</p>
+        <div className="mt-2">
+          <StatusBadge value={snapshot.billing.planParity.ok ? 'pass' : 'warn'} label={snapshot.billing.planParity.ok ? 'Plan parity pass' : 'Plan parity mismatch'} />
+        </div>
         <div className="mt-3 flex flex-wrap gap-1.5">
           {snapshot.billing.realtimeTables.map((table) => (
             <span key={table} className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[10px] font-semibold text-tertiary">{table}</span>
@@ -2399,6 +2492,12 @@ function BillingReadinessPanel({ snapshot }: { snapshot: AdminSnapshot }) {
         {snapshot.billing.gaps[0] ? <p className="mt-3 text-xs leading-5 text-secondary">{snapshot.billing.gaps[0]}</p> : null}
       </div>
     </div>
+    <ManualPaymentQueuePanel
+      payments={snapshot.billing.manualPayments}
+      busyPaymentId={busyPaymentId}
+      onAction={onManualPaymentAction}
+    />
+    </>
   );
 }
 
@@ -3375,6 +3474,7 @@ export function AdminManagement() {
   const [busyUserId, setBusyUserId] = useState<string | null>(null);
   const [busyFlagKey, setBusyFlagKey] = useState<string | null>(null);
   const [busyPlanCode, setBusyPlanCode] = useState<PlanCode | null>(null);
+  const [busyManualPaymentId, setBusyManualPaymentId] = useState<string | null>(null);
   const [busyCatalogRequest, setBusyCatalogRequest] = useState(false);
   const [aiUsageRange, setAiUsageRange] = useState<AdminAiUsageRange>({});
   const [pendingUserPatch, setPendingUserPatch] = useState<PendingUserPatch | null>(null);
@@ -3490,6 +3590,7 @@ export function AdminManagement() {
       || busyUserId
       || busyFlagKey
       || busyPlanCode
+      || busyManualPaymentId
       || busyCatalogRequest
       || dirtyAccountIds.size
       || dirtyPlanCodes.size,
@@ -3794,6 +3895,23 @@ export function AdminManagement() {
       setToast(admin.text('planFailed'));
     } finally {
       setBusyPlanCode(null);
+    }
+  };
+
+  const commitManualPaymentAction = async (paymentRequestId: string, manualAction: ManualPaymentAction, reason?: string) => {
+    invalidateInFlightRefreshes();
+    setBusyManualPaymentId(paymentRequestId);
+    setAccountErrorUserId(null);
+    try {
+      const next = await updateManualPayment(paymentRequestId, manualAction, reason);
+      setSnapshot(next);
+      setError(null);
+      setToast('Manual payment updated');
+    } catch (err) {
+      if (err instanceof AdminApiError) setError(err);
+      setToast('Manual payment update failed');
+    } finally {
+      setBusyManualPaymentId(null);
     }
   };
 
@@ -4343,7 +4461,11 @@ export function AdminManagement() {
                     </div>
                     <SlidersHorizontal size={18} className="text-blue-500" />
                   </div>
-                  <BillingReadinessPanel snapshot={snapshot} />
+                  <BillingReadinessPanel
+                    snapshot={snapshot}
+                    busyPaymentId={busyManualPaymentId}
+                    onManualPaymentAction={(paymentRequestId, action, reason) => void commitManualPaymentAction(paymentRequestId, action, reason)}
+                  />
                   <PlansPanel
                     plans={snapshot.plans}
                     busyPlanCode={busyPlanCode}

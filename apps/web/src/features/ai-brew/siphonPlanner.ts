@@ -234,8 +234,17 @@ export function resolveSiphonPlanSelection(params: {
       adjustedProfile.grindBias = 'finer';
       
       let drawdownStart = 135;
+      let stabilizationNote = 'Monitor water column temperature, ensuring it rests at a gentle 85-88C.';
+      let whyTemperature = 'a cooler 86C';
       let delicateNote = 'Let water rise. Turn heat down significantly so the water column rests at a gentle 85-88°C (ideal for geishas). Keep heat source stable and not boiling hard.';
       
+      if (input.roastLevel === 'light' && params.processEntry?.id === 'washed') {
+        adjustedProfile.tempDeltaC = -1.0;
+        delicateNote = 'Let water rise. Turn heat down modestly so the water column rests around 91-93C for washed light coffee clarity. Keep heat source stable and not boiling hard.';
+        stabilizationNote = 'Monitor water column temperature, keeping a steady 91-93C range for washed light coffee.';
+        whyTemperature = 'a controlled 91-93C';
+      }
+
       if (input.roastLevel === 'medium_dark') {
         drawdownStart = 120;
       } else if (input.roastLevel === 'dark') {
@@ -260,7 +269,7 @@ export function resolveSiphonPlanSelection(params: {
           kind: 'heat',
           share: 0,
           startSeconds: 45,
-          note: 'Monitor water column temperature, ensuring it rests at a gentle 85-88°C.',
+          note: stabilizationNote,
         },
         {
           id: 'gentle_folding',
@@ -295,7 +304,7 @@ export function resolveSiphonPlanSelection(params: {
           note: 'Carefully remove upper chamber and serve.',
         },
       ];
-      why = 'Low Temperature Delicate reduces heating to brew fragile light roasts at a cooler 86°C, highlighting floral, tea-like, and highly volatile flavor profiles.';
+      why = `Low Temperature Delicate reduces heating to brew fragile light roasts at ${whyTemperature}, highlighting floral, tea-like, and highly volatile flavor profiles.`;
       watch = `${safetyWarning} Premature drop warning: Keep heat stable to hold the water column in the upper chamber.`;
       break;
     }

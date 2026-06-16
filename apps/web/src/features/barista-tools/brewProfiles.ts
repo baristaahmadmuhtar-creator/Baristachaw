@@ -393,7 +393,18 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
   },
 ];
 
-export const BREW_METHOD_PROFILES: BrewMethodProfile[] = RAW_BREW_METHOD_PROFILES.map((profile) => {
+export function dedupeBrewMethodProfilesById(profiles: BrewMethodProfile[]): BrewMethodProfile[] {
+  const seen = new Set<BrewMethodId>();
+  const deduped: BrewMethodProfile[] = [];
+  for (const profile of profiles) {
+    if (seen.has(profile.id)) continue;
+    seen.add(profile.id);
+    deduped.push(profile);
+  }
+  return deduped;
+}
+
+export const BREW_METHOD_PROFILES: BrewMethodProfile[] = dedupeBrewMethodProfilesById(RAW_BREW_METHOD_PROFILES.map((profile) => {
   const evidence = getMethodEvidenceProfile(profile.id);
   if (!evidence) return profile;
   return {
@@ -406,7 +417,7 @@ export const BREW_METHOD_PROFILES: BrewMethodProfile[] = RAW_BREW_METHOD_PROFILE
     roastSupport: evidence.roastSupport,
     roastAdjustments: evidence.roastAdjustments ?? profile.roastAdjustments,
   };
-});
+}));
 
 export const BREW_METHOD_MAP: Record<BrewMethodId, BrewMethodProfile> = BREW_METHOD_PROFILES.reduce(
   (acc, profile) => {

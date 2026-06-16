@@ -58,34 +58,36 @@ export function DownloadPage({ language }: { language: Language }) {
             : `The ${RELEASE_VERSION} APK is signed and audited without prohibited broad storage/media permissions.`}
         </p>
       </div>
-      <div className="utility-content download-detail">
-        <div className="download-product">
-          <img src="/assets/baristachaw-logo.png" alt="Baristachaw" />
-          <div>
-            <strong>Baristachaw {RELEASE_VERSION}</strong>
-            <span>Android · package com.baristachaw.mobile</span>
+      <div className="utility-content">
+        <div className="download-card">
+          <div className="download-product">
+            <img src="/assets/baristachaw-logo.png" alt="Baristachaw" />
+            <div>
+              <strong>Baristachaw {RELEASE_VERSION}</strong>
+              <span>Android · package com.baristachaw.mobile</span>
+            </div>
           </div>
+          <div className="download-facts">
+            <span><ShieldCheck /> Signed release</span>
+            <span><Smartphone /> Android 1.0.2 static release gates passed</span>
+            <span><ShieldCheck /> CAMERA + RECORD_AUDIO {isBn ? 'sahaja' : isId ? 'saja' : 'only'}</span>
+          </div>
+          <div className="utility-actions" style={{ marginTop: 0 }}>
+            <a className="button button-primary" href={APK_URL}>
+              <Download size={18} /> {isBn ? 'Muat Turun APK' : isId ? 'Download APK' : 'Download APK'}
+            </a>
+            <a className="button button-outline" href={RELEASE_URL}>
+              <ExternalLink size={18} /> {isBn ? 'Pelepasan GitHub' : isId ? 'GitHub release' : 'GitHub release'}
+            </a>
+          </div>
+          <p className="download-migration-note" style={{ margin: 0 }}>
+            {isBn
+              ? 'Asal app.baristachaw.com sudah tertanam pada native shell. Kualiti rasa akhir tetap memerlukan pengesahan seduhan sebenar.'
+              : isId
+              ? 'Origin app.baristachaw.com sudah tertanam pada native shell. Kualitas rasa akhir tetap memerlukan validasi seduh nyata.'
+              : 'The app.baristachaw.com origin is baked into the native shell. Final cup quality still requires real brew validation.'}
+          </p>
         </div>
-        <div className="download-facts">
-          <span><ShieldCheck /> Signed release</span>
-          <span><Smartphone /> Android 1.0.2 static release gates passed</span>
-          <span><ShieldCheck /> CAMERA + RECORD_AUDIO {isBn ? 'sahaja' : isId ? 'saja' : 'only'}</span>
-        </div>
-        <div className="utility-actions">
-          <a className="button button-primary" href={APK_URL}>
-            <Download size={18} /> {isBn ? 'Muat Turun APK' : isId ? 'Download APK' : 'Download APK'}
-          </a>
-          <a className="button button-outline" href={RELEASE_URL}>
-            <ExternalLink size={18} /> {isBn ? 'Pelepasan GitHub' : isId ? 'GitHub release' : 'GitHub release'}
-          </a>
-        </div>
-        <p className="download-migration-note">
-          {isBn
-            ? 'Asal app.baristachaw.com sudah tertanam pada native shell. Kualiti rasa akhir tetap memerlukan pengesahan seduhan sebenar.'
-            : isId
-            ? 'Origin app.baristachaw.com sudah tertanam pada native shell. Kualitas rasa akhir tetap memerlukan validasi seduh nyata.'
-            : 'The app.baristachaw.com origin is baked into the native shell. Final cup quality still requires real brew validation.'}
-        </p>
       </div>
     </main>
   );

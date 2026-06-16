@@ -2050,3 +2050,30 @@ video {
     filter: none !important;
   }
 }
+
+@media (max-width: 768px) {
+  /* Disable backdrop blur on mobile viewports to prevent Safari/Chrome black flicker/box keyboard bugs */
+  .backdrop-blur-sm,
+  .backdrop-blur,
+  .backdrop-blur-md,
+  .backdrop-blur-lg,
+  .backdrop-blur-xl,
+  [class*="backdrop-blur"],
+  .glass-panel,
+  .glass-card,
+  .glass-card-interactive,
+  .glass-button,
+  .glass-button-primary,
+  .glass-input,
+  .glass-icon-tile,
+  .auth-card-surface,
+  .auth-field-shell,
+  .auth-action-primary,
+  .panel-soft,
+  .panel-soft-strong,
+  .chat-liquid-header,
+  .chat-composer-shell {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}

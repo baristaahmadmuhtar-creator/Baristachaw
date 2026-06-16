@@ -14,6 +14,7 @@ import {
   FacebookMark,
   GoogleMark,
 } from '../components/icons';
+import type { Language } from '../types';
 
 interface AuthScreenProps {
   intent?: 'signIn' | 'signUp';
@@ -162,7 +163,7 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
                     <CustomSelect
                       id="auth-language-select"
                       value={language}
-                      onChange={setLanguage}
+                      onChange={(val) => setLanguage(val as Language)}
                       options={[
                         { value: 'en', label: 'English' },
                         { value: 'id', label: 'Indonesia' }

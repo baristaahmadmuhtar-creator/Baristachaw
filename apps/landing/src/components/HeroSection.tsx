@@ -4,7 +4,7 @@ import { APP_LINKS, APK_URL } from '../config';
 import type { Language } from '../i18n';
 import { t } from '../i18n';
 
-export function HeroSection({ language }: { language: Language }) {
+export function HeroSection({ language, onRegister }: { language: Language; onRegister?: () => void }) {
   return (
     <section className="hero" aria-labelledby="hero-title">
       <div className="hero-image" aria-hidden="true" />
@@ -39,7 +39,18 @@ export function HeroSection({ language }: { language: Language }) {
           <a className="button button-ghost" href={APK_URL}>
             <Download size={18} /> {t('hero.downloadApk', language)}
           </a>
-          <a className="hero-register" href={APP_LINKS.register}>{t('hero.registerFree', language)}</a>
+          <a 
+            className="hero-register" 
+            href={APP_LINKS.register}
+            onClick={(e) => {
+              if (onRegister) {
+                e.preventDefault();
+                onRegister();
+              }
+            }}
+          >
+            {t('hero.registerFree', language)}
+          </a>
         </div>
         <p className="hero-microcopy">
           {t('hero.microcopy', language)}

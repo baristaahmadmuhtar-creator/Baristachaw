@@ -292,13 +292,16 @@ function RegionDropdown({ region, onRegionChange, language }: { region: Region; 
   const options = regions.map(r => ({ value: r, label: getRegionName(r) }));
 
   return (
-    <div style={{ position: 'relative', display: 'inline-block', zIndex: 50, width: '220px' }}>
-      <CustomSelect 
-        value={region}
-        onChange={(val) => onRegionChange(val as Region)}
-        options={options}
-      />
-    </div>
+    <CustomSelect 
+      id="pricing-region-select"
+      type="region"
+      size="normal"
+      theme="light"
+      value={region}
+      onChange={(val) => onRegionChange(val as Region)}
+      options={options}
+      style={{ width: '220px', zIndex: 50 }}
+    />
   );
 }
 

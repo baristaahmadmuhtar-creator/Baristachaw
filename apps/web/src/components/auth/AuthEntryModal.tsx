@@ -9,6 +9,8 @@ import { EmailPasswordAuthForm } from './EmailPasswordAuthForm';
 import { AuthProgressMark } from './AuthProgressMark';
 import { AlertCircle, FacebookMark, GoogleMark, ShieldCheck, Sparkles, WalletCards, X } from '../icons';
 
+import type { Language } from '../../types';
+
 function resolveSourceLabel(source: string, t: Record<string, string>) {
   if (/^ai_brew(?:_|$)/i.test(source)) return t.authSourceAiBrew;
   if (/^chat(?:_|$)/i.test(source)) return t.authSourceChat;
@@ -186,7 +188,7 @@ export function AuthEntryModal() {
                       <CustomSelect
                         id="modal-language-select"
                         value={language}
-                        onChange={setLanguage}
+                        onChange={(val) => setLanguage(val as Language)}
                         options={[
                           { value: 'en', label: 'English' },
                           { value: 'id', label: 'Indonesia' }

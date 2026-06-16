@@ -44,36 +44,21 @@ export function LandingHeader({ language, onLanguageChange, region, onRegionChan
         <Link to="/support">{t('nav.support', language)}</Link>
       </nav>
       <div className="header-actions">
-        <div className="language-switch" aria-label="Language & Region" style={{ display: 'flex', gap: '8px', zIndex: 100 }}>
-          <div className="dropdown-group" style={{ width: '80px' }}>
-            <CustomSelect
-              value={language}
-              onChange={(val) => onLanguageChange(val as Language)}
-              options={[
-                { value: 'id', label: 'ID' },
-                { value: 'en', label: 'EN' },
-                { value: 'bn', label: 'BN' },
-              ]}
-              className="header-custom-select"
-            />
-          </div>
-          <div className="dropdown-group" style={{ width: '100px' }}>
-            <CustomSelect
-              value={region}
-              onChange={(val) => onRegionChange(val as Region)}
-              options={[
-                { value: 'id', label: 'IDR' },
-                { value: 'bn', label: 'BND' },
-                { value: 'my', label: 'MYR' },
-                { value: 'sg', label: 'SGD' },
-                { value: 'au', label: 'AUD' },
-                { value: 'eu', label: 'EUR' },
-                { value: 'us', label: 'USD' },
-                { value: 'global', label: 'GLOBAL' },
-              ]}
-              className="header-custom-select"
-            />
-          </div>
+        <div className="language-switch" aria-label="Language">
+          <CustomSelect
+            id="header-language-select"
+            type="language"
+            size="compact"
+            theme="dark"
+            value={language}
+            onChange={(val) => onLanguageChange(val as Language)}
+            options={[
+              { value: 'id', label: 'ID' },
+              { value: 'en', label: 'EN' },
+              { value: 'bn', label: 'BN' },
+            ]}
+            style={{ width: '76px' }}
+          />
         </div>
         {user ? (
           <>
@@ -104,6 +89,8 @@ export function LandingHeader({ language, onLanguageChange, region, onRegionChan
           <a href="/#brewers" onClick={() => setOpen(false)}>{t('nav.brewMethods', language)}</a>
           <Link to="/download" onClick={() => setOpen(false)}>{t('nav.downloadApp', language)}</Link>
           <Link to="/support" onClick={() => setOpen(false)}>{t('nav.support', language)}</Link>
+
+
 
           {user ? (
             <>

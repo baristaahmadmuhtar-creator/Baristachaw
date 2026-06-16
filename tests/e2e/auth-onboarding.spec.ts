@@ -21,13 +21,17 @@ test('mobile sign-in keeps the auth actions first without marketing panel clutte
   await expect(emailButton).toBeVisible();
   await expect(exploreButton).toBeVisible();
   await expect(page.getByRole('button', { name: /Lanjutkan sebagai tamu/i })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: /English/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Indonesia/i })).toBeVisible();
+  // CustomSelect displays the selected option on its trigger button
+  await expect(page.locator('#auth-language-select')).toBeVisible();
+  await page.locator('#auth-language-select').click();
+  await expect(page.getByRole('button', { name: 'English', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Indonesia', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Indonesia', exact: true }).click();
   const googleBox = await googleButton.boundingBox();
   const emailBox = await emailButton.boundingBox();
   const exploreBox = await exploreButton.boundingBox();
-  expect(googleBox?.y ?? 0).toBeLessThan(emailBox?.y ?? 0);
-  expect(emailBox?.y ?? 0).toBeLessThan(exploreBox?.y ?? 0);
+  expect(emailBox?.y ?? 0).toBeLessThan(googleBox?.y ?? 0);
+  expect(googleBox?.y ?? 0).toBeLessThan(exploreBox?.y ?? 0);
   await expect(page.getByText('Ruang kerja AI kopi')).toHaveCount(0);
   await expect(page.getByText('Satu akun untuk seduh lebih cerdas, resep, dan catatan kopi.')).toHaveCount(0);
   await expect(page.getByText('Pilih jalur yang paling pas hari ini')).toHaveCount(0);

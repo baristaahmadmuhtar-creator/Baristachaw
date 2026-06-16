@@ -59,7 +59,8 @@ test('legal and download routes are direct, honest, and non-PWA', async ({ page 
 });
 
 test('language toggle changes the public interface without mixed primary copy', async ({ page }) => {
-  await page.getByLabel('Select Language').selectOption('en');
+  await page.getByLabel('Select Language').click();
+  await page.getByRole('option', { name: 'English' }).click();
   await expect(page.getByRole('heading', { level: 1 })).toContainText(/Brew the Perfect Cup/);
   await expect(page.getByRole('region', { name: /Brew the Perfect Cup/ }).getByRole('link', { name: 'Start Brewing' })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');

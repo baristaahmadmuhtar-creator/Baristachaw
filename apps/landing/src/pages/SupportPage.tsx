@@ -1,4 +1,5 @@
 import { useSearchParams } from 'react-router-dom';
+import { ShieldAlert, EyeOff, Bug } from 'lucide-react';
 import { ContactForm } from '../components/ContactForm';
 import type { Language } from '../i18n';
 
@@ -26,29 +27,44 @@ export function SupportPage({ language }: { language: Language }) {
         </p>
       </div>
       <div className="utility-content utility-two-column">
-        <aside>
-          <h2>{isBn ? 'Sebelum Menghantar' : isId ? 'Sebelum mengirim' : 'Before submitting'}</h2>
-          <ul>
-            <li>
-              {isBn
-                ? 'Jangan hantar password, API key, atau kod pemulihan biskita.'
-                : isId
-                ? 'Jangan kirim password, API key, atau recovery code.'
-                : 'Do not send passwords, API keys, or recovery codes.'}
+        <aside className="support-sidebar">
+          <h2 className="support-sidebar-title">{isBn ? 'Sebelum Menghantar' : isId ? 'Sebelum mengirim' : 'Before submitting'}</h2>
+          <ul className="support-checklist">
+            <li className="support-checklist-item">
+              <div className="support-checklist-icon-wrap security">
+                <ShieldAlert />
+              </div>
+              <span className="support-checklist-text">
+                {isBn
+                  ? 'Jangan hantar password, API key, atau kod pemulihan biskita.'
+                  : isId
+                  ? 'Jangan kirim password, API key, atau recovery code.'
+                  : 'Do not send passwords, API keys, or recovery codes.'}
+              </span>
             </li>
-            <li>
-              {isBn
-                ? 'Padam data peribadi daripada screenshot.'
-                : isId
-                ? 'Hapus data pribadi dari screenshot.'
-                : 'Remove personal data from screenshots.'}
+            <li className="support-checklist-item">
+              <div className="support-checklist-icon-wrap privacy">
+                <EyeOff />
+              </div>
+              <span className="support-checklist-text">
+                {isBn
+                  ? 'Padam data peribadi daripada screenshot.'
+                  : isId
+                  ? 'Hapus data pribadi dari screenshot.'
+                  : 'Remove personal data from screenshots.'}
+              </span>
             </li>
-            <li>
-              {isBn
-                ? 'Untuk bug, sila nyatakan peranti, pelayar web, dan langkah reproduksi.'
-                : isId
-                ? 'Untuk bug, tulis perangkat, browser, dan langkah reproduksi.'
-                : 'For bugs, include device, browser, and reproduction steps.'}
+            <li className="support-checklist-item">
+              <div className="support-checklist-icon-wrap bug">
+                <Bug />
+              </div>
+              <span className="support-checklist-text">
+                {isBn
+                  ? 'Untuk bug, sila nyatakan peranti, pelayar web, dan langkah reproduksi.'
+                  : isId
+                  ? 'Untuk bug, tulis perangkat, browser, dan langkah reproduksi.'
+                  : 'For bugs, include device, browser, and reproduction steps.'}
+              </span>
             </li>
           </ul>
         </aside>

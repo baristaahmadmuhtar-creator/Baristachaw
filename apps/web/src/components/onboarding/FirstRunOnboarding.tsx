@@ -3,7 +3,7 @@ import { Check, ChevronRight, Languages, Loader2, Search, X } from 'lucide-react
 import { useGlobalState } from '../../context/GlobalState';
 import { loadAiBrewCatalog } from '../../features/ai-brew/catalog';
 import type { AiBrewCatalog } from '../../features/ai-brew/types';
-import type { Language } from '../../types';
+import type { Language, Region } from '../../types';
 import {
   loadEquipmentPreferences,
   saveEquipmentPreferences,

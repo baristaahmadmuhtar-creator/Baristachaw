@@ -3107,6 +3107,7 @@ async function updateManualPayment(
   manualAction: ManualPaymentAction,
   reason?: string,
 ): Promise<AdminSnapshot> {
+  const config = getSupabaseConfig();
   const requestId = `admin_manual_payment_${Date.now()}`;
   const request = updateManualPaymentStatus(paymentRequestId, manualAction, reason);
   if (!request) {
@@ -3128,6 +3129,13 @@ async function updateManualPayment(
       paymentActionRequired: false,
       supportNote: `Manual payment verified: ${request.id}`,
     };
+    if (config.configured) {
+      try {
+        await patchSupabaseUser(config, admin, request.userId, patch);
+      } catch (error) {
+        console.error('Failed to sync manual payment verification to Supabase:', error);
+      }
+    }
     const previous = RUNTIME_USER_PATCHES.get(request.userId) || {};
     RUNTIME_USER_PATCHES.set(request.userId, { ...previous, ...patch });
     auditRuntimeMutation(admin, request.userId, patch);
@@ -3143,6 +3151,13 @@ async function updateManualPayment(
       paymentActionRequired: false,
       supportNote: `Downgraded after manual payment review: ${request.id}`,
     };
+    if (config.configured) {
+      try {
+        await patchSupabaseUser(config, admin, request.userId, patch);
+      } catch (error) {
+        console.error('Failed to sync manual payment downgrade to Supabase:', error);
+      }
+    }
     const previous = RUNTIME_USER_PATCHES.get(request.userId) || {};
     RUNTIME_USER_PATCHES.set(request.userId, { ...previous, ...patch });
     auditRuntimeMutation(admin, request.userId, patch);

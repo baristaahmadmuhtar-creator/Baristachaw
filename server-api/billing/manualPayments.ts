@@ -45,6 +45,7 @@ export type ManualPaymentRequest = {
   reason?: string;
   createdAt: number;
   updatedAt: number;
+  uniqueSuffix?: number;
 };
 
 export type ManualPaymentAction = 'receipt_received' | 'verified_paid' | 'rejected' | 'expired' | 'downgrade_free';
@@ -136,7 +137,14 @@ export function createManualPaymentRequest(input: {
 }): ManualPaymentRequest | null {
   if (!VALID_MANUAL_PLANS.has(input.planCode)) return null;
   const currency = input.currency || 'usd';
-  const amount = resolveManualAmount(input.planCode, input.duration, currency);
+  let amount = resolveManualAmount(input.planCode, input.duration, currency);
+  
+  let uniqueSuffix: number | undefined = undefined;
+  if (currency === 'idr') {
+    uniqueSuffix = Math.floor(100 + Math.random() * 900); // 100 to 999
+    amount = amount + uniqueSuffix;
+  }
+
   const plan = getPlanByCode(input.planCode);
   const id = `manual_${Date.now().toString(36)}_${randomUUID().replace(/-/g, '').slice(0, 12)}`;
   const amountLabel = formatCurrency(amount, currency);
@@ -163,6 +171,7 @@ export function createManualPaymentRequest(input: {
     status: 'pending_review',
     paymentActionRequired: true,
     instructions,
+    uniqueSuffix,
     createdAt: now,
     updatedAt: now,
   };

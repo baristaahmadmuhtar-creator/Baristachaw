@@ -587,7 +587,11 @@ export function HomeScreen({
           footer={(
             <View style={styles.authActions}>
               {session ? (
-                <ActionButton label={homeCopy.sections.logOut} tone="secondary" direction={direction} onPress={() => void onLogout()} />
+                <>
+                  <ActionButton label={homeCopy.sections.logOut} tone="secondary" direction={direction} onPress={() => void onLogout()} />
+                  <View style={{ height: 12 }} />
+                  <ActionButton label={webT.settings ? `${webT.settings} (Delete / Export)` : "Manage Account (Delete / Export)"} tone="secondary" direction={direction} onPress={() => void Linking.openURL('https://baristachaw.com/my-account')} />
+                </>
               ) : (
                 <>
                   {supabaseAuthEnabled ? (

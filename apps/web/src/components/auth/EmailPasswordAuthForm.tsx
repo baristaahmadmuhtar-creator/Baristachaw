@@ -6,6 +6,7 @@ import { AlertCircle, ArrowLeft, AtSign, CheckCircle, Eye, EyeOff, Lock, UserRou
 import { OtpCodeInput } from './OtpCodeInput';
 import { PasswordStrengthHint } from './PasswordStrengthHint';
 import { AuthNoticeCard } from './AuthNoticeCard';
+import { OTP_CODE_LENGTH } from '@baristachaw/shared';
 
 type EmailPasswordAuthFormProps = {
   initialMode?: EmailAuthMode;
@@ -182,7 +183,7 @@ export function EmailPasswordAuthForm({
 
   const handleVerifySignUpOtp = async (code: string) => {
     const normalized = validateEmail();
-    if (!normalized || code.length !== 6) return;
+    if (!normalized || code.length !== OTP_CODE_LENGTH) return;
 
     setLocalError('');
     setPendingAction('otp');
@@ -198,7 +199,7 @@ export function EmailPasswordAuthForm({
 
   const handleVerifyResetOtp = async (code: string) => {
     const normalized = validateEmail();
-    if (!normalized || code.length !== 6) return;
+    if (!normalized || code.length !== OTP_CODE_LENGTH) return;
 
     setLocalError('');
     setPendingAction('otp');
@@ -328,15 +329,16 @@ export function EmailPasswordAuthForm({
           </div>
           <h3 className="text-lg font-bold text-primary">{t.authEmailConfirmationTitle || 'Cek Email Anda'}</h3>
           <p className="text-sm leading-relaxed text-secondary mb-2">
-             {(t.authOtpDescription || 'Masukkan kode 6 digit yang dikirim ke email Anda.')} <br/> <strong>{email}</strong>
+             {(t.authOtpDescription || 'Masukkan kode verifikasi yang dikirim ke email Anda.')} <br/> <strong>{email}</strong>
           </p>
           
           {renderError()}
 
           <OtpCodeInput 
-             length={6} 
+             length={OTP_CODE_LENGTH} 
              disabled={isOtpBusy} 
              onComplete={handleVerifySignUpOtp} 
+             onPasteError={setLocalError}
           />
 
           <div className="flex flex-col w-full gap-2 mt-4">
@@ -374,16 +376,17 @@ export function EmailPasswordAuthForm({
           </div>
           <h3 className="text-lg font-bold text-primary">{t.authForgotPassword || 'Reset Password'}</h3>
           <p className="text-sm leading-relaxed text-secondary mb-2">
-             {(t.authOtpDescription || 'Masukkan kode 6 digit yang dikirim ke email Anda.')} <br/> <strong>{email}</strong>
+             {(t.authOtpDescription || 'Masukkan kode verifikasi yang dikirim ke email Anda.')} <br/> <strong>{email}</strong>
           </p>
 
           {renderSuccess()}
           {renderError()}
 
           <OtpCodeInput 
-             length={6} 
+             length={OTP_CODE_LENGTH} 
              disabled={isOtpBusy} 
              onComplete={handleVerifyResetOtp} 
+             onPasteError={setLocalError}
           />
 
           <div className="flex flex-col w-full gap-2 mt-4">

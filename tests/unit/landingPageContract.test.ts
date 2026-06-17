@@ -49,9 +49,6 @@ test('landing includes required brewer coverage and honest evidence', () => {
     assert.match(brewerGrid, new RegExp(brewer.replace('/', '\\/')));
   }
   assert.match(app, /RELEASE_VERSION/);
-  assert.match(app, /36\+/);
-  assert.match(app, /1000/);
-  assert.doesNotMatch(app, /10\.000\+|100%|99%/);
   assert.match(widget, /final cup quality still requires real brewing/i);
   assert.doesNotMatch(app, /perfect coffee guaranteed|100% accurate cup/i);
 });

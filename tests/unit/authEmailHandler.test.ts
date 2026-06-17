@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import jwt from 'jsonwebtoken';
 import authEmailHandler from '../../server-api/auth/email.ts';
+import { OTP_CODE_LENGTH } from '../../packages/shared/src/domain.ts';
 
 const ORIGINAL_ENV = {
   JWT_SECRET: process.env.JWT_SECRET,
@@ -254,4 +255,117 @@ test('email sign-in maps invalid Supabase credentials to a generic auth error', 
   assert.equal(body.ok, false);
   assert.equal(body.errorCode, 'invalid_credentials');
   assert.equal(body.error, 'Invalid email or password');
+});
+
+test('email verify OTP validates token length correctly', async () => {
+  const calls: Array<{ url: string; init?: RequestInit }> = [];
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    calls.push({ url, init });
+    if (url.includes('/auth/v1/verify')) {
+      return jsonResponse({
+        access_token: 'valid-verify-token',
+        user: { id: 'supabase-user-1', email: 'owner@example.com' },
+      });
+    }
+    if (url.includes('/auth/v1/user')) {
+      return jsonResponse({
+        id: 'supabase-user-1',
+        email: 'owner@example.com',
+        user_metadata: { full_name: 'Owner Barista' },
+        app_metadata: { provider: 'email' },
+      });
+    }
+    throw new Error(`Unexpected fetch ${url}`);
+  }) as typeof fetch;
+
+  const res = createMockRes();
+  await authEmailHandler(makeReq({
+    query: { path: 'email/otp/verify' },
+    body: {
+      email: 'owner@example.com',
+      token: '1'.repeat(OTP_CODE_LENGTH),
+    },
+  }), res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.ok, true);
+  assert.equal(body.authenticated, true);
+  assert.equal(body.accessToken, 'valid-verify-token');
+});
+
+test('email verify OTP rejects incorrect token length', async () => {
+  // Too short
+  const resShort = createMockRes();
+  await authEmailHandler(makeReq({
+    query: { path: 'email/otp/verify' },
+    body: {
+      email: 'owner@example.com',
+      token: '1'.repeat(OTP_CODE_LENGTH - 1),
+    },
+  }), resShort as any);
+
+  assert.equal(resShort.statusCode, 400);
+  const bodyShort = JSON.parse(resShort.body);
+  assert.equal(bodyShort.ok, false);
+  assert.equal(bodyShort.errorCode, 'otp_invalid');
+  assert.equal(bodyShort.error, 'The verification code looks incomplete. Please enter the full code from your email.');
+
+  // Too long
+  const resLong = createMockRes();
+  await authEmailHandler(makeReq({
+    query: { path: 'email/otp/verify' },
+    body: {
+      email: 'owner@example.com',
+      token: '1'.repeat(OTP_CODE_LENGTH + 2),
+    },
+  }), resLong as any);
+
+  assert.equal(resLong.statusCode, 400);
+  const bodyLong = JSON.parse(resLong.body);
+  assert.equal(bodyLong.ok, false);
+  assert.equal(bodyLong.errorCode, 'otp_invalid');
+  assert.equal(bodyLong.error, 'The verification code looks incomplete. Please enter the full code from your email.');
+});
+
+test('email verify OTP normalizes non-numeric token correctly', async () => {
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes('/auth/v1/verify')) {
+      return jsonResponse({
+        access_token: 'valid-verify-token',
+        user: { id: 'supabase-user-1', email: 'owner@example.com' },
+      });
+    }
+    if (url.includes('/auth/v1/user')) {
+      return jsonResponse({
+        id: 'supabase-user-1',
+        email: 'owner@example.com',
+        user_metadata: { full_name: 'Owner Barista' },
+        app_metadata: { provider: 'email' },
+      });
+    }
+    throw new Error(`Unexpected fetch ${url}`);
+  }) as typeof fetch;
+
+  const res = createMockRes();
+  // Build a token with spaces and hyphens, but correct digit length
+  const rawToken = '123-456';
+  // Let's make sure it has the expected length when cleaned
+  const cleanedLength = rawToken.replace(/\D/g, '').length;
+  assert.equal(cleanedLength, OTP_CODE_LENGTH);
+
+  await authEmailHandler(makeReq({
+    query: { path: 'email/otp/verify' },
+    body: {
+      email: 'owner@example.com',
+      token: rawToken,
+    },
+  }), res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.ok, true);
+  assert.equal(body.authenticated, true);
 });

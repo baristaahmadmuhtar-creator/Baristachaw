@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createHash } from 'node:crypto';
 import jwt from 'jsonwebtoken';
+import { OTP_CODE_LENGTH } from '../../packages/shared/src/domain.js';
 import {
   applyCors,
   applyRateLimitHeaders,
@@ -9,6 +10,7 @@ import {
   enforceTrustedRequestOrigin,
   sanitizeErrorDetails,
 } from '../_shared.js';
+
 import { decorateUserWithAdminClaims } from '../admin/_access.js';
 import { fetchSupabaseProfile, resolveAppUrl, resolveSupabaseAuthConfig } from './mobile/shared.js';
 
@@ -376,7 +378,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
   const accessToken = readString(req.body?.accessToken || req.body?.access_token);
   const displayName = normalizeDisplayName(req.body?.displayName || req.body?.name);
-  const otpToken = readString(req.body?.token || req.body?.otp);
+  let otpToken = readString(req.body?.token || req.body?.otp);
+  if (otpToken) {
+    otpToken = otpToken.replace(/\D/g, '');
+  }
 
   const needsEmail = mode !== 'updatePassword' && mode !== 'resetUpdatePassword';
   if (needsEmail && (!email || !EMAIL_RE.test(email) || email.length > 254)) {
@@ -389,8 +394,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if ((mode === 'updatePassword' || mode === 'resetUpdatePassword') && !accessToken) {
     return validationError(res, requestId, 'Missing password reset token');
   }
-  if ((mode === 'verifyOtp' || mode === 'resetVerify') && !otpToken) {
-    return validationError(res, requestId, 'Missing OTP code');
+  if (mode === 'verifyOtp' || mode === 'resetVerify') {
+    if (!otpToken) {
+      return validationError(res, requestId, 'Missing verification code');
+    }
+    if (otpToken.length !== OTP_CODE_LENGTH) {
+      return res.status(400).json({
+        ok: false,
+        requestId,
+        error: 'The verification code looks incomplete. Please enter the full code from your email.',
+        errorCode: 'otp_invalid'
+      });
+    }
   }
   if (mode === 'signUp' && displayName.length > 80) {
     return validationError(res, requestId, 'Display name is too long');

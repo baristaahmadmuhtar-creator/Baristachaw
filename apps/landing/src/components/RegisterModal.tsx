@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import type { Language } from '../i18n';
 import { t } from '../i18n';
 import { APP_ORIGIN, type BillingDuration, formatCurrencyByLang, getCurrencyForLanguage, PRICING } from '../config';
+import { OTP_CODE_LENGTH } from '@baristachaw/shared';
 
 type RegisterModalProps = {
   language: Language;
@@ -56,10 +57,10 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
   const renderSupportLinks = () => (
     <div className="checkout-support-links" style={{ display: 'flex', gap: '16px', justifyContent: 'center', margin: '14px 0 6px', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>
-      <a href={supportWhatsappUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#ffd233', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
+      <a href={supportWhatsappUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
         WhatsApp Support
       </a>
-      <a href={supportInstagramUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#ffd233', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
+      <a href={supportInstagramUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
         Instagram CS
       </a>
     </div>
@@ -180,16 +181,47 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     }
   };
 
+  const handleOtpInputChange = (val: string) => {
+    setError('');
+    const cleaned = val.replace(/\D/g, '');
+    if (cleaned.length === 8 && OTP_CODE_LENGTH === 6) {
+      setError("This code has 8 digits, but Baristachaw currently expects 6. Please request a new code.");
+      return;
+    }
+    setOtpCode(cleaned.slice(0, OTP_CODE_LENGTH));
+  };
+
+  const handleOtpInputPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    setError('');
+    const rawPasted = e.clipboardData.getData('text/plain');
+    const cleaned = rawPasted.replace(/\D/g, '');
+    if (cleaned.length === 8 && OTP_CODE_LENGTH === 6) {
+      setError(`This code has 8 digits, but Baristachaw currently expects ${OTP_CODE_LENGTH}. Please request a new code.`);
+      return;
+    }
+    setOtpCode(cleaned.slice(0, OTP_CODE_LENGTH));
+  };
+
   const handleVerifySignupOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    const normalizedOtp = otpCode.replace(/\D/g, '');
+    if (normalizedOtp.length === 8 && OTP_CODE_LENGTH === 6) {
+      setError(`This code has 8 digits, but Baristachaw currently expects ${OTP_CODE_LENGTH}. Please request a new code.`);
+      return;
+    }
+    if (normalizedOtp.length !== OTP_CODE_LENGTH) {
+      setError("The verification code looks incomplete. Please enter the full code from your email.");
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch(`${APP_ORIGIN}/api/auth/email/otp/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ email, token: otpCode }),
+        body: JSON.stringify({ email, token: normalizedOtp }),
       });
       const payload = await res.json().catch(() => ({}));
       if (!res.ok || payload.ok === false) {
@@ -265,6 +297,15 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   const handleVerifyAndResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    const normalizedOtp = otpCode.replace(/\D/g, '');
+    if (normalizedOtp.length === 8 && OTP_CODE_LENGTH === 6) {
+      setError(`This code has 8 digits, but Baristachaw currently expects ${OTP_CODE_LENGTH}. Please request a new code.`);
+      return;
+    }
+    if (normalizedOtp.length !== OTP_CODE_LENGTH) {
+      setError("The verification code looks incomplete. Please enter the full code from your email.");
+      return;
+    }
     setLoading(true);
     try {
       // Step 1: Verify OTP and get session/accessToken
@@ -272,7 +313,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ email, token: otpCode }),
+        body: JSON.stringify({ email, token: normalizedOtp }),
       });
       const verifyPayload = await verifyRes.json().catch(() => ({}));
       if (!verifyRes.ok || verifyPayload.ok === false) {
@@ -478,8 +519,8 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                     padding: '8px 12px',
                     borderRadius: '8px',
                     border: 0,
-                    background: selectedDuration === d ? '#ffd233' : 'transparent',
-                    color: selectedDuration === d ? '#07152f' : 'rgba(255,255,255,0.6)',
+                    background: selectedDuration === d ? '#3b82f6' : 'transparent',
+                    color: selectedDuration === d ? '#ffffff' : 'rgba(255,255,255,0.6)',
                     fontWeight: 700,
                     fontSize: '12px',
                     cursor: 'pointer',
@@ -518,7 +559,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                       </span>
                     </div>
                     <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '2px', marginLeft: '12px' }}>
-                      <span style={{ color: '#ffd233', fontSize: '16px', fontWeight: 800 }}>
+                      <span style={{ color: '#3b82f6', fontSize: '16px', fontWeight: 800 }}>
                         {getPriceDisplay(p, selectedDuration)}
                       </span>
                       <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>
@@ -568,9 +609,11 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                           <input
                             type="text"
                             value={otpCode}
-                            onChange={(e) => setOtpCode(e.target.value)}
+                            onChange={(e) => handleOtpInputChange(e.target.value)}
+                            onPaste={handleOtpInputPaste}
                             required
-                            placeholder="123456"
+                            maxLength={OTP_CODE_LENGTH}
+                            placeholder={"1".repeat(OTP_CODE_LENGTH)}
                             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: '10px', padding: '10px 12px', fontSize: '13px', letterSpacing: '2px', fontWeight: 'bold', textAlign: 'center' }}
                           />
                         </label>
@@ -584,7 +627,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                           type="button" 
                           onClick={handleResendSignupOtp}
                           disabled={loading}
-                          style={{ background: 'none', border: 'none', color: '#ffd233', cursor: 'pointer', padding: 0 }}
+                          style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', padding: 0 }}
                         >
                           {language === 'id' ? 'Kirim ulang OTP' : 'Resend OTP'}
                         </button>
@@ -625,7 +668,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                           <button 
                             type="button" 
                             onClick={() => { setIsForgotPassword(false); setError(''); }}
-                            style={{ background: 'none', border: 'none', color: '#ffd233', cursor: 'pointer', padding: 0, fontSize: '12px', alignSelf: 'center', marginTop: '4px' }}
+                            style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', padding: 0, fontSize: '12px', alignSelf: 'center', marginTop: '4px' }}
                           >
                             {language === 'id' ? 'Kembali ke Login' : 'Back to Login'}
                           </button>
@@ -642,9 +685,11 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                             <input
                               type="text"
                               value={otpCode}
-                              onChange={(e) => setOtpCode(e.target.value)}
+                              onChange={(e) => handleOtpInputChange(e.target.value)}
+                              onPaste={handleOtpInputPaste}
                               required
-                              placeholder="123456"
+                              maxLength={OTP_CODE_LENGTH}
+                              placeholder={"1".repeat(OTP_CODE_LENGTH)}
                               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: '10px', padding: '10px 12px', fontSize: '13px', letterSpacing: '2px', fontWeight: 'bold', textAlign: 'center' }}
                             />
                           </label>
@@ -669,7 +714,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                           <button 
                             type="button" 
                             onClick={() => { setForgotPasswordStep('email'); setError(''); }}
-                            style={{ background: 'none', border: 'none', color: '#ffd233', cursor: 'pointer', padding: 0, fontSize: '12px', alignSelf: 'center', marginTop: '4px' }}
+                            style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', padding: 0, fontSize: '12px', alignSelf: 'center', marginTop: '4px' }}
                           >
                             {language === 'id' ? 'Ubah Email' : 'Change Email'}
                           </button>
@@ -743,7 +788,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                               <button 
                                 type="button" 
                                 onClick={() => { setIsForgotPassword(true); setForgotPasswordStep('email'); setError(''); }}
-                                style={{ background: 'none', border: 'none', color: '#ffd233', cursor: 'pointer', padding: 0, fontSize: '11px', fontWeight: 600 }}
+                                style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', padding: 0, fontSize: '11px', fontWeight: 600 }}
                               >
                                 {language === 'id' ? 'Lupa sandi?' : 'Forgot password?'}
                               </button>
@@ -778,7 +823,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                           type="button"
                           onClick={() => { setIsLogin(!isLogin); setError(''); }}
                           style={{
-                            background: 'none', border: 'none', color: '#ffd233', cursor: 'pointer',
+                            background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer',
                             fontWeight: 600, padding: 0, font: 'inherit', textDecoration: 'underline'
                           }}
                         >
@@ -837,7 +882,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                 </div>
                 {fetchingInvoice ? (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '180px', gap: '12px' }}>
-                    <Loader2 className="spin" size={28} color="#ffd233" />
+                    <Loader2 className="spin" size={28} color="#3b82f6" />
                     <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>Menyiapkan detail transfer...</p>
                   </div>
                 ) : invoiceError ? (

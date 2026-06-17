@@ -1,12 +1,19 @@
 import React, { useState, useRef, KeyboardEvent, ClipboardEvent } from 'react';
+import { OTP_CODE_LENGTH } from '@baristachaw/shared';
 
 type OtpCodeInputProps = {
   length?: number;
   onComplete: (code: string) => void;
   disabled?: boolean;
+  onPasteError?: (error: string) => void;
 };
 
-export const OtpCodeInput: React.FC<OtpCodeInputProps> = ({ length = 6, onComplete, disabled = false }) => {
+export const OtpCodeInput: React.FC<OtpCodeInputProps> = ({ 
+  length = OTP_CODE_LENGTH, 
+  onComplete, 
+  disabled = false,
+  onPasteError
+}) => {
   const [code, setCode] = useState<string[]>(Array(length).fill(''));
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -66,9 +73,18 @@ export const OtpCodeInput: React.FC<OtpCodeInputProps> = ({ length = 6, onComple
 
   const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, length);
-    if (!pastedData) return;
+    const rawPasted = e.clipboardData.getData('text/plain');
+    const cleanPasted = rawPasted.replace(/\D/g, '');
+    if (!cleanPasted) return;
 
+    if (cleanPasted.length === 8 && length === 6) {
+      if (onPasteError) {
+        onPasteError(`This code has 8 digits, but Baristachaw currently expects ${length}. Please request a new code.`);
+      }
+      return;
+    }
+
+    const pastedData = cleanPasted.slice(0, length);
     const newCode = [...code];
     for (let i = 0; i < length; i++) {
       newCode[i] = pastedData[i] || '';

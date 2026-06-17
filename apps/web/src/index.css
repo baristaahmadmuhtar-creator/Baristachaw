@@ -22,10 +22,10 @@
 
     --glass-bg: rgba(255, 255, 255, 0.6);
     --glass-bg-hover: rgba(255, 255, 255, 0.75);
-    --glass-border: rgba(255, 255, 255, 0.6);
+    --glass-border: rgba(0, 0, 0, 0.1);
 
     --nav-bg: rgba(245, 245, 250, 0.88);
-    --glass-border-light: rgba(255, 255, 255, 0.8);
+    --glass-border-light: rgba(0, 0, 0, 0.05);
 
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
     --glass-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.08);

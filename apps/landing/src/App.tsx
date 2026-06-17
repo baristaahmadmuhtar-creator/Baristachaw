@@ -44,7 +44,7 @@ function ConversionProofSection({ language }: { language: Language }) {
           {benefits.map((benefit, index) => (
             <ScrollReveal key={benefit.id} variant="scale" delay={index * 0.06}>
               <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                <strong style={{ display: 'block', fontSize: '18px', marginBottom: '8px', color: '#ffd233' }}>{benefit.title}</strong>
+                <strong style={{ display: 'block', fontSize: '18px', marginBottom: '8px', color: '#3b82f6' }}>{benefit.title}</strong>
                 <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.5' }}>{benefit.desc}</span>
               </div>
             </ScrollReveal>

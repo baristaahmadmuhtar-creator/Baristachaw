@@ -152,10 +152,10 @@ function AiAccessGateDialog({
 
   const renderSupportLinks = () => (
     <div className="flex gap-4 justify-center mt-2.5 text-xs text-white/60">
-      <a href={supportWhatsappUrl} target="_blank" rel="noopener noreferrer" className="text-[#ffd233] font-bold hover:underline">
+      <a href={supportWhatsappUrl} target="_blank" rel="noopener noreferrer" className="text-[#3b82f6] font-bold hover:underline">
         WhatsApp: {supportWhatsappNumber}
       </a>
-      <a href={supportInstagramUrl} target="_blank" rel="noopener noreferrer" className="text-[#ffd233] font-bold hover:underline">
+      <a href={supportInstagramUrl} target="_blank" rel="noopener noreferrer" className="text-[#3b82f6] font-bold hover:underline">
         Instagram: {supportInstagramHandle}
       </a>
     </div>
@@ -277,8 +277,8 @@ function AiAccessGateDialog({
                       onClick={() => setSelectedDuration(d)}
                       className="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all text-center"
                       style={{
-                        background: selectedDuration === d ? '#ffd233' : 'transparent',
-                        color: selectedDuration === d ? '#07152f' : 'rgba(255,255,255,0.6)',
+                        background: selectedDuration === d ? '#3b82f6' : 'transparent',
+                        color: selectedDuration === d ? '#ffffff' : 'rgba(255,255,255,0.6)',
                       }}
                     >
                       {durationLabels[d]}
@@ -294,7 +294,7 @@ function AiAccessGateDialog({
                       <div
                         key={p}
                         onClick={() => setSelectedPlan(p)}
-                        className={`flex items-start justify-between p-4 rounded-2xl border cursor-pointer transition-all bg-white/[0.01] hover:bg-white/[0.03] ${isSelected ? 'border-[#ffd233] bg-white/[0.04]' : 'border-white/10'}`}
+                        className={`flex items-start justify-between p-4 rounded-2xl border cursor-pointer transition-all bg-white/[0.01] hover:bg-white/[0.03] ${isSelected ? 'border-[#3b82f6] bg-white/[0.04]' : 'border-white/10'}`}
                       >
                         <div className="text-left flex-1 min-w-0 pr-3">
                           <p className="font-bold text-white text-sm">
@@ -307,7 +307,7 @@ function AiAccessGateDialog({
                           </p>
                         </div>
                         <div className="text-right flex flex-col items-end shrink-0 justify-center">
-                          <span className="font-extrabold text-[#ffd233] text-base">
+                          <span className="font-extrabold text-[#3b82f6] text-base">
                             {getPriceDisplay(p, selectedDuration)}
                           </span>
                           <span className="text-[9px] text-white/40 mt-0.5">
@@ -395,7 +395,7 @@ function AiAccessGateDialog({
             <div className="mt-4 flex flex-col gap-3 text-left">
               <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center gap-1.5 text-center">
                 <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">TOTAL TRANSFER</span>
-                <strong className="text-2xl font-black text-[#ffd233]">{manualInvoice.manualInvoice.amountLabel}</strong>
+                <strong className="text-2xl font-black text-[#3b82f6]">{manualInvoice.manualInvoice.amountLabel}</strong>
                 <p className="text-xs text-white/70">
                   *Pastikan transfer sesuai hingga 3 digit terakhir{' '}
                   <strong>({manualInvoice.manualInvoice.uniqueSuffix || manualInvoice.manualInvoice.id.slice(-3).replace(/[^0-9]/g, '3')})</strong>
@@ -468,7 +468,7 @@ function AiAccessGateDialog({
                           {isCopied ? 'Copied' : 'Copy'}
                         </button>
                       </div>
-                      <span className="font-mono text-base font-extrabold text-[#ffd233]">{bank.accountNumber}</span>
+                      <span className="font-mono text-base font-extrabold text-[#3b82f6]">{bank.accountNumber}</span>
                       <span className="text-[11px] text-white/40">{bank.accountName}</span>
                     </div>
                   );
@@ -489,14 +489,14 @@ function AiAccessGateDialog({
                       {copiedBankIndex === 99 ? 'Copied' : 'Copy'}
                     </button>
                   </div>
-                  <span className="font-mono text-base font-extrabold text-[#ffd233]">{manualInvoice.manualInvoice.instructions.accountNumber}</span>
+                  <span className="font-mono text-base font-extrabold text-[#3b82f6]">{manualInvoice.manualInvoice.instructions.accountNumber}</span>
                   <span className="text-[11px] text-white/40">{manualInvoice.manualInvoice.instructions.accountName}</span>
                 </div>
               )}
 
               {/* Upload screenshot */}
               <div 
-                className={`mt-1 border-2 border-dashed rounded-xl p-4 flex flex-col items-center gap-2 cursor-pointer transition-colors bg-white/[0.01] ${manualProofFile ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-white/15 hover:border-[#ffd233] hover:bg-white/[0.03]'}`}
+                className={`mt-1 border-2 border-dashed rounded-xl p-4 flex flex-col items-center gap-2 cursor-pointer transition-colors bg-white/[0.01] ${manualProofFile ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-white/15 hover:border-[#3b82f6] hover:bg-white/[0.03]'}`}
                 onClick={() => {
                   const input = document.getElementById('proof-file-input') as HTMLInputElement;
                   input?.click();
@@ -566,7 +566,7 @@ function AiAccessGateDialog({
                   }
                 }}
                 disabled={manualProofStatus === 'submitting' || !manualProofFile || !turnstileVerified}
-                className="w-full min-h-12 bg-[#ffd233] text-[#07152f] rounded-full font-black text-sm flex items-center justify-center gap-2 hover:bg-[#ffe066] transition-all disabled:opacity-40 disabled:cursor-not-allowed mt-2 shadow-[0_8px_20px_rgba(255,210,51,0.2)]"
+                className="w-full min-h-12 bg-[#3b82f6] text-[#ffffff] rounded-full font-black text-sm flex items-center justify-center gap-2 hover:bg-[#60a5fa] transition-all disabled:opacity-40 disabled:cursor-not-allowed mt-2 shadow-[0_8px_20px_rgba(255,210,51,0.2)]"
               >
                 {manualProofStatus === 'submitting' ? (
                   <><RefreshCcw className="w-4 h-4 animate-spin" /> Memproses...</>
@@ -600,7 +600,7 @@ function AiAccessGateDialog({
             <button
               type="button"
               onClick={onClose}
-              className="w-full min-h-12 bg-[#ffd233] text-[#07152f] rounded-full font-black text-sm hover:bg-[#ffe066] transition-all mt-2"
+              className="w-full min-h-12 bg-[#3b82f6] text-[#ffffff] rounded-full font-black text-sm hover:bg-[#60a5fa] transition-all mt-2"
             >
               Selesai
             </button>

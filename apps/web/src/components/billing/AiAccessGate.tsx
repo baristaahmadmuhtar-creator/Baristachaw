@@ -180,7 +180,7 @@ function AiAccessGateDialog({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={overlayFadeTransition}
-      className="fixed inset-0 z-[160]"
+      className="fixed inset-0 z-[160] flex items-center justify-center p-4 sm:p-6"
     >
       <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
       <motion.div
@@ -194,7 +194,7 @@ function AiAccessGateDialog({
         aria-label={title}
         tabIndex={-1}
         data-testid="ai-access-gate-modal"
-        className="motion-safe-surface absolute left-3 right-3 top-1/2 mx-auto w-auto max-w-md -translate-y-1/2 rounded-[1.75rem] border border-glass bg-[var(--bg-elevated)]/95 backdrop-blur-2xl p-5 text-primary shadow-[0_26px_80px_rgba(0,0,0,0.55)] outline-none sm:left-6 sm:right-6"
+        className="motion-safe-surface relative w-full max-w-md rounded-[1.75rem] border border-glass bg-[var(--bg-elevated)]/95 backdrop-blur-2xl p-5 text-primary shadow-[0_26px_80px_rgba(0,0,0,0.55)] outline-none"
         style={{
           maxHeight: 'min(90vh, 40rem)',
           overflowY: 'auto',

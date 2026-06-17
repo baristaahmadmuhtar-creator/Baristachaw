@@ -12,6 +12,7 @@ import {
   normalizeManualCurrency,
   persistManualPaymentRequest,
 } from './manualPayments.js';
+import { buildAccountStatus } from '../account/status.js';
 
 type PlanCode = 'starter' | 'pro' | 'team' | 'enterprise';
 
@@ -175,6 +176,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const url = checkoutUrlForPlan(planCode, duration, promoCode);
   if (!url) {
+    const statusSnapshot = await buildAccountStatus(requestId, authResult.auth, 'web').catch(() => null);
+    if (statusSnapshot) {
+      const hasActivePaidPlan = statusSnapshot.plans.some((p: any) => p.code !== 'free' && p.billing.status === 'active');
+      const hasPendingManual = statusSnapshot.manualInvoice?.status === 'pending_proof' || statusSnapshot.manualInvoice?.status === 'under_review';
+      
+      if (hasActivePaidPlan) {
+        return res.status(403).json({
+          ok: false,
+          requestId,
+          error: 'Anda sudah berlangganan paket berbayar.',
+          errorCode: 'active_plan_exists',
+          details: 'Silakan tunggu hingga siklus tagihan Anda berakhir jika ingin mengganti, memperbarui, atau beralih ke paket lain.',
+        });
+      }
+
+      if (hasPendingManual) {
+        return res.status(403).json({
+          ok: false,
+          requestId,
+          error: 'Anda memiliki tagihan manual yang belum selesai.',
+          errorCode: 'pending_invoice_exists',
+          details: 'Harap selesaikan pembayaran dan unggah bukti transfer, atau tunggu review admin selesai sebelum memesan paket baru.',
+        });
+      }
+    }
+
     const manualRequest = createManualPaymentRequest({
       userId: authResult.auth.userId,
       email: authEmail(authResult.auth.user),

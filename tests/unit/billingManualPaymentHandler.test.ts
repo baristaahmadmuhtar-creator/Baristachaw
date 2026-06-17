@@ -279,6 +279,24 @@ test('manual checkout still returns actionable invoice when receipt storage is t
   }
 });
 
+test('manual checkout uses support fallback when manual payment env flag is missing', async () => {
+  delete process.env.MANUAL_PAYMENT_ENABLED;
+  delete process.env.BILLING_CHECKOUT_URL;
+  delete process.env.BILLING_CHECKOUT_URL_PRO;
+  delete process.env.STRIPE_CHECKOUT_URL_PRO;
+  delete process.env.REVENUECAT_CHECKOUT_URL_PRO;
+
+  const { res, body } = await postCheckout('runtime_user_manual_env_missing');
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(body.ok, true);
+  assert.equal(body.mode, 'manual_invoice');
+  assert.equal(body.provider, 'manual');
+  assert.equal(body.manualInvoice.instructions.supportEmail, 'support@example.com');
+  assert.match(body.manualInvoice.instructions.whatsappUrl, /^https:\/\/wa\.me\/6731234567\?text=/);
+  assert.equal(body.paymentActionRequired, true);
+});
+
 test('manual payment proof accepts allowlisted metadata and rejects unsafe uploads', async () => {
   const { body, token } = await postCheckout();
   const requestId = body.paymentRequestId;

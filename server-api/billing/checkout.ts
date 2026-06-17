@@ -182,6 +182,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       duration,
       currency,
       promoCode: promoCode || undefined,
+      allowFallbackInstructions: true,
     });
     if (manualRequest) {
       let reviewStorage: 'persisted' | 'deferred' = 'deferred';

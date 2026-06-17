@@ -242,9 +242,10 @@ function buildWhatsappUrl(number: string, message: string): string | undefined {
 
 export function readManualPaymentInstructions(
   currencyOrMessage: string = 'usd',
-  messageInput?: string
+  messageInput?: string,
+  options: { allowFallbackInstructions?: boolean } = {},
 ): ManualPaymentInstructions | null {
-  if (!envFlag('MANUAL_PAYMENT_ENABLED')) return null;
+  if (!envFlag('MANUAL_PAYMENT_ENABLED') && !options.allowFallbackInstructions) return null;
 
   let currency: CurrencyCode = 'usd';
   let message = 'Manual payment review request';
@@ -368,6 +369,7 @@ export function createManualPaymentRequest(input: {
   duration: BillingDuration;
   currency?: CurrencyCode;
   promoCode?: string;
+  allowFallbackInstructions?: boolean;
 }): ManualPaymentRequest | null {
   if (!VALID_MANUAL_PLANS.has(input.planCode)) return null;
   const currency = input.currency || 'usd';
@@ -388,7 +390,9 @@ export function createManualPaymentRequest(input: {
     `Duration: ${input.duration}`,
     `Amount: ${amountLabel}`,
   ].join('\n');
-  const instructions = readManualPaymentInstructions(currency, message);
+  const instructions = readManualPaymentInstructions(currency, message, {
+    allowFallbackInstructions: input.allowFallbackInstructions,
+  });
   if (!instructions) return null;
 
   const now = Date.now();

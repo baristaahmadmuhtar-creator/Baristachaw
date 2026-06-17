@@ -36,6 +36,7 @@ export type BillingManualInvoice = {
   proof: {
     endpoint: string;
     allowedTypes: string[];
+    storage?: 'persisted' | 'deferred';
   };
   message: string;
 };
@@ -58,6 +59,7 @@ export type BillingManualInvoiceResponse = {
   provider: 'manual';
   paymentRequestId: string;
   paymentActionRequired: true;
+  reviewStorage?: 'persisted' | 'deferred';
   planCode: PlanCode;
   duration: BillingDuration;
   promoCode?: string;

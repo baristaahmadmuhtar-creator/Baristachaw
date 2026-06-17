@@ -253,6 +253,32 @@ test('manual checkout returns env-configured invoice without granting paid entit
   assert.doesNotMatch(JSON.stringify(body), /STRIPE|REVENUECAT|sk_|service-role/i);
 });
 
+test('manual checkout still returns actionable invoice when receipt storage is temporarily unavailable', async () => {
+  const activeFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input.toString();
+    if (url.includes('/rest/v1/payment_receipts')) {
+      return new Response(JSON.stringify({ message: 'relation payment_receipts unavailable' }), { status: 503 });
+    }
+    return activeFetch(input, init);
+  }) as typeof fetch;
+
+  try {
+    const { res, body } = await postCheckout('runtime_user_storage_deferred');
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(body.ok, true);
+    assert.equal(body.mode, 'manual_invoice');
+    assert.equal(body.reviewStorage, 'deferred');
+    assert.equal(body.manualInvoice.proof.endpoint, '');
+    assert.equal(body.manualInvoice.proof.storage, 'deferred');
+    assert.match(body.manualInvoice.message, /automated proof storage is temporarily unavailable/i);
+    assert.match(body.manualInvoice.supportLinks.whatsappUrl, /^https:\/\/wa\.me\//);
+  } finally {
+    globalThis.fetch = activeFetch;
+  }
+});
+
 test('manual payment proof accepts allowlisted metadata and rejects unsafe uploads', async () => {
   const { body, token } = await postCheckout();
   const requestId = body.paymentRequestId;

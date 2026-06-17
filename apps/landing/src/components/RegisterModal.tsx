@@ -54,6 +54,9 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   const supportWhatsappNumber = invoice?.instructions?.whatsappNumber || "+6738270092";
   const supportInstagramUrl = invoice?.instructions?.instagramUrl || "https://instagram.com/baristachaw";
   const supportInstagramHandle = invoice?.instructions?.instagramHandle || "@baristachaw";
+  const proofUploadReady = Boolean(invoice?.proof?.endpoint) && invoice?.proof?.storage !== 'deferred';
+  const manualProofFallbackUrl = invoice?.instructions?.whatsappUrl
+    || `https://wa.me/6738270092?text=${encodeURIComponent(`Halo Baristachaw, saya sudah transfer untuk invoice ${invoice?.id || ''} dan ingin mengirim bukti pembayaran.`)}`;
 
   const renderSupportLinks = () => (
     <div className="checkout-support-links" style={{ display: 'flex', gap: '16px', justifyContent: 'center', margin: '14px 0 6px', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>
@@ -102,12 +105,14 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
           currency,
         }),
       });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error('Failed to create manual transfer invoice');
+        throw new Error(data.error || data.details || 'Failed to create manual transfer invoice');
       }
-      const data = await res.json();
       if (data.ok && data.manualInvoice) {
         setInvoice(data.manualInvoice);
+      } else if (data.ok && data.mode === 'redirect' && data.url) {
+        window.location.href = data.url;
       } else {
         throw new Error(data.error || 'Invalid response from billing server');
       }
@@ -429,13 +434,19 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   };
 
   const handleCheckoutSubmit = async () => {
-    if (!turnstileVerified) {
+    if (proofUploadReady && !turnstileVerified) {
       setError('Silakan centang verifikasi bahwa Anda adalah manusia.');
       return;
     }
 
     if (!invoice?.id) {
       setError('Invoice manual belum siap. Coba muat ulang detail transfer.');
+      return;
+    }
+
+    if (!proofUploadReady) {
+      window.open(manualProofFallbackUrl, '_blank', 'noopener,noreferrer');
+      setStep('success');
       return;
     }
 
@@ -997,22 +1008,32 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                       </div>
                     )}
 
-                    {/* Screenshot Upload Drag/Drop Box */}
-                    <input 
-                      type="file" 
-                      ref={fileInputRef} 
-                      onChange={handleFileChange} 
-                      style={{ display: 'none' }} 
-                      accept="image/png, image/jpeg, image/webp, application/pdf"
-                    />
-                    <div 
-                      className={`receipt-upload-box ${uploadedFile ? 'uploaded' : ''}`}
-                      onClick={handleUploadClick}
-                    >
-                      <UploadCloud className="upload-icon" />
-                      <p>{uploadedFile ? uploadedFile.name : 'Klik untuk upload screenshot'}</p>
-                      <span>Maksimal 5MB (JPG, PNG, WebP, PDF)</span>
-                    </div>
+                    {proofUploadReady ? (
+                      <>
+                        {/* Screenshot Upload Drag/Drop Box */}
+                        <input 
+                          type="file" 
+                          ref={fileInputRef} 
+                          onChange={handleFileChange} 
+                          style={{ display: 'none' }} 
+                          accept="image/png, image/jpeg, image/webp, application/pdf"
+                        />
+                        <div 
+                          className={`receipt-upload-box ${uploadedFile ? 'uploaded' : ''}`}
+                          onClick={handleUploadClick}
+                        >
+                          <UploadCloud className="upload-icon" />
+                          <p>{uploadedFile ? uploadedFile.name : 'Klik untuk upload screenshot'}</p>
+                          <span>Maksimal 5MB (JPG, PNG, WebP, PDF)</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="receipt-upload-box uploaded">
+                        <AlertCircle className="upload-icon" />
+                        <p>Upload otomatis belum siap</p>
+                        <span>Kirim bukti transfer lewat WhatsApp atau Instagram dengan ID invoice ini.</span>
+                      </div>
+                    )}
 
                     {/* Turnstile Mock Widget */}
                     <div 
@@ -1044,10 +1065,12 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                       className="checkout-submit-btn" 
                       type="button" 
                       onClick={handleCheckoutSubmit}
-                      disabled={paymentLoading || !uploadedFile || !turnstileVerified}
+                      disabled={paymentLoading || (proofUploadReady && (!uploadedFile || !turnstileVerified))}
                     >
                       {paymentLoading ? (
                         <><Loader2 size={16} className="spin" /> Memproses...</>
+                      ) : !proofUploadReady ? (
+                        <>Kirim Bukti via WhatsApp <ArrowRight size={16} /></>
                       ) : (
                         <>Kirim Bukti & Tunggu Review <ArrowRight size={16} /></>
                       )}
@@ -1065,12 +1088,12 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
               <Check size={32} strokeWidth={3} />
             </div>
             <div>
-              <h3>Bukti Diterima - Menunggu Review</h3>
+              <h3>Pembayaran Menunggu Review</h3>
               <p style={{ marginTop: '10px' }}>
-                Terima kasih. Bukti transfer Anda telah berhasil dikirim ke server Baristachaw.
+                Terima kasih. Admin akan mencocokkan transfer Anda dengan invoice manual ini.
               </p>
               <p style={{ marginTop: '8px', opacity: 0.8, fontSize: '13px' }}>
-                Admin akan memverifikasi transaksi Anda sebelum plan aktif. Jika perlu bantuan, hubungi customer service lewat WhatsApp atau Instagram di bawah.
+                Jika upload otomatis tidak tersedia, kirim bukti transfer lewat WhatsApp atau Instagram di bawah agar review bisa diproses.
               </p>
             </div>
             {renderSupportLinks()}

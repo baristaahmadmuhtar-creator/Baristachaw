@@ -81,6 +81,51 @@ function authEmail(user: Record<string, unknown> | undefined): string | undefine
   return typeof email === 'string' && email.includes('@') ? email.slice(0, 160) : undefined;
 }
 
+function manualInvoiceResponse(input: {
+  requestId: string;
+  planCode: PlanCode;
+  duration: BillingDuration;
+  promoCode?: string;
+  manualRequest: NonNullable<ReturnType<typeof createManualPaymentRequest>>;
+  reviewStorage: 'persisted' | 'deferred';
+}) {
+  const proofReady = input.reviewStorage === 'persisted';
+  return {
+    ok: true,
+    requestId: input.requestId,
+    planCode: input.planCode,
+    duration: input.duration,
+    promoCode: input.promoCode || undefined,
+    provider: 'manual' as const,
+    mode: 'manual_invoice' as const,
+    paymentRequestId: input.manualRequest.id,
+    paymentActionRequired: true as const,
+    reviewStorage: input.reviewStorage,
+    manualInvoice: {
+      id: input.manualRequest.id,
+      status: input.manualRequest.status,
+      amount: input.manualRequest.amount,
+      amountLabel: input.manualRequest.amountLabel,
+      currency: input.manualRequest.currency,
+      uniqueSuffix: input.manualRequest.uniqueSuffix,
+      instructions: input.manualRequest.instructions,
+      supportLinks: {
+        whatsappUrl: input.manualRequest.instructions.whatsappUrl,
+        supportEmail: input.manualRequest.instructions.supportEmail,
+        instagramUrl: input.manualRequest.instructions.instagramUrl,
+      },
+      proof: {
+        endpoint: proofReady ? '/api/billing/proof' : '',
+        allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+        storage: input.reviewStorage,
+      },
+      message: proofReady
+        ? 'Manual payment is pending admin review. Paid entitlement is not granted until the payment is verified.'
+        : 'Manual payment details are ready, but automated proof storage is temporarily unavailable. Send proof to support with the invoice ID for admin review.',
+    },
+  };
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const requestId = createRequestId(req);
   applyCors(req, res, 'POST, OPTIONS');
@@ -139,48 +184,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       promoCode: promoCode || undefined,
     });
     if (manualRequest) {
+      let reviewStorage: 'persisted' | 'deferred' = 'deferred';
       try {
-        await persistManualPaymentRequest(manualRequest);
+        reviewStorage = await persistManualPaymentRequest(manualRequest) ? 'persisted' : 'deferred';
       } catch (error) {
         console.error('Failed to persist manual payment request:', error);
-        return res.status(503).json({
-          ok: false,
-          requestId,
-          error: 'Manual payment storage is not ready',
-          errorCode: 'manual_payment_storage_unavailable',
-          details: 'Admin review storage must be available before a manual invoice can be created.',
-        });
       }
-      return res.status(200).json({
-        ok: true,
+      return res.status(200).json(manualInvoiceResponse({
         requestId,
         planCode,
         duration,
         promoCode: promoCode || undefined,
-        provider: 'manual',
-        mode: 'manual_invoice',
-        paymentRequestId: manualRequest.id,
-        paymentActionRequired: true,
-        manualInvoice: {
-          id: manualRequest.id,
-          status: manualRequest.status,
-          amount: manualRequest.amount,
-          amountLabel: manualRequest.amountLabel,
-          currency: manualRequest.currency,
-          uniqueSuffix: manualRequest.uniqueSuffix,
-          instructions: manualRequest.instructions,
-          supportLinks: {
-            whatsappUrl: manualRequest.instructions.whatsappUrl,
-            supportEmail: manualRequest.instructions.supportEmail,
-            instagramUrl: manualRequest.instructions.instagramUrl,
-          },
-          proof: {
-            endpoint: '/api/billing/proof',
-            allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
-          },
-          message: 'Manual payment is pending admin review. Paid entitlement is not granted until the payment is verified.',
-        },
-      });
+        manualRequest,
+        reviewStorage,
+      }));
     }
 
     return res.status(503).json({

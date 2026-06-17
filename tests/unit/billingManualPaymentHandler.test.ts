@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import checkoutHandler from '../../server-api/billing/checkout.ts';
 import proofHandler from '../../server-api/billing/proof.ts';
 import adminManagementHandler from '../../server-api/admin/management.ts';
-import { resetManualPaymentRequestsForTests } from '../../server-api/billing/manualPayments.ts';
+import { resetManualPaymentRequestsForTests, readManualPaymentInstructions } from '../../server-api/billing/manualPayments.ts';
 
 const ORIGINAL_ENV = {
   JWT_SECRET: process.env.JWT_SECRET,
@@ -251,4 +251,31 @@ test('admin manual payment verification grants entitlement only after verified p
     event.action === 'user_updated'
     && event.target === 'runtime_user_trial_review'
   )));
+});
+
+test('manual payment instructions return dynamic banks by currency (BND / IDR)', () => {
+  delete process.env.MANUAL_PAYMENT_WHATSAPP_NUMBER;
+  const bndInstructions = readManualPaymentInstructions('bnd');
+  assert.ok(bndInstructions);
+  assert.equal(bndInstructions.banks?.length, 2);
+  assert.equal(bndInstructions.banks[0].bankName, 'BIBD');
+  assert.equal(bndInstructions.banks[0].accountName, 'NUR HANISAH BINTI MUSLI');
+  assert.equal(bndInstructions.banks[0].accountNumber, '00010020260978');
+  assert.equal(bndInstructions.banks[1].bankName, 'TAIB');
+  assert.equal(bndInstructions.banks[1].accountName, 'NUR HANISAH BINTI MUSLI');
+  assert.equal(bndInstructions.banks[1].accountNumber, '005103344301013');
+
+  const idrInstructions = readManualPaymentInstructions('idr');
+  assert.ok(idrInstructions);
+  assert.equal(idrInstructions.banks?.length, 2);
+  assert.equal(idrInstructions.banks[0].bankName, 'BCA');
+  assert.equal(idrInstructions.banks[0].accountName, 'AHMAD MUHTAR ALIMUDIN');
+  assert.equal(idrInstructions.banks[0].accountNumber, '3480711393');
+  assert.equal(idrInstructions.banks[1].bankName, 'SEABANK');
+  assert.equal(idrInstructions.banks[1].accountName, 'AHMAD MUHTAR ALIMUDIN');
+  assert.equal(idrInstructions.banks[1].accountNumber, '901080204855');
+
+  assert.equal(bndInstructions.whatsappNumber, '6738270092');
+  assert.equal(bndInstructions.instagramHandle, '@baristachaw');
+  assert.equal(bndInstructions.instagramUrl, 'https://instagram.com/baristachaw');
 });

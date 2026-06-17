@@ -35,6 +35,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   const [invoiceError, setInvoiceError] = useState('');
   
   const [copied, setCopied] = useState(false);
+  const [copiedBankIndex, setCopiedBankIndex] = useState<number | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [turnstileVerified, setTurnstileVerified] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -75,7 +76,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
         body: JSON.stringify({
           planCode,
           duration,
-          currency: 'idr', // Manual transfer uses IDR
+          currency,
         }),
       });
       if (!res.ok) {
@@ -209,6 +210,12 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     navigator.clipboard.writeText(accountNum);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopyBankDetail = (accountNum: string, idx: number) => {
+    navigator.clipboard.writeText(accountNum);
+    setCopiedBankIndex(idx);
+    setTimeout(() => setCopiedBankIndex(null), 2000);
   };
 
   const handleUploadClick = () => {
@@ -577,24 +584,50 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                       <span>Scan QRIS Manual</span>
                     </div>
 
-                    <div className="bank-details-card">
-                      <div className="bank-info-row">
-                        <span className="bank-name-label">{invoice.instructions.bankName}</span>
-                        <button 
-                          className={`bank-copy-btn ${copied ? 'copied' : ''}`}
-                          onClick={() => handleCopyAccount(invoice.instructions.accountNumber)}
-                          type="button"
-                        >
-                          {copied ? 'Copied' : 'Copy'}
-                        </button>
+                    {invoice.instructions.banks && invoice.instructions.banks.length > 0 ? (
+                      invoice.instructions.banks.map((bank: any, idx: number) => {
+                        const isCopied = copiedBankIndex === idx;
+                        return (
+                          <div className="bank-details-card" key={idx} style={{ marginTop: idx > 0 ? '12px' : '0' }}>
+                            <div className="bank-info-row">
+                              <span className="bank-name-label">{bank.bankName}</span>
+                              <button 
+                                className={`bank-copy-btn ${isCopied ? 'copied' : ''}`}
+                                onClick={() => handleCopyBankDetail(bank.accountNumber, idx)}
+                                type="button"
+                              >
+                                {isCopied ? 'Copied' : 'Copy'}
+                              </button>
+                            </div>
+                            <div className="bank-info-row" style={{ marginTop: '4px' }}>
+                              <span className="bank-account-number">{bank.accountNumber}</span>
+                            </div>
+                            <div className="bank-info-row">
+                              <span className="bank-account-name">{bank.accountName}</span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="bank-details-card">
+                        <div className="bank-info-row">
+                          <span className="bank-name-label">{invoice.instructions.bankName}</span>
+                          <button 
+                            className={`bank-copy-btn ${copied ? 'copied' : ''}`}
+                            onClick={() => handleCopyAccount(invoice.instructions.accountNumber)}
+                            type="button"
+                          >
+                            {copied ? 'Copied' : 'Copy'}
+                          </button>
+                        </div>
+                        <div className="bank-info-row" style={{ marginTop: '4px' }}>
+                          <span className="bank-account-number">{invoice.instructions.accountNumber}</span>
+                        </div>
+                        <div className="bank-info-row">
+                          <span className="bank-account-name">{invoice.instructions.accountName}</span>
+                        </div>
                       </div>
-                      <div className="bank-info-row" style={{ marginTop: '4px' }}>
-                        <span className="bank-account-number">{invoice.instructions.accountNumber}</span>
-                      </div>
-                      <div className="bank-info-row">
-                        <span className="bank-account-name">{invoice.instructions.accountName}</span>
-                      </div>
-                    </div>
+                    )}
 
                     {/* Screenshot Upload Drag/Drop Box */}
                     <input 
@@ -636,6 +669,19 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                     </div>
 
                     {error && <p className="register-error" style={{ margin: 0 }}>{error}</p>}
+
+                    <div className="checkout-support-links" style={{ display: 'flex', gap: '16px', justifyContent: 'center', margin: '14px 0 6px', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>
+                      {invoice.instructions.whatsappUrl && (
+                        <a href={invoice.instructions.whatsappUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#ffd233', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
+                          WhatsApp: {invoice.instructions.whatsappNumber}
+                        </a>
+                      )}
+                      {invoice.instructions.instagramHandle && (
+                        <a href={invoice.instructions.instagramUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#ffd233', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
+                          Instagram: {invoice.instructions.instagramHandle}
+                        </a>
+                      )}
+                    </div>
 
                     <button 
                       className="checkout-submit-btn" 

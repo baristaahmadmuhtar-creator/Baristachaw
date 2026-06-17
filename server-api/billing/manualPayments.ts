@@ -10,13 +10,22 @@ import {
   type PaidPlanCode,
 } from '../../packages/shared/src/planCatalog.js';
 
+export type BankDetail = {
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+};
+
 export type ManualPaymentInstructions = {
   bankName: string;
   accountName: string;
   accountNumber: string;
+  banks?: BankDetail[];
   whatsappNumber?: string;
   whatsappUrl?: string;
   supportEmail?: string;
+  instagramUrl?: string;
+  instagramHandle?: string;
   notifyWebhookConfigured: boolean;
 };
 
@@ -80,24 +89,98 @@ function buildWhatsappUrl(number: string, message: string): string | undefined {
   return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
 }
 
-export function readManualPaymentInstructions(message = 'Manual payment review request'): ManualPaymentInstructions | null {
+export function readManualPaymentInstructions(
+  currencyOrMessage: string = 'usd',
+  messageInput?: string
+): ManualPaymentInstructions | null {
   if (!envFlag('MANUAL_PAYMENT_ENABLED')) return null;
 
-  const bankName = envText('MANUAL_PAYMENT_BANK_NAME');
-  const accountName = envText('MANUAL_PAYMENT_ACCOUNT_NAME');
-  const accountNumber = envText('MANUAL_PAYMENT_ACCOUNT_NUMBER');
-  if (!bankName || !accountName || !accountNumber) return null;
+  let currency: CurrencyCode = 'usd';
+  let message = 'Manual payment review request';
 
-  const whatsappNumber = normalizeWhatsappNumber(envText('MANUAL_PAYMENT_WHATSAPP_NUMBER'));
-  const supportEmail = envText('MANUAL_PAYMENT_SUPPORT_EMAIL') || undefined;
+  if (VALID_CURRENCIES.has(currencyOrMessage as CurrencyCode)) {
+    currency = currencyOrMessage as CurrencyCode;
+    message = messageInput || 'Manual payment review request';
+  } else {
+    message = currencyOrMessage;
+  }
+
+  const whatsappNumber = normalizeWhatsappNumber(envText('MANUAL_PAYMENT_WHATSAPP_NUMBER') || '+6738270092');
+  const supportEmail = envText('MANUAL_PAYMENT_SUPPORT_EMAIL') || 'support@baristachaw.com';
+  const instagram = '@baristachaw';
+
+  let banks: BankDetail[] = [];
+
+  if (currency === 'bnd') {
+    banks = [
+      {
+        bankName: 'BIBD',
+        accountName: 'NUR HANISAH BINTI MUSLI',
+        accountNumber: '00010020260978',
+      },
+      {
+        bankName: 'TAIB',
+        accountName: 'NUR HANISAH BINTI MUSLI',
+        accountNumber: '005103344301013',
+      }
+    ];
+  } else if (currency === 'idr') {
+    banks = [
+      {
+        bankName: 'BCA',
+        accountName: 'AHMAD MUHTAR ALIMUDIN',
+        accountNumber: '3480711393',
+      },
+      {
+        bankName: 'SEABANK',
+        accountName: 'AHMAD MUHTAR ALIMUDIN',
+        accountNumber: '901080204855',
+      }
+    ];
+  } else {
+    const envBankName = envText('MANUAL_PAYMENT_BANK_NAME');
+    const envAccountName = envText('MANUAL_PAYMENT_ACCOUNT_NAME');
+    const envAccountNumber = envText('MANUAL_PAYMENT_ACCOUNT_NUMBER');
+    if (envBankName && envAccountName && envAccountNumber) {
+      banks = [{ bankName: envBankName, accountName: envAccountName, accountNumber: envAccountNumber }];
+    } else {
+      banks = [
+        {
+          bankName: 'BIBD',
+          accountName: 'NUR HANISAH BINTI MUSLI',
+          accountNumber: '00010020260978',
+        },
+        {
+          bankName: 'TAIB',
+          accountName: 'NUR HANISAH BINTI MUSLI',
+          accountNumber: '005103344301013',
+        },
+        {
+          bankName: 'BCA',
+          accountName: 'AHMAD MUHTAR ALIMUDIN',
+          accountNumber: '3480711393',
+        },
+        {
+          bankName: 'SEABANK',
+          accountName: 'AHMAD MUHTAR ALIMUDIN',
+          accountNumber: '901080204855',
+        }
+      ];
+    }
+  }
+
+  const primaryBank = banks[0] || { bankName: '', accountName: '', accountNumber: '' };
 
   return {
-    bankName,
-    accountName,
-    accountNumber,
+    bankName: primaryBank.bankName,
+    accountName: primaryBank.accountName,
+    accountNumber: primaryBank.accountNumber,
+    banks,
     whatsappNumber: whatsappNumber || undefined,
     whatsappUrl: whatsappNumber ? buildWhatsappUrl(whatsappNumber, message) : undefined,
     supportEmail,
+    instagramUrl: `https://instagram.com/${instagram.replace(/^@/, '')}`,
+    instagramHandle: instagram,
     notifyWebhookConfigured: Boolean(envText('MANUAL_PAYMENT_NOTIFY_WEBHOOK_URL')),
   };
 }
@@ -154,7 +237,7 @@ export function createManualPaymentRequest(input: {
     `Duration: ${input.duration}`,
     `Amount: ${amountLabel}`,
   ].join('\n');
-  const instructions = readManualPaymentInstructions(message);
+  const instructions = readManualPaymentInstructions(currency, message);
   if (!instructions) return null;
 
   const now = Date.now();

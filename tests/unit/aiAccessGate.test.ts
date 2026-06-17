@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { featureSurfaceFromClientContext, requirePaidAiAccess } from '../../server-api/account/aiAccess.ts';
 import type { AuthContext } from '../../server-api/_shared.ts';
+import type { PlanCode } from '../../server-api/account/status.ts';
 
 const ORIGINAL_ENV = {
   SUPABASE_URL: process.env.SUPABASE_URL,
@@ -17,7 +18,7 @@ function restoreEnv() {
   }
 }
 
-function makeAuth(planCode: 'free' | 'starter' = 'free', user: Record<string, unknown> = {}): AuthContext {
+function makeAuth(planCode: PlanCode = 'free', user: Record<string, unknown> = {}): AuthContext {
   const id = typeof user.id === 'string' ? user.id : `qa-${planCode}-user`;
   return {
     userId: id,
@@ -87,6 +88,32 @@ test('paid AI access lets starter and higher plans continue', async () => {
     assert.equal(result.snapshot.billing.status, 'trialing');
     assert.equal(result.snapshot.billing.paymentActionRequired, true);
   }
+});
+
+test('paid AI access requires Barista Pro or higher for deep quota mode', async () => {
+  const starter = await requirePaidAiAccess({
+    requestId: 'ai-gate-starter-deep',
+    auth: makeAuth('starter'),
+    rawClientContext: { platform: 'pwa' },
+    feature: 'chat',
+    quotaKind: 'deep',
+  });
+
+  assert.equal(starter.ok, false);
+  assert.equal(starter.statusCode, 402);
+  assert.equal(starter.errorCode, 'paid_plan_required');
+  assert.equal(starter.retryable, false);
+  assert.equal(starter.minimumPlan?.code, 'pro');
+
+  const pro = await requirePaidAiAccess({
+    requestId: 'ai-gate-pro-deep',
+    auth: makeAuth('pro'),
+    rawClientContext: { platform: 'pwa' },
+    feature: 'chat',
+    quotaKind: 'deep',
+  });
+
+  assert.equal(pro.ok, true);
 });
 
 test('paid AI quota enforcement requires Supabase account status', async () => {

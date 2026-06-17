@@ -265,8 +265,25 @@ test('AI Brew 2025 WAC runner-up and 2026 multi-pour presets stay source-scoped 
   assert.equal(Number((tetsuPlan.totalWaterMl / tetsuPlan.doseG).toFixed(1)), 15);
   assert.equal(tetsuPours.length, 10, 'Tetsu 2026 10x pour should create ten positive pours');
   assert.deepEqual(tetsuPours.map((step) => step.pourVolumeMl), Array.from({ length: 10 }, () => 30));
+  assert.deepEqual(
+    tetsuPours.map((step) => step.startSeconds),
+    [0, 30, 45, 60, 75, 90, 105, 120, 135, 150],
+    'Tetsu 2026 10x pour should keep its reported compact cadence instead of stretching beyond the live guide timer',
+  );
   const tetsuGuidePours = (tetsuPlan.workflowGuideSteps || []).filter((step) => (step.pourVolumeMl || 0) > 0);
   assert.equal(tetsuGuidePours.length, 10, 'Tetsu workflow guide should expose all ten source pours');
+  assert.deepEqual(
+    tetsuGuidePours.map((step) => step.startSeconds),
+    [0, 30, 45, 60, 75, 90, 105, 120, 135, 150],
+    'Tetsu workflow guide should not place pours after serve/drawdown',
+  );
+  const tetsuDrawdown = tetsuPlan.workflowGuideSteps?.find((step) => step.actionType === 'drawdown');
+  const tetsuServe = tetsuPlan.workflowGuideSteps?.find((step) => step.actionType === 'serve');
+  assert.ok(tetsuDrawdown, 'Tetsu workflow guide should include drawdown');
+  assert.ok(tetsuServe, 'Tetsu workflow guide should include serve');
+  assert.ok((tetsuDrawdown.endSeconds || 0) >= tetsuDrawdown.startSeconds, 'Tetsu drawdown must not run backward');
+  assert.ok(tetsuDrawdown.startSeconds >= tetsuGuidePours.at(-1)!.startSeconds, 'Tetsu drawdown should happen after the last pour starts');
+  assert.ok(tetsuServe.startSeconds >= (tetsuDrawdown.endSeconds || tetsuDrawdown.startSeconds), 'Tetsu serve should happen after drawdown');
   const preservedSourceStepIds = new Set(
     (tetsuPlan.workflowGuideSteps || []).flatMap((step) => step.sourceStepIds || []),
   );

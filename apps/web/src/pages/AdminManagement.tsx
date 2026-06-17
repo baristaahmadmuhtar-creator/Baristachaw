@@ -4069,9 +4069,10 @@ export function AdminManagement() {
               type="button"
               onClick={() => navigate('/')}
               className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-glass bg-surface-alpha px-2 text-[10px] font-semibold text-secondary hover:bg-[var(--bg-base)] hover:text-primary transition-all"
+              title={admin.text('backToAppTitle')}
             >
               <ArrowLeft size={11} />
-              <span>Exit</span>
+              <span>{admin.text('backToApp')}</span>
             </button>
             <button
               type="button"
@@ -4174,9 +4175,10 @@ export function AdminManagement() {
                       navigate('/');
                     }}
                     className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-glass bg-surface-alpha text-xs font-semibold text-secondary"
+                    title={admin.text('backToAppTitle')}
                   >
                     <ArrowLeft size={12} />
-                    <span>Exit</span>
+                    <span>{admin.text('backToApp')}</span>
                   </button>
                   <button
                     type="button"

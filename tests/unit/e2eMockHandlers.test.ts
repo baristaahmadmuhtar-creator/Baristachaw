@@ -24,9 +24,9 @@ function setBaseEnv() {
   delete process.env.VERCEL_ENV;
 }
 
-function authToken() {
+function authToken(planCode = 'starter') {
   return jwt.sign(
-    { user: { id: 'qa-e2e-mock-user', email: 'qa@example.com', name: 'QA Mock', planCode: 'starter' } },
+    { user: { id: 'qa-e2e-mock-user', email: 'qa@example.com', name: 'QA Mock', planCode } },
     process.env.JWT_SECRET!,
     { expiresIn: '1h' },
   );
@@ -128,7 +128,7 @@ test('ai handler returns deep e2e mock payload with quality metadata', async () 
   const req = {
     method: 'POST',
     headers: {
-      authorization: `Bearer ${authToken()}`,
+      authorization: `Bearer ${authToken('pro')}`,
       'x-e2e-mock': '1',
     },
     body: {

@@ -6,14 +6,14 @@ import { ScrollReveal } from './ScrollReveal';
 
 const local = {
   heading: {
-    id: 'Mulai ritual kopi Anda sekarang.',
-    en: 'Start your coffee ritual today.',
-    bn: 'Mula ritual kopi anda sekarang.',
+    id: 'Mulai Ritual Kopi Terbaik Anda Sekarang.',
+    en: 'Start Your Perfect Coffee Ritual Today.',
+    bn: 'Mula Ritual Kopi Terbaik Anda Sekarang.',
   },
   subtitle: {
-    id: 'Gunakan web app langsung atau minta akses Android saat artifact rilis belum tersedia.',
-    en: 'Use the web app instantly or request Android access while the release artifact is pending.',
-    bn: 'Guna aplikasi web terus atau minta akses Android semasa artifact rilis belum tersedia.',
+    id: 'Langsung gunakan web app atau unduh aplikasi Android - nikmati kenyamanan menyeduh kopi di mana saja.',
+    en: 'Use the web app instantly or download the Android app - enjoy brewing comfort anywhere.',
+    bn: 'Guna terus aplikasi web atau muat turun aplikasi Android - nikmati keselesaan menyeduh kopi di mana sahaja.',
   },
   webAppLabel: {
     id: 'Buka Web App',

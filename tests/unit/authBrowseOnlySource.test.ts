@@ -44,3 +44,12 @@ test('browse-only public feature surfaces stay interactive until protected submi
   assert.doesNotMatch(CHAT_SOURCE, /const interactionDisabled = loading \|\| authChecking \|\| authBusy \|\| !isAuthenticated;/);
   assert.match(AUTH_MODAL_SOURCE, /\^ai_brew\(\?:_\|\$\)/);
 });
+
+test('chat Deep Think mode stays Pro-gated before request dispatch', () => {
+  assert.match(CHAT_SOURCE, /function planSupportsDeepThink/);
+  assert.match(CHAT_SOURCE, /planCode === 'pro' \|\| planCode === 'team' \|\| planCode === 'enterprise'/);
+  assert.match(CHAT_SOURCE, /const deepThinkLocked = isAuthenticated && !planSupportsDeepThink\(effectivePlanCode\);/);
+  assert.match(CHAT_SOURCE, /requestMode === 'deep' && isAuthenticated && !planSupportsDeepThink\(effectivePlanCode\)/);
+  assert.match(CHAT_SOURCE, /disabled=\{deepThinkLocked\}/);
+  assert.match(CHAT_SOURCE, /t\.chatDeepProOnly/);
+});

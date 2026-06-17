@@ -134,6 +134,10 @@ function resolveChatSafetyTimeoutMs(mode: ResponseMode, attachmentMimeType?: str
 const CHAT_MOBILE_SWIPE_HINT_STORAGE_KEY = 'baristachaw_chat_mobile_swipe_hint_count_v1';
 const CHAT_MOBILE_SWIPE_HINT_MAX_SHOWS = 3;
 
+function planSupportsDeepThink(planCode: string | null | undefined) {
+  return planCode === 'pro' || planCode === 'team' || planCode === 'enterprise';
+}
+
 function getDayKey(value: number) {
   const d = new Date(value);
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -197,7 +201,7 @@ export function Chat() {
     showNav,
   } = useNavbar();
   const { isAuthenticated, authChecking, authBusy, openAuthModal, user } = useAuthModal();
-  const { ensureAiAccess, aiAccessGateModal } = useAiAccessGate('chat');
+  const { ensureAiAccess, effectivePlanCode, aiAccessGateModal } = useAiAccessGate('chat');
   const { isOnline } = useNetworkStatus();
   const { isPwa } = useRuntimeDisplayMode();
   const navigate = useNavigate();
@@ -1100,6 +1104,12 @@ export function Chat() {
     const draftToSend = draftAttachment ? { ...draftAttachment, status: 'sent' as const } : null;
     const textPayloadForDraft = draftAttachmentAiText;
     if (!trimmedInput && !draftToSend) return;
+    const requestMode = getActiveResponseMode();
+    if (requestMode === 'deep' && isAuthenticated && !planSupportsDeepThink(effectivePlanCode)) {
+      setAuthError(t.chatDeepProOnly);
+      setIsDeepThinkMode(false);
+      return;
+    }
     if (!ensureAiAccess('chat_send')) {
       return;
     }
@@ -1111,7 +1121,6 @@ export function Chat() {
       setInputLimitNotice(t.chatInputTooLong);
       return;
     }
-    const requestMode = getActiveResponseMode();
     const userMessageText = trimmedInput || (draftToSend ? `[${t.chatAttachmentLabel}] ${draftToSend.fileName || t.chatFileFallbackName}` : '');
     const profilePatch = extractDurablePreferenceUpdates(trimmedInput, agentProfile);
     const effectiveAgentProfile = Object.keys(profilePatch).length
@@ -1507,6 +1516,7 @@ export function Chat() {
     ? 'var(--desktop-chat-shell-offset, var(--desktop-rail-current-width, var(--desktop-rail-width-expanded)))'
     : '0px';
   const interactionDisabled = loading || authChecking || authBusy;
+  const deepThinkLocked = isAuthenticated && !planSupportsDeepThink(effectivePlanCode);
   const deepRequestInFlight = loading && activeRequestMode === 'deep';
   const deepThinkingPhases = DEEP_THINKING_PHASE_KEYS.map((key) => t[key] || key);
   const deepPhaseLabel = deepThinkingPhases[Math.min(deepThinkingPhaseIndex, deepThinkingPhases.length - 1)];
@@ -1588,9 +1598,17 @@ export function Chat() {
                 {t.chatMemoryDetailBalanced}
               </button>
               <button
-                onClick={() => toggleMode('deep')}
-                className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ease-out ${isDeepThinkMode ? 'bg-purple-500/15 text-purple-600 shadow-sm dark:text-purple-400' : 'text-secondary hover:text-primary'}`}
-                aria-label={t.chatDeepModeAria}
+                onClick={() => {
+                  if (deepThinkLocked) {
+                    setAuthError(t.chatDeepProOnly);
+                    return;
+                  }
+                  toggleMode('deep');
+                }}
+                disabled={deepThinkLocked}
+                title={deepThinkLocked ? t.chatDeepProOnly : t.chatDeepModeAria}
+                className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ease-out ${deepThinkLocked ? 'cursor-not-allowed opacity-55' : isDeepThinkMode ? 'bg-purple-500/15 text-purple-600 shadow-sm dark:text-purple-400' : 'text-secondary hover:text-primary'}`}
+                aria-label={deepThinkLocked ? t.chatDeepProOnly : t.chatDeepModeAria}
                 aria-pressed={isDeepThinkMode}
               >
                 <Brain size={13} className={isDeepThinkMode ? 'fill-purple-600 dark:fill-purple-400' : ''} />

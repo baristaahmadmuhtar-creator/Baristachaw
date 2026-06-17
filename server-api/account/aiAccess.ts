@@ -27,6 +27,7 @@ export type PaidAiAccessResult =
     };
 
 const PAID_PLAN_ORDER: PlanCode[] = ['starter', 'pro', 'team', 'enterprise'];
+const PLAN_ORDER: PlanCode[] = ['free', ...PAID_PLAN_ORDER];
 type MinimumPaidPlan = {
   code: PlanCode;
   name: string;
@@ -59,6 +60,11 @@ function minimumPaidPlan(snapshot: AccountStatusResponse): MinimumPaidPlan | und
   return plan ? { code: plan.code, name: plan.name, displayPrice: plan.displayPrice } : undefined;
 }
 
+function minimumPlanByCode(snapshot: AccountStatusResponse, code: PlanCode): MinimumPaidPlan | undefined {
+  const plan = snapshot.plans.find((item) => item.code === code);
+  return plan ? { code: plan.code, name: plan.name, displayPrice: plan.displayPrice } : minimumPaidPlan(snapshot);
+}
+
 function nextPlanAfterCurrent(snapshot: AccountStatusResponse): MinimumPaidPlan | undefined {
   const currentIndex = PAID_PLAN_ORDER.indexOf(snapshot.user.planCode);
   const candidates = snapshot.plans
@@ -70,6 +76,10 @@ function nextPlanAfterCurrent(snapshot: AccountStatusResponse): MinimumPaidPlan 
 
 function quotaKindForFeature(feature: PaidAiFeature): PaidAiQuotaKind {
   return feature === 'scanner' ? 'scanner' : 'ai';
+}
+
+function planMeetsMinimum(planCode: PlanCode, minimumPlanCode: PlanCode): boolean {
+  return PLAN_ORDER.indexOf(planCode) >= PLAN_ORDER.indexOf(minimumPlanCode);
 }
 
 function strictQuotaEnforcementEnabled(): boolean {
@@ -184,6 +194,17 @@ export async function requirePaidAiAccess(params: {
       errorCode: 'billing_attention_required',
       retryable: false,
       minimumPlan: minimumPaidPlan(snapshot),
+    };
+  }
+
+  if ((params.quotaKind || quotaKindForFeature(params.feature)) === 'deep' && !planMeetsMinimum(snapshot.user.planCode, 'pro')) {
+    return {
+      ok: false,
+      statusCode: 402,
+      error: 'Deep Think requires Barista Pro or higher.',
+      errorCode: 'paid_plan_required',
+      retryable: false,
+      minimumPlan: minimumPlanByCode(snapshot, 'pro'),
     };
   }
 

@@ -1613,7 +1613,18 @@ test('ai brew Brew Presets preserve source-backed ratios, localized confidence, 
   expect(tetsuPlan.steps.filter((step) => (step.pourVolumeMl || 0) > 0).map((step) => step.pourVolumeMl)).toEqual(
     Array.from({ length: 10 }, () => 30),
   );
+  expect(tetsuPlan.steps.filter((step) => (step.pourVolumeMl || 0) > 0).map((step) => step.startSeconds)).toEqual(
+    [0, 30, 45, 60, 75, 90, 105, 120, 135, 150],
+  );
   expect((tetsuPlan.workflowGuideSteps || []).filter((step) => (step.pourVolumeMl || 0) === 30)).toHaveLength(10);
+  expect((tetsuPlan.workflowGuideSteps || []).filter((step) => (step.pourVolumeMl || 0) === 30).map((step) => step.startSeconds)).toEqual(
+    [0, 30, 45, 60, 75, 90, 105, 120, 135, 150],
+  );
+  const tetsuDrawdown = (tetsuPlan.workflowGuideSteps || []).find((step) => step.actionType === 'drawdown');
+  const tetsuServe = (tetsuPlan.workflowGuideSteps || []).find((step) => step.actionType === 'serve');
+  expect(tetsuDrawdown?.endSeconds || 0).toBeGreaterThanOrEqual(tetsuDrawdown?.startSeconds || 0);
+  expect(tetsuDrawdown?.startSeconds || 0).toBeGreaterThanOrEqual(150);
+  expect(tetsuServe?.startSeconds || 0).toBeGreaterThanOrEqual(tetsuDrawdown?.endSeconds || 0);
   await result.getByTestId('ai-brew-result-tab-plan').click();
   await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(tetsuPlan.finalBeverageRatio)}`);
   expect(tetsuGuide).toMatch(/30\s*(g|ml)/i);

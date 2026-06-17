@@ -1670,6 +1670,12 @@ function buildAdaptiveStepStartSeconds(
   const count = profile.steps.length;
   if (count === 0) return [] as number[];
   if (count === 1) return [0];
+  if (context.manualTechniquePattern === 'ten_pour_multi') {
+    return profile.steps.map((step, index) => {
+      const parsed = Math.round(step.startSeconds);
+      return Number.isFinite(parsed) ? Math.max(0, parsed) : index === 0 ? 0 : index * 15;
+    });
+  }
   if (
     context.methodFamily === 'hario_switch'
     && (
@@ -1841,12 +1847,17 @@ function normalizeBaristaStepStartSeconds(
   starts: number[],
   totalTimeSeconds: number,
   methodFamily: AiBrewMethodFamily,
-  options: { finalWindowMinSeconds?: number } = {},
+  options: { finalWindowMinSeconds?: number; minimumGapSeconds?: number } = {},
 ) {
   if (starts.length <= 1) return starts.map((start) => Math.max(0, Math.round(start)));
   const increment = resolveBaristaTimeIncrementSeconds(methodFamily);
   const baseMinGapSeconds = methodFamily === 'espresso' ? 1 : Math.min(30, Math.max(5, increment));
-  const minGapSeconds = supportsAiBrewPourControls(methodFamily)
+  const requestedMinGapSeconds = typeof options.minimumGapSeconds === 'number'
+    ? Math.max(baseMinGapSeconds, Math.round(options.minimumGapSeconds))
+    : undefined;
+  const minGapSeconds = typeof requestedMinGapSeconds === 'number'
+    ? requestedMinGapSeconds
+    : supportsAiBrewPourControls(methodFamily)
     ? Math.max(baseMinGapSeconds, 30)
     : baseMinGapSeconds;
   const finalWindowMinSeconds = Math.max(baseMinGapSeconds, options.finalWindowMinSeconds || baseMinGapSeconds);
@@ -7299,6 +7310,7 @@ function buildSteps(
       finalWindowMinSeconds: adaptiveShareContext.brewMode === 'iced' && isIcedManualPourOverFamily(adaptiveShareContext.methodFamily)
         ? resolveMethodFamilyFinalWindowBounds(adaptiveShareContext.methodFamily, adaptiveShareContext.brewMode).min
         : undefined,
+      minimumGapSeconds: adaptiveShareContext.manualTechniquePattern === 'ten_pour_multi' ? 15 : undefined,
     },
   );
   const adaptedShares = buildAdaptiveStepShares(profile, adaptiveShareContext);

@@ -83,7 +83,7 @@ test('deep_think falls back to internal chat proxy when compat providers are una
   delete process.env.VERCEL_URL;
 
   const authToken = jwt.sign(
-    { user: { id: 'qa-deep-fallback-user', email: 'qa@example.com', name: 'QA Deep Fallback', planCode: 'starter' } },
+    { user: { id: 'qa-deep-fallback-user', email: 'qa@example.com', name: 'QA Deep Fallback', planCode: 'pro' } },
     process.env.JWT_SECRET,
     { expiresIn: '1h' },
   );
@@ -202,7 +202,7 @@ test('deep_think returns deterministic local fallback when every provider path i
   }) as typeof fetch;
 
   const authToken = jwt.sign(
-    { user: { id: 'qa-deep-local-user', email: 'qa-local@example.com', name: 'QA Deep Local', planCode: 'starter' } },
+    { user: { id: 'qa-deep-local-user', email: 'qa-local@example.com', name: 'QA Deep Local', planCode: 'pro' } },
     process.env.JWT_SECRET,
     { expiresIn: '1h' },
   );

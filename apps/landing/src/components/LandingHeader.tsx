@@ -63,11 +63,13 @@ export function LandingHeader({ language, onLanguageChange, region, onRegionChan
         {user ? (
           <>
             <span className="header-user-email" style={{ marginRight: '8px', fontSize: '13px', color: 'var(--text-secondary)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={user.email}>{user.email}</span>
+            <a className="header-login" href="/#pricing" style={{ marginRight: '16px' }}>{language === 'id' ? 'Lihat Plan' : language === 'bn' ? 'Lihat Plan' : 'View Plans'}</a>
             <button className="header-login" onClick={onLogout} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}>{t('nav.logout', language)}</button>
             <a className="button button-small button-light" href={APP_ORIGIN}>{t('nav.toApp', language)}</a>
           </>
         ) : (
           <>
+            <a className="header-login" href="/#pricing" style={{ marginRight: '16px' }}>{t('pricing.index', language)}</a>
             <a className="header-login" href={APP_LINKS.login}>{t('nav.login', language)}</a>
             <a className="button button-small button-light" href={APP_LINKS.aiBrew}>{t('nav.tryAiBrew', language)}</a>
           </>

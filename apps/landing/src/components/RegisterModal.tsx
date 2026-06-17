@@ -21,6 +21,12 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [forgotPasswordStep, setForgotPasswordStep] = useState<'email' | 'otp_and_password'>('email');
+  const [isVerifySignupOtp, setIsVerifySignupOtp] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+
   // Step state: 'pilih' | 'checkout' | 'success'
   const [step, setStep] = useState<'pilih' | 'checkout' | 'success'>('pilih');
   const [selectedPlan, setSelectedPlan] = useState<'plus' | 'pro'>(() => {
@@ -147,7 +153,8 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
       // If email confirmation is required, notify user
       if (payload.emailConfirmationRequired) {
-        setError('Kode verifikasi dikirim ke email Anda. Masukkan kode sesuai instruksi email, lalu login kembali.');
+        setIsVerifySignupOtp(true);
+        setError('');
         setLoading(false);
         return;
       }
@@ -168,6 +175,143 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
       setStep('checkout');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifySignupOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch(`${APP_ORIGIN}/api/auth/email/otp/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, token: otpCode }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok || payload.ok === false) {
+        throw new Error(payload.error || 'Verification failed');
+      }
+
+      onLoginSuccess?.();
+
+      if (plan === 'free') {
+        window.location.href = APP_ORIGIN;
+        return;
+      }
+
+      if (plan === 'team') {
+        window.location.href = '/support?topic=general';
+        return;
+      }
+
+      setStep('checkout');
+      setIsVerifySignupOtp(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid verification code');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendSignupOtp = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch(`${APP_ORIGIN}/api/auth/email/otp/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok || payload.ok === false) {
+        throw new Error(payload.error || 'Failed to resend OTP');
+      }
+      setError('OTP has been resent to your email.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to resend OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStartForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch(`${APP_ORIGIN}/api/auth/email/password/reset/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok || payload.ok === false) {
+        throw new Error(payload.error || 'Failed to send reset code');
+      }
+      setForgotPasswordStep('otp_and_password');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send reset code');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyAndResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      // Step 1: Verify OTP and get session/accessToken
+      const verifyRes = await fetch(`${APP_ORIGIN}/api/auth/email/password/reset/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, token: otpCode }),
+      });
+      const verifyPayload = await verifyRes.json().catch(() => ({}));
+      if (!verifyRes.ok || verifyPayload.ok === false) {
+        throw new Error(verifyPayload.error || 'Verification failed');
+      }
+
+      const token = verifyPayload.accessToken;
+      if (!token) {
+        throw new Error('Access token missing from verification response');
+      }
+
+      // Step 2: Update password using the acquired token
+      const updateRes = await fetch(`${APP_ORIGIN}/api/auth/email/password/reset/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ accessToken: token, password: newPassword }),
+      });
+      const updatePayload = await updateRes.json().catch(() => ({}));
+      if (!updateRes.ok || updatePayload.ok === false) {
+        throw new Error(updatePayload.error || 'Failed to update password');
+      }
+
+      onLoginSuccess?.();
+
+      if (plan === 'free') {
+        window.location.href = APP_ORIGIN;
+        return;
+      }
+
+      if (plan === 'team') {
+        window.location.href = '/support?topic=general';
+        return;
+      }
+
+      setStep('checkout');
+      setIsForgotPassword(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Password reset failed');
     } finally {
       setLoading(false);
     }
@@ -276,11 +420,24 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Failed to submit proof');
+        throw new Error(data.error || 'Failed to submit proof metadata');
       }
 
       const data = await res.json();
       if (data.ok) {
+        if (data.uploadUrl) {
+          const uploadRes = await fetch(data.uploadUrl, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': uploadedFile.type,
+            },
+            body: uploadedFile,
+          });
+          if (!uploadRes.ok) {
+            const errText = await uploadRes.text();
+            throw new Error(`Gagal mengunggah file bukti transfer: ${errText.slice(0, 100)}`);
+          }
+        }
         setStep('success');
       } else {
         throw new Error(data.error || 'Gagal mengirim bukti transfer');
@@ -391,104 +548,245 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                 </>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div className="register-divider" style={{ margin: '12px 0 6px', color: 'rgba(255,255,255,0.4)' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hubungkan Akun Anda</span>
-                  </div>
+                  {isVerifySignupOtp ? (
+                    <>
+                      <div className="register-divider" style={{ margin: '12px 0 6px', color: 'rgba(255,255,255,0.4)' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          {language === 'id' ? 'Verifikasi Email' : language === 'bn' ? 'Verifikasi Emel' : 'Verify Email'}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.7)', margin: '0 0 8px' }}>
+                        {language === 'id' 
+                          ? `Masukkan kode OTP yang kami kirim ke ${email}` 
+                          : language === 'bn' 
+                            ? `Masukkan kod OTP yang dihantar ke ${email}` 
+                            : `Enter the OTP code sent to ${email}`}
+                      </p>
+                      <form onSubmit={handleVerifySignupOtp} style={{ display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left' }}>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>Kode OTP</span>
+                          <input
+                            type="text"
+                            value={otpCode}
+                            onChange={(e) => setOtpCode(e.target.value)}
+                            required
+                            placeholder="123456"
+                            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: '10px', padding: '10px 12px', fontSize: '13px', letterSpacing: '2px', fontWeight: 'bold', textAlign: 'center' }}
+                          />
+                        </label>
+                        {error && <p className="register-error" style={{ fontSize: '12px', margin: '4px 0 0' }}>{error}</p>}
+                        <button className="checkout-submit-btn" type="submit" disabled={loading}>
+                          {loading ? <Loader2 size={16} className="spin" /> : (language === 'id' ? 'Verifikasi Kode' : 'Verify Code')}
+                        </button>
+                      </form>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '4px' }}>
+                        <button 
+                          type="button" 
+                          onClick={handleResendSignupOtp}
+                          disabled={loading}
+                          style={{ background: 'none', border: 'none', color: '#ffd233', cursor: 'pointer', padding: 0 }}
+                        >
+                          {language === 'id' ? 'Kirim ulang OTP' : 'Resend OTP'}
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => { setIsVerifySignupOtp(false); setError(''); }}
+                          style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: 0 }}
+                        >
+                          {language === 'id' ? 'Kembali' : 'Back'}
+                        </button>
+                      </div>
+                    </>
+                  ) : isForgotPassword ? (
+                    <>
+                      <div className="register-divider" style={{ margin: '12px 0 6px', color: 'rgba(255,255,255,0.4)' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          {language === 'id' ? 'Lupa Kata Sandi' : language === 'bn' ? 'Lupa Kata Laluan' : 'Forgot Password'}
+                        </span>
+                      </div>
 
-                  {/* Google Sign-in */}
-                  <button 
-                    className="register-google-btn" 
-                    type="button" 
-                    onClick={handleGoogleSignIn} 
-                    disabled={loading} 
-                    style={{ 
-                      background: 'rgba(255,255,255,0.03)', 
-                      border: '1px solid rgba(255,255,255,0.08)', 
-                      color: '#ffffff', 
-                      borderRadius: '14px', 
-                      padding: '12px', 
-                      fontSize: '13px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <svg viewBox="0 0 24 24" width="18" height="18" style={{ marginRight: '4px' }}><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 001 12c0 1.77.42 3.44 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                    {t('register.google', language)}
-                  </button>
-
-                  <div className="register-divider" style={{ margin: '4px 0', color: 'rgba(255,255,255,0.3)' }}>
-                    <span>{t('register.or', language)}</span>
-                  </div>
-
-                  {/* Email form */}
-                  <form onSubmit={handleEmailAuth} className="register-form" style={{ display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left' }}>
-                    {!isLogin && (
-                      <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>{t('register.name', language)}</span>
-                        <input
-                          type="text"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          required
-                          autoComplete="name"
-                          placeholder="Ahmad Muhtar"
-                          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: '10px', padding: '10px 12px', fontSize: '13px' }}
-                        />
-                      </label>
-                    )}
-                    <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>{t('register.email', language)}</span>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        autoComplete="email"
-                        placeholder="you@example.com"
-                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: '10px', padding: '10px 12px', fontSize: '13px' }}
-                      />
-                    </label>
-                    <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>{t('register.password', language)}</span>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        minLength={8}
-                        autoComplete={isLogin ? 'current-password' : 'new-password'}
-                        placeholder="••••••••"
-                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: '10px', padding: '10px 12px', fontSize: '13px' }}
-                      />
-                    </label>
-
-                    {error && <p className="register-error" style={{ fontSize: '12px', margin: '4px 0 0' }}>{error}</p>}
-
-                    <button className="checkout-submit-btn" type="submit" disabled={loading} style={{ marginTop: '8px' }}>
-                      {loading ? (
-                        <><Loader2 size={16} className="spin" /> {t('register.processing', language)}</>
+                      {forgotPasswordStep === 'email' ? (
+                        <form onSubmit={handleStartForgotPassword} style={{ display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left' }}>
+                          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>{t('register.email', language)}</span>
+                            <input
+                              type="email"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              required
+                              placeholder="you@example.com"
+                              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: '10px', padding: '10px 12px', fontSize: '13px' }}
+                            />
+                          </label>
+                          {error && <p className="register-error" style={{ fontSize: '12px', margin: '4px 0 0' }}>{error}</p>}
+                          <button className="checkout-submit-btn" type="submit" disabled={loading}>
+                            {loading ? <Loader2 size={16} className="spin" /> : (language === 'id' ? 'Kirim Kode OTP' : 'Send OTP Code')}
+                          </button>
+                          <button 
+                            type="button" 
+                            onClick={() => { setIsForgotPassword(false); setError(''); }}
+                            style={{ background: 'none', border: 'none', color: '#ffd233', cursor: 'pointer', padding: 0, fontSize: '12px', alignSelf: 'center', marginTop: '4px' }}
+                          >
+                            {language === 'id' ? 'Kembali ke Login' : 'Back to Login'}
+                          </button>
+                        </form>
                       ) : (
-                        <>{isLogin ? t('register.loginSubmit', language) : t('register.submit', language)} <ArrowRight size={16} /></>
+                        <form onSubmit={handleVerifyAndResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left' }}>
+                          <p style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.7)', margin: '0 0 8px' }}>
+                            {language === 'id' 
+                              ? `Masukkan kode OTP yang dikirim ke ${email} beserta kata sandi baru Anda.` 
+                              : `Enter the OTP sent to ${email} and your new password.`}
+                          </p>
+                          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>Kode OTP</span>
+                            <input
+                              type="text"
+                              value={otpCode}
+                              onChange={(e) => setOtpCode(e.target.value)}
+                              required
+                              placeholder="123456"
+                              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: '10px', padding: '10px 12px', fontSize: '13px', letterSpacing: '2px', fontWeight: 'bold', textAlign: 'center' }}
+                            />
+                          </label>
+                          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>
+                              {language === 'id' ? 'Kata Sandi Baru' : 'New Password'}
+                            </span>
+                            <input
+                              type="password"
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                              required
+                              minLength={8}
+                              placeholder="••••••••"
+                              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: '10px', padding: '10px 12px', fontSize: '13px' }}
+                            />
+                          </label>
+                          {error && <p className="register-error" style={{ fontSize: '12px', margin: '4px 0 0' }}>{error}</p>}
+                          <button className="checkout-submit-btn" type="submit" disabled={loading}>
+                            {loading ? <Loader2 size={16} className="spin" /> : (language === 'id' ? 'Atur Ulang Kata Sandi' : 'Reset Password')}
+                          </button>
+                          <button 
+                            type="button" 
+                            onClick={() => { setForgotPasswordStep('email'); setError(''); }}
+                            style={{ background: 'none', border: 'none', color: '#ffd233', cursor: 'pointer', padding: 0, fontSize: '12px', alignSelf: 'center', marginTop: '4px' }}
+                          >
+                            {language === 'id' ? 'Ubah Email' : 'Change Email'}
+                          </button>
+                        </form>
                       )}
-                    </button>
-                  </form>
+                    </>
+                  ) : (
+                    <>
+                      <div className="register-divider" style={{ margin: '12px 0 6px', color: 'rgba(255,255,255,0.4)' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hubungkan Akun Anda</span>
+                      </div>
 
-                  <p className="register-login-link" style={{ margin: '8px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>
-                    {isLogin ? t('register.dontHaveAccount', language) : t('register.haveAccount', language)}{' '}
-                    <button
-                      type="button"
-                      onClick={() => { setIsLogin(!isLogin); setError(''); }}
-                      style={{
-                        background: 'none', border: 'none', color: '#ffd233', cursor: 'pointer',
-                        fontWeight: 600, padding: 0, font: 'inherit', textDecoration: 'underline'
-                      }}
-                    >
-                      {isLogin ? t('register.registerLink', language) : t('register.loginLink', language)}
-                    </button>
-                  </p>
+                      <button 
+                        className="register-google-btn" 
+                        type="button" 
+                        onClick={handleGoogleSignIn} 
+                        disabled={loading} 
+                        style={{ 
+                          background: 'rgba(255,255,255,0.03)', 
+                          border: '1px solid rgba(255,255,255,0.08)', 
+                          color: '#ffffff', 
+                          borderRadius: '14px', 
+                          padding: '12px', 
+                          fontSize: '13px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" width="18" height="18" style={{ marginRight: '4px' }}><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 001 12c0 1.77.42 3.44 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                        {t('register.google', language)}
+                      </button>
+
+                      <div className="register-divider" style={{ margin: '4px 0', color: 'rgba(255,255,255,0.3)' }}>
+                        <span>{t('register.or', language)}</span>
+                      </div>
+
+                      <form onSubmit={handleEmailAuth} className="register-form" style={{ display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left' }}>
+                        {!isLogin && (
+                          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>{t('register.name', language)}</span>
+                            <input
+                              type="text"
+                              value={name}
+                              onChange={(e) => setName(e.target.value)}
+                              required
+                              autoComplete="name"
+                              placeholder="Ahmad Muhtar"
+                              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: '10px', padding: '10px 12px', fontSize: '13px' }}
+                            />
+                          </label>
+                        )}
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>{t('register.email', language)}</span>
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            autoComplete="email"
+                            placeholder="you@example.com"
+                            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: '10px', padding: '10px 12px', fontSize: '13px' }}
+                          />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>{t('register.password', language)}</span>
+                            {isLogin && (
+                              <button 
+                                type="button" 
+                                onClick={() => { setIsForgotPassword(true); setForgotPasswordStep('email'); setError(''); }}
+                                style={{ background: 'none', border: 'none', color: '#ffd233', cursor: 'pointer', padding: 0, fontSize: '11px', fontWeight: 600 }}
+                              >
+                                {language === 'id' ? 'Lupa sandi?' : 'Forgot password?'}
+                              </button>
+                            )}
+                          </div>
+                          <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            minLength={8}
+                            autoComplete={isLogin ? 'current-password' : 'new-password'}
+                            placeholder="••••••••"
+                            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: '10px', padding: '10px 12px', fontSize: '13px' }}
+                          />
+                        </label>
+
+                        {error && <p className="register-error" style={{ fontSize: '12px', margin: '4px 0 0' }}>{error}</p>}
+
+                        <button className="checkout-submit-btn" type="submit" disabled={loading} style={{ marginTop: '8px' }}>
+                          {loading ? (
+                            <><Loader2 size={16} className="spin" /> {t('register.processing', language)}</>
+                          ) : (
+                            <>{isLogin ? t('register.loginSubmit', language) : t('register.submit', language)} <ArrowRight size={16} /></>
+                          )}
+                        </button>
+                      </form>
+
+                      <p className="register-login-link" style={{ margin: '8px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>
+                        {isLogin ? t('register.dontHaveAccount', language) : t('register.haveAccount', language)}{' '}
+                        <button
+                          type="button"
+                          onClick={() => { setIsLogin(!isLogin); setError(''); }}
+                          style={{
+                            background: 'none', border: 'none', color: '#ffd233', cursor: 'pointer',
+                            fontWeight: 600, padding: 0, font: 'inherit', textDecoration: 'underline'
+                          }}
+                        >
+                          {isLogin ? t('register.registerLink', language) : t('register.loginLink', language)}
+                        </button>
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
             </div>

@@ -4,7 +4,7 @@ import { APK_AVAILABLE, APP_LINKS, APK_URL } from '../config';
 import type { Language } from '../i18n';
 import { t } from '../i18n';
 
-export function HeroSection({ language, onRegister }: { language: Language; onRegister?: () => void }) {
+export function HeroSection({ language, onRegister, user }: { language: Language; onRegister?: () => void; user?: any }) {
   return (
     <section className="hero" aria-labelledby="hero-title">
       <div className="hero-image" aria-hidden="true" />
@@ -33,24 +33,23 @@ export function HeroSection({ language, onRegister }: { language: Language; onRe
           {t('hero.body', language)}
         </p>
         <div className="hero-actions">
-          <a className="button button-primary" href={APP_LINKS.aiBrew}>
-            {t('hero.startBrew', language)} <ArrowRight size={18} />
-          </a>
-          <a className="button button-ghost" href={APK_AVAILABLE ? APK_URL : '/support?topic=download'}>
-            <Download size={18} /> {APK_AVAILABLE ? t('hero.downloadApk', language) : 'Request access'}
-          </a>
           <a 
-            className="hero-register" 
-            href={APP_LINKS.register}
+            className="button button-primary" 
+            href={user ? APP_LINKS.home : APP_LINKS.register}
             onClick={(e) => {
-              if (onRegister) {
+              if (!user && onRegister) {
                 e.preventDefault();
                 onRegister();
               }
             }}
           >
-            {t('hero.registerFree', language)}
+            {user ? (language === 'id' ? 'Buka Aplikasi' : language === 'bn' ? 'Buka Aplikasi' : 'Open App') : t('hero.startBrew', language)} <ArrowRight size={18} />
           </a>
+          {!user && (
+            <a className="button button-ghost" href="/#pricing">
+              {language === 'id' ? 'Lihat plan member' : language === 'bn' ? 'Lihat plan member' : 'See member plans'}
+            </a>
+          )}
         </div>
         <p className="hero-microcopy">
           {t('hero.microcopy', language)}

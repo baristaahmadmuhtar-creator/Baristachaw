@@ -72,22 +72,75 @@ export const translations: Record<string, TranslationSet> = {
   'hero.targetFlavor': { id: 'Target Karakter Rasa', en: 'Target Flavor Profile', bn: 'Sasaran Profil Rasa' },
   'hero.flavorValue': { id: 'Sweet & Sweet Acid', en: 'Sweet & Vibrant Acidity', bn: 'Manis & Asid Segar' },
 
-  'evidence.title': {
-    id: 'Metrik rilis dan audit yang bisa diverifikasi',
-    en: 'Release and audit metrics you can verify',
-    bn: 'Metrik rilis dan audit yang boleh disemak',
+  'value.index': {
+    id: 'Kenapa upgrade',
+    en: 'Why upgrade',
+    bn: 'Kenapa upgrade'
   },
-  'evidence.consistency': { id: 'Target rilis saat ini', en: 'Current release target', bn: 'Sasaran rilis semasa' },
-  'evidence.brewers': { id: 'Profil brewer diaudit', en: 'Brewer profiles audited', bn: 'Profil brewer diaudit' },
-  'evidence.satisfaction': { id: 'Skenario audit method/style AI Brew', en: 'AI Brew method/style audit scenarios', bn: 'Skenario audit method/style AI Brew' },
-  'evidence.recipes': { id: 'Skenario real-world berbasis sumber', en: 'Source-backed real-world scenarios', bn: 'Skenario real-world bersumber' },
-  'evidence.guesswork': { id: 'Permission Android terlarang pada audit statis', en: 'Blocked Android permissions in static audit', bn: 'Permission Android terlarang dalam audit statik' },
-  'evidence.access': { id: 'Origin WebView Android', en: 'Android WebView origin', bn: 'Origin WebView Android' },
-  'evidence.instant': { id: 'Instan', en: 'Instant', bn: 'Serta-Merta' },
-  'evidence.note': {
-    id: 'Angka ini adalah metrik software dan gate rilis, bukan jaminan rasa. Kualitas cup akhir tetap perlu diuji dengan seduhan nyata.',
-    en: 'These are software and release-gate metrics, not taste guarantees. Final cup quality still needs real brew validation.',
-    bn: 'Angka ini ialah metrik software dan gate rilis, bukan jaminan rasa. Kualiti cup akhir masih perlu diuji dengan seduhan sebenar.',
+  'value.title': {
+    id: 'Dari tebak-tebakan menjadi workflow seduh yang jelas.',
+    en: 'Turn coffee guesswork into a clear brew workflow.',
+    bn: 'Daripada teka-teki, jadikan brew lebih jelas.'
+  },
+  'value.body': {
+    id: 'Baristachaw membantu Anda mengambil keputusan kopi lebih cepat: rasio, grind size, metode, catatan, dan AI Brew dalam satu tempat.',
+    en: 'Baristachaw helps you make faster coffee decisions across ratio, grind size, method, notes, and AI Brew—all in one place.',
+    bn: 'Baristachaw bantu kita buat keputusan kopi lebih cepat: ratio, grind size, kaedah, nota, dan AI Brew dalam satu tempat.'
+  },
+  'value.card1.title': {
+    id: 'Lebih percaya diri setiap seduh',
+    en: 'Brew with more confidence',
+    bn: 'Lebih yakin setiap brew'
+  },
+  'value.card1.body': {
+    id: 'Dapatkan panduan yang mengikuti metode, grinder, roast level, dan rasa yang Anda incar.',
+    en: 'Get guidance shaped around your method, grinder, roast level, and target flavor.',
+    bn: 'Dapatkan panduan ikut method, grinder, roast level, dan rasa yang kita mahu.'
+  },
+  'value.card2.title': {
+    id: 'Lebih cepat dial-in',
+    en: 'Dial in faster',
+    bn: 'Dial-in lebih cepat'
+  },
+  'value.card2.body': {
+    id: 'Kurangi trial-error dengan saran rasio, grind, dan langkah seduh yang lebih terarah.',
+    en: 'Reduce trial and error with clearer ratio, grind, and brew-step suggestions.',
+    bn: 'Kurangkan cuba-cuba dengan cadangan ratio, grind, dan langkah seduhan yang lebih jelas.'
+  },
+  'value.card3.title': {
+    id: 'Simpan resep yang berhasil',
+    en: 'Save what works',
+    bn: 'Simpan recipe yang menjadi'
+  },
+  'value.card3.body': {
+    id: 'Bangun koleksi resep, catatan, dan hasil AI agar brew enak tidak hilang begitu saja.',
+    en: 'Keep your recipes, notes, and AI results together so great cups are easier to repeat.',
+    bn: 'Kumpulkan recipe, nota, dan hasil AI supaya cup yang sedap senang diulang.'
+  },
+  'value.card4.title': {
+    id: 'Naik level saat siap',
+    en: 'Level up when ready',
+    bn: 'Upgrade bila sudah ready'
+  },
+  'value.card4.body': {
+    id: 'Upgrade untuk membuka AI Brew Coach, analisis visual, mode Deep, dan kuota lebih lega.',
+    en: 'Upgrade for AI Brew Coach, visual analysis, Deep mode, and higher member limits.',
+    bn: 'Buka AI Brew Coach, analisis visual, Deep mode, dan limit member yang lebih luas.'
+  },
+  'value.ctaPrimary': {
+    id: 'Mulai gratis',
+    en: 'Start free',
+    bn: 'Mula percuma'
+  },
+  'value.ctaSecondary': {
+    id: 'Lihat plan',
+    en: 'View plans',
+    bn: 'Lihat plan'
+  },
+  'value.note': {
+    id: 'Baristachaw memberi panduan terstruktur. Hasil akhir tetap dipengaruhi biji, air, grinder, dan teknik Anda.',
+    en: 'Baristachaw gives structured guidance. The final cup still depends on beans, water, grinder, and technique.',
+    bn: 'Baristachaw memberi panduan tersusun. Hasil akhir tetap bergantung pada beans, water, grinder, dan teknik.'
   },
 
   'pricing.index': { id: 'Harga', en: 'Pricing', bn: 'Harga' },

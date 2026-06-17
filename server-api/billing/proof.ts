@@ -14,6 +14,11 @@ import {
   persistManualPaymentProof,
 } from './manualPayments.js';
 
+import {
+  getSupabaseAdminConfig,
+  createSignedUploadUrl,
+} from '../_supabaseAdmin.js';
+
 const BILLING_PROOF_RATE_LIMIT = {
   maxRequests: 30,
   windowMs: 5 * 60 * 1000,
@@ -43,6 +48,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ ok: false, requestId, error: 'Method not allowed' });
   if (!enforceTrustedRequestOrigin(req, res, requestId)) return;
+
+  // Fail closed: Check storage configuration
+  const config = getSupabaseAdminConfig();
+  const bucket = (process.env.SUPABASE_STORAGE_BUCKET_PROOF || 'payment-proofs').trim();
+  if (!config.configured || !bucket) {
+    return res.status(503).json({
+      ok: false,
+      requestId,
+      error: 'Supabase Storage is not configured in this environment',
+      errorCode: 'storage_not_configured',
+    });
+  }
 
   const authResult = requireAuth(req);
   if (authResult.ok === false) {
@@ -93,6 +110,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
+  let uploadUrl = '';
+  try {
+    const signedData = await createSignedUploadUrl(config, bucket, result.proof.generatedFileName);
+    uploadUrl = signedData.signedUrl;
+  } catch (error) {
+    console.error('Failed to generate signed upload URL:', error);
+    return res.status(503).json({
+      ok: false,
+      requestId,
+      error: 'Failed to generate secure upload destination',
+      errorCode: 'upload_generation_failed',
+    });
+  }
+
   try {
     await persistManualPaymentProof(result.request);
   } catch (error) {
@@ -112,8 +143,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     paymentRequestId: result.request.id,
     status: result.request.status,
     proof: result.proof,
+    uploadUrl,
     paymentActionRequired: true,
     entitlement: 'pending_admin_review',
-    message: 'Proof received. Paid entitlement is not granted until an admin verifies the payment.',
+    message: 'Proof registered. Please upload the file using the uploadUrl.',
   });
 }

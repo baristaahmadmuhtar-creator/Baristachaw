@@ -6,6 +6,7 @@ import authLogoutHandler from '../server-api/auth/logout.js';
 import authMeHandler from '../server-api/auth/me.js';
 import authUrlHandler from '../server-api/auth/url.js';
 import mobileAuthHandler from '../server-api/auth/mobile/[...route].js';
+import accountRecoveryHandler from '../server-api/auth/account-recovery.js';
 
 type Handler = (req: VercelRequest, res: VercelResponse) => unknown;
 
@@ -26,6 +27,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     || path === 'email/signup'
     || path === 'email/reset'
     || path === 'email/update-password'
+    || path === 'email/otp/send'
+    || path === 'email/otp/verify'
+    || path === 'email/password/reset/start'
+    || path === 'email/password/reset/verify'
+    || path === 'email/password/reset/update'
   ) target = authEmailHandler as Handler;
   else if (path === 'guest') target = authGuestHandler as Handler;
   else if (path === 'me') target = authMeHandler as Handler;
@@ -37,6 +43,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     || path === 'mobile/apple/exchange'
     || path === 'mobile/supabase/exchange'
   ) target = mobileAuthHandler as Handler;
+  else if (path === 'account-recovery') target = accountRecoveryHandler as Handler;
 
   if (!target) {
     return res.status(404).json({ error: 'Not found' });

@@ -445,6 +445,7 @@ function manualPaymentMetadata(request: ManualPaymentRequest): Record<string, un
 }
 
 function paymentReceiptPayload(request: ManualPaymentRequest): Record<string, unknown> {
+  const bucket = (process.env.SUPABASE_STORAGE_BUCKET_PROOF || 'payment-proofs').trim();
   return {
     manual_request_id: request.id,
     user_id: request.userId,
@@ -455,6 +456,7 @@ function paymentReceiptPayload(request: ManualPaymentRequest): Record<string, un
     requested_amount_label: request.amountLabel,
     payer_email: request.email || '',
     receipt_reference: request.proof?.generatedFileName || '',
+    receipt_url: request.proof?.generatedFileName ? `${bucket}/${request.proof.generatedFileName}` : '',
     receipt_mime_type: request.proof?.mimeType || '',
     receipt_size_bytes: request.proof?.sizeBytes || null,
     status: manualStatusToReceiptStatus(request.status),

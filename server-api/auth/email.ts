@@ -23,7 +23,7 @@ const EMAIL_SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type PasswordAuthMode = 'signIn' | 'signUp';
-type EmailAuthMode = PasswordAuthMode | 'reset' | 'updatePassword';
+type EmailAuthMode = PasswordAuthMode | 'reset' | 'updatePassword' | 'sendOtp' | 'verifyOtp' | 'resetStart' | 'resetVerify' | 'resetUpdatePassword';
 
 type SupabaseAuthPayload = Record<string, unknown>;
 type AppSessionUser = NonNullable<Awaited<ReturnType<typeof resolveAuthenticatedUser>>> & {
@@ -76,6 +76,11 @@ function resolveMode(req: VercelRequest): EmailAuthMode | null {
   if (candidate.includes('email/signup')) return 'signUp';
   if (candidate.includes('email/reset')) return 'reset';
   if (candidate.includes('email/update-password')) return 'updatePassword';
+  if (candidate.includes('email/otp/send')) return 'sendOtp';
+  if (candidate.includes('email/otp/verify')) return 'verifyOtp';
+  if (candidate.includes('email/password/reset/start')) return 'resetStart';
+  if (candidate.includes('email/password/reset/verify')) return 'resetVerify';
+  if (candidate.includes('email/password/reset/update')) return 'resetUpdatePassword';
   return null;
 }
 
@@ -261,6 +266,66 @@ async function requestSupabasePasswordUpdate(params: {
   throw error;
 }
 
+async function requestSupabaseOtpVerify(params: {
+  email: string;
+  token: string;
+  type: 'signup' | 'recovery' | 'magiclink';
+}): Promise<SupabaseAuthPayload> {
+  const config = resolveSupabaseAuthConfig();
+  const response = await fetch(`${config.url}/auth/v1/verify`, {
+    method: 'POST',
+    headers: {
+      apikey: config.publishableKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email: params.email, token: params.token, type: params.type }),
+  });
+  const payload = await response.json().catch(() => ({})) as SupabaseAuthPayload;
+
+  if (!response.ok) {
+    const message = readSupabaseError(payload).toLowerCase();
+    let failure = { statusCode: 400, errorCode: 'otp_invalid', error: 'Invalid or expired code' };
+    if (response.status === 429 || message.includes('rate limit')) {
+      failure = { statusCode: 429, errorCode: 'otp_rate_limited', error: 'Too many verification attempts' };
+    } else if (message.includes('expired')) {
+      failure = { statusCode: 400, errorCode: 'otp_expired', error: 'Code has expired' };
+    } else if (message.includes('invalid')) {
+      failure = { statusCode: 400, errorCode: 'otp_invalid', error: 'Invalid code' };
+    }
+    const error = new Error(failure.error) as Error & { statusCode?: number; errorCode?: string };
+    error.statusCode = failure.statusCode;
+    error.errorCode = failure.errorCode;
+    throw error;
+  }
+
+  return payload;
+}
+
+async function requestSupabaseOtpResend(params: {
+  email: string;
+  type: 'signup' | 'recovery';
+}): Promise<void> {
+  const config = resolveSupabaseAuthConfig();
+  const response = await fetch(`${config.url}/auth/v1/resend`, {
+    method: 'POST',
+    headers: {
+      apikey: config.publishableKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email: params.email, type: params.type }),
+  });
+  const payload = await response.json().catch(() => ({})) as SupabaseAuthPayload;
+  if (!response.ok) {
+    const message = readSupabaseError(payload).toLowerCase();
+    if (response.status === 429 || message.includes('rate limit')) {
+      const error = new Error('Too many requests') as Error & { statusCode?: number; errorCode?: string };
+      error.statusCode = 429;
+      error.errorCode = 'otp_rate_limited';
+      throw error;
+    }
+  }
+}
+
 async function resolveAuthenticatedUser(payload: SupabaseAuthPayload) {
   const accessToken = readAccessToken(payload);
   if (!accessToken) return null;
@@ -311,21 +376,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
   const accessToken = readString(req.body?.accessToken || req.body?.access_token);
   const displayName = normalizeDisplayName(req.body?.displayName || req.body?.name);
+  const otpToken = readString(req.body?.token || req.body?.otp);
 
-  if (mode !== 'updatePassword' && (!email || !EMAIL_RE.test(email) || email.length > 254)) {
+  const needsEmail = mode !== 'updatePassword' && mode !== 'resetUpdatePassword';
+  if (needsEmail && (!email || !EMAIL_RE.test(email) || email.length > 254)) {
     return validationError(res, requestId, 'Enter a valid email address');
   }
-  if (mode !== 'reset' && (password.length < 8 || password.length > 128)) {
+  const needsPassword = mode === 'signIn' || mode === 'signUp' || mode === 'updatePassword' || mode === 'resetUpdatePassword';
+  if (needsPassword && (password.length < 8 || password.length > 128)) {
     return validationError(res, requestId, 'Password must be 8 to 128 characters');
   }
-  if (mode === 'updatePassword' && !accessToken) {
+  if ((mode === 'updatePassword' || mode === 'resetUpdatePassword') && !accessToken) {
     return validationError(res, requestId, 'Missing password reset token');
+  }
+  if ((mode === 'verifyOtp' || mode === 'resetVerify') && !otpToken) {
+    return validationError(res, requestId, 'Missing OTP code');
   }
   if (mode === 'signUp' && displayName.length > 80) {
     return validationError(res, requestId, 'Display name is too long');
   }
 
-  const rateLimitIdentity = mode === 'updatePassword'
+  const rateLimitIdentity = (mode === 'updatePassword' || mode === 'resetUpdatePassword')
     ? createHash('sha256').update(accessToken).digest('hex').slice(0, 24)
     : email;
   const limit = checkRateLimit(req, `/api/auth/email/${mode}`, rateLimitIdentity, EMAIL_AUTH_RATE_LIMIT);
@@ -340,7 +411,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  if (mode === 'reset') {
+  if (mode === 'reset' || mode === 'resetStart') {
     try {
       await requestSupabasePasswordReset(email);
       return res.status(200).json({
@@ -350,16 +421,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         email,
       });
     } catch (error) {
-      const statusCode = Number((error as { statusCode?: number }).statusCode) || 500;
+      // Prevent enumeration: Always return success for generic errors unless it's a rate limit or config error
       const errorCode = readString((error as { errorCode?: string }).errorCode) || 'internal_error';
-      const isConfigError = /supabase auth not configured|invalid supabase url|hosted https/i.test(sanitizeErrorDetails(error, 220));
-      return res.status(isConfigError ? 503 : statusCode).json({
-        ok: false,
+      if (errorCode === 'rate_limited' || errorCode === 'supabase_not_configured') {
+        const statusCode = Number((error as { statusCode?: number }).statusCode) || 500;
+        return res.status(statusCode).json({
+          ok: false,
+          requestId,
+          error: sanitizeErrorDetails(error, 160),
+          errorCode,
+        });
+      }
+      return res.status(200).json({
+        ok: true,
         requestId,
-        error: isConfigError ? 'Supabase Auth is not configured' : sanitizeErrorDetails(error, 160),
-        errorCode: isConfigError ? 'supabase_not_configured' : errorCode,
-        hint: isConfigError ? 'Set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY in the active environment.' : undefined,
+        resetEmailSent: true,
+        email,
       });
+    }
+  }
+
+  if (mode === 'sendOtp') {
+    try {
+      await requestSupabaseOtpResend({ email, type: 'signup' });
+      return res.status(200).json({ ok: true, requestId, email });
+    } catch (error) {
+      const errorCode = readString((error as { errorCode?: string }).errorCode) || 'internal_error';
+      if (errorCode === 'rate_limited') {
+        return res.status(429).json({ ok: false, requestId, error: 'Too many requests', errorCode });
+      }
+      return res.status(200).json({ ok: true, requestId, email }); // generic success
     }
   }
 
@@ -375,12 +466,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const user = mode === 'updatePassword'
-      ? await (async () => {
-          await requestSupabasePasswordUpdate({ accessToken, password });
-          return resolveAuthenticatedUserFromAccessToken(accessToken);
-        })()
-      : await resolveAuthenticatedUser(await requestSupabaseEmailAuth({ mode, email, password, displayName }));
+    let authPayload: SupabaseAuthPayload | null = null;
+    let user: AppSessionUser | null = null;
+    let newAccessToken = '';
+
+    if (mode === 'updatePassword' || mode === 'resetUpdatePassword') {
+      await requestSupabasePasswordUpdate({ accessToken, password });
+      user = await resolveAuthenticatedUserFromAccessToken(accessToken);
+    } else if (mode === 'verifyOtp') {
+      authPayload = await requestSupabaseOtpVerify({ email, token: otpToken, type: 'signup' });
+      user = await resolveAuthenticatedUser(authPayload);
+      newAccessToken = readAccessToken(authPayload);
+    } else if (mode === 'resetVerify') {
+      authPayload = await requestSupabaseOtpVerify({ email, token: otpToken, type: 'recovery' });
+      user = await resolveAuthenticatedUser(authPayload);
+      newAccessToken = readAccessToken(authPayload);
+    } else {
+      authPayload = await requestSupabaseEmailAuth({ mode, email, password, displayName });
+      user = await resolveAuthenticatedUser(authPayload);
+      if (authPayload) {
+        newAccessToken = readAccessToken(authPayload);
+      }
+    }
 
     if (!user) {
       return res.status(202).json({
@@ -399,7 +506,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ok: true,
       requestId,
       authenticated: true,
-      passwordUpdated: mode === 'updatePassword' || undefined,
+      passwordUpdated: (mode === 'updatePassword' || mode === 'resetUpdatePassword') || undefined,
+      accessToken: newAccessToken || undefined,
       user: sessionUser,
       expiresInSec: EMAIL_SESSION_TTL_SECONDS,
     });

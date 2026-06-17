@@ -78,3 +78,13 @@ SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY
 - Supabase Expo React Native auth: https://supabase.com/docs/guides/auth/quickstarts/with-expo-react-native-social-auth
 - Supabase Expo React Native setup: https://supabase.com/docs/guides/getting-started/tutorials/with-expo-react-native
 - Expo WebBrowser AuthSession: https://docs.expo.dev/versions/latest/sdk/webbrowser/
+
+## OTP Parity Migration (June 2026)
+
+**Important Update:** To ensure 100% Web/Mobile Parity for authentication, the system now relies on 6-digit OTP codes rather than email magic links or deep links for standard email verification and password resets.
+
+- Mobile clients should make explicit POST requests to the /api/auth/email/otp/send and /api/auth/email/otp/verify endpoints, rather than relying on standard @supabase/supabase-js magic links.
+- Password resets send an OTP to the user, who then enters the OTP into the mobile app UI. The mobile app then submits the code to /api/auth/email/password/reset/verify.
+- This ensures users don't get kicked out of the mobile app to a browser when verifying their accounts or resetting their passwords. Deep links (aristachaw://auth) are still used for Google/Facebook OAuth callbacks.
+
+Please see docs/auth-otp-mvp-runbook.md for complete details on the OTP MVP flow.

@@ -132,7 +132,7 @@ export function AuthEntryModal() {
               exit={{ opacity: 0, y: 20, scale: 0.98 }}
               transition={isOpen ? modalSpringTransition : modalExitTransition}
               dir={direction}
-              className={`auth-card-surface motion-safe-surface pointer-events-auto max-h-[calc(var(--app-vh)-2rem)] w-full max-w-md overflow-y-auto rounded-[1.8rem] p-5 ${isRtl ? 'text-right' : 'text-left'}`}
+              className={`auth-card-surface motion-safe-surface pointer-events-auto max-h-[calc(var(--app-vh)-2rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-[1.8rem] p-5 ${isRtl ? 'text-right' : 'text-left'}`}
               role="dialog"
               aria-modal="true"
               aria-labelledby={titleId}
@@ -179,47 +179,7 @@ export function AuthEntryModal() {
               )}
 
               <div className="mt-5 flex flex-col gap-2">
-                <div className="mb-2 flex flex-col sm:flex-row gap-3 rounded-xl border border-glass bg-[var(--bg-base)]/72 p-3" data-testid="auth-language-step">
-                  <div className="flex-1 relative">
-                    <label htmlFor="modal-language-select" className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-secondary">
-                      {t.authRouteLanguageTitle || 'Language'}
-                    </label>
-                    <div className="relative">
-                      <CustomSelect
-                        id="modal-language-select"
-                        value={language}
-                        onChange={(val) => setLanguage(val as Language)}
-                        options={[
-                          { value: 'en', label: 'English' },
-                          { value: 'id', label: 'Indonesia' }
-                        ]}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1 relative">
-                    <label htmlFor="modal-region-select" className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-secondary">
-                      {language === 'id' ? 'Negara' : 'Country'}
-                    </label>
-                    <div className="relative">
-                      <CustomSelect
-                        id="modal-region-select"
-                        value={region}
-                        onChange={(val) => setRegion(val as any)}
-                        options={[
-                          { value: 'id', label: 'Indonesia' },
-                          { value: 'bn', label: 'Brunei' },
-                          { value: 'my', label: 'Malaysia' },
-                          { value: 'sg', label: 'Singapore' },
-                          { value: 'au', label: 'Australia' },
-                          { value: 'eu', label: 'Europe' },
-                          { value: 'us', label: 'United States' },
-                          { value: 'global', label: 'Global' }
-                        ]}
-                      />
-                    </div>
-                  </div>
-                </div>
+
 
                 <EmailPasswordAuthForm compact initialMode={source === 'registration' ? 'signUp' : 'signIn'} />
 

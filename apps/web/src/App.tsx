@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { BottomNav } from './components/BottomNav';
 import { DesktopSidebar } from './components/DesktopSidebar';
 import { AuthEntryModal } from './components/auth/AuthEntryModal';
@@ -104,6 +104,22 @@ function shouldIgnoreSwipeTarget(target: EventTarget | null) {
     return true;
   }
   return hasHorizontalScrollableAncestor(target);
+}
+
+function ProtectedRoute({ children, fallbackPath = '/masuk' }: { children: React.ReactNode, fallbackPath?: string }) {
+  const { isAuthenticated, authChecking, user } = useAuthModal();
+  const location = useLocation();
+
+  if (authChecking) {
+    return <RouteLoadingFallback />;
+  }
+
+  if (!isAuthenticated || user?.isGuest) {
+    const returnTo = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`${fallbackPath}?returnTo=${returnTo}`} replace />;
+  }
+
+  return <>{children}</>;
 }
 
 function AppContent() {
@@ -233,22 +249,37 @@ function AppContent() {
 
   const normalizedPath = normalizePath(location.pathname);
   const isMobileChatRoute = !isDesktop && normalizedPath === '/chat';
+
+  const navigateToReturn = (fallback: string) => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const returnTo = params.get('returnTo');
+      if (returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//')) {
+        navigate(returnTo);
+      } else {
+        navigate(fallback);
+      }
+    } catch {
+      navigate(fallback);
+    }
+  };
+
   const routes = (
     <Suspense fallback={<RouteLoadingFallback />}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/scanner" element={<Scanner />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/collection" element={<Collection />} />
-        <Route path="/tools" element={<BaristaTools />} />
-        <Route path="/coffee" element={<BaristaTools />} />
-        <Route path="/login" element={<AuthScreen intent="signIn" onLogin={() => navigate('/')} />} />
-        <Route path="/masuk" element={<AuthScreen intent="signIn" onLogin={() => navigate('/')} />} />
-        <Route path="/signin" element={<AuthScreen intent="signIn" onLogin={() => navigate('/')} />} />
-        <Route path="/register" element={<AuthScreen intent="signUp" onLogin={() => navigate('/')} />} />
-        <Route path="/signup" element={<AuthScreen intent="signUp" onLogin={() => navigate('/')} />} />
-        <Route path="/daftar" element={<AuthScreen intent="signUp" onLogin={() => navigate('/')} />} />
-        <Route path="/admin" element={<AdminManagement />} />
+        <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+        <Route path="/collection" element={<ProtectedRoute><Collection /></ProtectedRoute>} />
+        <Route path="/tools" element={<ProtectedRoute><BaristaTools /></ProtectedRoute>} />
+        <Route path="/coffee" element={<ProtectedRoute><BaristaTools /></ProtectedRoute>} />
+        <Route path="/login" element={<AuthScreen intent="signIn" onLogin={() => navigateToReturn('/')} />} />
+        <Route path="/masuk" element={<AuthScreen intent="signIn" onLogin={() => navigateToReturn('/')} />} />
+        <Route path="/signin" element={<AuthScreen intent="signIn" onLogin={() => navigateToReturn('/')} />} />
+        <Route path="/register" element={<AuthScreen intent="signUp" onLogin={() => navigateToReturn('/')} />} />
+        <Route path="/signup" element={<AuthScreen intent="signUp" onLogin={() => navigateToReturn('/')} />} />
+        <Route path="/daftar" element={<AuthScreen intent="signUp" onLogin={() => navigateToReturn('/')} />} />
+        <Route path="/admin" element={<ProtectedRoute><AdminManagement /></ProtectedRoute>} />
         <Route path={DESIGN_ROUTE} element={<NativeProductionShowcase />} />
       </Routes>
     </Suspense>

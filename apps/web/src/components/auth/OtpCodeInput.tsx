@@ -1,0 +1,108 @@
+import React, { useState, useRef, KeyboardEvent, ClipboardEvent } from 'react';
+
+type OtpCodeInputProps = {
+  length?: number;
+  onComplete: (code: string) => void;
+  disabled?: boolean;
+};
+
+export const OtpCodeInput: React.FC<OtpCodeInputProps> = ({ length = 6, onComplete, disabled = false }) => {
+  const [code, setCode] = useState<string[]>(Array(length).fill(''));
+  const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
+
+  const focusInput = (index: number) => {
+    if (index >= 0 && index < length) {
+      inputsRef.current[index]?.focus();
+      // Use setTimeout to ensure selection happens after focus
+      setTimeout(() => {
+        inputsRef.current[index]?.select();
+      }, 0);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      const newCode = [...code];
+      if (newCode[index]) {
+        // If current input has value, clear it
+        newCode[index] = '';
+        setCode(newCode);
+      } else if (index > 0) {
+        // If empty, focus previous and clear it
+        newCode[index - 1] = '';
+        setCode(newCode);
+        focusInput(index - 1);
+      }
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      focusInput(index - 1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      focusInput(index + 1);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const value = e.target.value.replace(/\D/g, ''); // only allow digits
+    if (!value) return;
+
+    // Take just the last character if multiple are entered
+    const char = value[value.length - 1];
+    const newCode = [...code];
+    newCode[index] = char;
+    setCode(newCode);
+
+    if (index < length - 1) {
+      focusInput(index + 1);
+    } else {
+      inputsRef.current[index]?.blur();
+      const fullCode = newCode.join('');
+      if (fullCode.length === length) {
+        onComplete(fullCode);
+      }
+    }
+  };
+
+  const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, length);
+    if (!pastedData) return;
+
+    const newCode = [...code];
+    for (let i = 0; i < length; i++) {
+      newCode[i] = pastedData[i] || '';
+    }
+    setCode(newCode);
+
+    if (pastedData.length === length) {
+      inputsRef.current[length - 1]?.blur();
+      onComplete(newCode.join(''));
+    } else {
+      focusInput(pastedData.length);
+    }
+  };
+
+  return (
+    <div className="flex gap-2 justify-center my-4" dir="ltr">
+      {code.map((value, index) => (
+        <input
+          key={index}
+          ref={(el) => {
+            inputsRef.current[index] = el;
+          }}
+          type="text"
+          inputMode="numeric"
+          pattern="\d*"
+          maxLength={2} // Allow 2 to catch rapid typing and slice in handleChange
+          value={value}
+          disabled={disabled}
+          onChange={(e) => handleChange(e, index)}
+          onKeyDown={(e) => handleKeyDown(e, index)}
+          onPaste={handlePaste}
+          className="w-12 h-14 text-center text-xl font-semibold border rounded-md bg-white dark:bg-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 disabled:opacity-50 outline-none transition-all"
+        />
+      ))}
+    </div>
+  );
+};

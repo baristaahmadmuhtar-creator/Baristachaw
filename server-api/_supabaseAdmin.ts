@@ -67,6 +67,32 @@ export async function supabaseAdminRest<T>(
   return JSON.parse(text) as T;
 }
 
+export async function createSignedUploadUrl(
+  config: Extract<SupabaseAdminConfig, { configured: true }>,
+  bucket: string,
+  path: string,
+): Promise<{ signedUrl: string; path: string }> {
+  const response = await fetch(`${config.url}/storage/v1/object/upload/sign/${bucket}/${path}`, {
+    method: 'POST',
+    headers: {
+      apikey: config.serviceRoleKey,
+      Authorization: `Bearer ${config.serviceRoleKey}`,
+      'Content-Type': 'application/json',
+    },
+  });
+  
+  const text = await response.text();
+  if (!response.ok) {
+    throw new Error(`Supabase upload sign returned ${response.status}: ${text.slice(0, 180)}`);
+  }
+  
+  const data = JSON.parse(text) as { url: string };
+  return {
+    signedUrl: `${config.url}/storage/v1${data.url}`,
+    path: path
+  };
+}
+
 export function hashRequestIp(req: VercelRequest): string {
   const forwarded = firstHeaderValue(req.headers['x-forwarded-for']);
   const ip = (

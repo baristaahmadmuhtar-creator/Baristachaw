@@ -2404,6 +2404,33 @@ function ManualPaymentQueuePanel({
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
+                    {payment.proof ? (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            const res = await fetch(`/api/admin/proof-view?paymentRequestId=${payment.id}`, {
+                              headers: { 'Accept': 'application/json' },
+                            });
+                            if (!res.ok) {
+                              const err = await res.json().catch(() => ({}));
+                              throw new Error(err.error || 'Failed to fetch proof preview');
+                            }
+                            const data = await res.json();
+                            if (data.signedUrl) {
+                              window.open(data.signedUrl, '_blank');
+                            } else {
+                              throw new Error('Signed URL not returned');
+                            }
+                          } catch (e) {
+                            alert(e instanceof Error ? e.message : 'Gagal memuat preview bukti transfer');
+                          }
+                        }}
+                        className="inline-flex h-9 items-center rounded-lg border border-yellow-500/50 bg-yellow-500/10 px-3 text-xs font-semibold text-yellow-500 hover:bg-yellow-500/20"
+                      >
+                        View Proof
+                      </button>
+                    ) : null}
                     {payment.instructions.whatsappUrl ? (
                       <a className="inline-flex h-9 items-center rounded-lg border border-glass px-3 text-xs font-semibold text-primary hover:bg-surface-alpha" href={payment.instructions.whatsappUrl} target="_blank" rel="noopener noreferrer">
                         WhatsApp

@@ -33,6 +33,24 @@ export type EmailAuthResult = {
   emailConfirmationRequired?: boolean;
   email?: string;
   user?: AuthUser | null;
+  accessToken?: string;
+};
+
+export type OtpVerifyInput = {
+  email: string;
+  token: string;
+};
+
+export type AccountRecoveryInput = {
+  contactEmail: string;
+  displayNameHint?: string;
+  providerHint?: string;
+  country?: string;
+  evidence?: string;
+};
+
+export type AccountRecoveryResult = {
+  message: string;
 };
 
 export type EmailPasswordResetResult = {
@@ -86,6 +104,12 @@ type AuthModalContextValue = {
   startFacebookAuth: () => Promise<void>;
   authenticateWithEmail: (input: EmailAuthInput) => Promise<EmailAuthResult>;
   sendPasswordResetEmail: (email: string) => Promise<EmailPasswordResetResult>;
+  sendEmailOtp: (email: string) => Promise<{ email: string }>;
+  verifyEmailOtp: (input: OtpVerifyInput) => Promise<EmailAuthResult>;
+  startPasswordResetOtp: (email: string) => Promise<EmailPasswordResetResult>;
+  verifyPasswordResetOtp: (input: OtpVerifyInput) => Promise<EmailAuthResult>;
+  completePasswordResetWithOtp: (input: EmailPasswordUpdateInput) => Promise<EmailAuthResult>;
+  submitForgotEmailRecovery: (input: AccountRecoveryInput) => Promise<AccountRecoveryResult>;
   updateRecoveredPassword: (input: EmailPasswordUpdateInput) => Promise<EmailAuthResult>;
   continueAsGuest: () => Promise<void>;
   logout: () => Promise<void>;
@@ -586,6 +610,257 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     }
   }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline]);
 
+  const sendEmailOtp = useCallback(async (email: string): Promise<{ email: string }> => {
+    oauthResultHandledRef.current = true;
+    clearOauthPopupMonitor({ closePopup: true });
+    setAuthBusy(true);
+    setAuthError(null);
+    const copy = getLocalizedCopy();
+
+    if (isOffline) {
+      const message = copy.authEmailOffline || copy.connectionFailed || copy.error;
+      setAuthBusy(false);
+      setAuthError(message);
+      throw new Error(message);
+    }
+
+    try {
+      const response = await fetch('/api/auth/email/otp/send', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || payload.ok === false) {
+        throw new Error(resolveEmailAuthError(payload, copy.authEmailUnavailable || copy.error, copy));
+      }
+      setAuthError(null);
+      return { email };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : (copy.authEmailUnavailable || copy.error);
+      setAuthError(message);
+      throw new Error(message);
+    } finally {
+      setAuthBusy(false);
+    }
+  }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline]);
+
+  const verifyEmailOtp = useCallback(async (input: OtpVerifyInput): Promise<EmailAuthResult> => {
+    oauthResultHandledRef.current = true;
+    clearOauthPopupMonitor({ closePopup: true });
+    setAuthBusy(true);
+    setAuthError(null);
+    const copy = getLocalizedCopy();
+
+    if (isOffline) {
+      const message = copy.authEmailOffline || copy.connectionFailed || copy.error;
+      setAuthBusy(false);
+      setAuthError(message);
+      throw new Error(message);
+    }
+
+    try {
+      const response = await fetch('/api/auth/email/otp/verify', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || payload.ok === false) {
+        throw new Error(resolveEmailAuthError(payload, copy.authEmailUnavailable || copy.error, copy));
+      }
+
+      const nextUser = (payload.user || null) as AuthUser | null;
+      if (!payload.authenticated || !nextUser?.id) {
+        throw new Error(copy.authEmailUnavailable || copy.error);
+      }
+
+      setUser(nextUser);
+      if (nextUser.name) saveUserName(nextUser.name);
+      setAuthMode('server');
+      setAuthChecking(false);
+      setAuthError(null);
+      setIsOpen(false);
+      return {
+        authenticated: true,
+        user: nextUser,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : (copy.authEmailUnavailable || copy.error);
+      setAuthError(message);
+      throw new Error(message);
+    } finally {
+      setAuthBusy(false);
+    }
+  }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline]);
+
+  const startPasswordResetOtp = useCallback(async (email: string): Promise<EmailPasswordResetResult> => {
+    oauthResultHandledRef.current = true;
+    clearOauthPopupMonitor({ closePopup: true });
+    setAuthBusy(true);
+    setAuthError(null);
+    const copy = getLocalizedCopy();
+
+    if (isOffline) {
+      const message = copy.authEmailOffline || copy.connectionFailed || copy.error;
+      setAuthBusy(false);
+      setAuthError(message);
+      throw new Error(message);
+    }
+
+    try {
+      const response = await fetch('/api/auth/email/password/reset/start', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || payload.ok === false) {
+        throw new Error(resolveEmailAuthError(payload, copy.authResetEmailUnavailable || copy.error, copy));
+      }
+      setAuthError(null);
+      return {
+        resetEmailSent: Boolean(payload.resetEmailSent ?? true),
+        email: typeof payload.email === 'string' ? payload.email : email,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : (copy.authResetEmailUnavailable || copy.error);
+      setAuthError(message);
+      throw new Error(message);
+    } finally {
+      setAuthBusy(false);
+    }
+  }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline]);
+
+  const verifyPasswordResetOtp = useCallback(async (input: OtpVerifyInput): Promise<EmailAuthResult> => {
+    oauthResultHandledRef.current = true;
+    clearOauthPopupMonitor({ closePopup: true });
+    setAuthBusy(true);
+    setAuthError(null);
+    const copy = getLocalizedCopy();
+
+    if (isOffline) {
+      const message = copy.authEmailOffline || copy.connectionFailed || copy.error;
+      setAuthBusy(false);
+      setAuthError(message);
+      throw new Error(message);
+    }
+
+    try {
+      const response = await fetch('/api/auth/email/password/reset/verify', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || payload.ok === false) {
+        throw new Error(resolveEmailAuthError(payload, copy.authEmailUnavailable || copy.error, copy));
+      }
+
+      setAuthError(null);
+      return {
+        authenticated: true,
+        accessToken: typeof payload.accessToken === 'string' ? payload.accessToken : undefined,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : (copy.authEmailUnavailable || copy.error);
+      setAuthError(message);
+      throw new Error(message);
+    } finally {
+      setAuthBusy(false);
+    }
+  }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline]);
+
+  const completePasswordResetWithOtp = useCallback(async (input: EmailPasswordUpdateInput): Promise<EmailAuthResult> => {
+    oauthResultHandledRef.current = true;
+    clearOauthPopupMonitor({ closePopup: true });
+    setAuthBusy(true);
+    setAuthError(null);
+    const copy = getLocalizedCopy();
+
+    if (isOffline) {
+      const message = copy.authEmailOffline || copy.connectionFailed || copy.error;
+      setAuthBusy(false);
+      setAuthError(message);
+      throw new Error(message);
+    }
+
+    try {
+      const response = await fetch('/api/auth/email/password/reset/update', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || payload.ok === false) {
+        throw new Error(resolveEmailAuthError(payload, copy.authEmailUnavailable || copy.error, copy));
+      }
+
+      const nextUser = (payload.user || null) as AuthUser | null;
+      if (!payload.authenticated || !nextUser?.id) {
+        throw new Error(copy.authEmailUnavailable || copy.error);
+      }
+
+      setUser(nextUser);
+      if (nextUser.name) saveUserName(nextUser.name);
+      setAuthMode('server');
+      setAuthChecking(false);
+      setAuthError(null);
+      setIsOpen(false);
+      return {
+        authenticated: true,
+        user: nextUser,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : (copy.authEmailUnavailable || copy.error);
+      setAuthError(message);
+      throw new Error(message);
+    } finally {
+      setAuthBusy(false);
+    }
+  }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline]);
+
+  const submitForgotEmailRecovery = useCallback(async (input: AccountRecoveryInput): Promise<AccountRecoveryResult> => {
+    oauthResultHandledRef.current = true;
+    clearOauthPopupMonitor({ closePopup: true });
+    setAuthBusy(true);
+    setAuthError(null);
+    const copy = getLocalizedCopy();
+
+    if (isOffline) {
+      const message = copy.authEmailOffline || copy.connectionFailed || copy.error;
+      setAuthBusy(false);
+      setAuthError(message);
+      throw new Error(message);
+    }
+
+    try {
+      const response = await fetch('/api/auth/account-recovery', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || payload.ok === false) {
+        throw new Error(resolveEmailAuthError(payload, copy.authEmailUnavailable || copy.error, copy));
+      }
+      setAuthError(null);
+      return { message: payload.message || 'Permintaan bantuan akun diterima.' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : (copy.authEmailUnavailable || copy.error);
+      setAuthError(message);
+      throw new Error(message);
+    } finally {
+      setAuthBusy(false);
+    }
+  }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline]);
+
   const updateRecoveredPassword = useCallback(async (input: EmailPasswordUpdateInput): Promise<EmailAuthResult> => {
     oauthResultHandledRef.current = true;
     clearOauthPopupMonitor({ closePopup: true });
@@ -733,6 +1008,12 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     startFacebookAuth,
     authenticateWithEmail,
     sendPasswordResetEmail,
+    sendEmailOtp,
+    verifyEmailOtp,
+    startPasswordResetOtp,
+    verifyPasswordResetOtp,
+    completePasswordResetWithOtp,
+    submitForgotEmailRecovery,
     updateRecoveredPassword,
     continueAsGuest,
     logout,
@@ -751,6 +1032,12 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     refreshAuthState,
     source,
     sendPasswordResetEmail,
+    sendEmailOtp,
+    verifyEmailOtp,
+    startPasswordResetOtp,
+    verifyPasswordResetOtp,
+    completePasswordResetWithOtp,
+    submitForgotEmailRecovery,
     startGoogleAuth,
     startFacebookAuth,
     continueAsGuest,

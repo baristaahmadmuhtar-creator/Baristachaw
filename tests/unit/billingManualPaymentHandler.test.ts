@@ -22,6 +22,9 @@ const ORIGINAL_ENV = {
   REVENUECAT_CHECKOUT_URL_PRO: process.env.REVENUECAT_CHECKOUT_URL_PRO,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
   REVENUECAT_API_KEY: process.env.REVENUECAT_API_KEY,
+  SUPABASE_URL: process.env.SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_STORAGE_BUCKET_PROOF: process.env.SUPABASE_STORAGE_BUCKET_PROOF,
 };
 
 function restoreEnv() {
@@ -105,7 +108,21 @@ async function postCheckout(userId = 'runtime_user_trial_review') {
   return { res, body: JSON.parse(res.body), token };
 }
 
+let originalFetch: typeof fetch | undefined;
+const mockUsers = new Map<string, any>();
+const mockAudits: any[] = [];
+
 test.beforeEach(() => {
+  mockUsers.clear();
+  mockUsers.set('runtime_user_trial_review', {
+    id: 'runtime_user_trial_review',
+    email: 'manual.customer@example.com',
+    name: 'Manual Customer',
+    plan_code: 'free',
+    billing: { status: 'none', provider: 'none', paymentActionRequired: false },
+  });
+  mockAudits.length = 0;
+
   process.env.JWT_SECRET = 'billing-unit-test-secret-32-chars-min';
   process.env.ADMIN_EMAILS = 'owner@example.com';
   process.env.MANUAL_PAYMENT_ENABLED = '1';
@@ -115,6 +132,9 @@ test.beforeEach(() => {
   process.env.MANUAL_PAYMENT_WHATSAPP_NUMBER = '+673 123 4567';
   process.env.MANUAL_PAYMENT_SUPPORT_EMAIL = 'support@example.com';
   process.env.MANUAL_PAYMENT_PROOF_MAX_BYTES = String(1024 * 1024);
+  process.env.SUPABASE_URL = 'https://unit-test.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'dummy-service-role-key';
+  process.env.SUPABASE_STORAGE_BUCKET_PROOF = 'payment-proofs';
   delete process.env.BILLING_CHECKOUT_URL;
   delete process.env.BILLING_CHECKOUT_URL_PRO;
   delete process.env.STRIPE_CHECKOUT_URL_PRO;
@@ -122,6 +142,88 @@ test.beforeEach(() => {
   delete process.env.STRIPE_SECRET_KEY;
   delete process.env.REVENUECAT_API_KEY;
   resetManualPaymentRequestsForTests();
+
+  originalFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input.toString();
+    
+    if (url.includes('/storage/v1/object/upload/sign/')) {
+      return new Response(JSON.stringify({ url: '/mock-upload-path' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (url.includes('/rest/v1/app_users')) {
+      const method = init?.method || 'GET';
+      if (method === 'PATCH' || method === 'POST') {
+        const bodyStr = typeof init?.body === 'string' ? init.body : '{}';
+        const updates = JSON.parse(bodyStr);
+        const match = url.match(/id=eq\.([^&]+)/);
+        const userId = match ? decodeURIComponent(match[1]) : 'runtime_user_trial_review';
+        const existing = mockUsers.get(userId) || { id: userId };
+        mockUsers.set(userId, {
+          ...existing,
+          ...updates,
+          planCode: updates.plan_code !== undefined ? updates.plan_code : (existing.planCode || existing.plan_code),
+        });
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      }
+      
+      const list = [...mockUsers.values()].map(u => ({
+        ...u,
+        plan_code: u.plan_code || u.planCode,
+        planCode: u.planCode || u.plan_code,
+      }));
+      return new Response(JSON.stringify(list), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (url.includes('/rest/v1/admin_audit_events')) {
+      const method = init?.method || 'GET';
+      if (method === 'PATCH' || method === 'POST') {
+        const bodyStr = typeof init?.body === 'string' ? init.body : '{}';
+        const updates = JSON.parse(bodyStr);
+        const events = Array.isArray(updates) ? updates : [updates];
+        for (const ev of events) {
+          mockAudits.push({
+            id: ev.id || `audit-${Date.now()}-${Math.random()}`,
+            created_at: ev.created_at || new Date().toISOString(),
+            actor_user_id: ev.actor_user_id || ev.actor,
+            actor_email: ev.actor_email || ev.actor,
+            target_type: ev.target_type || 'platform',
+            target_id: ev.target_id || ev.target,
+            action: ev.action,
+            detail: ev.detail || ev.summary || 'Administrative event recorded.',
+            severity: ev.severity || 'info',
+          });
+        }
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      }
+      
+      return new Response(JSON.stringify(mockAudits), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (url.includes('/rest/v1/')) {
+      return new Response(JSON.stringify([]), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }) as typeof fetch;
+});
+
+test.afterEach(() => {
+  if (originalFetch) {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test.after(() => {

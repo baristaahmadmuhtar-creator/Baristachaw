@@ -3,6 +3,9 @@ import { useAuthModal, type EmailAuthMode } from '../../context/AuthModalContext
 import { useGlobalState } from '../../context/GlobalState';
 import { AuthProgressMark } from './AuthProgressMark';
 import { AlertCircle, ArrowLeft, AtSign, CheckCircle, Eye, EyeOff, Lock, UserRound } from '../icons';
+import { OtpCodeInput } from './OtpCodeInput';
+import { PasswordStrengthHint } from './PasswordStrengthHint';
+import { AuthNoticeCard } from './AuthNoticeCard';
 
 type EmailPasswordAuthFormProps = {
   initialMode?: EmailAuthMode;
@@ -13,8 +16,8 @@ type EmailPasswordAuthFormProps = {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const currentColorIconStyle = { '--icon-glyph-color': 'currentColor' } as CSSProperties;
 
-type AuthFormStep = 'email' | 'password' | 'confirmation' | 'resetSent' | 'recovery' | 'forgotEmail';
-type PendingAuthAction = 'password' | 'reset' | 'recovery';
+type AuthFormStep = 'email' | 'password' | 'confirmation' | 'otpResetVerify' | 'otpResetPassword' | 'recovery' | 'forgotEmail';
+type PendingAuthAction = 'password' | 'reset' | 'recovery' | 'otp';
 
 function readPasswordRecoveryRequest() {
   if (typeof window === 'undefined') return { requested: false, accessToken: '' };
@@ -40,29 +43,44 @@ export function EmailPasswordAuthForm({
     authBusy,
     isOffline,
     authenticateWithEmail,
-    sendPasswordResetEmail,
+    sendEmailOtp,
+    verifyEmailOtp,
+    startPasswordResetOtp,
+    verifyPasswordResetOtp,
+    completePasswordResetWithOtp,
+    submitForgotEmailRecovery,
     updateRecoveredPassword,
     clearAuthError,
   } = useAuthModal();
+  
   const [recoveryRequest] = useState(readPasswordRecoveryRequest);
   const [mode, setMode] = useState<EmailAuthMode>(initialMode);
   const [step, setStep] = useState<AuthFormStep>(recoveryRequest.requested ? 'recovery' : 'email');
+  
   const [email, setEmail] = useState('');
-  const [resetSentEmail, setResetSentEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState('');
+  const [localSuccess, setLocalSuccess] = useState('');
   const [pendingAction, setPendingAction] = useState<PendingAuthAction | null>(null);
+  const [resetToken, setResetToken] = useState('');
+
+  // Forgot Email states
+  const [recoveryContact, setRecoveryContact] = useState('');
+  const [recoveryHint, setRecoveryHint] = useState('');
+
   const displayNameInputRef = useRef<HTMLInputElement | null>(null);
   const passwordInputRef = useRef<HTMLInputElement | null>(null);
   const recoveryPasswordInputRef = useRef<HTMLInputElement | null>(null);
+  const resetPasswordInputRef = useRef<HTMLInputElement | null>(null);
 
   const isSignUp = mode === 'signUp';
   const disabled = authBusy || isOffline || pendingAction !== null;
   const isPasswordBusy = pendingAction === 'password';
   const isResetBusy = pendingAction === 'reset';
   const isRecoveryBusy = pendingAction === 'recovery';
+  const isOtpBusy = pendingAction === 'otp';
 
   useEffect(() => {
     if (!recoveryRequest.requested || !recoveryRequest.accessToken || typeof window === 'undefined') return;
@@ -81,19 +99,20 @@ export function EmailPasswordAuthForm({
       ? (isSignUp ? displayNameInputRef.current || passwordInputRef.current : passwordInputRef.current)
       : step === 'recovery'
         ? recoveryPasswordInputRef.current
-        : null;
+        : step === 'otpResetPassword'
+          ? resetPasswordInputRef.current
+          : null;
     if (!target || target.disabled) return;
     const focusTimer = window.setTimeout(() => target.focus(), 0);
     return () => window.clearTimeout(focusTimer);
   }, [isSignUp, step]);
 
-  const validateEmail = () => {
-    const normalized = email.trim().toLowerCase();
+  const validateEmail = (targetEmail = email) => {
+    const normalized = targetEmail.trim().toLowerCase();
     if (!EMAIL_RE.test(normalized)) {
-      setLocalError(t.authEmailInvalid);
+      setLocalError(t.authEmailInvalid || 'Email tidak valid.');
       return null;
     }
-    setEmail(normalized);
     setLocalError('');
     return normalized;
   };
@@ -102,6 +121,7 @@ export function EmailPasswordAuthForm({
     event.preventDefault();
     const normalized = validateEmail();
     if (!normalized) return;
+    setEmail(normalized);
     setStep('password');
   };
 
@@ -110,11 +130,12 @@ export function EmailPasswordAuthForm({
     const normalized = validateEmail();
     if (!normalized) return;
     if (password.length < 8) {
-      setLocalError(t.authPasswordTooShort);
+      setLocalError(t.authPasswordTooShort || 'Password minimal 8 karakter.');
       return;
     }
 
     setLocalError('');
+    setLocalSuccess('');
     setPendingAction('password');
     try {
       const result = await authenticateWithEmail({
@@ -124,6 +145,10 @@ export function EmailPasswordAuthForm({
         displayName: isSignUp ? displayName.trim() : undefined,
       });
       if (result.emailConfirmationRequired) {
+        // Send OTP explicitly if sign up needs confirmation
+        if (isSignUp) {
+           await sendEmailOtp(normalized).catch(() => {}); // Optimistic or handle error
+        }
         setPassword('');
         setStep('confirmation');
       }
@@ -134,19 +159,106 @@ export function EmailPasswordAuthForm({
     }
   };
 
-  const handleSendPasswordReset = async () => {
+  const handleSendPasswordResetOtp = async () => {
     const normalized = validateEmail();
     if (!normalized) return;
 
     setLocalError('');
+    setLocalSuccess('');
     setPendingAction('reset');
     try {
-      const result = await sendPasswordResetEmail(normalized);
+      await startPasswordResetOtp(normalized);
       setPassword('');
-      setResetSentEmail(result.email || normalized);
-      setStep('resetSent');
+      setStep('otpResetVerify');
+      setLocalSuccess(t.authResetCodeSent || 'Jika email terdaftar, kode reset telah dikirim.');
     } catch {
-      // AuthModalContext surfaces the localized server error.
+      // Intentionally show generic message on error to prevent enumeration
+      setStep('otpResetVerify');
+      setLocalSuccess(t.authResetCodeSent || 'Jika email terdaftar, kode reset telah dikirim.');
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const handleVerifySignUpOtp = async (code: string) => {
+    const normalized = validateEmail();
+    if (!normalized || code.length !== 6) return;
+
+    setLocalError('');
+    setPendingAction('otp');
+    try {
+      await verifyEmailOtp({ email: normalized, token: code });
+      // On success, context will update user and close modal
+    } catch {
+      setLocalError(t.authOtpInvalid || 'Kode tidak valid atau kedaluwarsa.');
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const handleVerifyResetOtp = async (code: string) => {
+    const normalized = validateEmail();
+    if (!normalized || code.length !== 6) return;
+
+    setLocalError('');
+    setPendingAction('otp');
+    try {
+      const result = await verifyPasswordResetOtp({ email: normalized, token: code });
+      if (result.accessToken) {
+         setResetToken(result.accessToken);
+         setStep('otpResetPassword');
+         setLocalSuccess('');
+      } else {
+         throw new Error('No token returned');
+      }
+    } catch {
+      setLocalError(t.authOtpInvalid || 'Kode tidak valid atau kedaluwarsa.');
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const handleCompleteReset = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!resetToken) return;
+    if (password.length < 8) {
+      setLocalError(t.authPasswordTooShort || 'Password minimal 8 karakter.');
+      return;
+    }
+
+    setLocalError('');
+    setPendingAction('reset');
+    try {
+      await completePasswordResetWithOtp({
+        accessToken: resetToken,
+        password,
+      });
+      // Context sets user and closes modal
+    } catch {
+      // Error handled by context
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const handleForgotEmailSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const normalized = validateEmail(recoveryContact);
+    if (!normalized) return;
+
+    setLocalError('');
+    setLocalSuccess('');
+    setPendingAction('recovery');
+    try {
+      const res = await submitForgotEmailRecovery({
+        contactEmail: normalized,
+        displayNameHint: recoveryHint.trim() || undefined,
+      });
+      setLocalSuccess(res.message);
+      setRecoveryContact('');
+      setRecoveryHint('');
+    } catch {
+      // Generic error or rate limit
     } finally {
       setPendingAction(null);
     }
@@ -159,7 +271,7 @@ export function EmailPasswordAuthForm({
       return;
     }
     if (password.length < 8) {
-      setLocalError(t.authPasswordTooShort);
+      setLocalError(t.authPasswordTooShort || 'Password minimal 8 karakter.');
       return;
     }
 
@@ -171,9 +283,9 @@ export function EmailPasswordAuthForm({
         password,
       });
       setPassword('');
-      // Optionally transition to a success step
+      // Context will close modal or update state
     } catch {
-      // AuthModalContext surfaces the localized server error.
+      // Handled by context
     } finally {
       setPendingAction(null);
     }
@@ -182,62 +294,177 @@ export function EmailPasswordAuthForm({
   const switchMode = () => {
     setMode((current) => current === 'signIn' ? 'signUp' : 'signIn');
     setLocalError('');
+    setLocalSuccess('');
     clearAuthError();
     setStep('password');
   };
 
+  const renderError = () => {
+    if (!localError) return null;
+    return (
+      <div className="mb-4 flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-sm font-medium text-red-600 dark:text-red-400">
+        <AlertCircle size={18} className="mt-0.5 shrink-0" variant="glyph" tone="amber" />
+        <span>{localError}</span>
+      </div>
+    );
+  };
+
+  const renderSuccess = () => {
+    if (!localSuccess) return null;
+    return (
+      <div className="mb-4 flex items-start gap-3 rounded-2xl border border-green-500/20 bg-green-500/10 p-3 text-sm font-medium text-green-700 dark:text-green-400">
+        <CheckCircle size={18} className="mt-0.5 shrink-0" variant="glyph" tone="green" />
+        <span>{localSuccess}</span>
+      </div>
+    );
+  };
+
   if (step === 'confirmation') {
     return (
-      <div className={`rounded-[1.25rem] border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 p-5 shadow-inner ${className}`}>
-        <div className="flex items-start gap-4">
-          <div className="rounded-full bg-emerald-500/20 p-2 text-emerald-600 dark:text-emerald-400">
-            <CheckCircle className="shrink-0" size={24} variant="glyph" />
+      <div className={`rounded-[1.25rem] border border-blue-500/20 bg-gradient-to-br from-blue-500/10 to-blue-500/5 p-5 shadow-inner ${className}`}>
+        <div className="flex flex-col items-center gap-2 text-center">
+          <div className="rounded-full bg-blue-500/20 p-3 text-blue-600 dark:text-blue-400 mb-2">
+            <CheckCircle className="shrink-0" size={32} variant="glyph" />
           </div>
-          <div>
-            <h3 className="text-base font-bold text-primary">{t.authEmailConfirmationTitle || 'Cek Email Anda'}</h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-secondary">
-              {(t.authEmailConfirmationBody || 'Kami telah mengirim kode atau instruksi verifikasi ke {email}.').replace('{email}', email)}
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setMode('signIn');
-                setStep('password');
-              }}
-              className="mt-4 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:-translate-y-0.5 hover:bg-emerald-600 hover:shadow-emerald-500/40"
-            >
-              {t.authEmailConfirmationCta || 'Masuk ke Akun'}
-            </button>
+          <h3 className="text-lg font-bold text-primary">{t.authEmailConfirmationTitle || 'Cek Email Anda'}</h3>
+          <p className="text-sm leading-relaxed text-secondary mb-2">
+             {(t.authOtpDescription || 'Masukkan kode 6 digit yang dikirim ke email Anda.')} <br/> <strong>{email}</strong>
+          </p>
+          
+          {renderError()}
+
+          <OtpCodeInput 
+             length={6} 
+             disabled={isOtpBusy} 
+             onComplete={handleVerifySignUpOtp} 
+          />
+
+          <div className="flex flex-col w-full gap-2 mt-4">
+             <button
+               type="button"
+               disabled={isOtpBusy}
+               onClick={() => sendEmailOtp(email)}
+               className="text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors disabled:opacity-50"
+             >
+               {t.authOtpResend || 'Kirim Ulang Kode'}
+             </button>
+             <button
+               type="button"
+               disabled={isOtpBusy}
+               onClick={() => {
+                 setMode('signIn');
+                 setStep('email');
+               }}
+               className="text-sm font-bold text-secondary hover:text-primary transition-colors"
+             >
+               {t.authResetEmailSentCta || 'Kembali'}
+             </button>
           </div>
         </div>
       </div>
     );
   }
 
-  if (step === 'resetSent') {
+  if (step === 'otpResetVerify') {
     return (
       <div className={`rounded-[1.25rem] border border-blue-500/20 bg-gradient-to-br from-blue-500/10 to-blue-500/5 p-5 shadow-inner ${className}`}>
-        <div className="flex items-start gap-4">
-          <div className="rounded-full bg-blue-500/20 p-2 text-blue-600 dark:text-blue-400">
-            <CheckCircle className="shrink-0" size={24} variant="glyph" />
+        <div className="flex flex-col items-center gap-2 text-center">
+          <div className="rounded-full bg-blue-500/20 p-3 text-blue-600 dark:text-blue-400 mb-2">
+            <Lock className="shrink-0" size={32} variant="glyph" />
           </div>
-          <div>
-            <h3 className="text-base font-bold text-primary">{t.authResetEmailSentTitle || 'Instruksi Terkirim'}</h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-secondary">
-              {(t.authResetEmailSentBody || 'Instruksi reset password telah dikirim ke {email}. Silakan cek kotak masuk Anda.').replace('{email}', resetSentEmail || email)}
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setMode('signIn');
-                setStep('password');
-              }}
-              className="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-blue-600/30 transition-all hover:-translate-y-0.5 hover:bg-blue-700"
-            >
-              {t.authResetEmailSentCta || 'Kembali ke Login'}
-            </button>
+          <h3 className="text-lg font-bold text-primary">{t.authForgotPassword || 'Reset Password'}</h3>
+          <p className="text-sm leading-relaxed text-secondary mb-2">
+             {(t.authOtpDescription || 'Masukkan kode 6 digit yang dikirim ke email Anda.')} <br/> <strong>{email}</strong>
+          </p>
+
+          {renderSuccess()}
+          {renderError()}
+
+          <OtpCodeInput 
+             length={6} 
+             disabled={isOtpBusy} 
+             onComplete={handleVerifyResetOtp} 
+          />
+
+          <div className="flex flex-col w-full gap-2 mt-4">
+             <button
+               type="button"
+               disabled={isOtpBusy}
+               onClick={() => startPasswordResetOtp(email).then(() => setLocalSuccess(t.authResetCodeSent || 'Kode reset telah dikirim.'))}
+               className="text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors disabled:opacity-50"
+             >
+               {t.authOtpResend || 'Kirim Ulang Kode'}
+             </button>
+             <button
+               type="button"
+               disabled={isOtpBusy}
+               onClick={() => {
+                 setStep('password');
+               }}
+               className="text-sm font-bold text-secondary hover:text-primary transition-colors"
+             >
+               {t.authResetEmailSentCta || 'Kembali'}
+             </button>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (step === 'otpResetPassword') {
+    return (
+      <div className={className}>
+         <div className="mb-6 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+               <Lock size={28} variant="glyph" />
+            </div>
+            <h2 className="text-xl font-black tracking-tight text-primary">{t.authRecoveryTitle || 'Buat Password Baru'}</h2>
+         </div>
+
+         {renderError()}
+
+         <form onSubmit={handleCompleteReset} className="flex flex-col gap-4">
+           <div className="flex flex-col gap-1.5">
+             <label className="text-sm font-bold text-primary" htmlFor="auth-reset-password">
+               {t.authRecoveryPasswordLabel || 'Password Baru'}
+             </label>
+             <div className="auth-field-shell flex items-center gap-3 rounded-2xl border border-glass bg-surface-alpha px-4 py-3.5 focus-within:border-purple-500/50 focus-within:bg-[var(--bg-base)]">
+               <Lock size={18} className="shrink-0" variant="glyph" tone="purple" />
+               <input
+                 ref={resetPasswordInputRef}
+                 id="auth-reset-password"
+                 type={showPassword ? 'text' : 'password'}
+                 autoComplete="new-password"
+                 value={password}
+                 onChange={(event) => {
+                   setPassword(event.target.value);
+                   setLocalError('');
+                   clearAuthError();
+                 }}
+                 placeholder={t.authPasswordPlaceholder || 'Minimal 8 karakter'}
+                 disabled={disabled}
+                 className="min-w-0 flex-1 bg-transparent text-[15px] font-semibold text-primary outline-none placeholder:font-medium placeholder:text-tertiary disabled:opacity-60"
+               />
+               <button
+                 type="button"
+                 onClick={() => setShowPassword((value) => !value)}
+                 className="rounded-full p-1.5 text-secondary hover:bg-surface-alpha hover:text-primary"
+               >
+                 {showPassword ? <EyeOff size={16} variant="glyph" tone="neutral" /> : <Eye size={16} variant="glyph" tone="neutral" />}
+               </button>
+             </div>
+             <PasswordStrengthHint password={password} translations={t as Record<string, string>} />
+           </div>
+
+           <button
+             type="submit"
+             disabled={disabled}
+             className="auth-action-primary mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-purple-600 to-purple-500 px-4 py-3.5 text-[15px] font-extrabold text-white shadow-[0_12px_24px_rgba(168,85,247,0.25)] transition-all hover:from-purple-700 hover:to-purple-600 disabled:opacity-55"
+           >
+             {isResetBusy ? <AuthProgressMark /> : <Lock size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
+             {t.authRecoverySubmit || 'Simpan Password'}
+           </button>
+         </form>
       </div>
     );
   }
@@ -249,28 +476,58 @@ export function EmailPasswordAuthForm({
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
             <UserRound size={28} variant="glyph" />
           </div>
-          <h2 className="text-xl font-black tracking-tight text-primary">Lupa Email?</h2>
+          <h2 className="text-xl font-black tracking-tight text-primary">{t.authForgotEmail || 'Lupa Email?'}</h2>
           <p className="mt-2 text-sm leading-relaxed text-secondary">
-            Jika Anda lupa email yang terdaftar, coba periksa kotak masuk email lain Anda untuk pesan dari Baristachaw, atau hubungi tim support kami.
+             {t.authForgotEmailDescription || 'Masukkan email kontak dan petunjuk agar kami dapat membantu memulihkan akun Anda.'}
           </p>
         </div>
 
-        <div className="flex flex-col gap-3">
-          <button
-            type="button"
-            onClick={() => window.location.href = '/support'}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-amber-500/30 transition-all hover:from-amber-600 hover:to-amber-700"
-          >
-            Hubungi Support
-          </button>
-          <button
-            type="button"
-            onClick={() => setStep('email')}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-glass bg-surface-alpha px-4 py-3.5 text-sm font-bold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary"
-          >
-            Kembali
-          </button>
-        </div>
+        {renderError()}
+        {renderSuccess()}
+
+        <form onSubmit={handleForgotEmailSubmit} className="flex flex-col gap-4">
+           <div className="flex flex-col gap-1.5">
+             <label className="text-sm font-bold text-primary">Email Kontak</label>
+             <input
+               type="email"
+               required
+               value={recoveryContact}
+               onChange={(e) => { setRecoveryContact(e.target.value); setLocalError(''); }}
+               placeholder="email_yang_bisa_dihubungi@domain.com"
+               disabled={disabled}
+               className="auth-field-shell w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3.5 text-[15px] font-semibold text-primary outline-none focus-within:border-amber-500/50 focus-within:bg-[var(--bg-base)] disabled:opacity-60"
+             />
+           </div>
+           
+           <div className="flex flex-col gap-1.5">
+             <label className="text-sm font-bold text-primary">Petunjuk Akun (Opsional)</label>
+             <input
+               type="text"
+               value={recoveryHint}
+               onChange={(e) => setRecoveryHint(e.target.value)}
+               placeholder="Misal: Nomor HP lama, username sebelumnya"
+               disabled={disabled}
+               className="auth-field-shell w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3.5 text-[15px] font-semibold text-primary outline-none focus-within:border-amber-500/50 focus-within:bg-[var(--bg-base)] disabled:opacity-60"
+             />
+           </div>
+
+           <button
+             type="submit"
+             disabled={disabled || !recoveryContact}
+             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-amber-500/30 transition-all hover:from-amber-600 hover:to-amber-700 disabled:opacity-55"
+           >
+             {isRecoveryBusy ? <AuthProgressMark /> : null}
+             {t.authForgotEmailSubmit || 'Kirim Permintaan'}
+           </button>
+           <button
+             type="button"
+             disabled={disabled}
+             onClick={() => setStep('email')}
+             className="flex w-full items-center justify-center gap-2 rounded-2xl border border-glass bg-surface-alpha px-4 py-3.5 text-sm font-bold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary"
+           >
+             Kembali
+           </button>
+        </form>
       </div>
     );
   }
@@ -326,6 +583,7 @@ export function EmailPasswordAuthForm({
                 {showPassword ? <EyeOff size={16} variant="glyph" tone="neutral" /> : <Eye size={16} variant="glyph" tone="neutral" />}
               </button>
             </div>
+            <PasswordStrengthHint password={password} translations={t as Record<string, string>} />
           </div>
 
           <button
@@ -356,12 +614,8 @@ export function EmailPasswordAuthForm({
 
   return (
     <div className={className}>
-      {localError ? (
-        <div className="mb-4 flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-sm font-medium text-red-600 dark:text-red-400">
-          <AlertCircle size={18} className="mt-0.5 shrink-0" variant="glyph" tone="amber" />
-          <span>{localError}</span>
-        </div>
-      ) : null}
+      {renderError()}
+      {renderSuccess()}
 
       {step === 'email' ? (
         <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
@@ -390,7 +644,7 @@ export function EmailPasswordAuthForm({
           </div>
           <button
             type="submit"
-            disabled={disabled}
+            disabled={disabled || !email}
             className="auth-action-primary mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3.5 text-[15px] font-extrabold text-white shadow-[0_12px_24px_rgba(37,99,235,0.25)] transition-all hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-55"
           >
             {isPasswordBusy ? <AuthProgressMark /> : <UserRound size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
@@ -399,10 +653,10 @@ export function EmailPasswordAuthForm({
           <div className="text-center">
             <button
               type="button"
-              onClick={() => setStep('forgotEmail')}
+              onClick={() => { setStep('forgotEmail'); setLocalError(''); setLocalSuccess(''); }}
               className="inline-block rounded-lg px-3 py-1.5 text-[13px] font-bold text-secondary hover:bg-surface-alpha hover:text-primary transition-colors"
             >
-              Lupa Email?
+              {t.authForgotEmail || 'Lupa Email?'}
             </button>
           </div>
         </form>
@@ -419,7 +673,7 @@ export function EmailPasswordAuthForm({
             </div>
             <button
               type="button"
-              onClick={() => setStep('email')}
+              onClick={() => { setStep('email'); setLocalError(''); }}
               className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[var(--bg-base)] px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-widest text-secondary shadow-sm hover:text-primary transition-colors"
             >
               Ganti
@@ -456,7 +710,7 @@ export function EmailPasswordAuthForm({
               {!isSignUp ? (
                 <button
                   type="button"
-                  onClick={() => void handleSendPasswordReset()}
+                  onClick={() => void handleSendPasswordResetOtp()}
                   disabled={disabled}
                   className="text-[12px] font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors disabled:opacity-55"
                 >
@@ -490,6 +744,7 @@ export function EmailPasswordAuthForm({
                 {showPassword ? <EyeOff size={16} variant="glyph" tone="neutral" /> : <Eye size={16} variant="glyph" tone="neutral" />}
               </button>
             </div>
+            {isSignUp && <PasswordStrengthHint password={password} translations={t as Record<string, string>} />}
           </div>
 
           <button

@@ -20,36 +20,40 @@ import { PrivacyPage } from './pages/PrivacyPage';
 import { SupportPage } from './pages/SupportPage';
 import { TermsPage } from './pages/TermsPage';
 
-function EvidenceSection({ language }: { language: Language }) {
-  const evidence: [string, string][] = [
-    [RELEASE_VERSION, t('evidence.consistency', language)],
-    ['36+', t('evidence.brewers', language)],
-    ['1000', t('evidence.satisfaction', language)],
-    ['1000', t('evidence.recipes', language)],
-    ['0', t('evidence.guesswork', language)],
-    ['app.baristachaw.com', t('evidence.access', language)],
+function ConversionProofSection({ language }: { language: Language }) {
+  const benefits = [
+    { id: 'b1', title: t('value.card1.title', language), desc: t('value.card1.body', language) },
+    { id: 'b2', title: t('value.card2.title', language), desc: t('value.card2.body', language) },
+    { id: 'b3', title: t('value.card3.title', language), desc: t('value.card3.body', language) },
+    { id: 'b4', title: t('value.card4.title', language), desc: t('value.card4.body', language) },
   ];
+
   return (
-    <section className="evidence-section" aria-labelledby="evidence-title">
-      <div className="evidence-inner">
+    <section className="evidence-section conversion-proof-section" aria-labelledby="proof-title">
+      <div className="evidence-inner" style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
         <ScrollReveal variant="dramatic">
           <div>
-            <p className="section-index section-index-light">05 / 06</p>
-            <h2 id="evidence-title">{t('evidence.title', language)}</h2>
+            <p className="section-index section-index-light">{t('value.index', language)}</p>
+            <h2 id="proof-title" style={{ fontSize: 'clamp(28px, 5vw, 42px)', marginBottom: '16px' }}>{t('value.title', language)}</h2>
+            <p style={{ fontSize: 'clamp(16px, 3vw, 18px)', color: 'rgba(255,255,255,0.7)', marginBottom: '48px', maxWidth: '600px', margin: '0 auto', lineHeight: '1.6' }}>
+              {t('value.body', language)}
+            </p>
           </div>
         </ScrollReveal>
-        <div className="evidence-grid">
-          {evidence.map(([value, label], index) => (
-            <ScrollReveal key={label} variant="scale" delay={index * 0.06}>
-              <div><strong>{value}</strong><span>{label}</span></div>
+        <div className="evidence-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginTop: '48px' }}>
+          {benefits.map((benefit, index) => (
+            <ScrollReveal key={benefit.id} variant="scale" delay={index * 0.06}>
+              <div style={{ padding: '24px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                <strong style={{ display: 'block', fontSize: '18px', marginBottom: '8px', color: '#ffd233' }}>{benefit.title}</strong>
+                <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.5' }}>{benefit.desc}</span>
+              </div>
             </ScrollReveal>
           ))}
         </div>
-        <ScrollReveal variant="fade" delay={0.2}>
-          <div className="honesty-note">
-            <CircleAlert />
-            <p>{t('evidence.note', language)}</p>
-          </div>
+        <ScrollReveal variant="fade" delay={0.3}>
+          <p style={{ marginTop: '48px', fontSize: '13px', color: 'rgba(255,255,255,0.4)', maxWidth: '600px', margin: '48px auto 0 auto', lineHeight: '1.5' }}>
+            {t('value.note', language)}
+          </p>
         </ScrollReveal>
       </div>
     </section>
@@ -103,7 +107,7 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
   };
 
   return (
-    <section className="pricing section-shell" aria-labelledby="pricing-title">
+    <section id="pricing" className="pricing section-shell" aria-labelledby="pricing-title">
       <ScrollReveal variant="dramatic">
         <div className="section-heading">
           <p className="section-index">{t('pricing.index', language)}</p>
@@ -326,13 +330,13 @@ function LandingHome({ language, region, onRegionChange, user, onLoginSuccess, i
 
   return (
     <main>
-      <HeroSection language={language} onRegister={() => openRegister('free')} />
+      <HeroSection language={language} onRegister={() => openRegister('free')} user={user} />
       <MethodSections language={language} />
       <DataShowcase language={language} />
       <BrewerGrid language={language} />
       <ToolsShowcase language={language} />
       <FeatureGraphics language={language} />
-      <EvidenceSection language={language} />
+      <ConversionProofSection language={language} />
       <PricingSection language={language} region={region} onRegionChange={onRegionChange} onRegister={openRegister} />
       <DownloadSection language={language} />
       <ScrollReveal variant="blur">

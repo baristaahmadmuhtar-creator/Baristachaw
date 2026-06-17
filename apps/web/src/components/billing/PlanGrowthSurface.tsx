@@ -735,7 +735,7 @@ export function PlanGrowthSurface({
                     </div>
                     <h3 className="mt-4 text-xl font-black">Paket Anda Sedang Aktif</h3>
                     <p className="mt-2 text-sm leading-6 text-secondary">
-                      Anda saat ini berlangganan paket <strong className="text-primary">{planDisplayName(currentPlanCode)}</strong>. Untuk menghindari tumpang tindih tagihan, fitur penggantian paket dikunci sementara. Silakan tunggu hingga siklus tagihan Anda berakhir untuk mengganti, memperbarui, atau beralih ke paket lain.
+                      Anda saat ini berlangganan paket <strong className="text-primary">{planDisplayName(currentPlanCode)}</strong>. Silakan tunggu hingga siklus tagihan Anda berakhir jika ingin mengganti, memperbarui, atau beralih ke paket lain.
                     </p>
                     <button
                       type="button"

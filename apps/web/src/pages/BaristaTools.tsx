@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { Sparkles as AppSparklesIcon } from '../components/icons';
-import { BREW_METHOD_MAP, BREW_METHOD_PROFILES } from '../features/barista-tools/brewProfiles';
+import { BREW_METHOD_MAP, BREW_METHOD_PROFILES, VISIBLE_BREW_METHOD_PRESETS } from '../features/barista-tools/brewProfiles';
 import { GrindSizeCalculator } from '../features/barista-tools/GrindSizeCalculator';
 import {
   buildBrewOutputs,
@@ -819,7 +819,7 @@ export function BaristaTools() {
               </button>
             </div>
             <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1" data-testid="brew-method-chips">
-              {BREW_METHOD_PROFILES.map((method) => (
+              {VISIBLE_BREW_METHOD_PRESETS.map((method) => (
                 <button
                   key={method.id}
                   type="button"

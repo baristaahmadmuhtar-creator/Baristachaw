@@ -17,7 +17,7 @@ import {
   type AdminFeatureFlag,
   type FeatureSurface,
 } from '../admin/_featureFlags.js';
-import { PLAN_CATALOG } from '@baristachaw/shared/planCatalog';
+import { PLAN_CATALOG, PLAN_PRICING, formatCurrency } from '../../packages/shared/src/planCatalog.js';
 
 type AccountStatus = 'active' | 'trialing' | 'past_due' | 'suspended' | 'deleted';
 export type PlanCode = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
@@ -116,11 +116,21 @@ function sharedPlan(code: PlanCode) {
   return PLAN_CATALOG.find((plan) => plan.code === code) || PLAN_CATALOG[0];
 }
 
+function sharedMonthlyPriceLabel(code: PlanCode): string {
+  if (code === 'starter' || code === 'pro') {
+    const tier = PLAN_PRICING[code].monthly.discounted;
+    return `${formatCurrency(tier.idr, 'idr')} / ${formatCurrency(tier.bnd, 'bnd')} / ${formatCurrency(tier.usd, 'usd')} monthly`;
+  }
+  if (code === 'team') return `${formatCurrency(sharedPlan('team').priceMonthlyUsd, 'usd')} monthly`;
+  if (code === 'enterprise') return 'Custom invoice';
+  return 'Free';
+}
+
 const PLAN_BLUEPRINTS: AccountPlan[] = [
   {
     code: 'free',
     name: sharedPlan('free').displayName,
-    description: 'Free tools for exploring coffee brewing — timer, ratio calculator, grind size calculator, and recipe collection.',
+    description: sharedPlan('free').description,
     aiDailyLimit: 12,
     deepDailyLimit: 0,
     scannerDailyLimit: 2,
@@ -129,13 +139,13 @@ const PLAN_BLUEPRINTS: AccountPlan[] = [
     supportSlaHours: 72,
     features: [...sharedPlan('free').features],
     priceMonthlyUsd: 0,
-    displayPrice: 'Free',
+    displayPrice: sharedMonthlyPriceLabel('free'),
     checkoutMode: 'disabled',
   },
   {
     code: 'starter',
     name: sharedPlan('starter').displayName,
-    description: 'For serious home baristas — unlimited AI Brew, limited AI Chat, precision grinder calibration, and unlimited flavor profiles.',
+    description: sharedPlan('starter').description,
     aiDailyLimit: 999,
     deepDailyLimit: 0,
     scannerDailyLimit: 12,
@@ -144,13 +154,13 @@ const PLAN_BLUEPRINTS: AccountPlan[] = [
     supportSlaHours: 48,
     features: [...sharedPlan('starter').features],
     priceMonthlyUsd: sharedPlan('starter').priceMonthlyUsd,
-    displayPrice: 'Rp 61.000 / B$ 1.80 / $1.50 monthly',
+    displayPrice: sharedMonthlyPriceLabel('starter'),
     checkoutMode: 'manual_invoice',
   },
   {
     code: 'pro',
     name: sharedPlan('pro').displayName,
-    description: 'Full professional toolkit — unlimited AI Chat, AI Scan, Latte Art Generator, and all upcoming features.',
+    description: sharedPlan('pro').description,
     aiDailyLimit: 999,
     deepDailyLimit: 120,
     scannerDailyLimit: 120,
@@ -159,13 +169,13 @@ const PLAN_BLUEPRINTS: AccountPlan[] = [
     supportSlaHours: 24,
     features: [...sharedPlan('pro').features],
     priceMonthlyUsd: sharedPlan('pro').priceMonthlyUsd,
-    displayPrice: 'Rp 199.000 / B$ 6.00 / $4.99 monthly',
+    displayPrice: sharedMonthlyPriceLabel('pro'),
     checkoutMode: 'manual_invoice',
   },
   {
     code: 'team',
-    name: 'Café Team',
-    description: 'Cafe teams with shared operations, recipe SOP standardization, and multi-seat barista access.',
+    name: sharedPlan('team').displayName,
+    description: sharedPlan('team').description,
     aiDailyLimit: 800,
     deepDailyLimit: 160,
     scannerDailyLimit: 240,
@@ -174,13 +184,13 @@ const PLAN_BLUEPRINTS: AccountPlan[] = [
     supportSlaHours: 12,
     features: [...sharedPlan('team').features],
     priceMonthlyUsd: sharedPlan('team').priceMonthlyUsd,
-    displayPrice: 'Custom — contact us',
+    displayPrice: sharedMonthlyPriceLabel('team'),
     checkoutMode: 'manual_invoice',
   },
   {
     code: 'enterprise',
     name: sharedPlan('enterprise').displayName,
-    description: 'Custom commercial deployment and support.',
+    description: sharedPlan('enterprise').description,
     aiDailyLimit: 5000,
     deepDailyLimit: 1000,
     scannerDailyLimit: 1000,
@@ -189,7 +199,7 @@ const PLAN_BLUEPRINTS: AccountPlan[] = [
     supportSlaHours: 4,
     features: [...sharedPlan('enterprise').features],
     priceMonthlyUsd: 0,
-    displayPrice: 'Custom invoice',
+    displayPrice: sharedMonthlyPriceLabel('enterprise'),
     checkoutMode: 'manual_invoice',
   },
 ];

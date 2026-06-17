@@ -8,7 +8,7 @@ import {
   type CurrencyCode,
   type ManualPaymentStatus,
   type PaidPlanCode,
-} from '@baristachaw/shared/planCatalog';
+} from '../../packages/shared/src/planCatalog.js';
 
 export type ManualPaymentInstructions = {
   bankName: string;

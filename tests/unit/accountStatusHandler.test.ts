@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import jwt from 'jsonwebtoken';
 import accountStatusHandler from '../../server-api/account/status.ts';
+import { getPlanByCode } from '../../packages/shared/src/planCatalog.ts';
 
 const ORIGINAL_ENV = {
   JWT_SECRET: process.env.JWT_SECRET,
@@ -111,6 +112,12 @@ test('account status returns plan and runtime maintenance flags for mobile', asy
   assert.equal(body.billing.status, 'none');
   assert.equal(body.recommendedUpgrade.planCode, 'pro');
   assert.equal(body.recommendedUpgrade.action, 'checkout');
+  const starterPlan = body.plans.find((plan: any) => plan.code === 'starter');
+  const proPlan = body.plans.find((plan: any) => plan.code === 'pro');
+  assert.equal(starterPlan.name, getPlanByCode('starter').displayName);
+  assert.equal(starterPlan.description, getPlanByCode('starter').description);
+  assert.equal(proPlan.name, getPlanByCode('pro').displayName);
+  assert.equal(proPlan.description, getPlanByCode('pro').description);
   assert.ok(body.featureFlags.some((flag: any) => flag.key === 'ai_brew_fallback' && flag.status === 'available'));
   assert.ok(body.maintenance.some((flag: any) => flag.key === 'scanner' && flag.status === 'maintenance'));
   assert.equal(body.appAccess.status, 'limited');

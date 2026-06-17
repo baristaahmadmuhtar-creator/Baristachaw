@@ -17,8 +17,8 @@ test('renders the full landing contract without console errors or overflow', asy
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Bangun rencana seduh yang lebih jelas/);
-  await expect(page.getByRole('region', { name: /Bangun rencana seduh yang lebih jelas/ }).getByRole('link', { name: /Mulai Seduh/ })).toHaveAttribute(
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Seduh Kopi Sempurna Setiap Pagi/);
+  await expect(page.getByRole('region', { name: /Seduh Kopi Sempurna Setiap Pagi/ }).getByRole('link', { name: /Mulai Seduh/ })).toHaveAttribute(
     'href',
     'https://app.baristachaw.com/tools?tab=ai_brew',
   );
@@ -61,8 +61,8 @@ test('legal and download routes are direct, honest, and non-PWA', async ({ page 
 test('language toggle changes the public interface without mixed primary copy', async ({ page }) => {
   await page.getByLabel('Select Language').click();
   await page.getByRole('option', { name: 'English' }).click();
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Build a clearer brew plan/);
-  await expect(page.getByRole('region', { name: /Build a clearer brew plan/ }).getByRole('link', { name: 'Start Brewing' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Brew the Perfect Cup Every Morning/);
+  await expect(page.getByRole('region', { name: /Brew the Perfect Cup Every Morning/ }).getByRole('link', { name: 'Start Brewing' })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 });
 

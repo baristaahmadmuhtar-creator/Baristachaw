@@ -4,7 +4,7 @@ import { loadAiBrewCatalog } from '../ai-brew/catalog.ts';
 import type { AiBrewCatalog } from '../ai-brew/types.ts';
 import { getGrinderSafetyProfile } from '../ai-brew/grinderSafetyGuardrails.ts';
 import { useGlobalState } from '../../context/GlobalState';
-import { BREW_METHOD_PROFILES } from './brewProfiles.ts';
+import { VISIBLE_BREW_METHOD_PRESETS } from './brewProfiles.ts';
 import type { BrewMethodId, RoastLevel } from './types.ts';
 import {
   buildGrindSizeAdvice,
@@ -324,7 +324,7 @@ type GrinderFilterMode = 'all' | 'hand' | 'electric' | 'espresso' | 'filter' | '
         </div>
 
         <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1" aria-label={t.toolsBrewMethodPresets}>
-          {BREW_METHOD_PROFILES.map((method) => (
+          {VISIBLE_BREW_METHOD_PRESETS.map((method) => (
             <button
               key={method.id}
               type="button"

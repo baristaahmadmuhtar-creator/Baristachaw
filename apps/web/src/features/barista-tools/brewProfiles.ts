@@ -419,6 +419,14 @@ export const BREW_METHOD_PROFILES: BrewMethodProfile[] = dedupeBrewMethodProfile
   };
 }));
 
+export function isIcedBrewMethodProfile(profile: BrewMethodProfile): boolean {
+  return Boolean(profile.japaneseSplit) || profile.id.endsWith('_iced') || profile.id === 'v60_japanese_iced';
+}
+
+export const VISIBLE_BREW_METHOD_PRESETS: BrewMethodProfile[] = BREW_METHOD_PROFILES.filter(
+  (profile) => !isIcedBrewMethodProfile(profile),
+);
+
 export const BREW_METHOD_MAP: Record<BrewMethodId, BrewMethodProfile> = BREW_METHOD_PROFILES.reduce(
   (acc, profile) => {
     acc[profile.id] = profile;

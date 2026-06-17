@@ -5,7 +5,12 @@ import { CreditCard, LogIn, RefreshCcw, ShieldCheck, Sparkles, X } from 'lucide-
 import { useAccountStatus } from '../../context/AccountStatusContext';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
-import { BillingApiError, startBillingCheckout } from '../../services/billing';
+import {
+  BillingApiError,
+  startBillingCheckout,
+  submitManualPaymentProof,
+  type BillingManualInvoiceResponse,
+} from '../../services/billing';
 import type { AccountPlan, PlanCode } from '../../services/accountStatus';
 import { getCurrencyForRegion, PRICING, formatCurrency } from '../../services/billingConfig';
 import { modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
@@ -68,11 +73,17 @@ function AiAccessGateDialog({
   t,
   checkoutBusy,
   checkoutError,
+  manualInvoice,
+  manualProofFile,
+  manualProofStatus,
   refreshBusy,
   onClose,
   onSignin,
   onUpgrade,
   onRefresh,
+  onManualProofFileChange,
+  onManualProofSubmit,
+  onCopyManualAccount,
 }: {
   state: GateState;
   title: string;
@@ -81,11 +92,17 @@ function AiAccessGateDialog({
   t: Record<string, string>;
   checkoutBusy: boolean;
   checkoutError: string;
+  manualInvoice: BillingManualInvoiceResponse | null;
+  manualProofFile: File | null;
+  manualProofStatus: 'idle' | 'submitting' | 'submitted';
   refreshBusy: boolean;
   onClose: () => void;
   onSignin: () => void;
   onUpgrade: () => void;
   onRefresh: () => void | Promise<void>;
+  onManualProofFileChange: (file: File | null) => void;
+  onManualProofSubmit: () => void | Promise<void>;
+  onCopyManualAccount: () => void | Promise<void>;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const isUpgrade = state.mode === 'upgrade';
@@ -196,6 +213,83 @@ function AiAccessGateDialog({
           </div>
         ) : null}
 
+        {manualInvoice ? (
+          <div className="mt-4 rounded-[1.35rem] border border-emerald-500/25 bg-emerald-500/10 p-4 text-sm text-primary">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-300">
+                  {t.aiGateManualPaymentTitle}
+                </p>
+                <p className="mt-1 font-semibold">
+                  {manualInvoice.manualInvoice.amountLabel}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-secondary">
+                  {t.aiGateManualPaymentBody}
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full bg-amber-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-700 dark:text-amber-200">
+                {manualInvoice.manualInvoice.status.replace(/_/g, ' ')}
+              </span>
+            </div>
+            <dl className="mt-3 grid gap-2 rounded-2xl border border-glass bg-[var(--bg-base)]/70 p-3">
+              <div>
+                <dt className="text-[10px] font-bold uppercase tracking-wide text-secondary">Bank</dt>
+                <dd className="mt-0.5 font-semibold">{manualInvoice.manualInvoice.instructions.bankName}</dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-bold uppercase tracking-wide text-secondary">Account</dt>
+                <dd className="mt-0.5 font-semibold">{manualInvoice.manualInvoice.instructions.accountName}</dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-bold uppercase tracking-wide text-secondary">Number</dt>
+                <dd className="mt-0.5 font-mono text-base font-black">{manualInvoice.manualInvoice.instructions.accountNumber}</dd>
+              </div>
+            </dl>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={onCopyManualAccount}
+                className="inline-flex min-h-10 items-center justify-center rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-xs font-bold text-primary"
+              >
+                {t.aiGateManualPaymentCopyAccount}
+              </button>
+              {manualInvoice.manualInvoice.instructions.whatsappUrl ? (
+                <a
+                  href={manualInvoice.manualInvoice.instructions.whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-10 items-center justify-center rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-xs font-bold text-primary"
+                >
+                  {t.aiGateManualPaymentWhatsapp}
+                </a>
+              ) : null}
+            </div>
+            <label className="mt-3 block">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-secondary">
+                {t.aiGateManualPaymentUploadProof}
+              </span>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                onChange={(event) => onManualProofFileChange(event.currentTarget.files?.[0] || null)}
+                className="mt-1 block w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold file:mr-2 file:rounded-lg file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={onManualProofSubmit}
+              disabled={!manualProofFile || manualProofStatus === 'submitting' || manualProofStatus === 'submitted'}
+              className="mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-xl bg-emerald-600 px-3 text-xs font-extrabold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {manualProofStatus === 'submitting'
+                ? t.aiGateManualPaymentSubmitting
+                : manualProofStatus === 'submitted'
+                  ? t.aiGateManualPaymentSubmitted
+                  : t.aiGateManualPaymentSubmitProof}
+            </button>
+          </div>
+        ) : null}
+
         <div className="mt-5 grid gap-2 sm:grid-cols-[1fr_auto]">
           {state.mode === 'login' ? (
             <button
@@ -254,6 +348,9 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   const [state, setState] = useState<GateState | null>(null);
   const [checkoutBusy, setCheckoutBusy] = useState(false);
   const [checkoutError, setCheckoutError] = useState('');
+  const [manualInvoice, setManualInvoice] = useState<BillingManualInvoiceResponse | null>(null);
+  const [manualProofFile, setManualProofFile] = useState<File | null>(null);
+  const [manualProofStatus, setManualProofStatus] = useState<'idle' | 'submitting' | 'submitted'>('idle');
   const [refreshBusy, setRefreshBusy] = useState(false);
 
   const featureLabel = t[`aiGateFeature${feature.slice(0, 1).toUpperCase()}${feature.slice(1)}`] || feature;
@@ -265,11 +362,17 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   const close = useCallback(() => {
     setState(null);
     setCheckoutError('');
+    setManualInvoice(null);
+    setManualProofFile(null);
+    setManualProofStatus('idle');
     setRefreshBusy(false);
   }, []);
 
   const openGate = useCallback((mode: GateMode, source: string) => {
     setCheckoutError('');
+    setManualInvoice(null);
+    setManualProofFile(null);
+    setManualProofStatus('idle');
     setState({ mode, source });
   }, []);
 
@@ -342,10 +445,6 @@ export function useAiAccessGate(feature: AiPaidFeature): {
       setCheckoutError(t.aiGateCheckoutUnavailable);
       return;
     }
-    if (minimumPaidPlan.checkoutMode === 'manual_invoice') {
-      setCheckoutError(t.homePlanManualInvoice);
-      return;
-    }
     setCheckoutBusy(true);
     setCheckoutError('');
     try {
@@ -355,7 +454,9 @@ export function useAiAccessGate(feature: AiPaidFeature): {
         return;
       }
       if (response.mode === 'manual_invoice') {
-        setCheckoutError(t.homePlanManualInvoice);
+        setManualInvoice(response);
+        setManualProofFile(null);
+        setManualProofStatus('idle');
         return;
       }
       setCheckoutError(t.aiGateCheckoutUnavailable);
@@ -368,7 +469,32 @@ export function useAiAccessGate(feature: AiPaidFeature): {
     } finally {
       setCheckoutBusy(false);
     }
-  }, [minimumPaidPlan, t.aiGateCheckoutFailed, t.aiGateCheckoutUnavailable, t.homePlanManualInvoice]);
+  }, [minimumPaidPlan, t.aiGateCheckoutFailed, t.aiGateCheckoutUnavailable]);
+
+  const handleManualProofSubmit = useCallback(async () => {
+    if (!manualInvoice || !manualProofFile) return;
+    setCheckoutError('');
+    setManualProofStatus('submitting');
+    try {
+      await submitManualPaymentProof({
+        requestId: manualInvoice.paymentRequestId,
+        mimeType: manualProofFile.type,
+        sizeBytes: manualProofFile.size,
+      });
+      setManualProofStatus('submitted');
+    } catch (error) {
+      setCheckoutError(error instanceof BillingApiError
+        ? `${error.message}${error.details ? `: ${error.details}` : ''}`
+        : t.aiGateCheckoutFailed);
+      setManualProofStatus('idle');
+    }
+  }, [manualInvoice, manualProofFile, t.aiGateCheckoutFailed]);
+
+  const handleCopyManualAccount = useCallback(async () => {
+    if (!manualInvoice) return;
+    const { bankName, accountName, accountNumber } = manualInvoice.manualInvoice.instructions;
+    await navigator.clipboard?.writeText(`${bankName}\n${accountName}\n${accountNumber}`).catch(() => undefined);
+  }, [manualInvoice]);
 
   const aiAccessGateModal = state && typeof document !== 'undefined'
     ? createPortal(
@@ -381,11 +507,20 @@ export function useAiAccessGate(feature: AiPaidFeature): {
             t={t}
             checkoutBusy={checkoutBusy}
             checkoutError={checkoutError}
+            manualInvoice={manualInvoice}
+            manualProofFile={manualProofFile}
+            manualProofStatus={manualProofStatus}
             refreshBusy={refreshBusy}
             onClose={close}
             onSignin={handleSignin}
             onUpgrade={handleUpgrade}
             onRefresh={handleRefresh}
+            onManualProofFileChange={(file) => {
+              setManualProofFile(file);
+              setManualProofStatus('idle');
+            }}
+            onManualProofSubmit={handleManualProofSubmit}
+            onCopyManualAccount={handleCopyManualAccount}
           />
         </AnimatePresence>,
         document.body,

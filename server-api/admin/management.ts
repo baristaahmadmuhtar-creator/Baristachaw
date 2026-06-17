@@ -25,7 +25,7 @@ import {
   type AiProviderAdminSnapshot,
   type AiUsageRangeInput,
 } from '../_aiProviderControl.js';
-import { PLAN_CATALOG } from '@baristachaw/shared/planCatalog';
+import { PLAN_CATALOG, PLAN_PRICING, formatCurrency } from '../../packages/shared/src/planCatalog.js';
 import {
   listManualPaymentRequests,
   readManualPaymentInstructions,
@@ -434,6 +434,16 @@ function sharedAdminPlan(code: PlanCode) {
   return PLAN_CATALOG.find((plan) => plan.code === code) || PLAN_CATALOG[0];
 }
 
+function sharedAdminMonthlyPriceLabel(code: PlanCode): string {
+  if (code === 'starter' || code === 'pro') {
+    const tier = PLAN_PRICING[code].monthly.discounted;
+    return `${formatCurrency(tier.idr, 'idr')} / ${formatCurrency(tier.bnd, 'bnd')} / ${formatCurrency(tier.usd, 'usd')} monthly`;
+  }
+  if (code === 'team') return `${formatCurrency(sharedAdminPlan('team').priceMonthlyUsd, 'usd')} monthly`;
+  if (code === 'enterprise') return 'Custom invoice';
+  return 'Free';
+}
+
 const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
   {
     code: 'free',
@@ -452,7 +462,7 @@ const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
     billingPriceId: '',
     revenuecatEntitlementId: '',
     market: 'global',
-    displayPrice: 'Free',
+    displayPrice: sharedAdminMonthlyPriceLabel('free'),
     checkoutMode: 'disabled',
     paymentMethods: [],
   },
@@ -473,7 +483,7 @@ const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
     billingPriceId: 'STRIPE_PRICE_STARTER_MONTHLY',
     revenuecatEntitlementId: 'starter',
     market: 'global',
-    displayPrice: 'Manual invoice',
+    displayPrice: sharedAdminMonthlyPriceLabel('starter'),
     checkoutMode: 'manual_invoice',
     paymentMethods: ['Manual bank transfer', 'Admin review'],
   },
@@ -495,7 +505,7 @@ const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
     billingPriceId: 'STRIPE_PRICE_PRO_MONTHLY',
     revenuecatEntitlementId: 'pro',
     market: 'global',
-    displayPrice: 'Manual invoice',
+    displayPrice: sharedAdminMonthlyPriceLabel('pro'),
     checkoutMode: 'manual_invoice',
     paymentMethods: ['Manual bank transfer', 'Admin review'],
   },
@@ -516,7 +526,7 @@ const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
     billingPriceId: 'STRIPE_PRICE_TEAM_MONTHLY',
     revenuecatEntitlementId: 'team',
     market: 'global',
-    displayPrice: 'Manual invoice',
+    displayPrice: sharedAdminMonthlyPriceLabel('team'),
     checkoutMode: 'manual_invoice',
     paymentMethods: ['Manual bank transfer', 'Admin review'],
   },
@@ -537,7 +547,7 @@ const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
     billingPriceId: '',
     revenuecatEntitlementId: 'enterprise',
     market: 'global',
-    displayPrice: 'Custom invoice',
+    displayPrice: sharedAdminMonthlyPriceLabel('enterprise'),
     checkoutMode: 'manual_invoice',
     paymentMethods: ['Manual invoice', 'Bank transfer'],
   },

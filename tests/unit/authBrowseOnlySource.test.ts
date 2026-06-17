@@ -9,6 +9,7 @@ const AUTH_CONTEXT_SOURCE = readFileSync('apps/web/src/context/AuthModalContext.
 const AI_ACCESS_GATE_SOURCE = readFileSync('apps/web/src/components/billing/AiAccessGate.tsx', 'utf8');
 const HOME_SOURCE = readFileSync('apps/web/src/pages/Home.tsx', 'utf8');
 const CHAT_SOURCE = readFileSync('apps/web/src/pages/Chat.tsx', 'utf8');
+const CONSTANTS_SOURCE = readFileSync('apps/web/src/constants.ts', 'utf8');
 const MOBILE_PARITY_SOURCE = readFileSync('apps/mobile/src/screens/WebParityScreen.tsx', 'utf8');
 const MOBILE_DOC_SOURCE = readFileSync('docs/mobile-web-parity-gate.md', 'utf8');
 
@@ -52,4 +53,17 @@ test('chat Deep Think mode stays Pro-gated before request dispatch', () => {
   assert.match(CHAT_SOURCE, /requestMode === 'deep' && isAuthenticated && !planSupportsDeepThink\(effectivePlanCode\)/);
   assert.match(CHAT_SOURCE, /disabled=\{deepThinkLocked\}/);
   assert.match(CHAT_SOURCE, /t\.chatDeepProOnly/);
+});
+
+test('paid AI gate Indonesian title does not duplicate the word paket before plan names', () => {
+  assert.match(CONSTANTS_SOURCE, /aiGateUpgradeTitle: '\{feature\} dibuka mulai \{plan\}'/);
+  assert.doesNotMatch(CONSTANTS_SOURCE, /aiGateUpgradeTitle: '\{feature\} dibuka mulai paket \{plan\}'/);
+});
+
+test('paid AI gate manual invoice checkout is an actionable in-modal flow', () => {
+  assert.match(AI_ACCESS_GATE_SOURCE, /type BillingManualInvoiceResponse/);
+  assert.match(AI_ACCESS_GATE_SOURCE, /submitManualPaymentProof/);
+  assert.match(AI_ACCESS_GATE_SOURCE, /const \[manualInvoice, setManualInvoice\]/);
+  assert.match(AI_ACCESS_GATE_SOURCE, /response\.mode === 'manual_invoice'[\s\S]*setManualInvoice\(response\)/);
+  assert.doesNotMatch(AI_ACCESS_GATE_SOURCE, /minimumPaidPlan\.checkoutMode === 'manual_invoice'[\s\S]{0,120}setCheckoutError\(t\.homePlanManualInvoice\)/);
 });

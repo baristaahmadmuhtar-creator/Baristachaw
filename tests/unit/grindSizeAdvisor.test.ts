@@ -8,7 +8,7 @@ import {
   sortGrindersForMethod,
 } from '../../apps/web/src/features/barista-tools/grindSizeAdvisor.ts';
 import { getGrinderSafetyProfile } from '../../apps/web/src/features/ai-brew/grinderSafetyGuardrails.ts';
-import { BREW_METHOD_PROFILES, dedupeBrewMethodProfilesById } from '../../apps/web/src/features/barista-tools/brewProfiles.ts';
+import { BREW_METHOD_PROFILES, VISIBLE_BREW_METHOD_PRESETS, dedupeBrewMethodProfilesById } from '../../apps/web/src/features/barista-tools/brewProfiles.ts';
 import type { BrewMethodProfile, RoastLevel } from '../../apps/web/src/features/barista-tools/types.ts';
 
 const ROOT = process.cwd();
@@ -51,6 +51,15 @@ test('brew method presets are deduped by stable method id', () => {
   const deduped = dedupeBrewMethodProfilesById([BREW_METHOD_PROFILES[0], duplicate, BREW_METHOD_PROFILES[1]]);
   assert.equal(deduped.length, 2);
   assert.equal(deduped[0].label, BREW_METHOD_PROFILES[0].label, 'dedupe should keep the first stable method definition');
+});
+
+test('visible brew method presets hide iced variants from ratio and grind-size chips', () => {
+  const visibleIds = VISIBLE_BREW_METHOD_PRESETS.map((profile) => profile.id);
+  assert.ok(BREW_METHOD_PROFILES.some((profile) => profile.id === 'v60_japanese_iced'), 'iced method profile remains available internally');
+  assert.equal(new Set(visibleIds).size, visibleIds.length, 'visible preset ids must stay unique');
+  assert.equal(visibleIds.includes('v60'), true);
+  assert.equal(visibleIds.includes('v60_japanese_iced'), false);
+  assert.equal(visibleIds.some((id) => id.endsWith('_iced')), false, `visible presets must not include iced variants: ${visibleIds.join(', ')}`);
 });
 
 test('Grind Size keeps 600N platform roast-aware instead of hardcoding one setting', async () => {

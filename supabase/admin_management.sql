@@ -35,7 +35,16 @@ alter table public.app_plans
   add column if not exists market text not null default 'global' check (market in ('indonesia', 'brunei', 'global', 'unknown')),
   add column if not exists display_price text not null default '',
   add column if not exists checkout_mode text not null default 'disabled' check (checkout_mode in ('disabled', 'external', 'stripe_checkout', 'play_billing', 'app_store', 'manual_invoice')),
-  add column if not exists payment_methods text[] not null default '{}';
+  add column if not exists payment_methods text[] not null default '{}',
+  add column if not exists ai_daily_limit integer not null default 0,
+  add column if not exists deep_daily_limit integer not null default 0,
+  add column if not exists scanner_daily_limit integer not null default 0,
+  add column if not exists storage_mb integer not null default 64,
+  add column if not exists seats integer not null default 1,
+  add column if not exists support_sla_hours integer not null default 72,
+  add column if not exists features text[] not null default '{}',
+  add column if not exists recommended boolean not null default false,
+  add column if not exists display_order integer not null default 100;
 
 alter table public.app_plans
   drop constraint if exists app_plans_billing_provider_check;
@@ -213,6 +222,16 @@ create table if not exists public.app_usage_daily (
   updated_at timestamptz not null default now(),
   unique (user_id, usage_date)
 );
+
+alter table public.app_usage_daily
+  add column if not exists ai_requests integer not null default 0,
+  add column if not exists deep_requests integer not null default 0,
+  add column if not exists scanner_runs integer not null default 0,
+  add column if not exists collection_writes integer not null default 0,
+  add column if not exists image_edits integer not null default 0,
+  add column if not exists speech_seconds integer not null default 0,
+  add column if not exists total_tokens integer not null default 0,
+  add column if not exists cost_usd numeric not null default 0;
 
 create or replace function public.consume_app_quota(
   p_user_id text,

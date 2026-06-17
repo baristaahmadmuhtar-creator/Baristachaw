@@ -194,7 +194,7 @@ function AiAccessGateDialog({
         aria-label={title}
         tabIndex={-1}
         data-testid="ai-access-gate-modal"
-        className="motion-safe-surface absolute left-3 right-3 top-1/2 mx-auto w-auto max-w-md -translate-y-1/2 rounded-[1.75rem] border border-glass bg-[#0d1b36]/98 p-5 text-white shadow-[0_26px_80px_rgba(0,0,0,0.55)] outline-none sm:left-6 sm:right-6"
+        className="motion-safe-surface absolute left-3 right-3 top-1/2 mx-auto w-auto max-w-md -translate-y-1/2 rounded-[1.75rem] border border-glass bg-[var(--bg-elevated)]/95 backdrop-blur-2xl p-5 text-primary shadow-[0_26px_80px_rgba(0,0,0,0.55)] outline-none sm:left-6 sm:right-6"
         style={{
           maxHeight: 'min(90vh, 40rem)',
           overflowY: 'auto',
@@ -212,11 +212,11 @@ function AiAccessGateDialog({
           <>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-400">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-500">
                   {isUpgrade ? t.aiGatePlanBadge : t.signInRequired}
                 </p>
-                <h2 className="mt-1 text-xl font-bold leading-tight text-white">Pilih Plan Keanggotaan</h2>
-                <p className="text-xs text-white/60 mt-1">Step 1 dari 3: Pilih paket terbaik Anda</p>
+                <h2 className="mt-1 text-xl font-bold leading-tight text-primary">Pilih Plan Keanggotaan</h2>
+                <p className="text-xs text-secondary mt-1">Step 1 dari 3: Pilih paket terbaik Anda</p>
               </div>
               <button
                 type="button"
@@ -228,7 +228,7 @@ function AiAccessGateDialog({
               </button>
             </div>
 
-            <p className="mt-3 text-sm leading-6 text-white/70">{body}</p>
+            <p className="mt-3 text-sm leading-6 text-secondary">{body}</p>
 
             {state.mode === 'login' ? (
               <div className="mt-5 grid gap-2">
@@ -688,7 +688,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
     }
 
     return true;
-  }, [effectivePlanCode, isAuthenticated, isGuest, loading, openAuthModal, openGate, snapshot, tokenPlanCode]);
+  }, [effectivePlanCode, isAuthenticated, isGuest, loading, openAuthModal, openGate, snapshot, tokenPlanCode, feature]);
 
   const title = state?.mode === 'login'
     ? formatText(t.aiGateLoginTitle, { feature: featureLabel })
@@ -849,5 +849,5 @@ export function useAiAccessGate(feature: AiPaidFeature): {
       )
     : null;
 
-  return { ensureAiAccess, hasPaidAiAccess, minimumPaidPlan, effectivePlanCode, aiAccessGateModal };
+  return { ensureAiAccess, openGate, hasPaidAiAccess, minimumPaidPlan, effectivePlanCode, aiAccessGateModal };
 }

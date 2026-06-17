@@ -316,11 +316,57 @@ export function PlanGrowthSurface({
   const [duration, setDuration] = useState<'monthly' | 'quarterly' | 'yearly'>('quarterly');
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
-  const [manualInvoice, setManualInvoice] = useState<BillingManualInvoiceResponse | null>(null);
+  const [manualInvoice, setManualInvoice] = useState<BillingManualInvoiceResponse | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('barista_manual_checkout_state');
+        if (saved) return JSON.parse(saved).manualInvoice || null;
+      } catch (e) {}
+    }
+    return null;
+  });
   const [manualProofFile, setManualProofFile] = useState<File | null>(null);
-  const [manualProofStatus, setManualProofStatus] = useState<'idle' | 'submitting' | 'submitted'>('idle');
-  const [manualProofDelivery, setManualProofDelivery] = useState<'direct_upload' | 'manual_support' | null>(null);
-  const [checkoutStep, setCheckoutStep] = useState<'choose' | 'checkout' | 'success'>('choose');
+  const [manualProofStatus, setManualProofStatus] = useState<'idle' | 'submitting' | 'submitted'>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('barista_manual_checkout_state');
+        if (saved) return JSON.parse(saved).manualProofStatus || 'idle';
+      } catch (e) {}
+    }
+    return 'idle';
+  });
+  const [manualProofDelivery, setManualProofDelivery] = useState<'direct_upload' | 'manual_support' | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('barista_manual_checkout_state');
+        if (saved) return JSON.parse(saved).manualProofDelivery || null;
+      } catch (e) {}
+    }
+    return null;
+  });
+  const [checkoutStep, setCheckoutStep] = useState<'choose' | 'checkout' | 'success'>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('barista_manual_checkout_state');
+        if (saved) return JSON.parse(saved).checkoutStep || 'choose';
+      } catch (e) {}
+    }
+    return 'choose';
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (checkoutStep === 'success' || checkoutStep === 'checkout') {
+      localStorage.setItem('barista_manual_checkout_state', JSON.stringify({
+        manualInvoice,
+        manualProofStatus,
+        manualProofDelivery,
+        checkoutStep,
+      }));
+    } else {
+      localStorage.removeItem('barista_manual_checkout_state');
+    }
+  }, [checkoutStep, manualInvoice, manualProofStatus, manualProofDelivery]);
   
   const modalRef = useRef<HTMLDivElement | null>(null);
   const isRtl = direction === 'rtl';
@@ -353,12 +399,14 @@ export function PlanGrowthSurface({
   useEffect(() => {
     if (isOpen) return;
     setActionError('');
-    setManualInvoice(null);
-    setManualProofFile(null);
-    setManualProofStatus('idle');
-    setManualProofDelivery(null);
-    setCheckoutStep('choose');
-  }, [isOpen]);
+    if (manualProofStatus !== 'submitted') {
+      setManualInvoice(null);
+      setManualProofFile(null);
+      setManualProofStatus('idle');
+      setManualProofDelivery(null);
+      setCheckoutStep('choose');
+    }
+  }, [isOpen, manualProofStatus]);
 
   if (!snapshot || !recommendedPlan || !currentPlan) return null;
 
@@ -486,8 +534,12 @@ export function PlanGrowthSurface({
           >
             <div className={`flex items-start justify-between gap-4 border-b border-glass px-5 py-4 sm:px-6 ${isRtl ? 'flex-row-reverse text-right' : ''}`}>
               <div className="min-w-0">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">{t.homePlanCatalogEyebrow}</p>
-                <h2 className="mt-1 text-xl font-black tracking-tight text-primary sm:text-2xl">{t.homePlanCatalogTitle}</h2>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">
+                  {checkoutStep === 'choose' ? t.homePlanCatalogEyebrow : checkoutStep === 'success' ? 'Berhasil' : 'Checkout'}
+                </p>
+                <h2 className="mt-1 text-xl font-black tracking-tight text-primary sm:text-2xl">
+                  {checkoutStep === 'choose' ? t.homePlanCatalogTitle : checkoutStep === 'success' ? 'Menunggu Peninjauan' : 'Selesaikan Pembayaran'}
+                </h2>
               </div>
               <button
                 type="button"
@@ -654,19 +706,18 @@ export function PlanGrowthSurface({
                   <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600">
                     <Check size={28} />
                   </div>
-                  <p className="mt-4 text-xs font-extrabold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-200">Step 3 dari 3</p>
-                  <h3 className="mt-1 text-xl font-black">Bukti Diterima - Menunggu Review</h3>
+                  <h3 className="mt-4 text-xl font-black">Bukti Diterima - Menunggu Review</h3>
                   <p className="mt-2 text-sm leading-6 text-secondary">
                     {manualProofDelivery === 'manual_support'
                       ? 'Invoice sudah masuk antrean admin. Kirim file bukti lewat WhatsApp atau Instagram dengan ID invoice agar review lebih cepat.'
-                      : 'Admin akan memverifikasi transaksi Anda sebelum plan aktif. Hubungi customer service lewat WhatsApp atau Instagram jika perlu bantuan.'}
+                      : 'Admin sedang memverifikasi transaksi Anda. Harap tunggu hingga proses review selesai sebelum plan aktif.'}
                   </p>
                   <button
                     type="button"
                     onClick={onClose}
                     className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-600 px-5 font-extrabold text-white transition-colors hover:bg-blue-700"
                   >
-                    Selesai
+                    Tutup
                   </button>
                 </div>
               ) : null}

@@ -336,7 +336,7 @@ export function Scanner() {
     clearAuthError,
     openAuthModal,
   } = useAuthModal();
-  const { ensureAiAccess, aiAccessGateModal } = useAiAccessGate("scanner");
+  const { ensureAiAccess, aiAccessGateModal, openGate } = useAiAccessGate("scanner");
   const { isOffline } = useNetworkStatus();
   const { isIosStandalone } = useRuntimeDisplayMode();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -538,6 +538,11 @@ export function Scanner() {
     } catch (scanError) {
       if (scanError instanceof ServerAiError) {
         console.error(`[Scanner] failed: requestId=${scanError.requestId || 'none'} provider=${scanError.provider || 'none'}`, scanError);
+        if (scanError.errorCode === 'quota_exceeded' || scanError.errorCode === 'paid_plan_required') {
+          openGate('upgrade', 'scanner');
+          setLoading(false);
+          return;
+        }
       } else {
         console.error(scanError);
       }

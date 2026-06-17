@@ -16,7 +16,7 @@
         "dev": "tsx server.ts",
         "dev:web": "npm run dev --workspace @baristachaw/web",
         "dev:landing": "npm run dev --workspace @baristachaw/landing",
-        "build": "npm run build --workspace @baristachaw/web",
+        "build": "node scripts/build-project.js",
         "build:landing": "npm run build --workspace @baristachaw/landing",
         "generate:icons": "node scripts/generate-icons.mjs",
         "catalog:bootstrap": "tsx scripts/catalog/bootstrap-phase1.ts",

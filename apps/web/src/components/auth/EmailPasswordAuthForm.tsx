@@ -304,7 +304,7 @@ export function EmailPasswordAuthForm({
     if (!localError) return null;
     return (
       <div className="mb-4 flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-sm font-medium text-red-600 dark:text-red-400">
-        <AlertCircle size={18} className="mt-0.5 shrink-0" variant="glyph" tone="amber" />
+        <AlertCircle size={18} className="mt-0.5 shrink-0" variant="glyph" tone="red" />
         <span>{localError}</span>
       </div>
     );
@@ -476,7 +476,7 @@ export function EmailPasswordAuthForm({
     return (
       <div className={className}>
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
             <UserRound size={28} variant="glyph" />
           </div>
           <h2 className="text-xl font-black tracking-tight text-primary">{t.authForgotEmail || 'Lupa Email?'}</h2>
@@ -498,7 +498,7 @@ export function EmailPasswordAuthForm({
                onChange={(e) => { setRecoveryContact(e.target.value); setLocalError(''); }}
                placeholder="email_yang_bisa_dihubungi@domain.com"
                disabled={disabled}
-               className="auth-field-shell w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3.5 text-[15px] font-semibold text-primary outline-none focus-within:border-amber-500/50 focus-within:bg-[var(--bg-base)] disabled:opacity-60"
+               className="auth-field-shell w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3.5 text-[15px] font-semibold text-primary outline-none focus-within:border-blue-500/50 focus-within:bg-[var(--bg-base)] disabled:opacity-60"
              />
            </div>
            
@@ -510,14 +510,14 @@ export function EmailPasswordAuthForm({
                onChange={(e) => setRecoveryHint(e.target.value)}
                placeholder="Misal: Nomor HP lama, username sebelumnya"
                disabled={disabled}
-               className="auth-field-shell w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3.5 text-[15px] font-semibold text-primary outline-none focus-within:border-amber-500/50 focus-within:bg-[var(--bg-base)] disabled:opacity-60"
+               className="auth-field-shell w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3.5 text-[15px] font-semibold text-primary outline-none focus-within:border-blue-500/50 focus-within:bg-[var(--bg-base)] disabled:opacity-60"
              />
            </div>
 
            <button
              type="submit"
              disabled={disabled || !recoveryContact}
-             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-amber-500/30 transition-all hover:from-amber-600 hover:to-amber-700 disabled:opacity-55"
+             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-blue-500/30 transition-all hover:from-blue-600 hover:to-blue-700 disabled:opacity-55"
            >
              {isRecoveryBusy ? <AuthProgressMark /> : null}
              {t.authForgotEmailSubmit || 'Kirim Permintaan'}
@@ -550,7 +550,7 @@ export function EmailPasswordAuthForm({
 
         {localError || !recoveryRequest.accessToken ? (
           <div className="mb-4 flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-400">
-            <AlertCircle size={18} className="mt-0.5 shrink-0" variant="glyph" tone="amber" />
+            <AlertCircle size={18} className="mt-0.5 shrink-0" variant="glyph" tone="red" />
             <span>{localError || t.authRecoveryTokenMissing || 'Token reset password tidak valid atau sudah kadaluarsa.'}</span>
           </div>
         ) : null}

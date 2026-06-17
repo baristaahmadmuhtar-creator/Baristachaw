@@ -158,14 +158,14 @@ export function AuthEntryModal() {
               </div>
 
               {isOffline && (
-                <div className="mt-4 rounded-xl border border-amber-500/25 bg-amber-500/12 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+                <div className="mt-4 rounded-xl border border-blue-500/25 bg-blue-500/12 px-3 py-2 text-xs text-blue-700 dark:text-blue-300">
                   {t.authModalOffline}
                 </div>
               )}
 
               {authError && (
                 <div className={`mt-4 flex items-start gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400 ${isRtl ? 'flex-row-reverse text-right' : ''}`}>
-                  <AlertCircle size={16} className="mt-0.5 shrink-0" variant="glyph" tone="amber" />
+                  <AlertCircle size={16} className="mt-0.5 shrink-0" variant="glyph" tone="red" />
                   <span className="flex-1">{authError}</span>
                   <button
                     type="button"

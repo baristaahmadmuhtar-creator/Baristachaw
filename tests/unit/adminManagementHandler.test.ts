@@ -110,7 +110,10 @@ test.beforeEach(() => {
   process.env.ADMIN_EMAILS = 'owner@example.com';
   delete process.env.ADMIN_USER_IDS;
   delete process.env.SUPABASE_URL;
+  delete process.env.EXPO_PUBLIC_SUPABASE_URL;
   delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+  delete process.env.SUPABASE_SERVICE_KEY;
+  delete process.env.SUPABASE_SECRET_KEY;
   delete process.env.ADMIN_RUNTIME_WRITE_FALLBACK;
   delete process.env.GEMINI_API_KEY;
   delete process.env.GROQ_API_KEY;

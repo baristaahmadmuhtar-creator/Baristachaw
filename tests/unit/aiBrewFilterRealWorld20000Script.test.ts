@@ -10,7 +10,7 @@ test('AI Brew filter real-world 20000 gate is wired to source-backed coffee fixt
   );
   assert.equal(
     packageJson.scripts['test:ai-brew:guardrails'],
-    'node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs --test --test-isolation=none tests/unit/aiBrewGuardrailClassification.test.ts tests/unit/aiBrewFilterRealWorld20000Script.test.ts',
+    'node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs --test tests/unit/aiBrewGuardrailClassification.test.ts tests/unit/aiBrewFilterRealWorld20000Script.test.ts',
   );
 
   const script = fs.readFileSync('scripts/ai-brew-real-world-1000.mjs', 'utf8');

@@ -83,7 +83,7 @@ function planMeetsMinimum(planCode: PlanCode, minimumPlanCode: PlanCode): boolea
 }
 
 function strictQuotaEnforcementEnabled(): boolean {
-  return isEnvFlagEnabled('PLAN_QUOTA_STRICT_ENABLED', false)
+  return isEnvFlagEnabled('PLAN_QUOTA_STRICT_ENABLED', true)
     || isEnvFlagEnabled('PLAN_ENFORCEMENT_STRICT', false);
 }
 

@@ -199,6 +199,7 @@ test('paid AI quota enforcement blocks exhausted daily quota', async () => {
 
 test('paid AI quota enforcement soft-opens quota RPC outage for verified paid users', async () => {
   process.env.PLAN_ENFORCEMENT_ENABLED = 'true';
+  process.env.PLAN_QUOTA_STRICT_ENABLED = 'false';
   process.env.SUPABASE_URL = 'https://unit-project.supabase.co';
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
   const originalFetch = globalThis.fetch;

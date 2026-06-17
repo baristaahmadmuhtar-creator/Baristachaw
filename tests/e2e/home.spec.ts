@@ -88,7 +88,8 @@ test('shows paid plan choices and upgrades free users when AI search is attempte
 
   const panel = page.getByTestId('home-plan-growth-panel');
   await expect(panel).toBeVisible();
-  await expect(page.getByText(/Workspace status|Status ruang kerja/i)).toHaveCount(0);
+  await expect(page.getByText(/Workspace status|Status ruang kerja/i)).toBeVisible();
+  await expect(page.getByText(/Upgrade when you need higher AI|Kelola pembayaran untuk menjaga akses paket Gratis/i)).toHaveCount(0);
   await expect(panel.getByRole('button', { name: /View plan options|Lihat pilihan paket/i })).toBeVisible();
 
   await page.getByTestId('home-plan-open-catalog').click();
@@ -96,7 +97,7 @@ test('shows paid plan choices and upgrades free users when AI search is attempte
   await expect(dialog).toBeVisible();
   await expect(page.getByTestId('plan-card-free')).toBeVisible();
   await expect(page.getByTestId('plan-card-pro')).toBeVisible();
-  await expect(dialog.getByText(/Recommended|Rekomendasi/i).first()).toBeVisible();
+  await expect(dialog.getByText(/Best Value|Popular|Nilai terbaik|Populer/i).first()).toBeVisible();
   await expect(dialog.getByRole('button', { name: /Stay on Free|Tetap di Gratis/i })).toBeVisible();
 
   await page.keyboard.press('Escape');
@@ -106,7 +107,7 @@ test('shows paid plan choices and upgrades free users when AI search is attempte
   await search.fill('qa_e2e free search');
   await search.press('Enter');
   await expect(page.getByTestId('ai-access-gate-modal')).toBeVisible();
-  await expect(page.getByRole('heading', { name: /Pencarian AI dibuka mulai paket Starter|AI Search starts on Starter/i })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: /AI Search starts on Barista Plus|Pilih Plan Keanggotaan/i })).toBeVisible();
 });
 
 test('language switch updates browse-only search placeholder copy', async ({ page }) => {
@@ -160,8 +161,8 @@ test('navigates to all primary routes from home cards', async ({ page }) => {
 
   await page.goto('/');
   await clickHomeCard(page, homeContent.locator('a[href="/tools?tab=ai-brew"]').first());
-  await expect(page).toHaveURL(/\/tools\?tab=ai-brew$/);
-  await expect(page.getByTestId('ai-brew-panel')).toBeVisible();
+  await expect(page).toHaveURL(/\/(masuk|login|signin).*returnTo=%2Ftools%3Ftab%3Dai-brew/);
+  await expect(page.getByRole('heading', { name: /Sign in to Baristachaw|Masuk ke Baristachaw/i })).toBeVisible();
 
   await page.goto('/');
   await clickHomeCard(page, homeContent.locator('a[href="/tools"]').first());

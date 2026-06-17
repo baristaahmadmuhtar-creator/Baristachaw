@@ -454,6 +454,9 @@ test('admin manual payment verification grants entitlement only after verified p
   assert.equal(user.billing.status, 'active');
   assert.equal(user.billing.provider, 'manual');
   assert.equal(user.billing.paymentActionRequired, false);
+  assert.match(user.billing.currentPeriodStart, /^\d{4}-\d{2}-\d{2}T/);
+  assert.match(user.billing.currentPeriodEnd, /^\d{4}-\d{2}-\d{2}T/);
+  assert.ok(new Date(user.billing.currentPeriodEnd).getTime() > new Date(user.billing.currentPeriodStart).getTime());
   assert.ok(verifyBody.audit.some((event: any) => (
     event.action === 'manual_payment_verified_paid'
     && event.target === body.paymentRequestId

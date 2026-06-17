@@ -1,9 +1,11 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { X, Wrench } from 'lucide-react';
+import { AlertTriangle, CreditCard, ShieldCheck, Wrench, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAccountStatus } from '../../context/AccountStatusContext';
 import { useGlobalState } from '../../context/GlobalState';
+import { getLanguageLocale } from '../../constants';
+import { resolveWorkspaceStatus } from '../../utils/workspaceStatus';
 
 function localizeRuntimeMaintenanceMessage(message: string, language: string) {
   if (!message || language !== 'id') return message;
@@ -18,27 +20,35 @@ function localizeRuntimeMaintenanceMessage(message: string, language: string) {
 export function MaintenanceBanner() {
   const location = useLocation();
   const { language, t } = useGlobalState();
-  const { snapshot, maintenance } = useAccountStatus();
+  const { snapshot, maintenance, loading, error } = useAccountStatus();
   const isAdminRoute = location.pathname.startsWith('/admin');
-  const shouldShow = !isAdminRoute && snapshot && (snapshot.appAccess.status !== 'ok' || maintenance.length > 0);
+  const status = useMemo(() => resolveWorkspaceStatus({
+    snapshot,
+    loading,
+    error: error?.message || '',
+    maintenance,
+    language,
+    locale: getLanguageLocale(language),
+  }), [error, language, loading, maintenance, snapshot]);
+  const shouldShow = !isAdminRoute && Boolean(snapshot || error) && status.shouldFloat;
   const noticeKey = useMemo(() => [
-    snapshot?.appAccess.status || 'ok',
-    snapshot?.appAccess.message || '',
+    status.kind,
+    status.label,
+    status.message,
+    snapshot?.billing.currentPeriodEnd || '',
     ...maintenance.map((flag) => `${flag.key}:${flag.status}:${flag.message || ''}`),
-  ].join('|'), [maintenance, snapshot?.appAccess.message, snapshot?.appAccess.status]);
+  ].join('|'), [maintenance, snapshot?.billing.currentPeriodEnd, status.kind, status.label, status.message]);
   const [minimizedKey, setMinimizedKey] = useState('');
   const minimized = Boolean(shouldShow && noticeKey && minimizedKey === noticeKey);
-
-  const primaryFlag = maintenance[0];
-  const rawMessage = snapshot?.appAccess.message
-    || primaryFlag?.message
-    || (primaryFlag ? t.homeFeatureUnavailableMessage.replace('{feature}', primaryFlag.label).replace('{status}', primaryFlag.status) : '');
-  const message = localizeRuntimeMaintenanceMessage(rawMessage, language);
-  const statusLabel = snapshot?.appAccess.status === 'blocked'
-    ? t.homeWorkspaceBlocked
-    : primaryFlag?.status === 'disabled'
-      ? t.homeFeatureUnavailable
-      : t.homeFeatureMaintenance;
+  const message = localizeRuntimeMaintenanceMessage(status.message, language);
+  const statusLabel = status.label;
+  const StatusIcon = status.kind === 'maintenance'
+    ? Wrench
+    : status.kind === 'blocked' || status.kind === 'past_due' || status.kind === 'inactive'
+      ? AlertTriangle
+      : status.kind === 'pending_review' || status.kind === 'expiring'
+        ? CreditCard
+        : ShieldCheck;
 
   return (
     <AnimatePresence>
@@ -53,7 +63,7 @@ export function MaintenanceBanner() {
           className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5.25rem)] right-3 z-[70] inline-flex max-w-[72vw] items-center gap-2 rounded-full border border-blue-200/30 bg-slate-950/92 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(0,0,0,0.20)] backdrop-blur lg:bottom-auto lg:right-4 lg:top-[calc(env(safe-area-inset-top,0px)+0.75rem)]"
           aria-label={statusLabel}
         >
-          <Wrench size={13} className="shrink-0" />
+          <StatusIcon size={13} className="shrink-0" />
           <span className="truncate">{statusLabel}</span>
         </motion.button>
       ) : null}
@@ -68,11 +78,12 @@ export function MaintenanceBanner() {
           aria-live="polite"
         >
           <div className="flex items-start gap-2 pr-8">
-            <Wrench size={14} className="mt-0.5 shrink-0" />
+            <StatusIcon size={14} className="mt-0.5 shrink-0" />
             <div className="min-w-0">
-              <p className="font-semibold">{statusLabel}</p>
+              <p className="font-semibold">{status.title}</p>
               {message ? <p className="mt-0.5 line-clamp-2 leading-5">{message}</p> : null}
-              {maintenance.length > 1 ? <p className="mt-0.5 text-xs opacity-80">{t.homeActiveOperationalFlags.replace('{count}', String(maintenance.length))}</p> : null}
+              {status.helper ? <p className="mt-0.5 text-xs opacity-80">{status.helper}</p> : null}
+              {maintenance.length > 1 && status.kind === 'maintenance' ? <p className="mt-0.5 text-xs opacity-80">{t.homeActiveOperationalFlags.replace('{count}', String(maintenance.length))}</p> : null}
             </div>
           </div>
           <button

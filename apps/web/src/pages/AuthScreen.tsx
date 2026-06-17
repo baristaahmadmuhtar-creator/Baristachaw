@@ -127,9 +127,11 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
               <h1 className="text-2xl font-bold tracking-tight text-primary sm:text-3xl">
                 {authTitle}
               </h1>
-              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-secondary sm:text-base">
-                {authSubtitle}
-              </p>
+              {isSignUp && authSubtitle ? (
+                <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-secondary sm:text-base">
+                  {authSubtitle}
+                </p>
+              ) : null}
             </div>
 
             <AnimatePresence>

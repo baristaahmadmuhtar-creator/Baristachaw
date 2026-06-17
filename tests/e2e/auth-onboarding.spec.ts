@@ -21,12 +21,7 @@ test('mobile sign-in keeps the auth actions first without marketing panel clutte
   await expect(emailButton).toBeVisible();
   await expect(exploreButton).toBeVisible();
   await expect(page.getByRole('button', { name: /Lanjutkan sebagai tamu/i })).toHaveCount(0);
-  // CustomSelect displays the selected option on its trigger button
-  await expect(page.locator('#auth-language-select')).toBeVisible();
-  await page.locator('#auth-language-select').click();
-  await expect(page.getByRole('button', { name: 'English', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Indonesia', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Indonesia', exact: true }).click();
+  await expect(page.locator('#auth-language-select')).toHaveCount(0);
   const googleBox = await googleButton.boundingBox();
   const emailBox = await emailButton.boundingBox();
   const exploreBox = await exploreButton.boundingBox();
@@ -38,11 +33,11 @@ test('mobile sign-in keeps the auth actions first without marketing panel clutte
   await expect(page.getByText('Gratis cocok untuk mencoba ruang kerja. Pro dibuat untuk seduh harian, pemindaian, dan riset kopi.')).toHaveCount(0);
   await expect(page.getByText(/Segera tersedia di web|Google tetap menjadi jalur masuk utama/i)).toHaveCount(0);
 
-  await page.route('**/api/auth/email/reset', async (route) => {
+  await page.route('**/api/auth/email/password/reset/start', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ ok: true, resetEmailSent: true, email: 'pemilik@example.com' }),
+      body: JSON.stringify({ ok: true, resetCodeSent: true, email: 'pemilik@example.com' }),
     });
   });
   await page.getByLabel('Alamat email').fill('pemilik@example.com');
@@ -58,7 +53,7 @@ test('mobile sign-in keeps the auth actions first without marketing panel clutte
   expect(authMetrics.scrollWidth).toBeLessThanOrEqual(authMetrics.clientWidth + 1);
   expect(authMetrics.activeElementId).toBe('auth-route-password');
   await page.getByRole('button', { name: /Lupa password/i }).click();
-  await expect(page.getByText('Cek kotak masuk Anda')).toBeVisible();
+  await expect(page.getByText(/kode reset telah dikirim|reset code has been sent/i)).toBeVisible();
   await expect(page.getByText(/pemilik@example\.com/)).toBeVisible();
 });
 

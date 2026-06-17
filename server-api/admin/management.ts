@@ -315,6 +315,8 @@ type UserPatch = Partial<{
   billingStatus: BillingStatus;
   billingProvider: BillingProvider;
   billingMarket: BillingMarket;
+  billingPeriodStart: string;
+  billingPeriodEnd: string;
   paymentActionRequired: boolean;
 }>;
 
@@ -900,6 +902,8 @@ function mergeBillingPatch(user: AdminUserRecord, patch: UserPatch, nextPlanCode
     provider: patch.billingProvider || user.billing.provider,
     market: patch.billingMarket || user.billing.market,
     source: patch.billingProvider || user.billing.source,
+    currentPeriodStart: patch.billingPeriodStart || user.billing.currentPeriodStart,
+    currentPeriodEnd: patch.billingPeriodEnd || user.billing.currentPeriodEnd,
     paymentActionRequired: typeof patch.paymentActionRequired === 'boolean'
       ? patch.paymentActionRequired
       : user.billing.paymentActionRequired,
@@ -2788,6 +2792,8 @@ async function patchSupabaseUser(
   }
   if (patch.billingProvider) body.billing_provider = patch.billingProvider;
   if (patch.billingMarket) body.billing_market = patch.billingMarket;
+  if (patch.billingPeriodStart) body.billing_period_start = patch.billingPeriodStart;
+  if (patch.billingPeriodEnd) body.billing_period_end = patch.billingPeriodEnd;
   if (typeof patch.paymentActionRequired === 'boolean') body.payment_action_required = patch.paymentActionRequired;
 
   await supabaseRest(config, `app_users?id=eq.${encodeURIComponent(userId)}`, {
@@ -3109,6 +3115,18 @@ function normalizeManualPaymentAction(value: unknown): ManualPaymentAction | '' 
   return '';
 }
 
+function manualPaymentPeriodEnd(startIso: string, duration: ManualPaymentRequest['duration']): string {
+  const end = new Date(startIso);
+  if (duration === 'yearly') {
+    end.setUTCFullYear(end.getUTCFullYear() + 1);
+  } else if (duration === 'quarterly') {
+    end.setUTCMonth(end.getUTCMonth() + 3);
+  } else {
+    end.setUTCMonth(end.getUTCMonth() + 1);
+  }
+  return end.toISOString();
+}
+
 async function upsertSupabaseManualEntitlement(
   config: Extract<SupabaseConfig, { configured: true }>,
   request: ManualPaymentRequest,
@@ -3118,13 +3136,15 @@ async function upsertSupabaseManualEntitlement(
     config,
     `user_entitlements?external_subscription_id=eq.${encodeURIComponent(request.id)}&source=eq.manual&select=id&limit=1`,
   );
+  const periodStart = status === 'active' ? nowIso() : '';
+  const periodEnd = periodStart ? manualPaymentPeriodEnd(periodStart, request.duration) : '';
   const body = {
     user_id: request.userId,
     plan_code: request.planCode,
     source: 'manual',
     status,
-    current_period_start: status === 'active' ? nowIso() : null,
-    current_period_end: null,
+    current_period_start: periodStart || null,
+    current_period_end: periodEnd || null,
     external_customer_id: request.userId,
     external_subscription_id: request.id,
     metadata: {
@@ -3133,6 +3153,8 @@ async function upsertSupabaseManualEntitlement(
       amountLabel: request.amountLabel,
       currency: request.currency,
       duration: request.duration,
+      billingPeriodStart: periodStart || null,
+      billingPeriodEnd: periodEnd || null,
       proof: request.proof || null,
       reason: request.reason || null,
     },
@@ -3219,12 +3241,16 @@ async function updateManualPayment(
   }
 
   if (manualAction === 'verified_paid') {
+    const billingPeriodStart = nowIso();
+    const billingPeriodEnd = manualPaymentPeriodEnd(billingPeriodStart, request.duration);
     const patch: UserPatch = {
       planCode: request.planCode as PlanCode,
       status: 'active',
       billingStatus: 'active',
       billingProvider: 'manual',
       billingMarket: 'global',
+      billingPeriodStart,
+      billingPeriodEnd,
       paymentActionRequired: false,
       supportNote: `Manual payment verified: ${request.id}`,
     };

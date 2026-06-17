@@ -42,6 +42,9 @@ export type AccountBilling = {
   message: string;
   checkoutUrl?: string;
   manageUrl?: string;
+  currentPeriodStart?: string;
+  currentPeriodEnd?: string;
+  lastEventAt?: string;
 };
 
 export type AccountStatusSnapshot = {

@@ -471,7 +471,6 @@ function isPasswordRecoveryRequest() {
         ) : (
           <section data-testid="onboarding-equipment-step">
             <div className="text-center">
-              <img src="/icons/icon-192.png" alt="" className="mx-auto h-6 w-6 rounded-md object-cover" />
               <h1 className="mt-4 text-2xl font-semibold text-primary">{copy.equipmentTitle}</h1>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-secondary">{copy.equipmentBody}</p>
             </div>

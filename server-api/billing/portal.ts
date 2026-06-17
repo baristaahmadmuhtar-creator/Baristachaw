@@ -72,7 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         supportEmail: instructions?.supportEmail,
         instagramUrl: instructions?.instagramUrl,
       },
-      message: 'Self-service billing portal is not enabled yet. Contact support to review payment status, send proof, or request plan changes.',
+      message: 'Billing support is available through the configured support channels.',
     });
   }
 

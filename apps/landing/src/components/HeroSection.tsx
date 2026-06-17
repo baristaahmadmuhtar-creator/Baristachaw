@@ -35,13 +35,7 @@ export function HeroSection({ language, onRegister, user }: { language: Language
         <div className="hero-actions">
           <a 
             className="button button-primary" 
-            href={user ? APP_LINKS.home : APP_LINKS.register}
-            onClick={(e) => {
-              if (!user && onRegister) {
-                e.preventDefault();
-                onRegister();
-              }
-            }}
+            href={APP_LINKS.aiBrew}
           >
             {user ? (language === 'id' ? 'Buka Aplikasi' : language === 'bn' ? 'Buka Aplikasi' : 'Open App') : t('hero.startBrew', language)} <ArrowRight size={18} />
           </a>

@@ -27,8 +27,11 @@ test('first-run onboarding uses logo and custom favorite equipment pickers', asy
   await expect(page.getByTestId('onboarding-logo')).toHaveAttribute('src', /\/icons\/icon-192\.png/);
   await expect(page.getByTestId('onboarding-language-icon')).toBeVisible();
   await page.getByRole('button', { name: /Continue|Lanjut/i }).click();
+  await expect(page.getByTestId('onboarding-region-step')).toBeVisible();
+  await page.getByRole('button', { name: /Continue|Lanjut/i }).click();
 
   await expect(page.getByTestId('onboarding-equipment-step')).toBeVisible();
+  await expect(page.locator('img[src*="/icons/icon-192.png"]')).toHaveCount(1);
   await expect(page.locator('select')).toHaveCount(0);
   await expect(page.getByPlaceholder(/Brewer not listed\? Enter your brewer model|Alat seduh tidak ada\? Tulis model alat seduh Anda/i)).toBeVisible();
   await expect(page.getByPlaceholder(/Grinder not listed\? Enter your grinder model|Grinder tidak ada\? Tulis model grinder Anda/i)).toBeVisible();

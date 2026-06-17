@@ -488,7 +488,6 @@ export function PlanGrowthSurface({
               <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">{t.homePlanCatalogEyebrow}</p>
                 <h2 className="mt-1 text-xl font-black tracking-tight text-primary sm:text-2xl">{t.homePlanCatalogTitle}</h2>
-                <p className="mt-1 max-w-2xl text-sm leading-5 text-secondary">{t.homePlanCatalogBody}</p>
               </div>
               <button
                 type="button"
@@ -813,11 +812,13 @@ export function PlanGrowthSurface({
                 .replace('{plan}', formatPlanName(currentPlan, language))
                 .replace('{recommendedPlan}', formatPlanName(recommendedPlan, language))}
             </h2>
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-secondary">
-              {(showUpgradeFraming ? t.homePlanGrowthBody : t.homePlanPaidBody)
-                .replace('{plan}', formatPlanName(currentPlan, language))
-                .replace('{recommendedPlan}', formatPlanName(recommendedPlan, language))}
-            </p>
+            {!showUpgradeFraming && t.homePlanPaidBody ? (
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-secondary">
+                {t.homePlanPaidBody
+                  .replace('{plan}', formatPlanName(currentPlan, language))
+                  .replace('{recommendedPlan}', formatPlanName(recommendedPlan, language))}
+              </p>
+            ) : null}
           </div>
 
           <div className={`flex shrink-0 flex-col gap-2 sm:flex-row sm:flex-wrap ${isRtl ? 'sm:justify-end' : ''}`}>

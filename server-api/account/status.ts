@@ -52,6 +52,9 @@ type AccountBilling = {
   message: string;
   checkoutUrl?: string;
   manageUrl?: string;
+  currentPeriodStart?: string;
+  currentPeriodEnd?: string;
+  lastEventAt?: string;
 };
 
 type AccountUser = {
@@ -390,9 +393,7 @@ function billingFromRow(row: any, user: AccountUser): AccountBilling {
     ? 'Your payment needs attention. Update billing to keep paid limits active.'
     : status === 'cancelled' || status === 'expired'
       ? 'Your paid entitlement is no longer active. Choose a plan to restore paid features.'
-      : user.planCode === 'free'
-        ? 'Upgrade when you need higher AI, Deep, scanner, and storage limits.'
-        : '';
+      : '';
 
   return {
     status,
@@ -403,6 +404,9 @@ function billingFromRow(row: any, user: AccountUser): AccountBilling {
     message,
     checkoutUrl: checkoutUrl || undefined,
     manageUrl: manageUrl || undefined,
+    currentPeriodStart: normalizeText(row?.billing_period_start ?? row?.current_period_start ?? metadata.billingPeriodStart) || undefined,
+    currentPeriodEnd: normalizeText(row?.billing_period_end ?? row?.current_period_end ?? metadata.billingPeriodEnd) || undefined,
+    lastEventAt: normalizeText(row?.billing_last_event_at ?? metadata.billingLastEventAt) || undefined,
   };
 }
 
@@ -415,10 +419,13 @@ function runtimeBilling(user: AccountUser): AccountBilling {
     paymentAction: user.planCode === 'free' ? 'checkout' : 'contact_support',
     paymentActionRequired: unverifiedPaidPlan,
     message: user.planCode === 'free'
-      ? 'Upgrade when you need higher AI, Deep, scanner, and storage limits.'
+      ? ''
       : 'Your paid plan is waiting for admin billing verification. Contact support before relying on paid limits.',
     checkoutUrl: readPublicUrl('BILLING_CHECKOUT_URL') || undefined,
     manageUrl: readPublicUrl('BILLING_PORTAL_URL') || undefined,
+    currentPeriodStart: undefined,
+    currentPeriodEnd: undefined,
+    lastEventAt: undefined,
   };
 }
 

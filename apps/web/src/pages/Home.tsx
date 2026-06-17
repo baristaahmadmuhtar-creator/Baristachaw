@@ -26,6 +26,7 @@ import { isDisplayableAvatarUrl } from "../utils/avatarUrl";
 import { useAiAccessGate } from "../components/billing/AiAccessGate";
 import { PlanGrowthSurface } from "../components/billing/PlanGrowthSurface";
 import { AccountPrivacyPanel } from "../components/account/AccountPrivacyPanel";
+import { resolveWorkspaceStatus } from "../utils/workspaceStatus";
 import {
   BookOpen as AppBookOpenIcon,
   Camera as AppCameraIcon,
@@ -197,25 +198,31 @@ export function Home() {
 
   const accountAccessStatus = accountSnapshot?.appAccess.status || 'ok';
   const accountBlocked = isAuthenticated && accountAccessStatus === 'blocked';
-  const accountLimited = isAuthenticated && (accountAccessStatus === 'limited' || maintenance.length > 0);
-  const workspaceStatusTone = accountBlocked
+  const workspaceStatus = useMemo(() => resolveWorkspaceStatus({
+    snapshot: accountSnapshot,
+    loading: accountStatusLoading,
+    error: accountStatusError?.message || '',
+    maintenance,
+    language,
+    locale,
+  }), [accountSnapshot, accountStatusError, accountStatusLoading, language, locale, maintenance]);
+  const workspaceStatusTone = workspaceStatus.severity === 'danger'
     ? 'border-rose-500/25 bg-rose-500/10 text-rose-700 dark:text-rose-300'
-    : accountLimited
+    : workspaceStatus.severity === 'warning'
       ? 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300'
-      : 'border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300';
-  const workspaceStatusIcon = accountBlocked ? AlertTriangle : accountLimited ? Wrench : ShieldCheck;
-  const WorkspaceStatusIcon = workspaceStatusIcon;
-  const workspaceStatusLabel = accountBlocked ? t.homeWorkspaceBlocked : accountLimited ? t.homeWorkspaceLimited : t.homeWorkspaceReady;
+      : workspaceStatus.severity === 'success'
+        ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+        : 'border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300';
+  const WorkspaceStatusIcon = workspaceStatus.kind === 'blocked' || workspaceStatus.kind === 'past_due' || workspaceStatus.kind === 'inactive'
+    ? AlertTriangle
+    : workspaceStatus.kind === 'maintenance'
+      ? Wrench
+      : workspaceStatus.kind === 'pending_review' || workspaceStatus.kind === 'expiring'
+        ? CreditCard
+        : ShieldCheck;
   const billingStatusLabel = accountSnapshot?.billing.status || 'none';
   const recommendedUpgrade = accountSnapshot?.recommendedUpgrade;
-  const showWorkspaceStatusPanel = isAuthenticated && (
-    accountStatusLoading
-    || accountStatusError
-    || !accountSnapshot
-    || accountBlocked
-    || accountLimited
-    || recommendedUpgrade?.action === 'contact_support'
-  );
+  const showWorkspaceStatusPanel = isAuthenticated && !isGuest;
   const recommendedUpgradeReason = useMemo(
     () => formatRecommendedUpgradeReason(accountSnapshot, language, locale),
     [accountSnapshot, language, locale],
@@ -530,7 +537,7 @@ export function Home() {
       }
       if (response?.mode === 'manual_support') {
         setActiveQuery(t.homeBillingSubtitle);
-        setSearchError(response.message || t.homeBillingUnavailable);
+        setSearchError(t.homeBillingUnavailable);
         setShowResultModal(true);
         return;
       }
@@ -549,6 +556,22 @@ export function Home() {
       setShowResultModal(true);
     } finally {
       setBillingBusy(false);
+    }
+  };
+
+  const handleWorkspaceStatusAction = async () => {
+    if (workspaceStatus.action === 'checkout') {
+      setShowPlanCatalog(true);
+      return;
+    }
+    if (workspaceStatus.action === 'contact_support') {
+      setActiveQuery(t.homeBillingSubtitle);
+      setSearchError(workspaceStatus.message || recommendedUpgrade?.reason || t.homeBillingUnavailable);
+      setShowResultModal(true);
+      return;
+    }
+    if (workspaceStatus.action === 'manage') {
+      await handleBillingAction();
     }
   };
 
@@ -876,7 +899,10 @@ export function Home() {
                 <div className={`flex flex-wrap items-center gap-2 ${isRtl ? 'justify-end' : ''}`}>
                   <h2 className="text-sm font-semibold text-primary">{t.homeWorkspaceStatus}</h2>
                   <span className="rounded-full bg-[var(--bg-base)]/70 px-2 py-0.5 text-[11px] font-semibold">
-                    {workspaceStatusLabel}
+                    {workspaceStatus.label}
+                  </span>
+                  <span className="rounded-full bg-[var(--bg-base)]/70 px-2 py-0.5 text-[11px] font-semibold">
+                    {workspaceStatus.badge}
                   </span>
                   <span className="rounded-full bg-[var(--bg-base)]/70 px-2 py-0.5 text-[11px] font-semibold capitalize">
                     {formatStatusValue(surface, language)}
@@ -887,19 +913,17 @@ export function Home() {
                     </span>
                   ) : null}
                 </div>
-                <p className="mt-1 text-sm leading-5 text-secondary">
-                  {accountStatusError
-                    ? t.homeAccountStatusUnavailable
-                    : accountSnapshot?.appAccess.message
-                      || (accountSnapshot
-                        ? formatText(t.homePlanStatus, {
-                          plan: formatPlanName(accountSnapshot.plan.name, language),
-                          ai: formatCompactNumber(accountSnapshot.plan.aiDailyLimit, locale),
-                          scanner: formatCompactNumber(accountSnapshot.plan.scannerDailyLimit, locale),
-                        })
-                        : t.homeCheckingPlanAccess)}
-                </p>
-                {recommendedUpgradeReason && recommendedUpgrade?.action !== 'checkout' ? (
+                {workspaceStatus.message ? (
+                  <p className="mt-1 text-sm leading-5 text-secondary">
+                    {workspaceStatus.message}
+                  </p>
+                ) : null}
+                {workspaceStatus.helper ? (
+                  <p className="mt-1 text-xs leading-5 text-secondary">
+                    {workspaceStatus.helper}
+                  </p>
+                ) : null}
+                {recommendedUpgradeReason && recommendedUpgrade?.action !== 'checkout' && workspaceStatus.kind !== 'pending_review' ? (
                   <p className="mt-1 text-xs leading-5 text-secondary">
                     {recommendedUpgradeReason}
                   </p>
@@ -921,19 +945,19 @@ export function Home() {
               </div>
             </div>
             <div className="flex shrink-0 flex-wrap gap-2">
-              {recommendedUpgrade && recommendedUpgrade.action !== 'none' && recommendedUpgrade.action !== 'checkout' ? (
+              {workspaceStatus.action !== 'none' ? (
                 <button
                   type="button"
-                  onClick={() => void handleBillingAction()}
+                  onClick={() => void handleWorkspaceStatusAction()}
                   disabled={billingBusy}
                   className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-700 disabled:opacity-50"
                 >
                   <CreditCard size={15} />
                   {billingBusy
                     ? t.opening
-                    : recommendedUpgrade.action === 'manage'
+                    : workspaceStatus.action === 'manage'
                       ? t.homeManageBilling
-                      : recommendedUpgrade.action === 'contact_support'
+                      : workspaceStatus.action === 'contact_support'
                         ? t.homeContactSupport
                         : t.homeUpgradePlan}
                 </button>

@@ -1086,9 +1086,6 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                   ? 'Invoice sudah masuk antrean admin. Kirim file bukti lewat WhatsApp atau Instagram dengan ID invoice agar review lebih cepat.'
                   : 'Terima kasih. Admin akan mencocokkan transfer Anda dengan invoice manual ini.'}
               </p>
-              <p style={{ marginTop: '8px', opacity: 0.8, fontSize: '13px' }}>
-                Jika upload otomatis tidak tersedia, kirim bukti transfer lewat WhatsApp atau Instagram di bawah agar review bisa diproses.
-              </p>
             </div>
             {renderSupportLinks()}
             <button 

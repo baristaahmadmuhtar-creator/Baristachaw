@@ -319,6 +319,7 @@ export function PlanGrowthSurface({
   const [manualInvoice, setManualInvoice] = useState<BillingManualInvoiceResponse | null>(null);
   const [manualProofFile, setManualProofFile] = useState<File | null>(null);
   const [manualProofStatus, setManualProofStatus] = useState<'idle' | 'submitting' | 'submitted'>('idle');
+  const [checkoutStep, setCheckoutStep] = useState<'choose' | 'checkout' | 'success'>('choose');
   
   const modalRef = useRef<HTMLDivElement | null>(null);
   const isRtl = direction === 'rtl';
@@ -336,6 +337,7 @@ export function PlanGrowthSurface({
     if (!isOpen) return;
     setActionError('');
     setManualProofStatus('idle');
+    setCheckoutStep(manualInvoice ? 'checkout' : 'choose');
     const timer = window.setTimeout(() => modalRef.current?.focus(), 30);
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -345,7 +347,16 @@ export function PlanGrowthSurface({
       window.clearTimeout(timer);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, manualInvoice, onClose]);
+
+  useEffect(() => {
+    if (isOpen) return;
+    setActionError('');
+    setManualInvoice(null);
+    setManualProofFile(null);
+    setManualProofStatus('idle');
+    setCheckoutStep('choose');
+  }, [isOpen]);
 
   if (!snapshot || !recommendedPlan || !currentPlan) return null;
 
@@ -354,6 +365,7 @@ export function PlanGrowthSurface({
     setManualInvoice(null);
     setManualProofFile(null);
     setManualProofStatus('idle');
+    setCheckoutStep('choose');
     if (planCode === 'free') {
       onClose();
       return;
@@ -373,6 +385,7 @@ export function PlanGrowthSurface({
       }
       if (response.mode === 'manual_invoice') {
         setManualInvoice(response);
+        setCheckoutStep('checkout');
         return;
       }
       setActionError(t.homePlanCheckoutFailed || 'Checkout failed');
@@ -394,6 +407,7 @@ export function PlanGrowthSurface({
         sizeBytes: manualProofFile.size,
       });
       setManualProofStatus('submitted');
+      setCheckoutStep('success');
     } catch (error) {
       const message = error instanceof BillingApiError
         ? `${error.message}${error.details ? `: ${error.details}` : ''}`
@@ -465,28 +479,29 @@ export function PlanGrowthSurface({
 
             <div className="overflow-y-auto px-5 py-6 sm:px-6" style={{ WebkitOverflowScrolling: 'touch' }}>
               
-              {/* Duration Toggle */}
-              <div className="mx-auto mb-8 flex w-fit justify-center gap-1 rounded-full bg-surface-alpha p-1 border border-glass shadow-sm">
-                {(['monthly', 'quarterly', 'yearly'] as const).map((d) => (
-                  <button
-                    key={d}
-                    type="button"
-                    onClick={() => setDuration(d)}
-                    className={`relative inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition-all ${
-                      duration === d
-                        ? 'bg-blue-600 text-white shadow-[0_6px_20px_rgba(37,99,235,0.35)]'
-                        : 'text-secondary hover:text-primary'
-                    }`}
-                  >
-                    {d === 'monthly' ? '1 Month' : d === 'quarterly' ? '3 Months' : '1 Year'}
-                    {d === 'yearly' && (
-                      <span className="inline-block animate-[chipPulse_2s_ease-in-out_infinite] rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-extrabold text-black">
-                        BEST
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
+              {checkoutStep === 'choose' ? (
+                <div className="mx-auto mb-8 flex w-fit justify-center gap-1 rounded-full bg-surface-alpha p-1 border border-glass shadow-sm">
+                  {(['monthly', 'quarterly', 'yearly'] as const).map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => setDuration(d)}
+                      className={`relative inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition-all ${
+                        duration === d
+                          ? 'bg-blue-600 text-white shadow-[0_6px_20px_rgba(37,99,235,0.35)]'
+                          : 'text-secondary hover:text-primary'
+                      }`}
+                    >
+                      {d === 'monthly' ? '1 Month' : d === 'quarterly' ? '3 Months' : '1 Year'}
+                      {d === 'yearly' && (
+                        <span className="inline-block animate-[chipPulse_2s_ease-in-out_infinite] rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-extrabold text-black">
+                          BEST
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
 
               {actionError ? (
                 <div className="mb-4 rounded-2xl border border-amber-500/25 bg-amber-500/12 px-4 py-3 text-sm font-semibold text-amber-800 dark:text-amber-200">
@@ -494,12 +509,12 @@ export function PlanGrowthSurface({
                 </div>
               ) : null}
 
-              {manualInvoice ? (
+              {checkoutStep === 'checkout' && manualInvoice ? (
                 <div className="mb-6 rounded-2xl border border-blue-500/25 bg-blue-500/10 p-4 text-sm text-primary">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0">
                       <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">
-                        Manual payment pending review
+                        Step 2 dari 3
                       </p>
                       <h3 className="mt-1 text-lg font-black tracking-tight">
                         {manualInvoice.manualInvoice.amountLabel} for {planDisplayName(manualInvoice.planCode)}
@@ -512,6 +527,18 @@ export function PlanGrowthSurface({
                       {manualInvoice.manualInvoice.status.replace(/_/g, ' ')}
                     </span>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setManualInvoice(null);
+                      setManualProofFile(null);
+                      setManualProofStatus('idle');
+                      setCheckoutStep('choose');
+                    }}
+                    className="mt-4 inline-flex min-h-9 items-center justify-center rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-bold text-primary transition-colors hover:bg-surface-alpha"
+                  >
+                    Back to plans
+                  </button>
                   <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
                     <div className="rounded-xl border border-glass bg-[var(--bg-base)]/70 p-3">
                       <dl className="grid gap-2 sm:grid-cols-3">
@@ -537,14 +564,29 @@ export function PlanGrowthSurface({
                       Copy account
                     </button>
                   </div>
-                  <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-end">
+                  <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto_auto_auto] md:items-end">
                     <label className="block">
                       <span className="text-[11px] font-bold uppercase tracking-wide text-secondary">Upload proof</span>
                       <input
                         type="file"
                         accept="image/jpeg,image/png,image/webp,application/pdf"
                         onChange={(event) => {
-                          setManualProofFile(event.currentTarget.files?.[0] || null);
+                          const file = event.currentTarget.files?.[0] || null;
+                          const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+                          if (file && !allowedTypes.includes(file.type)) {
+                            setActionError('Format bukti transfer harus JPG, PNG, WebP, atau PDF.');
+                            setManualProofFile(null);
+                            setManualProofStatus('idle');
+                            return;
+                          }
+                          if (file && file.size > 5 * 1024 * 1024) {
+                            setActionError('Ukuran bukti transfer maksimal adalah 5MB.');
+                            setManualProofFile(null);
+                            setManualProofStatus('idle');
+                            return;
+                          }
+                          setActionError('');
+                          setManualProofFile(file);
                           setManualProofStatus('idle');
                         }}
                         className="mt-1 block w-full rounded-xl border border-glass bg-[var(--bg-base)]/70 px-3 py-2 text-sm font-semibold text-primary file:mr-3 file:rounded-lg file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-white"
@@ -560,23 +602,50 @@ export function PlanGrowthSurface({
                         Open WhatsApp
                       </a>
                     ) : null}
+                    {manualInvoice.manualInvoice.instructions.instagramUrl ? (
+                      <a
+                        className="inline-flex min-h-11 items-center justify-center rounded-xl border border-glass bg-[var(--bg-base)] px-4 font-bold text-primary transition-colors hover:bg-surface-alpha"
+                        href={manualInvoice.manualInvoice.instructions.instagramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Instagram CS
+                      </a>
+                    ) : null}
                     <button
                       type="button"
                       onClick={handleProofSubmit}
                       disabled={!manualProofFile || manualProofStatus === 'submitting' || manualProofStatus === 'submitted'}
                       className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-600 px-4 font-extrabold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {manualProofStatus === 'submitting' ? 'Submitting...' : manualProofStatus === 'submitted' ? 'Pending review' : 'Submit proof'}
+                      {manualProofStatus === 'submitting' ? 'Submitting...' : 'Kirim Bukti & Tunggu Review'}
                     </button>
                   </div>
-                  {manualProofStatus === 'submitted' ? (
-                    <p className="mt-3 rounded-xl bg-emerald-500/12 px-3 py-2 text-sm font-semibold text-emerald-700 dark:text-emerald-200">
-                      Proof received. Your plan stays pending until admin verification.
-                    </p>
-                  ) : null}
                 </div>
               ) : null}
 
+              {checkoutStep === 'success' ? (
+                <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-center text-primary">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600">
+                    <Check size={28} />
+                  </div>
+                  <p className="mt-4 text-xs font-extrabold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-200">Step 3 dari 3</p>
+                  <h3 className="mt-1 text-xl font-black">Bukti Diterima - Menunggu Review</h3>
+                  <p className="mt-2 text-sm leading-6 text-secondary">
+                    Admin akan memverifikasi transaksi Anda sebelum plan aktif. Hubungi customer service lewat WhatsApp atau Instagram jika perlu bantuan.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-600 px-5 font-extrabold text-white transition-colors hover:bg-blue-700"
+                  >
+                    Selesai
+                  </button>
+                </div>
+              ) : null}
+
+              {checkoutStep === 'choose' ? (
+                <>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {(['free', 'starter', 'pro', 'team'] as const).map((code) => (
                   <PlanCard
@@ -622,6 +691,8 @@ export function PlanGrowthSurface({
                   </p>
                 )}
               </div>
+                </>
+              ) : null}
 
               {/* Region Selector */}
               <div className="mt-8 flex justify-end">

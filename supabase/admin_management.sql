@@ -95,6 +95,46 @@ on conflict (code) do update set
   display_order = excluded.display_order,
   updated_at = now();
 
+update public.app_plans
+set
+  price_monthly_usd = 3.99,
+  ai_daily_limit = 60,
+  deep_daily_limit = 0,
+  scanner_daily_limit = 12,
+  features = array['All Free features', 'AI recipe guidance', 'Advanced brew logging', 'Scanner history', 'Priority manual payment review'],
+  billing_provider = 'manual',
+  billing_price_id = '',
+  display_price = 'Rp 61.000 / B$ 4.99 / $3.99 monthly',
+  checkout_mode = 'manual_invoice',
+  payment_methods = array['Manual bank transfer', 'Admin review', 'WhatsApp/Instagram support'],
+  updated_at = now()
+where code = 'starter';
+
+update public.app_plans
+set
+  price_monthly_usd = 11.99,
+  ai_daily_limit = 180,
+  deep_daily_limit = 40,
+  scanner_daily_limit = 60,
+  features = array['All Barista Plus features', 'AI BREW COACH', 'AI Scan & Coffee Analysis', 'AI Latte Art Generator', 'Deep mode with higher credit use'],
+  billing_provider = 'manual',
+  billing_price_id = '',
+  display_price = 'Rp 199.000 / B$ 15.99 / $11.99 monthly',
+  checkout_mode = 'manual_invoice',
+  payment_methods = array['Manual bank transfer', 'Admin review', 'WhatsApp/Instagram support'],
+  updated_at = now()
+where code = 'pro';
+
+update public.app_plans
+set
+  billing_provider = 'manual',
+  billing_price_id = '',
+  display_price = 'Custom invoice',
+  checkout_mode = 'manual_invoice',
+  payment_methods = array['Manual invoice', 'Bank transfer', 'Admin review'],
+  updated_at = now()
+where code = 'team';
+
 create table if not exists public.app_users (
   id text primary key,
   email text not null,
@@ -330,10 +370,18 @@ alter table public.user_entitlements
 
 create table if not exists public.payment_receipts (
   id uuid primary key default gen_random_uuid(),
+  manual_request_id text not null default '',
   user_id text not null references public.app_users(id) on delete cascade,
   requested_plan_code text not null references public.app_plans(code),
+  requested_duration text not null default 'monthly' check (requested_duration in ('monthly', 'quarterly', 'yearly')),
+  requested_currency text not null default 'usd' check (requested_currency in ('idr', 'bnd', 'myr', 'sgd', 'usd', 'eur', 'aud')),
+  requested_amount numeric not null default 0 check (requested_amount >= 0),
+  requested_amount_label text not null default '',
+  payer_email text not null default '',
   receipt_url text not null default '',
   receipt_reference text not null default '',
+  receipt_mime_type text not null default '',
+  receipt_size_bytes integer check (receipt_size_bytes is null or receipt_size_bytes >= 0),
   status text not null default 'queued' check (status in ('queued', 'auto_accepted', 'manual_review', 'rejected', 'applied')),
   reviewed_by text,
   reviewed_at timestamptz,
@@ -342,6 +390,16 @@ create table if not exists public.payment_receipts (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.payment_receipts
+  add column if not exists manual_request_id text not null default '',
+  add column if not exists requested_duration text not null default 'monthly' check (requested_duration in ('monthly', 'quarterly', 'yearly')),
+  add column if not exists requested_currency text not null default 'usd' check (requested_currency in ('idr', 'bnd', 'myr', 'sgd', 'usd', 'eur', 'aud')),
+  add column if not exists requested_amount numeric not null default 0 check (requested_amount >= 0),
+  add column if not exists requested_amount_label text not null default '',
+  add column if not exists payer_email text not null default '',
+  add column if not exists receipt_mime_type text not null default '',
+  add column if not exists receipt_size_bytes integer check (receipt_size_bytes is null or receipt_size_bytes >= 0);
 
 create table if not exists public.app_feature_flags (
   key text primary key,
@@ -471,8 +529,12 @@ begin
     alter table public.payment_receipts
       add constraint payment_receipts_review_integrity_check
       check (
-        char_length(receipt_url) <= 2048
+        char_length(manual_request_id) <= 120
+        and char_length(requested_amount_label) <= 120
+        and char_length(payer_email) <= 320
+        and char_length(receipt_url) <= 2048
         and char_length(receipt_reference) <= 240
+        and char_length(receipt_mime_type) <= 120
         and char_length(apply_error) <= 1200
         and (
           status not in ('rejected', 'applied')
@@ -526,6 +588,7 @@ create index if not exists app_users_payment_action_idx on public.app_users (pay
 create index if not exists app_usage_daily_user_date_idx on public.app_usage_daily (user_id, usage_date desc);
 create index if not exists user_entitlements_user_status_idx on public.user_entitlements (user_id, status, updated_at desc);
 create index if not exists user_entitlements_external_subscription_idx on public.user_entitlements (external_subscription_id) where external_subscription_id is not null;
+create unique index if not exists payment_receipts_manual_request_unique_idx on public.payment_receipts (manual_request_id) where manual_request_id <> '';
 create index if not exists payment_receipts_user_status_idx on public.payment_receipts (user_id, status, updated_at desc);
 create index if not exists payment_receipts_review_queue_idx on public.payment_receipts (status, created_at desc) where status in ('queued', 'auto_accepted', 'manual_review');
 create index if not exists app_feature_flags_status_idx on public.app_feature_flags (status, updated_at desc);

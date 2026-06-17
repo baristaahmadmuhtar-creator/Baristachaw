@@ -27,8 +27,10 @@ import {
 } from '../_aiProviderControl.js';
 import { PLAN_CATALOG, PLAN_PRICING, formatCurrency } from '../../packages/shared/src/planCatalog.js';
 import {
+  listPersistedManualPaymentRequests,
   listManualPaymentRequests,
   readManualPaymentInstructions,
+  updatePersistedManualPaymentStatus,
   updateManualPaymentStatus,
   type ManualPaymentAction,
   type ManualPaymentRequest,
@@ -1448,10 +1450,15 @@ function buildPlanParity(plans: AdminPlan[]): AdminSnapshot['billing']['planPari
   };
 }
 
-function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[], dataMode: DataMode): AdminSnapshot['billing'] {
+async function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[], dataMode: DataMode): Promise<AdminSnapshot['billing']> {
   const connectedProviders = connectedBillingProviders();
   const hasSyncToken = billingSyncConfigured();
-  const manualPayments = listManualPaymentRequests();
+  const manualPayments = dataMode === 'supabase'
+    ? await listPersistedManualPaymentRequests().catch((error) => {
+        console.error('Failed to load persisted manual payments:', error);
+        return listManualPaymentRequests();
+      })
+    : listManualPaymentRequests();
   const manualQueueCounts = buildManualQueueCounts(manualPayments);
   const planParity = buildPlanParity(plans);
   const activeStatuses = new Set<BillingStatus>(['active', 'trialing']);
@@ -1460,20 +1467,22 @@ function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[], dataM
     .filter((user) => activeStatuses.has(user.billing.status))
     .reduce((sum, user) => sum + (plans.find((plan) => plan.code === user.planCode)?.priceMonthlyUsd || 0), 0);
   const gaps: string[] = [];
+  const manualConfigured = connectedProviders.includes('manual');
+  const externalProviderConfigured = connectedProviders.some((provider) => provider !== 'manual');
 
   if (dataMode !== 'supabase') {
     gaps.push('Supabase billing tables are not live yet; runtime billing controls are preview-only.');
   }
   if (!connectedProviders.length) {
-    gaps.push('No payment provider env is configured. Add RevenueCat/Google Play/App Store/Stripe/Midtrans/Xendit before paid launch.');
+    gaps.push('No payment provider env is configured. Enable MANUAL_PAYMENT_ENABLED or add RevenueCat/Google Play/App Store/Stripe/Midtrans/Xendit before paid launch.');
   }
-  if (!hasSyncToken) {
+  if (!hasSyncToken && !connectedProviders.includes('manual')) {
     gaps.push('Billing lifecycle sync token is missing. Set BILLING_SYNC_TOKEN or provider webhook secret before live payments.');
   }
-  if (!connectedProviders.includes('google_play')) {
+  if (externalProviderConfigured && !connectedProviders.includes('google_play')) {
     gaps.push('Google Play Billing package/service account is not configured for Android purchases.');
   }
-  if (!connectedProviders.includes('app_store')) {
+  if (externalProviderConfigured && !connectedProviders.includes('app_store')) {
     gaps.push('App Store purchase credentials are not configured for iOS parity.');
   }
   if (!planParity.ok) {
@@ -1481,7 +1490,7 @@ function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[], dataM
   }
 
   return {
-    ready: dataMode === 'supabase' && connectedProviders.length > 0 && hasSyncToken,
+    ready: dataMode === 'supabase' && connectedProviders.length > 0 && (hasSyncToken || manualConfigured),
     mode: connectedProviders.length ? (envEnabled('BILLING_LIVE_MODE') ? 'live_ready' : 'test') : 'not_configured',
     connectedProviders,
     activeSubscriptions: users.filter((user) => user.planCode !== 'free' && user.billing.status === 'active').length,
@@ -2090,7 +2099,7 @@ async function buildAdminSnapshot(
     dataMode === 'supabase' ? 'admin_audit_events' : 'runtime_audit',
   );
   const checks = buildChecks(dataMode);
-  const billing = buildBillingSummary(users, plans, dataMode);
+  const billing = await buildBillingSummary(users, plans, dataMode);
   const launchChecklist = buildLaunchChecklist(checks);
   const recommendations = buildRecommendations({ dataMode, metrics, checks });
   for (const warning of ai.warnings) {
@@ -3100,6 +3109,78 @@ function normalizeManualPaymentAction(value: unknown): ManualPaymentAction | '' 
   return '';
 }
 
+async function upsertSupabaseManualEntitlement(
+  config: Extract<SupabaseConfig, { configured: true }>,
+  request: ManualPaymentRequest,
+  status: 'active' | 'expired',
+): Promise<void> {
+  const existing = await supabaseRest<Array<{ id: string }>>(
+    config,
+    `user_entitlements?external_subscription_id=eq.${encodeURIComponent(request.id)}&source=eq.manual&select=id&limit=1`,
+  );
+  const body = {
+    user_id: request.userId,
+    plan_code: request.planCode,
+    source: 'manual',
+    status,
+    current_period_start: status === 'active' ? nowIso() : null,
+    current_period_end: null,
+    external_customer_id: request.userId,
+    external_subscription_id: request.id,
+    metadata: {
+      manualRequestId: request.id,
+      amount: request.amount,
+      amountLabel: request.amountLabel,
+      currency: request.currency,
+      duration: request.duration,
+      proof: request.proof || null,
+      reason: request.reason || null,
+    },
+  };
+  if (existing?.[0]?.id) {
+    await supabaseRest(config, `user_entitlements?id=eq.${encodeURIComponent(existing[0].id)}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({
+        ...body,
+        updated_at: nowIso(),
+      }),
+    });
+    return;
+  }
+  await supabaseRest(config, 'user_entitlements', {
+    method: 'POST',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify([body]),
+  });
+}
+
+async function insertSupabaseManualPaymentAudit(
+  config: Extract<SupabaseConfig, { configured: true }>,
+  admin: AdminAccess,
+  request: ManualPaymentRequest,
+  action: ManualPaymentAction,
+  reason?: string,
+): Promise<void> {
+  await supabaseRest(config, 'admin_audit_events', {
+    method: 'POST',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify([{
+      actor_user_id: admin.userId,
+      actor_email: admin.email,
+      target_type: 'payment_receipt',
+      target_id: request.id,
+      action: `manual_payment_${action}`,
+      detail: `Manual payment ${request.id} for ${request.planCode} is ${request.status}${reason ? `: ${reason}` : ''}`,
+      after: {
+        status: request.status,
+        reason: reason || null,
+      },
+      severity: action === 'rejected' || action === 'expired' ? 'warning' : 'info',
+    }]),
+  });
+}
+
 async function updateManualPayment(
   admin: AdminAccess,
   rawUser: Record<string, unknown> | undefined,
@@ -3109,7 +3190,20 @@ async function updateManualPayment(
 ): Promise<AdminSnapshot> {
   const config = getSupabaseConfig();
   const requestId = `admin_manual_payment_${Date.now()}`;
-  const request = updateManualPaymentStatus(paymentRequestId, manualAction, reason);
+  const request = config.configured
+    ? await updatePersistedManualPaymentStatus(
+        paymentRequestId,
+        manualAction,
+        reason,
+        admin.email || admin.userId || 'admin',
+      ).catch((error) => {
+        throw new AdminMutationError('Manual payment storage update failed', {
+          statusCode: 503,
+          errorCode: 'manual_payment_storage_unavailable',
+          details: sanitizeErrorDetails(error, 180),
+        });
+      })
+    : updateManualPaymentStatus(paymentRequestId, manualAction, reason);
   if (!request) {
     throw new AdminMutationError('Manual payment request was not found', {
       statusCode: 404,
@@ -3118,6 +3212,11 @@ async function updateManualPayment(
   }
 
   auditRuntimeManualPayment(admin, request, manualAction, reason);
+  if (config.configured) {
+    await insertSupabaseManualPaymentAudit(config, admin, request, manualAction, reason).catch((error) => {
+      console.error('Failed to write manual payment audit event:', error);
+    });
+  }
 
   if (manualAction === 'verified_paid') {
     const patch: UserPatch = {
@@ -3132,8 +3231,13 @@ async function updateManualPayment(
     if (config.configured) {
       try {
         await patchSupabaseUser(config, admin, request.userId, patch);
+        await upsertSupabaseManualEntitlement(config, request, 'active');
       } catch (error) {
-        console.error('Failed to sync manual payment verification to Supabase:', error);
+        throw new AdminMutationError('Failed to grant manual payment entitlement', {
+          statusCode: 503,
+          errorCode: 'manual_entitlement_sync_failed',
+          details: sanitizeErrorDetails(error, 180),
+        });
       }
     }
     const previous = RUNTIME_USER_PATCHES.get(request.userId) || {};
@@ -3154,8 +3258,13 @@ async function updateManualPayment(
     if (config.configured) {
       try {
         await patchSupabaseUser(config, admin, request.userId, patch);
+        await upsertSupabaseManualEntitlement(config, request, 'expired');
       } catch (error) {
-        console.error('Failed to sync manual payment downgrade to Supabase:', error);
+        throw new AdminMutationError('Failed to downgrade manual payment entitlement', {
+          statusCode: 503,
+          errorCode: 'manual_entitlement_sync_failed',
+          details: sanitizeErrorDetails(error, 180),
+        });
       }
     }
     const previous = RUNTIME_USER_PATCHES.get(request.userId) || {};

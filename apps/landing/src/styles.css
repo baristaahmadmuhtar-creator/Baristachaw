@@ -1064,6 +1064,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .register-close:hover { background: #d8e4f5; }
 
+.register-form input[type="password"]::placeholder {
+  color: transparent;
+}
+
+.turnstile-links {
+  font-size: 0;
+}
+
+.turnstile-links::after {
+  content: 'Privasi - Bantuan';
+  font-size: 9px;
+}
+
 /* Plan Summary */
 .register-plan-summary {
   display: flex;

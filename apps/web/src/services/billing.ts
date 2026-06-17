@@ -7,9 +7,16 @@ export type ManualPaymentInstructions = {
   bankName: string;
   accountName: string;
   accountNumber: string;
+  banks?: Array<{
+    bankName: string;
+    accountName: string;
+    accountNumber: string;
+  }>;
   whatsappNumber?: string;
   whatsappUrl?: string;
   supportEmail?: string;
+  instagramUrl?: string;
+  instagramHandle?: string;
   notifyWebhookConfigured: boolean;
 };
 
@@ -19,10 +26,12 @@ export type BillingManualInvoice = {
   amount: number;
   amountLabel: string;
   currency: CurrencyCode;
+  uniqueSuffix?: number;
   instructions: ManualPaymentInstructions;
   supportLinks?: {
     whatsappUrl?: string;
     supportEmail?: string;
+    instagramUrl?: string;
   };
   proof: {
     endpoint: string;

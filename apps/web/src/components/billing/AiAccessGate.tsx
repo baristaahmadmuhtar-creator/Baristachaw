@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { AnimatePresence, motion } from 'motion/react';
 import { 
   CreditCard, LogIn, RefreshCcw, ShieldCheck, Sparkles, X,
-  ArrowRight, Check, Copy, UploadCloud, Smartphone, Coffee, Lock, AlertCircle, ArrowLeft
+  ArrowRight, Check, UploadCloud, ArrowLeft
 } from 'lucide-react';
 import { useAccountStatus } from '../../context/AccountStatusContext';
 import { useAuthModal } from '../../context/AuthModalContext';
@@ -127,7 +127,6 @@ function AiAccessGateDialog({
   const currency = getCurrencyForRegion(region);
 
   const [copiedBankIndex, setCopiedBankIndex] = useState<number | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'midtrans' | 'paypal' | 'manual'>('manual');
   const [turnstileVerified, setTurnstileVerified] = useState(false);
 
   const planDisplayNames = {
@@ -141,9 +140,9 @@ function AiAccessGateDialog({
   };
 
   const durationLabels: Record<BillingDuration, string> = {
-    monthly: region === 'ID' ? '1 Bulan' : '1 Month',
-    quarterly: region === 'ID' ? '3 Bulan' : '3 Months',
-    yearly: region === 'ID' ? '1 Tahun' : '1 Year',
+    monthly: region === 'id' ? '1 Bulan' : '1 Month',
+    quarterly: region === 'id' ? '3 Bulan' : '3 Months',
+    yearly: region === 'id' ? '1 Tahun' : '1 Year',
   };
 
   const supportWhatsappUrl = manualInvoice?.manualInvoice?.instructions?.whatsappUrl || `https://wa.me/6738270092?text=${encodeURIComponent('Halo Baristachaw, saya ingin menanyakan tentang keanggotaan.')}`;
@@ -399,7 +398,7 @@ function AiAccessGateDialog({
                 <strong className="text-2xl font-black text-[#ffd233]">{manualInvoice.manualInvoice.amountLabel}</strong>
                 <p className="text-xs text-white/70">
                   *Pastikan transfer sesuai hingga 3 digit terakhir{' '}
-                  <strong>({manualInvoice.manualInvoice.id.slice(-3).replace(/[^0-9]/g, '3')})</strong>
+                  <strong>({manualInvoice.manualInvoice.uniqueSuffix || manualInvoice.manualInvoice.id.slice(-3).replace(/[^0-9]/g, '3')})</strong>
                 </p>
               </div>
 
@@ -514,7 +513,14 @@ function AiAccessGateDialog({
                   accept="image/jpeg,image/png,image/webp,application/pdf"
                   onChange={(event) => {
                     const file = event.currentTarget.files?.[0] || null;
+                    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+                    if (file && !allowedTypes.includes(file.type)) {
+                      onManualProofFileChange(null);
+                      alert('Format bukti transfer harus JPG, PNG, WebP, atau PDF.');
+                      return;
+                    }
                     if (file && file.size > 5 * 1024 * 1024) {
+                      onManualProofFileChange(null);
                       alert('Ukuran bukti transfer maksimal adalah 5MB.');
                       return;
                     }
@@ -552,8 +558,12 @@ function AiAccessGateDialog({
               <button
                 type="button"
                 onClick={async () => {
-                  await onManualProofSubmit();
-                  setStep('success'); // Move to success step on completion
+                  try {
+                    await onManualProofSubmit();
+                    setStep('success');
+                  } catch {
+                    // Error state is rendered from checkoutError.
+                  }
                 }}
                 disabled={manualProofStatus === 'submitting' || !manualProofFile || !turnstileVerified}
                 className="w-full min-h-12 bg-[#ffd233] text-[#07152f] rounded-full font-black text-sm flex items-center justify-center gap-2 hover:bg-[#ffe066] transition-all disabled:opacity-40 disabled:cursor-not-allowed mt-2 shadow-[0_8px_20px_rgba(255,210,51,0.2)]"
@@ -561,7 +571,7 @@ function AiAccessGateDialog({
                 {manualProofStatus === 'submitting' ? (
                   <><RefreshCcw className="w-4 h-4 animate-spin" /> Memproses...</>
                 ) : (
-                  <>Bayar Sekarang <ArrowRight size={16} /></>
+                  <>Kirim Bukti & Tunggu Review <ArrowRight size={16} /></>
                 )}
               </button>
             </div>
@@ -575,12 +585,12 @@ function AiAccessGateDialog({
               <Check size={32} strokeWidth={3} />
             </div>
             <div>
-              <h3 className="text-xl font-black text-white">Pembayaran Diterima!</h3>
+              <h3 className="text-xl font-black text-white">Bukti Diterima - Menunggu Review</h3>
               <p className="text-sm text-white/70 mt-2.5 leading-relaxed">
-                Terima kasih! Bukti transfer Anda telah berhasil dikirim ke server Baristachaw.
+                Terima kasih. Bukti transfer Anda telah berhasil dikirim ke server Baristachaw.
               </p>
               <p className="text-xs text-white/50 mt-2 leading-relaxed">
-                Admin kami akan memverifikasi transaksi Anda. Akun Anda akan ditingkatkan secara otomatis setelah proses verifikasi selesai (biasanya dalam 5-10 menit).
+                Admin akan memverifikasi transaksi Anda sebelum plan aktif. Jika perlu bantuan, hubungi customer service lewat WhatsApp atau Instagram di bawah.
               </p>
             </div>
 

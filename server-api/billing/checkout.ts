@@ -10,6 +10,7 @@ import {
 import {
   createManualPaymentRequest,
   normalizeManualCurrency,
+  persistManualPaymentRequest,
 } from './manualPayments.js';
 
 type PlanCode = 'starter' | 'pro' | 'team' | 'enterprise';
@@ -138,6 +139,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       promoCode: promoCode || undefined,
     });
     if (manualRequest) {
+      try {
+        await persistManualPaymentRequest(manualRequest);
+      } catch (error) {
+        console.error('Failed to persist manual payment request:', error);
+        return res.status(503).json({
+          ok: false,
+          requestId,
+          error: 'Manual payment storage is not ready',
+          errorCode: 'manual_payment_storage_unavailable',
+          details: 'Admin review storage must be available before a manual invoice can be created.',
+        });
+      }
       return res.status(200).json({
         ok: true,
         requestId,
@@ -154,10 +167,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           amount: manualRequest.amount,
           amountLabel: manualRequest.amountLabel,
           currency: manualRequest.currency,
+          uniqueSuffix: manualRequest.uniqueSuffix,
           instructions: manualRequest.instructions,
           supportLinks: {
             whatsappUrl: manualRequest.instructions.whatsappUrl,
             supportEmail: manualRequest.instructions.supportEmail,
+            instagramUrl: manualRequest.instructions.instagramUrl,
           },
           proof: {
             endpoint: '/api/billing/proof',

@@ -106,10 +106,11 @@ order by display_order;
 
 select
   status,
+  coalesce(metadata->>'manualStatus', status) as manual_status,
   count(*) as receipt_count
 from public.payment_receipts
-group by status
-order by status;
+group by status, coalesce(metadata->>'manualStatus', status)
+order by status, manual_status;
 
 select
   review_status,

@@ -7,7 +7,12 @@ import {
   enforceTrustedRequestOrigin,
   requireAuth,
 } from '../_shared.js';
-import { attachManualPaymentProof, getManualPaymentProofMaxBytes } from './manualPayments.js';
+import {
+  attachManualPaymentProof,
+  getManualPaymentProofMaxBytes,
+  loadPersistedManualPaymentRequest,
+  persistManualPaymentProof,
+} from './manualPayments.js';
 
 const BILLING_PROOF_RATE_LIMIT = {
   maxRequests: 30,
@@ -61,12 +66,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  const result = attachManualPaymentProof({
-    requestId: normalizeRequestId(req.body?.requestId),
+  const paymentRequestId = normalizeRequestId(req.body?.requestId);
+  const proofInput = {
+    requestId: paymentRequestId,
     userId: authResult.auth.userId,
     mimeType: normalizeMimeType(req.body?.mimeType),
     sizeBytes: normalizeSize(req.body?.sizeBytes),
-  });
+  };
+
+  let result = attachManualPaymentProof(proofInput);
+  if (result.ok === false && result.errorCode === 'manual_payment_not_found' && paymentRequestId) {
+    await loadPersistedManualPaymentRequest(paymentRequestId, authResult.auth.userId).catch((error) => {
+      console.error('Failed to hydrate persisted manual payment request:', error);
+      return undefined;
+    });
+    result = attachManualPaymentProof(proofInput);
+  }
 
   if (result.ok === false) {
     return res.status(result.statusCode).json({
@@ -74,6 +89,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       requestId,
       error: result.error,
       errorCode: result.errorCode,
+      maxBytes: getManualPaymentProofMaxBytes(),
+    });
+  }
+
+  try {
+    await persistManualPaymentProof(result.request);
+  } catch (error) {
+    console.error('Failed to persist manual payment proof:', error);
+    return res.status(503).json({
+      ok: false,
+      requestId,
+      error: 'Manual payment proof storage is not ready',
+      errorCode: 'manual_payment_storage_unavailable',
       maxBytes: getManualPaymentProofMaxBytes(),
     });
   }

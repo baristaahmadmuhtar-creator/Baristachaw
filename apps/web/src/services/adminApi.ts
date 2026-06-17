@@ -297,9 +297,16 @@ export type AdminManualPaymentRequest = {
     bankName: string;
     accountName: string;
     accountNumber: string;
+    banks?: Array<{
+      bankName: string;
+      accountName: string;
+      accountNumber: string;
+    }>;
     whatsappNumber?: string;
     whatsappUrl?: string;
     supportEmail?: string;
+    instagramUrl?: string;
+    instagramHandle?: string;
     notifyWebhookConfigured: boolean;
   };
   proof?: {

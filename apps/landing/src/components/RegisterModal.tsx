@@ -1,8 +1,8 @@
-import { ArrowRight, Loader2, X, Check, Copy, UploadCloud, CreditCard, Smartphone, Coffee, Lock, AlertCircle, ArrowLeft } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { ArrowRight, Loader2, X, Check, UploadCloud, AlertCircle, ArrowLeft } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import type { Language } from '../i18n';
 import { t } from '../i18n';
-import { APP_LINKS, APP_ORIGIN, type BillingDuration, formatCurrencyByLang, getCurrencyForLanguage, PRICING } from '../config';
+import { APP_ORIGIN, type BillingDuration, formatCurrencyByLang, getCurrencyForLanguage, PRICING } from '../config';
 
 type RegisterModalProps = {
   language: Language;
@@ -29,7 +29,6 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   });
   const [selectedDuration, setSelectedDuration] = useState<BillingDuration>(duration);
 
-  const [paymentMethod, setPaymentMethod] = useState<'midtrans' | 'paypal' | 'manual'>('manual');
   const [invoice, setInvoice] = useState<any>(null);
   const [fetchingInvoice, setFetchingInvoice] = useState(false);
   const [invoiceError, setInvoiceError] = useState('');
@@ -80,9 +79,10 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     return formatCurrencyByLang(tier.discounted[currency], language);
   };
 
-  const fetchInvoice = async () => {
+  const fetchInvoice = useCallback(async () => {
     setFetchingInvoice(true);
     setInvoiceError('');
+    setInvoice(null);
     try {
       const planCode = selectedPlan === 'plus' ? 'starter' : selectedPlan; // backend uses starter
       const res = await fetch(`${APP_ORIGIN}/api/billing/checkout`, {
@@ -109,27 +109,15 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     } finally {
       setFetchingInvoice(false);
     }
-  };
+  }, [currency, selectedDuration, selectedPlan]);
 
   useEffect(() => {
-    if (step === 'checkout' && paymentMethod === 'manual') {
-      fetchInvoice();
+    if (step === 'checkout') {
+      setUploadedFile(null);
+      setTurnstileVerified(false);
+      void fetchInvoice();
     }
-  }, [step, paymentMethod]);
-
-  const handleProceedToCheckout = () => {
-    if (plan === 'free') {
-      window.location.href = APP_ORIGIN;
-      return;
-    }
-
-    if (plan === 'team') {
-      window.location.href = '/support?topic=general';
-      return;
-    }
-
-    setStep('checkout');
-  };
+  }, [fetchInvoice, step]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,7 +147,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
       // If email confirmation is required, notify user
       if (payload.emailConfirmationRequired) {
-        setError('Verification email sent. Please check your inbox.');
+        setError('Kode verifikasi dikirim ke email Anda. Masukkan kode sesuai instruksi email, lalu login kembali.');
         setLoading(false);
         return;
       }
@@ -256,13 +244,13 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   };
 
   const handleCheckoutSubmit = async () => {
-    if (paymentMethod !== 'manual') {
-      setError('Metode pembayaran otomatis (Midtrans/PayPal) sedang dalam pemeliharaan. Silakan gunakan Transfer Manual.');
+    if (!turnstileVerified) {
+      setError('Silakan centang verifikasi bahwa Anda adalah manusia.');
       return;
     }
 
-    if (!turnstileVerified) {
-      setError('Silakan centang verifikasi bahwa Anda adalah manusia.');
+    if (!invoice?.id) {
+      setError('Invoice manual belum siap. Coba muat ulang detail transfer.');
       return;
     }
 
@@ -306,7 +294,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
   return (
     <div className="register-backdrop" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={`register-panel ${step !== 'auth' ? 'checkout-dark' : ''}`} role="dialog" aria-modal="true" aria-labelledby="register-title">
+      <div className="register-panel checkout-dark" role="dialog" aria-modal="true" aria-labelledby="register-title">
         
         {/* Step 1: PILIH (Plan & Duration Selection) */}
         {step === 'pilih' && (
@@ -539,60 +527,16 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
               </div>
             </div>
 
-            <h3 style={{ fontSize: '14px', fontWeight: 700, margin: '20px 0 10px', color: 'rgba(255,255,255,0.7)' }}>
-              Metode Pembayaran
-            </h3>
-
-            <div className="payment-methods-list">
-              {/* Midtrans */}
-              <div 
-                className={`payment-method-card ${paymentMethod === 'midtrans' ? 'selected' : ''}`}
-                onClick={() => setPaymentMethod('midtrans')}
-              >
-                <div className="pm-info">
-                  <div className="pm-icon"><Smartphone size={18} /></div>
-                  <div className="pm-text">
-                    <span className="pm-name">Midtrans</span>
-                    <span className="pm-desc">Gopay / ShopeePay / CC (Indo)</span>
+            <div className="manual-transfer-container">
+                <div className="payment-method-card selected" style={{ marginBottom: '14px' }}>
+                  <div className="pm-info">
+                    <div className="pm-text">
+                      <span className="pm-name">Transfer Manual</span>
+                      <span className="pm-desc">Transfer, upload bukti, lalu tunggu review admin.</span>
+                    </div>
                   </div>
+                  <div className="pm-check-dot"></div>
                 </div>
-                <div className="pm-check-dot"></div>
-              </div>
-
-              {/* PayPal */}
-              <div 
-                className={`payment-method-card ${paymentMethod === 'paypal' ? 'selected' : ''}`}
-                onClick={() => setPaymentMethod('paypal')}
-              >
-                <div className="pm-info">
-                  <div className="pm-icon"><CreditCard size={18} /></div>
-                  <div className="pm-text">
-                    <span className="pm-name">PayPal</span>
-                    <span className="pm-desc">International / USD</span>
-                  </div>
-                </div>
-                <div className="pm-check-dot"></div>
-              </div>
-
-              {/* Manual Transfer */}
-              <div 
-                className={`payment-method-card ${paymentMethod === 'manual' ? 'selected' : ''}`}
-                onClick={() => setPaymentMethod('manual')}
-              >
-                <div className="pm-info">
-                  <div className="pm-icon"><Coffee size={18} /></div>
-                  <div className="pm-text">
-                    <span className="pm-name">Manual Transfer</span>
-                    <span className="pm-desc">BCA / Mandiri / QRIS Manual</span>
-                  </div>
-                </div>
-                <div className="pm-check-dot"></div>
-              </div>
-            </div>
-
-            {/* If Manual payment is chosen */}
-            {paymentMethod === 'manual' && (
-              <div className="manual-transfer-container">
                 {fetchingInvoice ? (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '180px', gap: '12px' }}>
                     <Loader2 className="spin" size={28} color="#ffd233" />
@@ -762,26 +706,12 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                       {paymentLoading ? (
                         <><Loader2 size={16} className="spin" /> Memproses...</>
                       ) : (
-                        <>Bayar Sekarang <ArrowRight size={16} /></>
+                        <>Kirim Bukti & Tunggu Review <ArrowRight size={16} /></>
                       )}
                     </button>
                   </>
                 ) : null}
               </div>
-            )}
-            
-            {paymentMethod !== 'manual' && (
-              <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {error && <p className="register-error">{error}</p>}
-                <button 
-                  className="checkout-submit-btn" 
-                  type="button"
-                  onClick={handleCheckoutSubmit}
-                >
-                  Bayar Sekarang <ArrowRight size={16} />
-                </button>
-              </div>
-            )}
           </>
         )}
 
@@ -792,12 +722,12 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
               <Check size={32} strokeWidth={3} />
             </div>
             <div>
-              <h3>Pembayaran Diterima!</h3>
+              <h3>Bukti Diterima - Menunggu Review</h3>
               <p style={{ marginTop: '10px' }}>
-                Terima kasih! Bukti transfer Anda telah berhasil dikirim ke server Baristachaw.
+                Terima kasih. Bukti transfer Anda telah berhasil dikirim ke server Baristachaw.
               </p>
               <p style={{ marginTop: '8px', opacity: 0.8, fontSize: '13px' }}>
-                Admin kami akan memverifikasi transaksi Anda. Akun Anda akan ditingkatkan secara otomatis setelah proses verifikasi selesai (biasanya dalam 5-10 menit).
+                Admin akan memverifikasi transaksi Anda sebelum plan aktif. Jika perlu bantuan, hubungi customer service lewat WhatsApp atau Instagram di bawah.
               </p>
             </div>
             {renderSupportLinks()}

@@ -196,7 +196,7 @@ export function EmailPasswordAuthForm({
           <div>
             <h3 className="text-base font-bold text-primary">{t.authEmailConfirmationTitle || 'Cek Email Anda'}</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-secondary">
-              {(t.authEmailConfirmationBody || 'Kami telah mengirimkan tautan konfirmasi ke {email}.').replace('{email}', email)}
+              {(t.authEmailConfirmationBody || 'Kami telah mengirim kode atau instruksi verifikasi ke {email}.').replace('{email}', email)}
             </p>
             <button
               type="button"

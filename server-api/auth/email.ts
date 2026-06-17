@@ -129,7 +129,7 @@ function classifySupabaseAuthFailure(status: number, message: string, mode: Pass
     return { statusCode: 429, errorCode: 'rate_limited', error: 'Too many authentication attempts' };
   }
   if (text.includes('email not confirmed') || text.includes('not confirmed')) {
-    return { statusCode: 403, errorCode: 'email_confirmation_required', error: 'Email confirmation is required' };
+    return { statusCode: 403, errorCode: 'email_confirmation_required', error: 'Email verification code is required' };
   }
   if (text.includes('already registered') || text.includes('already exists')) {
     return { statusCode: 409, errorCode: 'email_already_registered', error: 'Email is already registered' };

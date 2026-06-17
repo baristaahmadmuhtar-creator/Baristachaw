@@ -7,7 +7,7 @@ import {
   type CurrencyCode,
   type PlanPricing,
   type Region,
-} from '@baristachaw/shared/planCatalog';
+} from './planCatalog';
 import type { Language } from './i18n';
 
 export const APP_ORIGIN = (import.meta.env.VITE_PUBLIC_APP_URL || 'https://app.baristachaw.com').replace(/\/+$/, '');

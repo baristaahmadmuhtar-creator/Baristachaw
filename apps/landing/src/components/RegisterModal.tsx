@@ -3,7 +3,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import type { Language } from '../i18n';
 import { t } from '../i18n';
 import { APP_ORIGIN, type BillingDuration, formatCurrencyByLang, getCurrencyForLanguage, PRICING } from '../config';
-import { OTP_CODE_LENGTH } from '@baristachaw/shared';
+import { OTP_CODE_LENGTH } from '../planCatalog';
 
 type RegisterModalProps = {
   language: Language;

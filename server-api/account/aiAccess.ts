@@ -239,6 +239,7 @@ export async function requirePaidAiAccess(params: {
         };
       }
     } catch (error) {
+      console.error(`[account/aiAccess][${params.requestId}] QUOTA_ERROR_DEBUG:`, error);
       if (strictQuotaEnforcementEnabled()) {
         return {
           ok: false,

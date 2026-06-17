@@ -479,6 +479,13 @@
     --icon-tile-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48), 0 8px 18px rgba(5, 150, 105, 0.1);
   }
 
+  .icon-tone-red {
+    --icon-glyph-color: #dc2626;
+    --icon-tile-bg: rgba(220, 38, 38, 0.12);
+    --icon-tile-border: rgba(220, 38, 38, 0.18);
+    --icon-tile-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48), 0 8px 18px rgba(220, 38, 38, 0.1);
+  }
+
   .icon-tone-ice {
     --icon-glyph-color: #0284c7;
     --icon-tile-bg: rgba(14, 165, 233, 0.12);
@@ -525,6 +532,13 @@
     --icon-tile-bg: rgba(16, 185, 129, 0.14);
     --icon-tile-border: rgba(110, 231, 183, 0.18);
     --icon-tile-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 18px rgba(16, 185, 129, 0.1);
+  }
+
+  :root.dark .icon-tone-red {
+    --icon-glyph-color: #f87171;
+    --icon-tile-bg: rgba(239, 68, 68, 0.15);
+    --icon-tile-border: rgba(248, 113, 113, 0.18);
+    --icon-tile-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 18px rgba(239, 68, 68, 0.11);
   }
 
   :root.dark .icon-tone-ice {
@@ -574,6 +588,13 @@
       --icon-tile-bg: rgba(16, 185, 129, 0.14);
       --icon-tile-border: rgba(110, 231, 183, 0.18);
       --icon-tile-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 18px rgba(16, 185, 129, 0.1);
+    }
+
+    :root:not(.light) .icon-tone-red {
+      --icon-glyph-color: #f87171;
+      --icon-tile-bg: rgba(239, 68, 68, 0.15);
+      --icon-tile-border: rgba(248, 113, 113, 0.18);
+      --icon-tile-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 18px rgba(239, 68, 68, 0.11);
     }
 
     :root:not(.light) .icon-tone-ice {

@@ -28,7 +28,7 @@ export type PlanCatalogEntry = {
   checkoutMode: 'disabled' | 'manual_invoice' | 'redirect' | 'contact_sales';
 };
 
-export const OTP_CODE_LENGTH = 6;
+export const OTP_CODE_LENGTH = 8;
 
 export const PLAN_PRICING: Record<'starter' | 'pro', PlanPricing> = {
   starter: {

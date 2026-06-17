@@ -122,7 +122,7 @@ export interface ResolvedResponseProfile {
 
 export type AuthProvider = 'google' | 'facebook' | 'apple' | 'email' | 'guest';
 
-export const OTP_CODE_LENGTH = 6;
+export const OTP_CODE_LENGTH = 8;
 
 
 export interface UserProfile {

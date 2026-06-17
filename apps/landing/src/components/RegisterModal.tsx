@@ -45,6 +45,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [turnstileVerified, setTurnstileVerified] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [proofDelivery, setProofDelivery] = useState<'direct_upload' | 'manual_support' | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -127,6 +128,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     if (step === 'checkout') {
       setUploadedFile(null);
       setTurnstileVerified(false);
+      setProofDelivery(null);
       void fetchInvoice();
     }
   }, [fetchInvoice, step]);
@@ -189,10 +191,6 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   const handleOtpInputChange = (val: string) => {
     setError('');
     const cleaned = val.replace(/\D/g, '');
-    if (cleaned.length === 8 && OTP_CODE_LENGTH === 6) {
-      setError("This code has 8 digits, but Baristachaw currently expects 6. Please request a new code.");
-      return;
-    }
     setOtpCode(cleaned.slice(0, OTP_CODE_LENGTH));
   };
 
@@ -201,10 +199,6 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     setError('');
     const rawPasted = e.clipboardData.getData('text/plain');
     const cleaned = rawPasted.replace(/\D/g, '');
-    if (cleaned.length === 8 && OTP_CODE_LENGTH === 6) {
-      setError(`This code has 8 digits, but Baristachaw currently expects ${OTP_CODE_LENGTH}. Please request a new code.`);
-      return;
-    }
     setOtpCode(cleaned.slice(0, OTP_CODE_LENGTH));
   };
 
@@ -212,10 +206,6 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     e.preventDefault();
     setError('');
     const normalizedOtp = otpCode.replace(/\D/g, '');
-    if (normalizedOtp.length === 8 && OTP_CODE_LENGTH === 6) {
-      setError(`This code has 8 digits, but Baristachaw currently expects ${OTP_CODE_LENGTH}. Please request a new code.`);
-      return;
-    }
     if (normalizedOtp.length !== OTP_CODE_LENGTH) {
       setError("The verification code looks incomplete. Please enter the full code from your email.");
       return;
@@ -303,10 +293,6 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     e.preventDefault();
     setError('');
     const normalizedOtp = otpCode.replace(/\D/g, '');
-    if (normalizedOtp.length === 8 && OTP_CODE_LENGTH === 6) {
-      setError(`This code has 8 digits, but Baristachaw currently expects ${OTP_CODE_LENGTH}. Please request a new code.`);
-      return;
-    }
     if (normalizedOtp.length !== OTP_CODE_LENGTH) {
       setError("The verification code looks incomplete. Please enter the full code from your email.");
       return;
@@ -429,6 +415,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
         return;
       }
       setUploadedFile(file);
+      setProofDelivery(null);
       setError('');
     }
   };
@@ -446,6 +433,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
     if (!proofUploadReady) {
       window.open(manualProofFallbackUrl, '_blank', 'noopener,noreferrer');
+      setProofDelivery('manual_support');
       setStep('success');
       return;
     }
@@ -486,10 +474,17 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
             body: uploadedFile,
           });
           if (!uploadRes.ok) {
-            const errText = await uploadRes.text();
-            throw new Error(`Gagal mengunggah file bukti transfer: ${errText.slice(0, 100)}`);
+            const supportUrl = data.supportLinks?.whatsappUrl || manualProofFallbackUrl;
+            if (supportUrl) window.open(supportUrl, '_blank', 'noopener,noreferrer');
+            setProofDelivery('manual_support');
+            setStep('success');
+            return;
           }
+        } else {
+          const supportUrl = data.supportLinks?.whatsappUrl || manualProofFallbackUrl;
+          if (supportUrl) window.open(supportUrl, '_blank', 'noopener,noreferrer');
         }
+        setProofDelivery(data.deliveryMode || 'direct_upload');
         setStep('success');
       } else {
         throw new Error(data.error || 'Gagal mengirim bukti transfer');
@@ -1035,7 +1030,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                       </div>
                     )}
 
-                    {/* Turnstile Mock Widget */}
+                    {/* Manual confirmation */}
                     <div 
                       className="turnstile-mock-container" 
                       onClick={() => setTurnstileVerified(!turnstileVerified)}
@@ -1044,16 +1039,13 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                         <div className={`turnstile-box ${turnstileVerified ? 'checked' : ''}`}>
                           {turnstileVerified && <Check size={14} color="#ffffff" />}
                         </div>
-                        <span className="turnstile-text">Verifikasi bahwa Anda adalah manusia</span>
+                        <span className="turnstile-text">Konfirmasi bukti transfer</span>
                       </div>
                       <div className="turnstile-right">
                         <div className="turnstile-cf-logo">
-                          <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '16px', height: '16px', color: '#f6821f' }}>
-                            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z"/>
-                          </svg>
-                          <span>Cloudflare</span>
+                          <span>Manual check</span>
                         </div>
-                        <span className="turnstile-links">Privasi • Bantuan</span>
+                        <span className="turnstile-links">No auto charge</span>
                       </div>
                     </div>
 
@@ -1090,7 +1082,9 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
             <div>
               <h3>Pembayaran Menunggu Review</h3>
               <p style={{ marginTop: '10px' }}>
-                Terima kasih. Admin akan mencocokkan transfer Anda dengan invoice manual ini.
+                {proofDelivery === 'manual_support'
+                  ? 'Invoice sudah masuk antrean admin. Kirim file bukti lewat WhatsApp atau Instagram dengan ID invoice agar review lebih cepat.'
+                  : 'Terima kasih. Admin akan mencocokkan transfer Anda dengan invoice manual ini.'}
               </p>
               <p style={{ marginTop: '8px', opacity: 0.8, fontSize: '13px' }}>
                 Jika upload otomatis tidak tersedia, kirim bukti transfer lewat WhatsApp atau Instagram di bawah agar review bisa diproses.

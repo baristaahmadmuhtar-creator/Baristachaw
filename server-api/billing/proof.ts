@@ -39,6 +39,14 @@ function normalizeSize(value: unknown): number {
   return Number.isFinite(size) ? Math.floor(size) : 0;
 }
 
+function supportLinksFor(request: { instructions: { whatsappUrl?: string; supportEmail?: string; instagramUrl?: string } }) {
+  return {
+    whatsappUrl: request.instructions.whatsappUrl,
+    supportEmail: request.instructions.supportEmail,
+    instagramUrl: request.instructions.instagramUrl,
+  };
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const requestId = createRequestId(req);
   applyCors(req, res, 'POST, OPTIONS');
@@ -48,18 +56,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ ok: false, requestId, error: 'Method not allowed' });
   if (!enforceTrustedRequestOrigin(req, res, requestId)) return;
-
-  // Fail closed: Check storage configuration
-  const config = getSupabaseAdminConfig();
-  const bucket = (process.env.SUPABASE_STORAGE_BUCKET_PROOF || 'payment-proofs').trim();
-  if (!config.configured || !bucket) {
-    return res.status(503).json({
-      ok: false,
-      requestId,
-      error: 'Supabase Storage is not configured in this environment',
-      errorCode: 'storage_not_configured',
-    });
-  }
 
   const authResult = requireAuth(req);
   if (authResult.ok === false) {
@@ -110,31 +106,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
+  let proofStorage: 'storage_ready' | 'support_fallback' = 'support_fallback';
   let uploadUrl = '';
+  let persistenceReady = false;
   try {
-    const signedData = await createSignedUploadUrl(config, bucket, result.proof.generatedFileName);
-    uploadUrl = signedData.signedUrl;
-  } catch (error) {
-    console.error('Failed to generate signed upload URL:', error);
-    return res.status(503).json({
-      ok: false,
-      requestId,
-      error: 'Failed to generate secure upload destination',
-      errorCode: 'upload_generation_failed',
-    });
-  }
-
-  try {
-    await persistManualPaymentProof(result.request);
+    persistenceReady = await persistManualPaymentProof(result.request);
   } catch (error) {
     console.error('Failed to persist manual payment proof:', error);
-    return res.status(503).json({
-      ok: false,
-      requestId,
-      error: 'Manual payment proof storage is not ready',
-      errorCode: 'manual_payment_storage_unavailable',
-      maxBytes: getManualPaymentProofMaxBytes(),
-    });
+  }
+
+  const config = getSupabaseAdminConfig();
+  const bucket = (process.env.SUPABASE_STORAGE_BUCKET_PROOF || 'payment-proofs').trim();
+  if (persistenceReady && config.configured && bucket) {
+    try {
+      const signedData = await createSignedUploadUrl(config, bucket, result.proof.generatedFileName);
+      uploadUrl = signedData.signedUrl;
+      proofStorage = 'storage_ready';
+    } catch (error) {
+      console.error('Failed to generate signed upload URL:', error);
+    }
   }
 
   return res.status(200).json({
@@ -143,9 +133,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     paymentRequestId: result.request.id,
     status: result.request.status,
     proof: result.proof,
-    uploadUrl,
+    proofStorage,
+    deliveryMode: uploadUrl ? 'direct_upload' : 'manual_support',
+    uploadUrl: uploadUrl || undefined,
+    supportLinks: supportLinksFor(result.request),
     paymentActionRequired: true,
     entitlement: 'pending_admin_review',
-    message: 'Proof registered. Please upload the file using the uploadUrl.',
+    message: uploadUrl
+      ? 'Proof registered. Please upload the file using the uploadUrl.'
+      : 'Proof metadata is registered for admin review. Send the receipt file to support with this invoice ID if automatic upload is unavailable.',
   });
 }

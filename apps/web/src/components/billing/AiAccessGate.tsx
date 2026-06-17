@@ -80,6 +80,7 @@ function AiAccessGateDialog({
   manualInvoice,
   manualProofFile,
   manualProofStatus,
+  manualProofDelivery,
   refreshBusy,
   onClose,
   onSignin,
@@ -105,6 +106,7 @@ function AiAccessGateDialog({
   manualInvoice: BillingManualInvoiceResponse | null;
   manualProofFile: File | null;
   manualProofStatus: 'idle' | 'submitting' | 'submitted';
+  manualProofDelivery: 'direct_upload' | 'manual_support' | null;
   refreshBusy: boolean;
   onClose: () => void;
   onSignin: () => void;
@@ -530,7 +532,7 @@ function AiAccessGateDialog({
                 />
               </div>
 
-              {/* Turnstile Mock */}
+              {/* Manual confirmation */}
               <div 
                 onClick={() => setTurnstileVerified(!turnstileVerified)}
                 className="flex items-center justify-between p-3 border border-white/10 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] cursor-pointer mt-1 select-none"
@@ -542,12 +544,8 @@ function AiAccessGateDialog({
                   <span className="text-xs text-white/80">Verifikasi bahwa Anda adalah manusia</span>
                 </div>
                 <div className="text-right">
-                  <div className="flex items-center gap-1">
-                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 text-[#f6821f] fill-current">
-                      <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z"/>
-                    </svg>
-                    <span className="text-[9px] font-black text-white tracking-widest uppercase">Cloudflare</span>
-                  </div>
+                  <span className="block text-[9px] font-black uppercase tracking-widest text-white/70">Manual check</span>
+                  <span className="block text-[9px] text-white/40">No auto charge</span>
                 </div>
               </div>
 
@@ -587,7 +585,9 @@ function AiAccessGateDialog({
             <div>
               <h3 className="text-xl font-black text-white">Bukti Diterima - Menunggu Review</h3>
               <p className="text-sm text-white/70 mt-2.5 leading-relaxed">
-                Terima kasih. Bukti transfer Anda telah berhasil dikirim ke server Baristachaw.
+                {manualProofDelivery === 'manual_support'
+                  ? 'Invoice sudah masuk antrean admin. Kirim file bukti lewat WhatsApp atau Instagram dengan ID invoice agar review lebih cepat.'
+                  : 'Terima kasih. Bukti transfer Anda telah berhasil dikirim ke server Baristachaw.'}
               </p>
               <p className="text-xs text-white/50 mt-2 leading-relaxed">
                 Admin akan memverifikasi transaksi Anda sebelum plan aktif. Jika perlu bantuan, hubungi customer service lewat WhatsApp atau Instagram di bawah.
@@ -630,6 +630,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   const [manualInvoice, setManualInvoice] = useState<BillingManualInvoiceResponse | null>(null);
   const [manualProofFile, setManualProofFile] = useState<File | null>(null);
   const [manualProofStatus, setManualProofStatus] = useState<'idle' | 'submitting' | 'submitted'>('idle');
+  const [manualProofDelivery, setManualProofDelivery] = useState<'direct_upload' | 'manual_support' | null>(null);
   const [refreshBusy, setRefreshBusy] = useState(false);
 
   // 3-step checkout states
@@ -655,6 +656,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
     setManualInvoice(null);
     setManualProofFile(null);
     setManualProofStatus('idle');
+    setManualProofDelivery(null);
     setRefreshBusy(false);
     setStep('pilih');
   }, []);
@@ -664,6 +666,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
     setManualInvoice(null);
     setManualProofFile(null);
     setManualProofStatus('idle');
+    setManualProofDelivery(null);
     setState({ mode, source });
     setStep('pilih');
   }, []);
@@ -745,6 +748,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
         setManualInvoice(response);
         setManualProofFile(null);
         setManualProofStatus('idle');
+        setManualProofDelivery(null);
         setStep('checkout');
         return;
       }
@@ -765,11 +769,30 @@ export function useAiAccessGate(feature: AiPaidFeature): {
     setCheckoutError('');
     setManualProofStatus('submitting');
     try {
-      await submitManualPaymentProof({
+      const proofResponse = await submitManualPaymentProof({
         requestId: manualInvoice.paymentRequestId,
         mimeType: manualProofFile.type,
         sizeBytes: manualProofFile.size,
       });
+      if (proofResponse.uploadUrl) {
+        const uploadResponse = await fetch(proofResponse.uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': manualProofFile.type },
+          body: manualProofFile,
+        });
+        if (!uploadResponse.ok) {
+          const supportUrl = proofResponse.supportLinks?.whatsappUrl || manualInvoice.manualInvoice.instructions.whatsappUrl;
+          if (supportUrl) window.open(supportUrl, '_blank', 'noopener,noreferrer');
+          setCheckoutError('Upload otomatis belum berhasil. Invoice tetap masuk antrean admin; kirim file bukti lewat WhatsApp/Instagram dengan ID invoice.');
+          setManualProofDelivery('manual_support');
+          setManualProofStatus('submitted');
+          return;
+        }
+      } else {
+        const supportUrl = proofResponse.supportLinks?.whatsappUrl || manualInvoice.manualInvoice.instructions.whatsappUrl;
+        if (supportUrl) window.open(supportUrl, '_blank', 'noopener,noreferrer');
+      }
+      setManualProofDelivery(proofResponse.deliveryMode);
       setManualProofStatus('submitted');
     } catch (error) {
       setCheckoutError(error instanceof BillingApiError
@@ -801,6 +824,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
             manualInvoice={manualInvoice}
             manualProofFile={manualProofFile}
             manualProofStatus={manualProofStatus}
+            manualProofDelivery={manualProofDelivery}
             refreshBusy={refreshBusy}
             onClose={close}
             onSignin={handleSignin}
@@ -809,6 +833,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
             onManualProofFileChange={(file) => {
               setManualProofFile(file);
               setManualProofStatus('idle');
+              setManualProofDelivery(null);
             }}
             onManualProofSubmit={handleManualProofSubmit}
             onCopyManualAccount={handleCopyManualAccount}

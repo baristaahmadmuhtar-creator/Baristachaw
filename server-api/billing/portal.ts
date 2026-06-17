@@ -7,6 +7,7 @@ import {
   enforceTrustedRequestOrigin,
   requireAuth,
 } from '../_shared.js';
+import { readManualPaymentInstructions } from './manualPayments.js';
 
 const BILLING_RATE_LIMIT = {
   maxRequests: 40,
@@ -57,12 +58,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const url = readUrl('BILLING_PORTAL_URL', 'STRIPE_CUSTOMER_PORTAL_URL', 'REVENUECAT_CUSTOMER_CENTER_URL');
   if (!url) {
-    return res.status(503).json({
-      ok: false,
+    const instructions = readManualPaymentInstructions('Billing portal support', undefined, {
+      allowFallbackInstructions: true,
+    });
+    return res.status(200).json({
+      ok: true,
       requestId,
-      error: 'Billing portal is not configured yet',
-      errorCode: 'billing_not_configured',
-      details: 'Set BILLING_PORTAL_URL, STRIPE_CUSTOMER_PORTAL_URL, or REVENUECAT_CUSTOMER_CENTER_URL before enabling self-service billing.',
+      mode: 'manual_support',
+      provider: 'manual',
+      paymentActionRequired: true,
+      supportLinks: {
+        whatsappUrl: instructions?.whatsappUrl,
+        supportEmail: instructions?.supportEmail,
+        instagramUrl: instructions?.instagramUrl,
+      },
+      message: 'Self-service billing portal is not enabled yet. Contact support to review payment status, send proof, or request plan changes.',
     });
   }
 

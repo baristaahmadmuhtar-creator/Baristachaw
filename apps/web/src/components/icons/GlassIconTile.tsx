@@ -2,7 +2,7 @@ import type { LucideIcon, LucideProps } from 'lucide-react';
 import clsx from 'clsx';
 import { GlassGlyph } from './GlassGlyph';
 
-export type IconTone = 'amber' | 'blue' | 'purple' | 'green' | 'ice' | 'neutral';
+export type IconTone = 'amber' | 'blue' | 'purple' | 'green' | 'ice' | 'red' | 'neutral';
 export type IconIntensity = 'hero' | 'standard' | 'micro';
 export type IconVariant = 'tile' | 'glyph';
 

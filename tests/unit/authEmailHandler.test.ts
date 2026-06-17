@@ -351,7 +351,7 @@ test('email verify OTP normalizes non-numeric token correctly', async () => {
 
   const res = createMockRes();
   // Build a token with spaces and hyphens, but correct digit length
-  const rawToken = '123-456';
+  const rawToken = '1234-5678';
   // Let's make sure it has the expected length when cleaned
   const cleanedLength = rawToken.replace(/\D/g, '').length;
   assert.equal(cleanedLength, OTP_CODE_LENGTH);

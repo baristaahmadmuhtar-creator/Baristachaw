@@ -68,6 +68,22 @@ export type BillingManualInvoiceResponse = {
 
 export type BillingCheckoutResponse = BillingRedirectResponse | BillingManualInvoiceResponse;
 
+export type BillingManualSupportResponse = {
+  ok: true;
+  requestId: string;
+  mode: 'manual_support';
+  provider?: 'manual';
+  paymentActionRequired?: true;
+  supportLinks?: {
+    whatsappUrl?: string;
+    supportEmail?: string;
+    instagramUrl?: string;
+  };
+  message: string;
+};
+
+export type BillingPortalResponse = BillingRedirectResponse | BillingManualSupportResponse;
+
 export type ManualPaymentProofSubmission = {
   requestId: string;
   mimeType: string;
@@ -139,6 +155,14 @@ export function submitManualPaymentProof(input: ManualPaymentProofSubmission): P
   paymentRequestId: string;
   status: BillingManualInvoice['status'];
   proof: { generatedFileName: string; mimeType: string; sizeBytes: number; storage: 'metadata_only'; receivedAt: number };
+  proofStorage: 'storage_ready' | 'support_fallback';
+  deliveryMode: 'direct_upload' | 'manual_support';
+  uploadUrl?: string;
+  supportLinks?: {
+    whatsappUrl?: string;
+    supportEmail?: string;
+    instagramUrl?: string;
+  };
   paymentActionRequired: true;
   entitlement: 'pending_admin_review';
   message: string;
@@ -146,7 +170,7 @@ export function submitManualPaymentProof(input: ManualPaymentProofSubmission): P
   return billingRequest('/api/billing/proof', input);
 }
 
-export function openBillingPortal(): Promise<BillingCheckoutResponse> {
+export function openBillingPortal(): Promise<BillingPortalResponse> {
   return billingRequest('/api/billing/portal');
 }
 

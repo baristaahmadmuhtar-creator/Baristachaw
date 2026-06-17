@@ -87,11 +87,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const config = getSupabaseAdminConfig();
   const bucket = (process.env.SUPABASE_STORAGE_BUCKET_PROOF || 'payment-proofs').trim();
   if (!config.configured || !bucket) {
-    return res.status(503).json({
-      ok: false,
+    return res.status(200).json({
+      ok: true,
       requestId,
-      error: 'Supabase Storage is not configured',
-      errorCode: 'storage_not_configured',
+      mode: 'manual_support',
+      message: 'Automatic proof preview is not available. Ask the customer to send the receipt through the support links on the payment request.',
+      supportLinks: {
+        whatsappUrl: request.instructions.whatsappUrl,
+        supportEmail: request.instructions.supportEmail,
+        instagramUrl: request.instructions.instagramUrl,
+      },
     });
   }
 
@@ -133,12 +138,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error) {
     console.error('Failed to generate signed read URL:', error);
-    return res.status(500).json({
-      ok: false,
+    return res.status(200).json({
+      ok: true,
       requestId,
-      error: 'Failed to generate secure preview URL',
-      errorCode: 'signed_url_generation_failed',
-      details: sanitizeErrorDetails(error, 160),
+      mode: 'manual_support',
+      message: `Automatic proof preview is not available: ${sanitizeErrorDetails(error, 120)}. Use the support links to verify the receipt manually.`,
+      supportLinks: {
+        whatsappUrl: request.instructions.whatsappUrl,
+        supportEmail: request.instructions.supportEmail,
+        instagramUrl: request.instructions.instagramUrl,
+      },
     });
   }
 }

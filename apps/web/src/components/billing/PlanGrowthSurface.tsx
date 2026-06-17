@@ -319,6 +319,7 @@ export function PlanGrowthSurface({
   const [manualInvoice, setManualInvoice] = useState<BillingManualInvoiceResponse | null>(null);
   const [manualProofFile, setManualProofFile] = useState<File | null>(null);
   const [manualProofStatus, setManualProofStatus] = useState<'idle' | 'submitting' | 'submitted'>('idle');
+  const [manualProofDelivery, setManualProofDelivery] = useState<'direct_upload' | 'manual_support' | null>(null);
   const [checkoutStep, setCheckoutStep] = useState<'choose' | 'checkout' | 'success'>('choose');
   
   const modalRef = useRef<HTMLDivElement | null>(null);
@@ -355,6 +356,7 @@ export function PlanGrowthSurface({
     setManualInvoice(null);
     setManualProofFile(null);
     setManualProofStatus('idle');
+    setManualProofDelivery(null);
     setCheckoutStep('choose');
   }, [isOpen]);
 
@@ -365,6 +367,7 @@ export function PlanGrowthSurface({
     setManualInvoice(null);
     setManualProofFile(null);
     setManualProofStatus('idle');
+    setManualProofDelivery(null);
     setCheckoutStep('choose');
     if (planCode === 'free') {
       onClose();
@@ -401,11 +404,31 @@ export function PlanGrowthSurface({
     setActionError('');
     setManualProofStatus('submitting');
     try {
-      await submitManualPaymentProof({
+      const proofResponse = await submitManualPaymentProof({
         requestId: manualInvoice.paymentRequestId,
         mimeType: manualProofFile.type,
         sizeBytes: manualProofFile.size,
       });
+      if (proofResponse.uploadUrl) {
+        const uploadResponse = await fetch(proofResponse.uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': manualProofFile.type },
+          body: manualProofFile,
+        });
+        if (!uploadResponse.ok) {
+          const supportUrl = proofResponse.supportLinks?.whatsappUrl || manualInvoice.manualInvoice.instructions.whatsappUrl;
+          if (supportUrl) window.open(supportUrl, '_blank', 'noopener,noreferrer');
+          setActionError('Upload otomatis belum berhasil. Invoice tetap masuk antrean admin; kirim file bukti lewat WhatsApp/Instagram dengan ID invoice.');
+          setManualProofDelivery('manual_support');
+          setManualProofStatus('submitted');
+          setCheckoutStep('success');
+          return;
+        }
+      } else {
+        const supportUrl = proofResponse.supportLinks?.whatsappUrl || manualInvoice.manualInvoice.instructions.whatsappUrl;
+        if (supportUrl) window.open(supportUrl, '_blank', 'noopener,noreferrer');
+      }
+      setManualProofDelivery(proofResponse.deliveryMode);
       setManualProofStatus('submitted');
       setCheckoutStep('success');
     } catch (error) {
@@ -577,17 +600,20 @@ export function PlanGrowthSurface({
                             setActionError('Format bukti transfer harus JPG, PNG, WebP, atau PDF.');
                             setManualProofFile(null);
                             setManualProofStatus('idle');
+                            setManualProofDelivery(null);
                             return;
                           }
                           if (file && file.size > 5 * 1024 * 1024) {
                             setActionError('Ukuran bukti transfer maksimal adalah 5MB.');
                             setManualProofFile(null);
                             setManualProofStatus('idle');
+                            setManualProofDelivery(null);
                             return;
                           }
                           setActionError('');
                           setManualProofFile(file);
                           setManualProofStatus('idle');
+                          setManualProofDelivery(null);
                         }}
                         className="mt-1 block w-full rounded-xl border border-glass bg-[var(--bg-base)]/70 px-3 py-2 text-sm font-semibold text-primary file:mr-3 file:rounded-lg file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-white"
                       />
@@ -632,7 +658,9 @@ export function PlanGrowthSurface({
                   <p className="mt-4 text-xs font-extrabold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-200">Step 3 dari 3</p>
                   <h3 className="mt-1 text-xl font-black">Bukti Diterima - Menunggu Review</h3>
                   <p className="mt-2 text-sm leading-6 text-secondary">
-                    Admin akan memverifikasi transaksi Anda sebelum plan aktif. Hubungi customer service lewat WhatsApp atau Instagram jika perlu bantuan.
+                    {manualProofDelivery === 'manual_support'
+                      ? 'Invoice sudah masuk antrean admin. Kirim file bukti lewat WhatsApp atau Instagram dengan ID invoice agar review lebih cepat.'
+                      : 'Admin akan memverifikasi transaksi Anda sebelum plan aktif. Hubungi customer service lewat WhatsApp atau Instagram jika perlu bantuan.'}
                   </p>
                   <button
                     type="button"

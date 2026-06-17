@@ -528,6 +528,12 @@ export function Home() {
         window.location.assign(response.url);
         return;
       }
+      if (response?.mode === 'manual_support') {
+        setActiveQuery(t.homeBillingSubtitle);
+        setSearchError(response.message || t.homeBillingUnavailable);
+        setShowResultModal(true);
+        return;
+      }
       throw new BillingApiError('Billing support is not configured yet.', {
         status: 0,
         errorCode: 'billing_not_configured',

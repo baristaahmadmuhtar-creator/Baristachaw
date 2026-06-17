@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import jwt from 'jsonwebtoken';
 import checkoutHandler from '../../server-api/billing/checkout.ts';
 import proofHandler from '../../server-api/billing/proof.ts';
+import portalHandler from '../../server-api/billing/portal.ts';
 import adminManagementHandler from '../../server-api/admin/management.ts';
 import { resetManualPaymentRequestsForTests, readManualPaymentInstructions } from '../../server-api/billing/manualPayments.ts';
 
@@ -18,6 +19,9 @@ const ORIGINAL_ENV = {
   MANUAL_PAYMENT_PROOF_MAX_BYTES: process.env.MANUAL_PAYMENT_PROOF_MAX_BYTES,
   BILLING_CHECKOUT_URL: process.env.BILLING_CHECKOUT_URL,
   BILLING_CHECKOUT_URL_PRO: process.env.BILLING_CHECKOUT_URL_PRO,
+  BILLING_PORTAL_URL: process.env.BILLING_PORTAL_URL,
+  STRIPE_CUSTOMER_PORTAL_URL: process.env.STRIPE_CUSTOMER_PORTAL_URL,
+  REVENUECAT_CUSTOMER_CENTER_URL: process.env.REVENUECAT_CUSTOMER_CENTER_URL,
   STRIPE_CHECKOUT_URL_PRO: process.env.STRIPE_CHECKOUT_URL_PRO,
   REVENUECAT_CHECKOUT_URL_PRO: process.env.REVENUECAT_CHECKOUT_URL_PRO,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
@@ -137,6 +141,9 @@ test.beforeEach(() => {
   process.env.SUPABASE_STORAGE_BUCKET_PROOF = 'payment-proofs';
   delete process.env.BILLING_CHECKOUT_URL;
   delete process.env.BILLING_CHECKOUT_URL_PRO;
+  delete process.env.BILLING_PORTAL_URL;
+  delete process.env.STRIPE_CUSTOMER_PORTAL_URL;
+  delete process.env.REVENUECAT_CUSTOMER_CENTER_URL;
   delete process.env.STRIPE_CHECKOUT_URL_PRO;
   delete process.env.REVENUECAT_CHECKOUT_URL_PRO;
   delete process.env.STRIPE_SECRET_KEY;
@@ -347,6 +354,64 @@ test('manual payment proof accepts allowlisted metadata and rejects unsafe uploa
   await proofHandler(tooLargeReq, tooLargeRes as any);
   assert.equal(tooLargeRes.statusCode, 413);
   assert.equal(JSON.parse(tooLargeRes.body).errorCode, 'proof_too_large');
+});
+
+test('manual payment proof falls back to support when signed upload generation fails', async () => {
+  const activeFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input.toString();
+    if (url.includes('/storage/v1/object/upload/sign/')) {
+      return new Response(JSON.stringify({ message: 'bucket missing' }), { status: 503 });
+    }
+    return activeFetch(input, init);
+  }) as typeof fetch;
+
+  try {
+    const { body, token } = await postCheckout('runtime_user_proof_fallback');
+    const proofReq = makeReq({
+      cookies: { auth_token: token },
+      body: {
+        requestId: body.paymentRequestId,
+        mimeType: 'image/jpeg',
+        sizeBytes: 32100,
+      },
+    });
+    const proofRes = createMockRes();
+    await proofHandler(proofReq, proofRes as any);
+
+    assert.equal(proofRes.statusCode, 200);
+    const proofBody = JSON.parse(proofRes.body);
+    assert.equal(proofBody.ok, true);
+    assert.equal(proofBody.status, 'receipt_received');
+    assert.equal(proofBody.proofStorage, 'support_fallback');
+    assert.equal(proofBody.deliveryMode, 'manual_support');
+    assert.equal(proofBody.uploadUrl, undefined);
+    assert.match(proofBody.supportLinks.whatsappUrl, /^https:\/\/wa\.me\//);
+    assert.equal(proofBody.entitlement, 'pending_admin_review');
+  } finally {
+    globalThis.fetch = activeFetch;
+  }
+});
+
+test('billing portal returns manual support fallback when provider portal is not configured', async () => {
+  const token = createToken({
+    id: 'runtime_user_portal_fallback',
+    email: 'manual.customer@example.com',
+    name: 'Manual Customer',
+  });
+  const portalReq = makeReq({
+    cookies: { auth_token: token },
+  });
+  const portalRes = createMockRes();
+  await portalHandler(portalReq, portalRes as any);
+
+  assert.equal(portalRes.statusCode, 200);
+  const portalBody = JSON.parse(portalRes.body);
+  assert.equal(portalBody.ok, true);
+  assert.equal(portalBody.mode, 'manual_support');
+  assert.equal(portalBody.provider, 'manual');
+  assert.equal(portalBody.paymentActionRequired, true);
+  assert.match(portalBody.supportLinks.whatsappUrl, /^https:\/\/wa\.me\//);
 });
 
 test('admin manual payment verification grants entitlement only after verified paid action', async () => {

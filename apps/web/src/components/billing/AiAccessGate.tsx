@@ -146,6 +146,22 @@ function AiAccessGateDialog({
     yearly: region === 'ID' ? '1 Tahun' : '1 Year',
   };
 
+  const supportWhatsappUrl = manualInvoice?.manualInvoice?.instructions?.whatsappUrl || `https://wa.me/6738270092?text=${encodeURIComponent('Halo Baristachaw, saya ingin menanyakan tentang keanggotaan.')}`;
+  const supportWhatsappNumber = manualInvoice?.manualInvoice?.instructions?.whatsappNumber || "+6738270092";
+  const supportInstagramUrl = manualInvoice?.manualInvoice?.instructions?.instagramUrl || "https://instagram.com/baristachaw";
+  const supportInstagramHandle = manualInvoice?.manualInvoice?.instructions?.instagramHandle || "@baristachaw";
+
+  const renderSupportLinks = () => (
+    <div className="flex gap-4 justify-center mt-2.5 text-xs text-white/60">
+      <a href={supportWhatsappUrl} target="_blank" rel="noopener noreferrer" className="text-[#ffd233] font-bold hover:underline">
+        WhatsApp: {supportWhatsappNumber}
+      </a>
+      <a href={supportInstagramUrl} target="_blank" rel="noopener noreferrer" className="text-[#ffd233] font-bold hover:underline">
+        Instagram: {supportInstagramHandle}
+      </a>
+    </div>
+  );
+
   const handleCopyBankDetail = (accountNum: string, idx: number) => {
     onCopyManualAccount(accountNum);
     setCopiedBankIndex(idx);
@@ -328,6 +344,7 @@ function AiAccessGateDialog({
                     {t.aiGateLaterCta}
                   </button>
                 </div>
+                {renderSupportLinks()}
               </>
             )}
           </>
@@ -529,18 +546,7 @@ function AiAccessGateDialog({
               </div>
 
               {/* Support WhatsApp/Instagram */}
-              <div className="flex gap-4 justify-center mt-2 text-xs">
-                {manualInvoice.manualInvoice.instructions.whatsappUrl && (
-                  <a href={manualInvoice.manualInvoice.instructions.whatsappUrl} target="_blank" rel="noopener noreferrer" className="text-[#ffd233] font-bold hover:underline">
-                    WhatsApp Support
-                  </a>
-                )}
-                {manualInvoice.manualInvoice.instructions.instagramHandle && (
-                  <a href={manualInvoice.manualInvoice.instructions.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-[#ffd233] font-bold hover:underline">
-                    Instagram CS
-                  </a>
-                )}
-              </div>
+              {renderSupportLinks()}
 
               {/* Submit button */}
               <button
@@ -579,20 +585,7 @@ function AiAccessGateDialog({
             </div>
 
             {/* Support links on success page */}
-            {manualInvoice && (
-              <div className="flex gap-4 justify-center mt-1 text-xs">
-                {manualInvoice.manualInvoice.instructions.whatsappUrl && (
-                  <a href={manualInvoice.manualInvoice.instructions.whatsappUrl} target="_blank" rel="noopener noreferrer" className="text-[#ffd233] font-bold hover:underline">
-                    WhatsApp Support
-                  </a>
-                )}
-                {manualInvoice.manualInvoice.instructions.instagramHandle && (
-                  <a href={manualInvoice.manualInvoice.instructions.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-[#ffd233] font-bold hover:underline">
-                    Instagram CS
-                  </a>
-                )}
-              </div>
-            )}
+            {renderSupportLinks()}
 
             <button
               type="button"

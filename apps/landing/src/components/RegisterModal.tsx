@@ -21,8 +21,8 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Step state: 'pilih' | 'auth' | 'checkout' | 'success'
-  const [step, setStep] = useState<'pilih' | 'auth' | 'checkout' | 'success'>('pilih');
+  // Step state: 'pilih' | 'checkout' | 'success'
+  const [step, setStep] = useState<'pilih' | 'checkout' | 'success'>('pilih');
   const [selectedPlan, setSelectedPlan] = useState<'plus' | 'pro'>(() => {
     if (plan === 'pro') return 'pro';
     return 'plus';
@@ -43,6 +43,22 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currency = getCurrencyForLanguage(language);
+
+  const supportWhatsappUrl = invoice?.instructions?.whatsappUrl || `https://wa.me/6738270092?text=${encodeURIComponent('Halo Baristachaw, saya ingin menanyakan tentang keanggotaan.')}`;
+  const supportWhatsappNumber = invoice?.instructions?.whatsappNumber || "+6738270092";
+  const supportInstagramUrl = invoice?.instructions?.instagramUrl || "https://instagram.com/baristachaw";
+  const supportInstagramHandle = invoice?.instructions?.instagramHandle || "@baristachaw";
+
+  const renderSupportLinks = () => (
+    <div className="checkout-support-links" style={{ display: 'flex', gap: '16px', justifyContent: 'center', margin: '14px 0 6px', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>
+      <a href={supportWhatsappUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#ffd233', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
+        WhatsApp Support
+      </a>
+      <a href={supportInstagramUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#ffd233', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
+        Instagram CS
+      </a>
+    </div>
+  );
 
   const planDisplayNames: Record<string, Record<Language, string>> = {
     free: { id: 'Free', en: 'Free', bn: 'Percuma' },
@@ -380,132 +396,115 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                     className="checkout-submit-btn"
                     type="button"
                     onClick={() => setStep('checkout')}
+                    style={{ marginBottom: '12px' }}
                   >
                     Lanjut ke Pembayaran <ArrowRight size={16} />
                   </button>
                 </>
               ) : (
-                <button
-                  className="checkout-submit-btn"
-                  type="button"
-                  onClick={() => setStep('auth')}
-                >
-                  Lanjut ke Pembuatan Akun <ArrowRight size={16} />
-                </button>
-              )}
-            </div>
-          </>
-        )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div className="register-divider" style={{ margin: '12px 0 6px', color: 'rgba(255,255,255,0.4)' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hubungkan Akun Anda</span>
+                  </div>
 
-        {/* Step 2: AUTH */}
-        {step === 'auth' && (
-          <>
-            <div className="register-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <button 
-                  onClick={() => setStep('pilih')} 
-                  style={{ background: 'transparent', border: 0, color: '#ffffff', cursor: 'pointer', padding: 0, display: 'grid', placeItems: 'center' }}
-                  aria-label="Kembali"
-                >
-                  <ArrowLeft size={20} />
-                </button>
-                <div>
-                  <h2 id="register-title" style={{ fontSize: '20px', color: '#ffffff' }}>
-                    {isLogin ? t('register.loginTitle', language) : t('register.title', language)}
-                  </h2>
-                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>Step 2 dari 3: Hubungkan akun Anda</p>
+                  {/* Google Sign-in */}
+                  <button 
+                    className="register-google-btn" 
+                    type="button" 
+                    onClick={handleGoogleSignIn} 
+                    disabled={loading} 
+                    style={{ 
+                      background: 'rgba(255,255,255,0.03)', 
+                      border: '1px solid rgba(255,255,255,0.08)', 
+                      color: '#ffffff', 
+                      borderRadius: '14px', 
+                      padding: '12px', 
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" width="18" height="18" style={{ marginRight: '4px' }}><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 001 12c0 1.77.42 3.44 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                    {t('register.google', language)}
+                  </button>
+
+                  <div className="register-divider" style={{ margin: '4px 0', color: 'rgba(255,255,255,0.3)' }}>
+                    <span>{t('register.or', language)}</span>
+                  </div>
+
+                  {/* Email form */}
+                  <form onSubmit={handleEmailAuth} className="register-form" style={{ display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left' }}>
+                    {!isLogin && (
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>{t('register.name', language)}</span>
+                        <input
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          required
+                          autoComplete="name"
+                          placeholder="Ahmad Muhtar"
+                          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: '10px', padding: '10px 12px', fontSize: '13px' }}
+                        />
+                      </label>
+                    )}
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>{t('register.email', language)}</span>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        autoComplete="email"
+                        placeholder="you@example.com"
+                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: '10px', padding: '10px 12px', fontSize: '13px' }}
+                      />
+                    </label>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>{t('register.password', language)}</span>
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={8}
+                        autoComplete={isLogin ? 'current-password' : 'new-password'}
+                        placeholder="••••••••"
+                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff', borderRadius: '10px', padding: '10px 12px', fontSize: '13px' }}
+                      />
+                    </label>
+
+                    {error && <p className="register-error" style={{ fontSize: '12px', margin: '4px 0 0' }}>{error}</p>}
+
+                    <button className="checkout-submit-btn" type="submit" disabled={loading} style={{ marginTop: '8px' }}>
+                      {loading ? (
+                        <><Loader2 size={16} className="spin" /> {t('register.processing', language)}</>
+                      ) : (
+                        <>{isLogin ? t('register.loginSubmit', language) : t('register.submit', language)} <ArrowRight size={16} /></>
+                      )}
+                    </button>
+                  </form>
+
+                  <p className="register-login-link" style={{ margin: '8px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>
+                    {isLogin ? t('register.dontHaveAccount', language) : t('register.haveAccount', language)}{' '}
+                    <button
+                      type="button"
+                      onClick={() => { setIsLogin(!isLogin); setError(''); }}
+                      style={{
+                        background: 'none', border: 'none', color: '#ffd233', cursor: 'pointer',
+                        fontWeight: 600, padding: 0, font: 'inherit', textDecoration: 'underline'
+                      }}
+                    >
+                      {isLogin ? t('register.registerLink', language) : t('register.loginLink', language)}
+                    </button>
+                  </p>
                 </div>
-              </div>
-              <button className="register-close" onClick={onClose} aria-label={t('register.close', language)}>
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Selected plan summary */}
-            <div className="register-plan-summary" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px' }}>
-              <span className="register-plan-label" style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>{t('register.selectedPlan', language)}</span>
-              <div className="register-plan-info" style={{ textAlign: 'right' }}>
-                <strong style={{ color: '#ffffff', fontSize: '16px' }}>{planDisplayNames[selectedPlan]?.[language] ?? selectedPlan}</strong>
-                <span style={{ display: 'block', fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>{getPriceDisplay()} / {durationLabels[selectedDuration][language].toLowerCase()}</span>
-              </div>
-            </div>
-
-            {/* Google Sign-in */}
-            <button className="register-google-btn" type="button" onClick={handleGoogleSignIn} disabled={loading} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff' }}>
-              <svg viewBox="0 0 24 24" width="20" height="20" style={{ marginRight: '8px' }}><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 001 12c0 1.77.42 3.44 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-              {t('register.google', language)}
-            </button>
-
-            <div className="register-divider">
-              <span>{t('register.or', language)}</span>
-            </div>
-
-            {/* Email form */}
-            <form onSubmit={handleEmailAuth} className="register-form">
-              {!isLogin && (
-                <label>
-                  <span style={{ color: 'rgba(255,255,255,0.7)' }}>{t('register.name', language)}</span>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    autoComplete="name"
-                    placeholder="Ahmad Muhtar"
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff' }}
-                  />
-                </label>
               )}
-              <label>
-                <span style={{ color: 'rgba(255,255,255,0.7)' }}>{t('register.email', language)}</span>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff' }}
-                />
-              </label>
-              <label>
-                <span style={{ color: 'rgba(255,255,255,0.7)' }}>{t('register.password', language)}</span>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={8}
-                  autoComplete={isLogin ? 'current-password' : 'new-password'}
-                  placeholder="••••••••"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: '#ffffff' }}
-                />
-              </label>
-
-              {error && <p className="register-error">{error}</p>}
-
-              <button className="checkout-submit-btn" type="submit" disabled={loading}>
-                {loading ? (
-                  <><Loader2 size={16} className="spin" /> {t('register.processing', language)}</>
-                ) : (
-                  <>{isLogin ? t('register.loginSubmit', language) : t('register.submit', language)} <ArrowRight size={16} /></>
-                )}
-              </button>
-            </form>
-
-            <p className="register-login-link">
-              {isLogin ? t('register.dontHaveAccount', language) : t('register.haveAccount', language)}{' '}
-              <button
-                type="button"
-                onClick={() => { setIsLogin(!isLogin); setError(''); }}
-                style={{
-                  background: 'none', border: 'none', color: '#ffd233', cursor: 'pointer',
-                  fontWeight: 600, padding: 0, font: 'inherit', textDecoration: 'underline'
-                }}
-              >
-                {isLogin ? t('register.registerLink', language) : t('register.loginLink', language)}
-              </button>
-            </p>
+            </div>
+            {renderSupportLinks()}
           </>
         )}
 
@@ -515,7 +514,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
             <div className="register-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <button 
-                  onClick={() => setStep(user ? 'pilih' : 'auth')} 
+                  onClick={() => setStep('pilih')} 
                   style={{ background: 'transparent', border: 0, color: '#ffffff', cursor: 'pointer', padding: 0, display: 'grid', placeItems: 'center' }}
                   aria-label="Kembali"
                 >
@@ -752,18 +751,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
                     {error && <p className="register-error" style={{ margin: 0 }}>{error}</p>}
 
-                    <div className="checkout-support-links" style={{ display: 'flex', gap: '16px', justifyContent: 'center', margin: '14px 0 6px', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>
-                      {invoice.instructions.whatsappUrl && (
-                        <a href={invoice.instructions.whatsappUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#ffd233', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
-                          WhatsApp: {invoice.instructions.whatsappNumber}
-                        </a>
-                      )}
-                      {invoice.instructions.instagramHandle && (
-                        <a href={invoice.instructions.instagramUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#ffd233', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
-                          Instagram: {invoice.instructions.instagramHandle}
-                        </a>
-                      )}
-                    </div>
+                    {renderSupportLinks()}
 
                     <button 
                       className="checkout-submit-btn" 
@@ -812,18 +800,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                 Admin kami akan memverifikasi transaksi Anda. Akun Anda akan ditingkatkan secara otomatis setelah proses verifikasi selesai (biasanya dalam 5-10 menit).
               </p>
             </div>
-            <div className="checkout-support-links" style={{ display: 'flex', gap: '16px', justifyContent: 'center', margin: '14px 0 6px', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>
-              {invoice?.instructions?.whatsappUrl && (
-                <a href={invoice.instructions.whatsappUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#ffd233', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
-                  WhatsApp CS
-                </a>
-              )}
-              {invoice?.instructions?.instagramHandle && (
-                <a href={invoice.instructions.instagramUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#ffd233', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
-                  Instagram CS
-                </a>
-              )}
-            </div>
+            {renderSupportLinks()}
             <button 
               className="checkout-submit-btn" 
               type="button" 

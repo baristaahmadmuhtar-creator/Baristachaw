@@ -613,6 +613,7 @@ function AiAccessGateDialog({
 
 export function useAiAccessGate(feature: AiPaidFeature): {
   ensureAiAccess: (source: string) => boolean;
+  openGate: (mode: GateMode, source: string) => void;
   hasPaidAiAccess: boolean;
   minimumPaidPlan: AccountPlan | null;
   effectivePlanCode: PlanCode | null;

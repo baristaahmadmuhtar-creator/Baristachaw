@@ -379,12 +379,17 @@ export function PlanGrowthSurface({
   const currentPlan = displayPlans.find((plan) => plan.code === currentPlanCode) || snapshot?.plan || null;
   const showUpgradeFraming = currentPlanCode === 'free' || snapshot?.recommendedUpgrade.action === 'checkout';
   const showCompactPaidSurface = !showUpgradeFraming;
+  const hasActivePaidPlan = currentPlanCode !== 'free';
 
   useEffect(() => {
     if (!isOpen) return;
     setActionError('');
-    setManualProofStatus('idle');
-    setCheckoutStep(manualInvoice ? 'checkout' : 'choose');
+    if (manualProofStatus === 'submitted') {
+      setCheckoutStep('success');
+    } else {
+      setManualProofStatus('idle');
+      setCheckoutStep(manualInvoice ? 'checkout' : 'choose');
+    }
     const timer = window.setTimeout(() => modalRef.current?.focus(), 30);
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -553,7 +558,7 @@ export function PlanGrowthSurface({
 
             <div className="overflow-y-auto px-5 py-6 sm:px-6" style={{ WebkitOverflowScrolling: 'touch' }}>
               
-              {checkoutStep === 'choose' ? (
+              {checkoutStep === 'choose' && !hasActivePaidPlan ? (
                 <div className="mx-auto mb-8 flex w-fit justify-center gap-1 rounded-full bg-surface-alpha p-1 border border-glass shadow-sm">
                   {(['monthly', 'quarterly', 'yearly'] as const).map((d) => (
                     <button
@@ -723,6 +728,24 @@ export function PlanGrowthSurface({
               ) : null}
 
               {checkoutStep === 'choose' ? (
+                hasActivePaidPlan ? (
+                  <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-blue-500/25 bg-blue-500/10 p-5 text-center text-primary shadow-sm">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-blue-500 bg-blue-500/10 text-blue-600">
+                      <ShieldCheck size={28} />
+                    </div>
+                    <h3 className="mt-4 text-xl font-black">Paket Anda Sedang Aktif</h3>
+                    <p className="mt-2 text-sm leading-6 text-secondary">
+                      Anda saat ini berlangganan paket <strong className="text-primary">{planDisplayName(currentPlanCode)}</strong>. Untuk menghindari tumpang tindih tagihan, fitur penggantian paket dikunci sementara. Silakan tunggu hingga siklus tagihan Anda berakhir untuk mengganti, memperbarui, atau beralih ke paket lain.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-600 px-6 font-extrabold text-white transition-colors hover:bg-blue-700 shadow-md"
+                    >
+                      Kembali
+                    </button>
+                  </div>
+                ) : (
                 <>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {(['free', 'starter', 'pro', 'team'] as const).map((code) => (
@@ -770,6 +793,7 @@ export function PlanGrowthSurface({
                 )}
               </div>
                 </>
+                )
               ) : null}
 
               {/* Region Selector */}

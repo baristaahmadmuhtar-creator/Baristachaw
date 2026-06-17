@@ -1,4 +1,4 @@
-import type { AiSettings, Language } from './types';
+﻿import type { AiSettings, Language } from './types';
 
 export type LanguageDirection = 'ltr' | 'rtl';
 
@@ -2344,6 +2344,9 @@ const AR_NATIVE_POLISH_OVERRIDES: Partial<Translations> = {
     authEmailUnavailable: 'تسجيل الدخول بالبريد غير متاح الآن.',
     authEmailOffline: 'أنت غير متصل. تسجيل الدخول بالبريد يحتاج إلى اتصال إنترنت.',
     authEmailConfirmedTitle: 'تم تأكيد البريد',
+    authOtpDescription: 'أدخل رمز التحقق المرسل إلى بريدك الإلكتروني.',
+    authOtpInvalid: 'رمز غير صالح أو منتهي الصلاحية.',
+    authOtpResend: 'إعادة إرسال رمز التحقق',
     authEmailConfirmedBody: 'بريدك جاهز. سجّل الدخول بكلمة المرور للمتابعة.',
     authForgotPassword: 'هل نسيت كلمة المرور؟',
     authResetEmailSending: 'جارٍ إرسال رابط إعادة التعيين...',
@@ -3022,5 +3025,6 @@ export function getTranslations(language: Language): Translations {
 }
 
 export type TranslationKey = string;
+
 
 

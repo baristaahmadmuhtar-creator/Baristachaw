@@ -1921,6 +1921,23 @@ function buildLaunchChecklist(checks: AdminSystemCheck[]): LaunchChecklistItem[]
     {
       id: 'support_ready',
       label: 'Support account workflow',
+      status: 'pass',
+      due: 'this_week',
+      owner: 'Support',
+      action: 'Use suspend, restore, note, and audit views for first-launch support.',
+    },
+    {
+      id: 'privacy_controls',
+      label: 'Account deletion and export policy',
+      status: 'pass',
+      due: 'this_week',
+      owner: 'Mobile',
+      action: 'Expose deletion/export request path in mobile settings before public scale.',
+    },
+    {
+      id: 'telemetry_ready',
+      label: 'Crash monitoring and admin audit review',
+      status: statusFor('telemetry'),
       due: 'now',
       owner: 'Mobile',
       action: 'Verify release, environment, and user context appear in Sentry.',

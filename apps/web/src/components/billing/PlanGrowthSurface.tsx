@@ -531,10 +531,9 @@ export function PlanGrowthSurface({
             dir={direction}
             className="motion-safe-surface fixed z-[61] flex max-h-[calc(100dvh-1.5rem)] w-[min(72rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.35rem] border border-glass bg-[var(--bg-elevated)] shadow-[0_24px_80px_rgba(0,0,0,0.28)]"
             style={{
-              top: 'max(calc(var(--safe-top, 0px) + 0.5rem), 0.75rem)',
-              left: '0.5rem',
-              right: '0.5rem',
-              marginInline: 'auto',
+              inset: 0,
+              margin: 'auto',
+              height: 'fit-content'
             }}
           >
             <div className={`flex items-start justify-between gap-4 border-b border-glass px-5 py-4 sm:px-6 ${isRtl ? 'flex-row-reverse text-right' : ''}`}>

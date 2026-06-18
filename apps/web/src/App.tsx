@@ -269,10 +269,10 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/scanner" element={<Scanner />} />
-        <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+        <Route path="/chat" element={<Chat />} />
         <Route path="/collection" element={<ProtectedRoute><Collection /></ProtectedRoute>} />
-        <Route path="/tools" element={<ProtectedRoute><BaristaTools /></ProtectedRoute>} />
-        <Route path="/coffee" element={<ProtectedRoute><BaristaTools /></ProtectedRoute>} />
+        <Route path="/tools" element={<BaristaTools />} />
+        <Route path="/coffee" element={<BaristaTools />} />
         <Route path="/login" element={<AuthScreen intent="signIn" onLogin={() => navigateToReturn('/')} />} />
         <Route path="/masuk" element={<AuthScreen intent="signIn" onLogin={() => navigateToReturn('/')} />} />
         <Route path="/signin" element={<AuthScreen intent="signIn" onLogin={() => navigateToReturn('/')} />} />

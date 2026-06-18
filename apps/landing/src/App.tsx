@@ -62,7 +62,7 @@ function ConversionProofSection({ language }: { language: Language }) {
 
 type RegisterState = {
   open: boolean;
-  plan: 'free' | 'plus' | 'pro' | 'team';
+  plan: 'free' | 'starter' | 'plus' | 'pro' | 'team';
   duration: BillingDuration;
 };
 
@@ -79,7 +79,7 @@ function getRegionName(region: Region): string {
   }
 }
 
-function PricingSection({ language, region, onRegionChange, onRegister }: { language: Language; region: Region; onRegionChange: (r: Region) => void; onRegister: (plan: 'free' | 'plus' | 'pro' | 'team', duration: BillingDuration) => void }) {
+function PricingSection({ language, region, onRegionChange, onRegister }: { language: Language; region: Region; onRegionChange: (r: Region) => void; onRegister: (plan: 'free' | 'starter' | 'plus' | 'pro' | 'team', duration: BillingDuration) => void }) {
   const [duration, setDuration] = useState<BillingDuration>('quarterly');
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
@@ -192,7 +192,7 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
                 <li key={feature}><Check size={16} /> {feature}</li>
               ))}
             </ul>
-            <button className="plan-cta plan-cta-primary" type="button" onClick={() => onRegister('plus', duration)}>
+            <button className="plan-cta plan-cta-primary" type="button" onClick={() => onRegister('starter', duration)}>
               {t('plan.plus.cta', language)} <ArrowRight size={16} />
             </button>
           </article>
@@ -316,16 +316,17 @@ function LandingHome({ language, region, onRegionChange, user, onLoginSuccess, i
     }
   }, [initialRegisterState]);
 
-  const openRegister = (plan: 'free' | 'plus' | 'pro' | 'team', duration: BillingDuration = 'quarterly') => {
-    if (plan === 'team') {
+  const openRegister = (plan: 'free' | 'starter' | 'plus' | 'pro' | 'team', duration: BillingDuration = 'quarterly') => {
+    const normalizedPlan = plan === 'plus' ? 'starter' : plan;
+    if (normalizedPlan === 'team') {
       window.location.href = '/support?topic=general';
       return;
     }
-    if (plan === 'free' && user) {
+    if (normalizedPlan === 'free' && user) {
       window.location.href = APP_ORIGIN;
       return;
     }
-    setRegisterState({ open: true, plan, duration });
+    setRegisterState({ open: true, plan: normalizedPlan, duration });
   };
 
   return (
@@ -457,7 +458,7 @@ export function App() {
     // If we just redirected from Google OAuth with success query param
     const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.get('login_success') === '1') {
-      const plan = searchParams.get('plan') as 'free' | 'plus' | 'pro' | 'team' | null;
+      const plan = searchParams.get('plan') as 'free' | 'starter' | 'plus' | 'pro' | 'team' | null;
       const duration = searchParams.get('duration') as BillingDuration | null;
       
       if (plan && duration) {

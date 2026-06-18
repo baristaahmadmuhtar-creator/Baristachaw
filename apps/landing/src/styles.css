@@ -416,7 +416,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .plan-cta-pro:hover { background: linear-gradient(135deg, #6d28d9, #9333ea); box-shadow: 0 14px 38px rgba(124,58,237,.4); }
 
-/* ── Featured Card (Barista Plus) ── */
+/* Featured Card (Barista Starter) */
 .plan-featured {
   background: linear-gradient(180deg, #eaf2ff 0%, #f0f4ff 100%);
   border-color: rgba(13,86,204,.2) !important;
@@ -1671,6 +1671,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.02);
+  width: 100%;
+  min-height: 56px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1895,8 +1900,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.02);
   width: 100%;
+  min-height: 56px;
   cursor: pointer;
   user-select: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   transition: background 0.2s;
 }
 .turnstile-mock-container:hover {

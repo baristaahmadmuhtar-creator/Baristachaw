@@ -38,7 +38,7 @@ const PRICING: Record<string, Record<BillingDuration, Record<CurrencyCode, numbe
 };
 
 const PLAN_NAMES: Record<string, string> = {
-  plus: 'Barista Plus',
+  plus: 'Barista Starter',
   pro: 'Barista Pro',
 };
 

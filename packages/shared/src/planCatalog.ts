@@ -27,6 +27,9 @@ export type PlanCatalogEntry = {
   expensiveModes: Array<'fast' | 'normal' | 'deep'>;
   checkoutEnabled: boolean;
   checkoutMode: 'disabled' | 'manual_invoice' | 'redirect' | 'contact_sales';
+  aiLimit: number;
+  scannerLimit: number;
+  deepLimit: number;
 };
 
 export type ManualPaymentStatus =
@@ -97,11 +100,14 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
     expensiveModes: ['fast'],
     checkoutEnabled: false,
     checkoutMode: 'disabled',
+    aiLimit: 12,
+    scannerLimit: 2,
+    deepLimit: 0,
   },
   {
     code: 'starter',
-    displayName: 'Barista Plus',
-    shortName: 'Plus',
+    displayName: 'Barista Starter',
+    shortName: 'Starter',
     badge: 'Best for home brewers',
     description: 'Guided AI tools, recipe controls, and manual-payment access for regular brewing.',
     priceMonthlyUsd: PLAN_PRICING.starter.monthly.discounted.usd,
@@ -116,6 +122,9 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
     expensiveModes: ['fast', 'normal'],
     checkoutEnabled: true,
     checkoutMode: 'manual_invoice',
+    aiLimit: 60,
+    scannerLimit: 12,
+    deepLimit: 0,
   },
   {
     code: 'pro',
@@ -125,7 +134,7 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
     description: 'AI BREW COACH, deeper analysis, and paid high-cost AI modes for serious workflows.',
     priceMonthlyUsd: PLAN_PRICING.pro.monthly.discounted.usd,
     features: [
-      'Everything in Barista Plus',
+      'Everything in Barista Starter',
       'AI BREW COACH',
       'AI Scan & Coffee Analysis',
       'AI Latte Art Generator',
@@ -135,6 +144,9 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
     expensiveModes: ['fast', 'normal', 'deep'],
     checkoutEnabled: true,
     checkoutMode: 'manual_invoice',
+    aiLimit: 180,
+    scannerLimit: 60,
+    deepLimit: 40,
   },
   {
     code: 'team',
@@ -153,6 +165,9 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
     expensiveModes: ['fast', 'normal', 'deep'],
     checkoutEnabled: true,
     checkoutMode: 'manual_invoice',
+    aiLimit: 800,
+    scannerLimit: 240,
+    deepLimit: 160,
   },
   {
     code: 'enterprise',
@@ -170,6 +185,9 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
     expensiveModes: ['fast', 'normal', 'deep'],
     checkoutEnabled: false,
     checkoutMode: 'contact_sales',
+    aiLimit: 5000,
+    scannerLimit: 1000,
+    deepLimit: 1000,
   },
 ] as const;
 

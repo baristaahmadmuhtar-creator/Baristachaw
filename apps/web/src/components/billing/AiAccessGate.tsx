@@ -20,6 +20,7 @@ import { getCurrencyForRegion, PRICING, formatCurrency } from '../../services/bi
 import { modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
 
 export type AiPaidFeature = 'chat' | 'scanner' | 'search' | 'brew';
+type ManualInvoiceBank = NonNullable<BillingManualInvoiceResponse['manualInvoice']['instructions']['banks']>[number];
 
 type GateMode = 'login' | 'upgrade' | 'checking';
 
@@ -128,11 +129,14 @@ function AiAccessGateDialog({
   const { region } = useGlobalState();
   const currency = getCurrencyForRegion(region);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [copiedBankIndex, setCopiedBankIndex] = useState<number | null>(null);
   const [turnstileVerified, setTurnstileVerified] = useState(false);
 
   const planDisplayNames = {
-    starter: 'Barista Plus',
+    starter: 'Barista Starter',
     pro: 'Barista Pro',
   };
 
@@ -153,11 +157,11 @@ function AiAccessGateDialog({
   const supportInstagramHandle = manualInvoice?.manualInvoice?.instructions?.instagramHandle || "@baristachaw";
 
   const renderSupportLinks = () => (
-    <div className="flex gap-4 justify-center mt-2.5 text-xs text-white/60">
-      <a href={supportWhatsappUrl} target="_blank" rel="noopener noreferrer" className="text-[#3b82f6] font-bold hover:underline">
+    <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center mt-2.5 text-xs text-secondary">
+      <a href={supportWhatsappUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold hover:underline dark:text-blue-300">
         WhatsApp: {supportWhatsappNumber}
       </a>
-      <a href={supportInstagramUrl} target="_blank" rel="noopener noreferrer" className="text-[#3b82f6] font-bold hover:underline">
+      <a href={supportInstagramUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold hover:underline dark:text-blue-300">
         Instagram: {supportInstagramHandle}
       </a>
     </div>
@@ -170,9 +174,48 @@ function AiAccessGateDialog({
   };
 
   useEffect(() => {
+    previouslyFocusedRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const timer = window.setTimeout(() => dialogRef.current?.focus(), 40);
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(timer);
+      previouslyFocusedRef.current?.focus?.();
+    };
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!dialogRef.current) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key === 'Tab') {
+        const focusableElements = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )).filter((element) => !element.hasAttribute('disabled') && element.offsetParent !== null);
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement || document.activeElement === dialogRef.current) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   return (
     <motion.div
@@ -200,12 +243,6 @@ function AiAccessGateDialog({
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
         }}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') {
-            event.preventDefault();
-            onClose();
-          }
-        }}
       >
         {/* Step 1: PILIH PLAN */}
         {step === 'pilih' && (
@@ -221,7 +258,7 @@ function AiAccessGateDialog({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+                className="rounded-full p-2 text-secondary transition-colors hover:bg-surface-alpha hover:text-primary"
                 aria-label={t.close}
               >
                 <X size={17} />
@@ -243,7 +280,7 @@ function AiAccessGateDialog({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="motion-pressable inline-flex min-h-12 items-center justify-center rounded-2xl border border-glass bg-white/5 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                  className="motion-pressable inline-flex min-h-12 items-center justify-center rounded-2xl border border-glass bg-surface-alpha px-4 text-sm font-semibold text-primary transition-colors hover:bg-surface-alpha-hover"
                 >
                   {t.aiGateLaterCta}
                 </button>
@@ -263,7 +300,7 @@ function AiAccessGateDialog({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="motion-pressable inline-flex min-h-12 items-center justify-center rounded-2xl border border-glass bg-white/5 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                  className="motion-pressable inline-flex min-h-12 items-center justify-center rounded-2xl border border-glass bg-surface-alpha px-4 text-sm font-semibold text-primary transition-colors hover:bg-surface-alpha-hover"
                 >
                   {t.aiGateLaterCta}
                 </button>
@@ -271,7 +308,7 @@ function AiAccessGateDialog({
             ) : (
               <>
                 {/* Duration select tabs */}
-                <div className="mt-5 flex bg-white/5 p-1 rounded-xl border border-white/10">
+                <div className="mt-5 flex rounded-xl border border-glass bg-surface-alpha p-1">
                   {(['monthly', 'quarterly', 'yearly'] as BillingDuration[]).map((d) => (
                     <button
                       key={d}
@@ -280,7 +317,7 @@ function AiAccessGateDialog({
                       className="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all text-center"
                       style={{
                         background: selectedDuration === d ? '#3b82f6' : 'transparent',
-                        color: selectedDuration === d ? '#ffffff' : 'rgba(255,255,255,0.6)',
+                        color: selectedDuration === d ? '#ffffff' : 'var(--text-secondary)',
                       }}
                     >
                       {durationLabels[d]}
@@ -293,30 +330,32 @@ function AiAccessGateDialog({
                   {(['starter', 'pro'] as const).map((p) => {
                     const isSelected = selectedPlan === p;
                     return (
-                      <div
+                      <button
                         key={p}
+                        type="button"
                         onClick={() => setSelectedPlan(p)}
-                        className={`flex items-start justify-between p-4 rounded-2xl border cursor-pointer transition-all bg-white/[0.01] hover:bg-white/[0.03] ${isSelected ? 'border-[#3b82f6] bg-white/[0.04]' : 'border-white/10'}`}
+                        aria-pressed={isSelected}
+                        className={`flex w-full items-start justify-between rounded-2xl border p-4 text-left transition-all hover:bg-surface-alpha-hover ${isSelected ? 'border-blue-500 bg-blue-500/10' : 'border-glass bg-surface-alpha'}`}
                       >
                         <div className="text-left flex-1 min-w-0 pr-3">
-                          <p className="font-bold text-white text-sm">
+                          <p className="font-bold text-primary text-sm">
                             {planDisplayNames[p]}
                           </p>
-                          <p className="text-[11px] text-white/50 mt-1 leading-relaxed">
+                          <p className="text-xs text-secondary mt-1 leading-relaxed">
                             {p === 'starter'
                               ? 'Guided AI tools, log brew, scanner history'
                               : 'AI Brew Coach, latte art, scan analysis, Deep mode'}
                           </p>
                         </div>
                         <div className="text-right flex flex-col items-end shrink-0 justify-center">
-                          <span className="font-extrabold text-[#3b82f6] text-base">
+                          <span className="font-extrabold text-blue-600 text-base dark:text-blue-300">
                             {getPriceDisplay(p, selectedDuration)}
                           </span>
-                          <span className="text-[9px] text-white/40 mt-0.5">
+                          <span className="text-xs text-tertiary mt-0.5">
                             /{selectedDuration === 'monthly' ? 'mo' : selectedDuration === 'quarterly' ? '3mo' : 'yr'}
                           </span>
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -340,7 +379,7 @@ function AiAccessGateDialog({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="motion-pressable inline-flex min-h-12 items-center justify-center rounded-2xl border border-glass bg-white/5 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                    className="motion-pressable inline-flex min-h-12 items-center justify-center rounded-2xl border border-glass bg-surface-alpha px-4 text-sm font-semibold text-primary transition-colors hover:bg-surface-alpha-hover"
                   >
                     {t.aiGateLaterCta}
                   </button>
@@ -358,20 +397,20 @@ function AiAccessGateDialog({
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <button 
                   onClick={() => setStep('pilih')} 
-                  className="bg-transparent border-0 text-white cursor-pointer p-0 grid place-items-center"
+                  className="grid min-h-11 min-w-11 place-items-center rounded-full text-secondary transition-colors hover:bg-surface-alpha hover:text-primary"
                   aria-label="Kembali"
                 >
                   <ArrowLeft size={20} />
                 </button>
                 <div>
-                  <h2 id="register-title" className="text-xl font-bold leading-tight text-white">Checkout</h2>
-                  <p className="text-xs text-white/60">Step 2 dari 3: Selesaikan pembayaran</p>
+                  <h2 id="register-title" className="text-xl font-bold leading-tight text-primary">Checkout</h2>
+                  <p className="text-xs text-secondary">Step 2 dari 3: Selesaikan pembayaran</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+                className="rounded-full p-2 text-secondary transition-colors hover:bg-surface-alpha hover:text-primary"
                 aria-label={t.close}
               >
                 <X size={17} />
@@ -379,11 +418,11 @@ function AiAccessGateDialog({
             </div>
 
             {/* Selected plan summary */}
-            <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3 flex justify-between items-center text-sm">
-              <span className="text-xs font-bold text-white/50 uppercase tracking-wider">Plan Pilihan</span>
+            <div className="mt-4 rounded-xl border border-glass bg-surface-alpha p-3 flex justify-between items-center text-sm">
+              <span className="text-xs font-bold text-secondary uppercase tracking-wider">Plan Pilihan</span>
               <div className="text-right">
-                <strong className="text-white font-bold">{planDisplayNames[selectedPlan]}</strong>
-                <span className="block text-xs text-white/60 mt-0.5">{getPriceDisplay()} / {durationLabels[selectedDuration].toLowerCase()}</span>
+                <strong className="text-primary font-bold">{planDisplayNames[selectedPlan]}</strong>
+                <span className="block text-xs text-secondary mt-0.5">{getPriceDisplay()} / {durationLabels[selectedDuration].toLowerCase()}</span>
               </div>
             </div>
 
@@ -395,10 +434,10 @@ function AiAccessGateDialog({
 
             {/* Payment card content */}
             <div className="mt-4 flex flex-col gap-3 text-left">
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center gap-1.5 text-center">
-                <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">TOTAL TRANSFER</span>
-                <strong className="text-2xl font-black text-[#3b82f6]">{manualInvoice.manualInvoice.amountLabel}</strong>
-                <p className="text-xs text-white/70">
+              <div className="bg-surface-alpha border border-glass rounded-2xl p-4 flex flex-col items-center gap-1.5 text-center">
+                <span className="text-xs font-bold text-secondary uppercase tracking-widest">TOTAL TRANSFER</span>
+                <strong className="text-2xl font-black text-blue-600 dark:text-blue-300">{manualInvoice.manualInvoice.amountLabel}</strong>
+                <p className="text-xs text-secondary">
                   *Pastikan transfer sesuai hingga 3 digit terakhir{' '}
                   <strong>({manualInvoice.manualInvoice.uniqueSuffix || manualInvoice.manualInvoice.id.slice(-3).replace(/[^0-9]/g, '3')})</strong>
                 </p>
@@ -451,34 +490,34 @@ function AiAccessGateDialog({
                     <rect x="150" y="172" width="15" height="10" fill="#000000" />
                   </svg>
                 </div>
-                <span className="text-[10px] font-bold text-white/50 tracking-wider">SCAN QRIS MANUAL</span>
+                <span className="text-xs font-bold text-secondary tracking-wider">SCAN QRIS MANUAL</span>
               </div>
 
               {/* Dynamic banks cards */}
               {manualInvoice.manualInvoice.instructions.banks && manualInvoice.manualInvoice.instructions.banks.length > 0 ? (
-                manualInvoice.manualInvoice.instructions.banks.map((bank: any, idx: number) => {
+                manualInvoice.manualInvoice.instructions.banks.map((bank: ManualInvoiceBank, idx: number) => {
                   const isCopied = copiedBankIndex === idx;
                   return (
-                    <div key={idx} className="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col gap-1.5 mt-1">
+                    <div key={idx} className="bg-surface-alpha border border-glass rounded-xl p-3 flex flex-col gap-1.5 mt-1">
                       <div className="flex justify-between items-center">
-                        <span className="font-bold text-white text-xs">{bank.bankName}</span>
+                        <span className="font-bold text-primary text-xs">{bank.bankName}</span>
                         <button
                           type="button"
                           onClick={() => handleCopyBankDetail(bank.accountNumber, idx)}
-                          className={`text-[10px] font-bold px-2 py-1 rounded transition-colors uppercase tracking-wider ${isCopied ? 'bg-emerald-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                          className={`text-xs font-bold px-3 py-2 rounded-lg transition-colors uppercase tracking-wider ${isCopied ? 'bg-emerald-600 text-white' : 'bg-surface-alpha text-primary hover:bg-surface-alpha-hover'}`}
                         >
                           {isCopied ? 'Copied' : 'Copy'}
                         </button>
                       </div>
-                      <span className="font-mono text-base font-extrabold text-[#3b82f6]">{bank.accountNumber}</span>
-                      <span className="text-[11px] text-white/40">{bank.accountName}</span>
+                      <span className="font-mono text-base font-extrabold text-blue-600 dark:text-blue-300">{bank.accountNumber}</span>
+                      <span className="text-xs text-secondary">{bank.accountName}</span>
                     </div>
                   );
                 })
               ) : (
-                <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col gap-1.5 mt-1">
+                <div className="bg-surface-alpha border border-glass rounded-xl p-3 flex flex-col gap-1.5 mt-1">
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-white text-xs">{manualInvoice.manualInvoice.instructions.bankName}</span>
+                    <span className="font-bold text-primary text-xs">{manualInvoice.manualInvoice.instructions.bankName}</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -486,44 +525,53 @@ function AiAccessGateDialog({
                         setCopiedBankIndex(99);
                         setTimeout(() => setCopiedBankIndex(null), 2000);
                       }}
-                      className={`text-[10px] font-bold px-2 py-1 rounded transition-colors uppercase tracking-wider ${copiedBankIndex === 99 ? 'bg-emerald-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                      className={`text-xs font-bold px-3 py-2 rounded-lg transition-colors uppercase tracking-wider ${copiedBankIndex === 99 ? 'bg-emerald-600 text-white' : 'bg-surface-alpha text-primary hover:bg-surface-alpha-hover'}`}
                     >
                       {copiedBankIndex === 99 ? 'Copied' : 'Copy'}
                     </button>
                   </div>
-                  <span className="font-mono text-base font-extrabold text-[#3b82f6]">{manualInvoice.manualInvoice.instructions.accountNumber}</span>
-                  <span className="text-[11px] text-white/40">{manualInvoice.manualInvoice.instructions.accountName}</span>
+                  <span className="font-mono text-base font-extrabold text-blue-600 dark:text-blue-300">{manualInvoice.manualInvoice.instructions.accountNumber}</span>
+                  <span className="text-xs text-secondary">{manualInvoice.manualInvoice.instructions.accountName}</span>
                 </div>
               )}
 
               {/* Upload screenshot */}
               <div 
-                className={`mt-1 border-2 border-dashed rounded-xl p-4 flex flex-col items-center gap-2 cursor-pointer transition-colors bg-white/[0.01] ${manualProofFile ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-white/15 hover:border-[#3b82f6] hover:bg-white/[0.03]'}`}
+                role="button"
+                tabIndex={0}
+                className={`mt-1 border-2 border-dashed rounded-xl p-4 flex flex-col items-center gap-2 cursor-pointer transition-colors ${manualProofFile ? 'border-emerald-500/40 bg-emerald-500/10' : 'border-glass bg-surface-alpha hover:border-blue-500 hover:bg-surface-alpha-hover'}`}
                 onClick={() => {
-                  const input = document.getElementById('proof-file-input') as HTMLInputElement;
-                  input?.click();
+                  fileInputRef.current?.click();
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    fileInputRef.current?.click();
+                  }
                 }}
               >
-                <UploadCloud className={`w-7 h-7 ${manualProofFile ? 'text-emerald-500' : 'text-white/40'}`} />
-                <p className="text-xs font-semibold text-white/80">
+                <UploadCloud className={`w-7 h-7 ${manualProofFile ? 'text-emerald-500' : 'text-secondary'}`} />
+                <p className="text-xs font-semibold text-primary">
                   {manualProofFile ? manualProofFile.name : 'Klik untuk upload screenshot'}
                 </p>
-                <span className="text-[10px] text-white/40">Maksimal 5MB (JPG, PNG, WebP, PDF)</span>
+                <span className="text-xs text-secondary">Maksimal 5MB (JPG, PNG, WebP, PDF)</span>
                 <input
+                  ref={fileInputRef}
                   id="proof-file-input"
                   type="file"
                   accept="image/jpeg,image/png,image/webp,application/pdf"
                   onChange={(event) => {
                     const file = event.currentTarget.files?.[0] || null;
                     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+                    setFileError(null);
                     if (file && !allowedTypes.includes(file.type)) {
                       onManualProofFileChange(null);
-                      alert('Format bukti transfer harus JPG, PNG, WebP, atau PDF.');
+                      setFileError('Format bukti transfer harus JPG, PNG, WebP, atau PDF.');
                       return;
                     }
                     if (file && file.size > 5 * 1024 * 1024) {
                       onManualProofFileChange(null);
-                      alert('Ukuran bukti transfer maksimal adalah 5MB.');
+                      setFileError('Ukuran bukti transfer maksimal adalah 5MB.');
                       return;
                     }
                     onManualProofFileChange(file);
@@ -532,22 +580,30 @@ function AiAccessGateDialog({
                 />
               </div>
 
+              {fileError && (
+                <div className="mt-1 p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs text-center" role="alert">
+                  {fileError}
+                </div>
+              )}
+
               {/* Manual confirmation */}
-              <div 
+              <button
+                type="button"
                 onClick={() => setTurnstileVerified(!turnstileVerified)}
-                className="flex items-center justify-between p-3 border border-white/10 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] cursor-pointer mt-1 select-none"
+                aria-pressed={turnstileVerified}
+                className="flex w-full items-center justify-between p-3 border border-glass rounded-xl bg-surface-alpha hover:bg-surface-alpha-hover cursor-pointer mt-1 select-none text-left"
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-all ${turnstileVerified ? 'border-emerald-500 bg-emerald-500' : 'border-white/20'}`}>
+                  <div className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-all ${turnstileVerified ? 'border-emerald-500 bg-emerald-500' : 'border-glass'}`}>
                     {turnstileVerified && <Check size={12} className="text-white" />}
                   </div>
-                  <span className="text-xs text-white/80">Verifikasi bahwa Anda adalah manusia</span>
+                  <span className="text-xs text-primary">Verifikasi bahwa Anda adalah manusia</span>
                 </div>
                 <div className="text-right">
-                  <span className="block text-[9px] font-black uppercase tracking-widest text-white/70">Manual check</span>
-                  <span className="block text-[9px] text-white/40">No auto charge</span>
+                  <span className="block text-xs font-black uppercase tracking-widest text-primary">Manual check</span>
+                  <span className="block text-xs text-secondary">No auto charge</span>
                 </div>
-              </div>
+              </button>
 
               {/* Support WhatsApp/Instagram */}
               {renderSupportLinks()}
@@ -583,13 +639,13 @@ function AiAccessGateDialog({
               <Check size={32} strokeWidth={3} />
             </div>
             <div>
-              <h3 className="text-xl font-black text-white">Bukti Diterima - Menunggu Review</h3>
-              <p className="text-sm text-white/70 mt-2.5 leading-relaxed">
+              <h3 className="text-xl font-black text-primary">Bukti Diterima - Menunggu Review</h3>
+              <p className="text-sm text-secondary mt-2.5 leading-relaxed">
                 {manualProofDelivery === 'manual_support'
                   ? 'Invoice sudah masuk antrean admin. Kirim file bukti lewat WhatsApp atau Instagram dengan ID invoice agar review lebih cepat.'
                   : 'Terima kasih. Bukti transfer Anda telah berhasil dikirim ke server Baristachaw.'}
               </p>
-              <p className="text-xs text-white/50 mt-2 leading-relaxed">
+              <p className="text-xs text-tertiary mt-2 leading-relaxed">
                 Admin akan memverifikasi transaksi Anda sebelum plan aktif. Jika perlu bantuan, hubungi customer service lewat WhatsApp atau Instagram di bawah.
               </p>
             </div>

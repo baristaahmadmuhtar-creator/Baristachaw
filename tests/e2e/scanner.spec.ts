@@ -52,7 +52,8 @@ test('shows upgrade gate for free users before scan runs', async ({ page }) => {
 
   await page.getByRole('button', { name: analyzeImageButton }).click();
   await expect(page.getByTestId('ai-access-gate-modal')).toBeVisible();
-  await expect(page.getByRole('heading', { name: /Pemindai AI dibuka mulai paket Starter|AI Scan starts on Starter/i })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: /AI Scan starts on Barista Starter|Pemindai AI dibuka mulai Barista Starter/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Pilih Plan Keanggotaan|Choose Membership Plan/i })).toBeVisible();
 });
 
 test('scans image and saves result to collection', async ({ page }) => {

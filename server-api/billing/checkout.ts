@@ -178,7 +178,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!url) {
     const statusSnapshot = await buildAccountStatus(requestId, authResult.auth, 'web').catch(() => null);
     if (statusSnapshot) {
-      const hasActivePaidPlan = statusSnapshot.plans.some((p: any) => p.code !== 'free' && p.billing.status === 'active');
+      const hasActivePaidPlan = statusSnapshot.user.planCode !== 'free' && statusSnapshot.billing.status === 'active';
       const hasPendingManual = statusSnapshot.manualInvoice?.status === 'pending_proof' || statusSnapshot.manualInvoice?.status === 'under_review';
       
       if (hasActivePaidPlan) {

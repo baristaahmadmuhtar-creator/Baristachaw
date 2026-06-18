@@ -241,7 +241,7 @@ function PlanCard({
       className={`relative flex min-h-[18rem] flex-col rounded-[20px] border p-6 transition-all hover:-translate-y-1 hover:shadow-xl ${details.style} ${isDark ? 'text-white' : 'text-primary'}`}
     >
       {planCode === 'starter' && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gradient-to-br from-amber-400 to-amber-500 px-4 py-1 text-[10px] font-extrabold uppercase tracking-widest text-black shadow-md">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gradient-to-br from-amber-400 to-amber-500 px-4 py-1 text-xs font-extrabold uppercase tracking-widest text-black shadow-md">
           {t.homePlanBestValue || 'Best Value'}
         </div>
       )}
@@ -255,7 +255,7 @@ function PlanCard({
 
       <div className="mb-4 flex min-h-[56px] flex-wrap items-baseline gap-1.5">
         {'priceOriginal' in details && details.discountPct! > 0 && (
-          <span className={`w-full text-sm font-semibold line-through ${isDark ? 'text-white/40' : 'text-secondary/60'}`}>
+          <span className={`w-full text-sm font-semibold line-through ${isDark ? 'text-white/60' : 'text-secondary/70'}`}>
             {details.priceOriginal}
           </span>
         )}
@@ -572,7 +572,7 @@ export function PlanGrowthSurface({
                     >
                       {d === 'monthly' ? '1 Month' : d === 'quarterly' ? '3 Months' : '1 Year'}
                       {d === 'yearly' && (
-                        <span className="inline-block animate-[chipPulse_2s_ease-in-out_infinite] rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-extrabold text-black">
+                        <span className="inline-block animate-[chipPulse_2s_ease-in-out_infinite] rounded-full bg-amber-400 px-2 py-0.5 text-xs font-extrabold text-black">
                           BEST
                         </span>
                       )}

@@ -176,7 +176,7 @@ export function openBillingPortal(): Promise<BillingPortalResponse> {
 
 const PLAN_DISPLAY_NAMES: Record<PlanCode, string> = {
   free: 'Free',
-  starter: 'Barista Plus',
+  starter: 'Barista Starter',
   pro: 'Barista Pro',
   team: 'Cafe Team',
   enterprise: 'Enterprise',

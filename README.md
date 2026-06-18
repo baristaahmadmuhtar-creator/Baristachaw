@@ -2,7 +2,7 @@
 
 Baristachaw is an AI coffee companion for planning better brews, checking coffee setup decisions, and keeping barista workflows simple on web, PWA, and mobile.
 
-[Marketing Site](https://baristachaw.com) | [Open Web App](https://app.baristachaw.com) | [Download Android APK v1.0.2](https://github.com/baristaahmadmuhtar-creator/Baristachaw/releases/download/v1.0.2/BaristaChaw-v1.0.2.apk) | [All Releases](https://github.com/baristaahmadmuhtar-creator/Baristachaw/releases)
+[Marketing Site](https://baristachaw.com) | [Open Web App](https://app.baristachaw.com) | [Download Android APK v1.0.4](https://github.com/baristaahmadmuhtar-creator/Baristachaw/releases/latest/download/baristachaw-android.apk) | [All Releases](https://github.com/baristaahmadmuhtar-creator/Baristachaw/releases)
 
 ## What It Does
 

@@ -15,7 +15,7 @@ export const APP_ENV_GROUPS = [
   { label: 'JWT_SECRET', sets: [['JWT_SECRET']], validate: { minLength: 32 } },
   { label: 'ADMIN_EMAILS', sets: [['ADMIN_EMAILS']] },
   { label: 'SUPABASE_URL', sets: [['SUPABASE_URL']], validate: 'httpsUrl' },
-  { label: 'SUPABASE_SERVICE_ROLE_KEY', sets: [['SUPABASE_SERVICE_ROLE_KEY']] },
+  { label: 'SUPABASE_SERVICE_ROLE_KEY', sets: [['SUPABASE_SERVICE_ROLE_KEY']], validate: 'supabaseServiceRoleKey' },
   { label: 'Supabase public key', sets: [['SUPABASE_PUBLISHABLE_KEY'], ['SUPABASE_ANON_KEY']] },
   { label: 'GEMINI_API_KEY', sets: [['GEMINI_API_KEY']] },
 ];
@@ -109,6 +109,7 @@ function hasValue(env, key) {
 function validateValue(value, validate) {
   if (!validate) return { ok: true };
   const text = String(value || '').trim();
+  const placeholderLike = /\b(your|placeholder|replace|example|changeme|dummy|fake|redacted)\b|service[-_ ]?role[-_ ]?key|anon[-_ ]?key/i.test(text);
   if (validate === 'httpsUrl') {
     try {
       const parsed = new URL(text);
@@ -121,6 +122,16 @@ function validateValue(value, validate) {
     return {
       ok: text.length >= validate.minLength,
       reason: `must be at least ${validate.minLength} characters`,
+    };
+  }
+  if (validate === 'supabaseServiceRoleKey') {
+    const isSecretKey = /^sb_secret_[A-Za-z0-9_-]{20,}$/.test(text);
+    const jwtParts = text.split('.');
+    const isJwtServiceRole = jwtParts.length === 3 && text.length >= 120;
+    const isFutureSecret = text.length >= 80 && !placeholderLike;
+    return {
+      ok: !placeholderLike && (isSecretKey || isJwtServiceRole || isFutureSecret),
+      reason: 'must be a real Supabase secret/service-role key, not a placeholder or short test value',
     };
   }
   return { ok: true };

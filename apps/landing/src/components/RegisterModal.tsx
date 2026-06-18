@@ -7,7 +7,7 @@ import { OTP_CODE_LENGTH } from '../planCatalog';
 
 type RegisterModalProps = {
   language: Language;
-  plan: 'free' | 'plus' | 'pro' | 'team';
+  plan: 'free' | 'starter' | 'plus' | 'pro' | 'team';
   duration: BillingDuration;
   user?: any;
   onLoginSuccess?: () => void;
@@ -30,9 +30,9 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
   // Step state: 'pilih' | 'checkout' | 'success'
   const [step, setStep] = useState<'pilih' | 'checkout' | 'success'>('pilih');
-  const [selectedPlan, setSelectedPlan] = useState<'plus' | 'pro'>(() => {
+  const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro'>(() => {
     if (plan === 'pro') return 'pro';
-    return 'plus';
+    return 'starter';
   });
   const [selectedDuration, setSelectedDuration] = useState<BillingDuration>(duration);
 
@@ -48,6 +48,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   const [proofDelivery, setProofDelivery] = useState<'direct_upload' | 'manual_support' | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   const currency = getCurrencyForLanguage(language);
 
@@ -70,9 +71,67 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     </div>
   );
 
+  useEffect(() => {
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const focusableSelector = [
+      'a[href]',
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(',');
+
+    const visibleFocusable = () => {
+      const node = dialogRef.current;
+      if (!node) return [] as HTMLElement[];
+      return Array.from(node.querySelectorAll<HTMLElement>(focusableSelector))
+        .filter((item) => item.offsetParent !== null || item === document.activeElement);
+    };
+
+    const focusFirst = () => {
+      const items = visibleFocusable();
+      (items[0] || dialogRef.current)?.focus();
+    };
+
+    window.setTimeout(focusFirst, 0);
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const items = visibleFocusable();
+      if (!items.length) {
+        event.preventDefault();
+        dialogRef.current?.focus();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      previousFocus?.focus();
+    };
+  }, [onClose]);
+
   const planDisplayNames: Record<string, Record<Language, string>> = {
     free: { id: 'Free', en: 'Free', bn: 'Percuma' },
-    plus: { id: 'Barista Plus', en: 'Barista Plus', bn: 'Barista Plus' },
+    starter: { id: 'Barista Starter', en: 'Barista Starter', bn: 'Barista Starter' },
+    plus: { id: 'Barista Starter', en: 'Barista Starter', bn: 'Barista Starter' },
     pro: { id: 'Barista Pro', en: 'Barista Pro', bn: 'Barista Pro' },
     team: { id: 'Cafe Team', en: 'Cafe Team', bn: 'Cafe Team' },
   };
@@ -86,7 +145,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   const getPriceDisplay = (p = selectedPlan, d = selectedDuration): string => {
     if (p === 'free' as any) return t('plan.free.price', language);
     if (p === 'team' as any) return 'Custom';
-    const tier = PRICING[p as 'plus' | 'pro'][d];
+    const tier = PRICING[p as 'starter' | 'pro'][d];
     return formatCurrencyByLang(tier.discounted[currency], language);
   };
 
@@ -95,7 +154,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     setInvoiceError('');
     setInvoice(null);
     try {
-      const planCode = selectedPlan === 'plus' ? 'starter' : selectedPlan; // backend uses starter
+      const planCode = selectedPlan;
       const res = await fetch(`${APP_ORIGIN}/api/billing/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -353,7 +412,8 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     setLoading(true);
     setError('');
     try {
-      const returnTo = window.location.origin + `/?login_success=1&plan=${plan}&duration=${duration}`;
+      const returnPlan = plan === 'plus' ? 'starter' : plan;
+      const returnTo = window.location.origin + `/?login_success=1&plan=${returnPlan}&duration=${duration}`;
       const res = await fetch(`${APP_ORIGIN}/api/auth/url?provider=google&returnTo=${encodeURIComponent(returnTo)}`, {
         credentials: 'include'
       });
@@ -407,10 +467,12 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
       const file = e.target.files[0];
       const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
       if (!allowedTypes.includes(file.type)) {
+        setUploadedFile(null);
         setError('Format bukti transfer harus JPG, PNG, WebP, atau PDF.');
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
+        setUploadedFile(null);
         setError('Ukuran bukti transfer maksimal adalah 5MB.');
         return;
       }
@@ -498,7 +560,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
   return (
     <div className="register-backdrop" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="register-panel checkout-dark" role="dialog" aria-modal="true" aria-labelledby="register-title">
+      <div ref={dialogRef} className="register-panel checkout-dark" role="dialog" aria-modal="true" aria-labelledby="register-title" tabIndex={-1}>
         
         {/* Step 1: PILIH (Plan & Duration Selection) */}
         {step === 'pilih' && (
@@ -540,12 +602,14 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
             {/* Plan Cards */}
             <div className="plan-cards-container" style={{ display: 'grid', gap: '12px', marginBottom: '20px' }}>
-              {(['plus', 'pro'] as const).map((p) => {
+              {(['starter', 'pro'] as const).map((p) => {
                 const isSelected = selectedPlan === p;
                 return (
-                  <div
+                  <button
                     key={p}
+                    type="button"
                     onClick={() => setSelectedPlan(p)}
+                    aria-pressed={isSelected}
                     className={`payment-method-card ${isSelected ? 'selected' : ''}`}
                     style={{
                       display: 'flex',
@@ -559,7 +623,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                         {planDisplayNames[p]?.[language] ?? p}
                       </strong>
                       <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.4' }}>
-                        {p === 'plus' 
+                        {p === 'starter'
                           ? 'Panduan AI, log brew lanjutan, riwayat scan' 
                           : 'AI Brew Coach, latte art, analisis scan, mode Deep'}
                       </span>
@@ -572,7 +636,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                         /{selectedDuration === 'monthly' ? 'bln' : selectedDuration === 'quarterly' ? '3bln' : 'thn'}
                       </span>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -1013,9 +1077,17 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                           style={{ display: 'none' }} 
                           accept="image/png, image/jpeg, image/webp, application/pdf"
                         />
-                        <div 
+                        <div
+                          role="button"
+                          tabIndex={0}
                           className={`receipt-upload-box ${uploadedFile ? 'uploaded' : ''}`}
                           onClick={handleUploadClick}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault();
+                              handleUploadClick();
+                            }
+                          }}
                         >
                           <UploadCloud className="upload-icon" />
                           <p>{uploadedFile ? uploadedFile.name : 'Klik untuk upload screenshot'}</p>
@@ -1031,9 +1103,11 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                     )}
 
                     {/* Manual confirmation */}
-                    <div 
-                      className="turnstile-mock-container" 
+                    <button
+                      type="button"
+                      className="turnstile-mock-container"
                       onClick={() => setTurnstileVerified(!turnstileVerified)}
+                      aria-pressed={turnstileVerified}
                     >
                       <div className="turnstile-left">
                         <div className={`turnstile-box ${turnstileVerified ? 'checked' : ''}`}>
@@ -1047,9 +1121,9 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                         </div>
                         <span className="turnstile-links">No auto charge</span>
                       </div>
-                    </div>
+                    </button>
 
-                    {error && <p className="register-error" style={{ margin: 0 }}>{error}</p>}
+                    {error && <p className="register-error" role="alert" style={{ margin: 0 }}>{error}</p>}
 
                     {renderSupportLinks()}
 

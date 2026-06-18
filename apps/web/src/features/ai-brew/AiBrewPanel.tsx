@@ -14884,9 +14884,9 @@ export function AiBrewPanel() {
               >
                 <div className="text-base font-semibold text-primary">{copy.quickMode}</div>
                 {copy.quickModeDescription ? (
-                  <p className="mt-1 text-xs leading-5 text-secondary">{copy.quickModeDescription}</p>
+                  <p className="mt-1 text-xs leading-5 text-primary">{copy.quickModeDescription}</p>
                 ) : null}
-                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-600 dark:text-blue-300">
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-semibold text-blue-800 dark:text-blue-200">
                   <Sparkles size={12} />
                   {copy.aiEngineLocalValidated}
                 </div>
@@ -14900,9 +14900,9 @@ export function AiBrewPanel() {
               >
                 <div className="text-base font-semibold text-primary">{copy.proMode}</div>
                 {copy.proModeDescription ? (
-                  <p className="mt-1 text-xs leading-5 text-secondary">{copy.proModeDescription}</p>
+                  <p className="mt-1 text-xs leading-5 text-primary">{copy.proModeDescription}</p>
                 ) : null}
-                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-600 dark:text-blue-300">
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-semibold text-blue-800 dark:text-blue-200">
                   <Brain size={12} />
                   {copy.aiEnginePrecisionPlanner}
                 </div>

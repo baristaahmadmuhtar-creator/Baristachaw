@@ -105,7 +105,7 @@ test('runSmoke uses QA test-auth cookie flow when bearer token is absent', async
     if (path === '/api/auth/me' && method === 'GET' && headers.cookie === 'auth_token=fake.jwt.token') {
       return new Response(JSON.stringify({
         authenticated: true,
-        user: { id: 'smoke-local-qa', email: 'smoke-local@example.com', planCode: 'starter' },
+        user: { id: 'smoke-local-qa', email: 'smoke-local@example.com', planCode: 'pro' },
       }), {
         status: 200,
         headers: { 'content-type': 'application/json' },
@@ -115,8 +115,8 @@ test('runSmoke uses QA test-auth cookie flow when bearer token is absent', async
     if (path === '/api/account/status' && method === 'GET' && headers.cookie === 'auth_token=fake.jwt.token') {
       return new Response(JSON.stringify({
         ok: true,
-        user: { id: 'smoke-local-qa', planCode: 'starter' },
-        plan: { code: 'starter' },
+        user: { id: 'smoke-local-qa', planCode: 'pro' },
+        plan: { code: 'pro' },
       }), {
         status: 200,
         headers: { 'content-type': 'application/json' },

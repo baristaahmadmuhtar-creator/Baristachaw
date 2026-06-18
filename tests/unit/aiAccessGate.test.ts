@@ -71,7 +71,7 @@ test('paid AI access requires the minimum paid plan for free users', async () =>
   assert.equal(result.errorCode, 'paid_plan_required');
   assert.equal(result.retryable, false);
   assert.equal(result.minimumPlan?.code, 'starter');
-  assert.equal(result.minimumPlan?.name, 'Barista Plus');
+  assert.equal(result.minimumPlan?.name, 'Barista Starter');
 });
 
 test('paid AI access lets starter and higher plans continue', async () => {
@@ -197,9 +197,8 @@ test('paid AI quota enforcement blocks exhausted daily quota', async () => {
   }
 });
 
-test('paid AI quota enforcement soft-opens quota RPC outage for verified paid users', async () => {
+test('paid AI quota enforcement soft-opens quota RPC outage for verified paid users by default', async () => {
   process.env.PLAN_ENFORCEMENT_ENABLED = 'true';
-  process.env.PLAN_QUOTA_STRICT_ENABLED = 'false';
   process.env.SUPABASE_URL = 'https://unit-project.supabase.co';
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
   const originalFetch = globalThis.fetch;

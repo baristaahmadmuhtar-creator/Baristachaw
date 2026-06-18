@@ -107,7 +107,7 @@ test('shows paid plan choices and upgrades free users when AI search is attempte
   await search.fill('qa_e2e free search');
   await search.press('Enter');
   await expect(page.getByTestId('ai-access-gate-modal')).toBeVisible();
-  await expect(page.getByRole('dialog', { name: /AI Search starts on Barista Plus|Pilih Plan Keanggotaan/i })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: /AI Search starts on Barista Starter|Pilih Plan Keanggotaan/i })).toBeVisible();
 });
 
 test('language switch updates browse-only search placeholder copy', async ({ page }) => {

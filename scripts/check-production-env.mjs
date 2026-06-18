@@ -45,19 +45,37 @@ const runtimeGroups = [
   ...MOBILE_ENV_GROUPS,
   ...(includeSmokeAuth || mode === 'final' || mode === 'runtime' ? SMOKE_AUTH_ENV_GROUPS : []),
 ];
+const requiredForVercelApp = [
+  ...APP_ENV_GROUPS,
+  ...MOBILE_ENV_GROUPS.filter(group => (
+    group.label === 'Mobile EXPO_PUBLIC_SUPABASE_URL'
+    || group.label === 'Mobile Supabase public key'
+  )),
+  ...APP_OPTIONAL_ENV_GROUPS.filter(group => group.label === 'HEALTHCHECK_TOKEN'),
+];
 
 let report;
 
 if (mode === 'vercel') {
-  const requiredForVercelApp = [
-    ...APP_ENV_GROUPS,
-    ...APP_OPTIONAL_ENV_GROUPS.filter(group => group.label === 'HEALTHCHECK_TOKEN'),
-  ];
+  const pulledVercelEnv = loadEnvFiles(['.vercel/.env.production.local'], {
+    includeProcess: false,
+  });
   report = mergeReports([
     checkVercelEnvNames(requiredForVercelApp, target),
+    checkRuntimeEnv(requiredForVercelApp, {
+      env: pulledVercelEnv,
+      mode: 'vercel',
+      target: '.vercel/.env.production.local',
+      allowLocalUnavailable: false,
+    }),
     checkForbiddenVercelEnvNames(FORBIDDEN_PUBLIC_SECRET_GROUPS, target),
+    checkForbiddenRuntimeEnv(FORBIDDEN_PUBLIC_SECRET_GROUPS, {
+      env: pulledVercelEnv,
+      mode: 'vercel',
+      target: '.vercel/.env.production.local',
+    }),
   ], { mode: 'vercel', target });
-  printSafeEnvReport(report, { title: 'Baristachaw Vercel env-name check' });
+  printSafeEnvReport(report, { title: 'Baristachaw Vercel env-name/value check' });
 } else if (mode === 'runtime') {
   report = mergeReports([
     checkRuntimeEnv(runtimeGroups, {
@@ -75,10 +93,7 @@ if (mode === 'vercel') {
   printSafeEnvReport(report, { title: 'Baristachaw runtime env check' });
 } else if (mode === 'final') {
   const vercelReport = mergeReports([
-    checkVercelEnvNames([
-      ...APP_ENV_GROUPS,
-      ...APP_OPTIONAL_ENV_GROUPS.filter(group => group.label === 'HEALTHCHECK_TOKEN'),
-    ], target),
+    checkVercelEnvNames(requiredForVercelApp, target),
     checkForbiddenVercelEnvNames(FORBIDDEN_PUBLIC_SECRET_GROUPS, target),
   ], { mode: 'vercel', target });
   const runtimeReport = mergeReports([

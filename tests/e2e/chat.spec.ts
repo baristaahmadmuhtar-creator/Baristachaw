@@ -86,11 +86,11 @@ test('shows upgrade gate for free users before AI chat runs', async ({ page }) =
   await page.getByLabel(sendMessageLabel).click();
 
   await expect(page.getByTestId('ai-access-gate-modal')).toBeVisible();
-  await expect(page.getByRole('heading', { name: /Obrolan AI dibuka mulai paket Starter|AI Chat starts on Starter/i })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: /Obrolan AI dibuka mulai Barista Starter|AI Chat starts on Barista Starter|Obrolan AI dibuka mulai paket Starter|AI Chat starts on Starter/i })).toBeVisible();
 });
 
 test('supports send message, mode switch, save/copy actions', async ({ page }) => {
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.goto('/chat', { waitUntil: 'domcontentloaded' });
 
   await expect(page.getByLabel(flashModeLabel)).toBeVisible();
@@ -143,7 +143,7 @@ test('fast mode relevance guard answers method comparison without stale recipe t
 });
 
 test('normal and deep mode contracts stay relevant for method comparison', async ({ page }) => {
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.route('**/api/ai', async (route) => {
     const body = route.request().postDataJSON() as { action?: string };
     const text = body.action === 'deep_think'
@@ -243,7 +243,7 @@ test('irrelevance and current-data guards regenerate or fall back safely', async
 });
 
 test('deep mode shows thinking phases, degraded badge, and source links', async ({ page }) => {
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.goto('/chat', { waitUntil: 'domcontentloaded' });
 
   await page.route('**/api/ai', async (route) => {
@@ -302,7 +302,7 @@ test('deep mode shows thinking phases, degraded badge, and source links', async 
 });
 
 test('deep mode waits for long-running responses without rendering timeout error', async ({ page }) => {
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.goto('/chat', { waitUntil: 'domcontentloaded' });
 
   let sawDeepRequest = false;

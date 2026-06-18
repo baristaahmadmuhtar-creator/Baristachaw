@@ -1739,6 +1739,34 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   background: #3b82f6;
 }
 
+.checkout-support-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 6px;
+}
+
+.checkout-support-links a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(59, 130, 246, 0.24);
+  background: rgba(59, 130, 246, 0.1);
+  color: #bfdbfe;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.checkout-support-links a:first-child {
+  border-color: rgba(16, 185, 129, 0.28);
+  background: rgba(16, 185, 129, 0.12);
+  color: #bbf7d0;
+}
+
 /* Manual Transfer Details */
 .manual-transfer-container {
   margin-top: 22px;

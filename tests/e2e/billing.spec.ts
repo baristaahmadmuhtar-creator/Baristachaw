@@ -124,7 +124,18 @@ test('upgrade gate flows to manual invoice checkout and handles valid/invalid pr
   await expect(page.getByRole('button', { name: /Kirim Bukti/i })).toBeEnabled();
   
   await page.getByRole('button', { name: /Kirim Bukti/i }).click();
-  await expect(page.getByText(/Bukti Diterima - Menunggu Review/i)).toBeVisible();
+  await expect(page.getByText(/Bukti pembayaran sedang diperiksa/i)).toBeVisible();
+  await expect(page.getByText(/Jangan kirim ulang bukti/i)).toBeVisible();
+  await expect(page.getByRole('link', { name: /WhatsApp/i })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Instagram/i })).toBeVisible();
+
+  await page.getByRole('button', { name: /Mengerti/i }).click();
+  await expect(modal).toHaveCount(0);
+  await page.getByRole('button', { name: /Analyze Image|Analisis Gambar/i }).click();
+  await expect(modal).toBeVisible();
+  await expect(page.getByText(/Bukti pembayaran sedang diperiksa/i)).toBeVisible();
+  await expect(page.getByText(/Jangan kirim ulang bukti/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: /Upgrade to Barista Starter/i })).toHaveCount(0);
 });
 
 test('scanner soft-opens for paid users if quota sync fails', async ({ page }) => {

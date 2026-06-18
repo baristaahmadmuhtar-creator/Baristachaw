@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { AnimatePresence, motion } from 'motion/react';
 import { 
   CreditCard, LogIn, RefreshCcw, ShieldCheck, Sparkles, X,
-  ArrowRight, Check, UploadCloud, ArrowLeft
+  ArrowRight, Check, UploadCloud, ArrowLeft, MessageCircle, Instagram
 } from 'lucide-react';
 import { useAccountStatus } from '../../context/AccountStatusContext';
 import { useAuthModal } from '../../context/AuthModalContext';
@@ -23,6 +23,7 @@ export type AiPaidFeature = 'chat' | 'scanner' | 'search' | 'brew';
 type ManualInvoiceBank = NonNullable<BillingManualInvoiceResponse['manualInvoice']['instructions']['banks']>[number];
 
 type GateMode = 'login' | 'upgrade' | 'checking';
+type CheckoutStep = 'pilih' | 'checkout' | 'success' | 'pending';
 
 type GateState = {
   mode: GateMode;
@@ -30,6 +31,7 @@ type GateState = {
 };
 
 const PAID_PLAN_PRIORITY: PlanCode[] = ['starter', 'pro', 'team', 'enterprise'];
+const MANUAL_PAYMENT_PENDING_STORAGE_KEY = 'BARISTACHAW_MANUAL_PAYMENT_PENDING_V1';
 
 function formatText(template: string, replacements: Record<string, string | number>) {
   return Object.entries(replacements).reduce(
@@ -49,6 +51,38 @@ function normalizePlanCode(value: unknown): PlanCode | null {
 
 function isPaidPlanCode(value: PlanCode | null | undefined): value is Exclude<PlanCode, 'free'> {
   return Boolean(value && value !== 'free');
+}
+
+function readPendingManualPaymentMarker(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const raw = window.localStorage.getItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as { status?: string; updatedAt?: number };
+    const updatedAt = Number(parsed.updatedAt || 0);
+    const maxAgeMs = 14 * 24 * 60 * 60 * 1000;
+    if (!updatedAt || Date.now() - updatedAt > maxAgeMs) {
+      window.localStorage.removeItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY);
+      return false;
+    }
+    return parsed.status === 'receipt_received' || parsed.status === 'pending_admin_review';
+  } catch {
+    return false;
+  }
+}
+
+function writePendingManualPaymentMarker(paymentRequestId: string, planCode: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY, JSON.stringify({
+      paymentRequestId,
+      planCode,
+      status: 'pending_admin_review',
+      updatedAt: Date.now(),
+    }));
+  } catch {
+    // Non-critical; server account status is the cross-device source of truth.
+  }
 }
 
 function findMinimumPaidPlan(plans: AccountPlan[] | undefined): AccountPlan | null {
@@ -116,8 +150,8 @@ function AiAccessGateDialog({
   onManualProofFileChange: (file: File | null) => void;
   onManualProofSubmit: () => void | Promise<void>;
   onCopyManualAccount: (accountNum?: string) => void | Promise<void>;
-  step: 'pilih' | 'checkout' | 'success';
-  setStep: (s: 'pilih' | 'checkout' | 'success') => void;
+  step: CheckoutStep;
+  setStep: (s: CheckoutStep) => void;
   selectedPlan: 'starter' | 'pro';
   setSelectedPlan: (p: 'starter' | 'pro') => void;
   selectedDuration: BillingDuration;
@@ -157,12 +191,26 @@ function AiAccessGateDialog({
   const supportInstagramHandle = manualInvoice?.manualInvoice?.instructions?.instagramHandle || "@baristachaw";
 
   const renderSupportLinks = () => (
-    <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center mt-2.5 text-xs text-secondary">
-      <a href={supportWhatsappUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold hover:underline dark:text-blue-300">
-        WhatsApp: {supportWhatsappNumber}
+    <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+      <a
+        href={supportWhatsappUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="motion-pressable inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-3 font-bold text-emerald-700 transition-colors hover:bg-emerald-500/15 dark:text-emerald-300"
+        aria-label={`Hubungi WhatsApp ${supportWhatsappNumber}`}
+      >
+        <MessageCircle size={16} />
+        WhatsApp
       </a>
-      <a href={supportInstagramUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold hover:underline dark:text-blue-300">
-        Instagram: {supportInstagramHandle}
+      <a
+        href={supportInstagramUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="motion-pressable inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-fuchsia-500/25 bg-fuchsia-500/10 px-3 font-bold text-fuchsia-700 transition-colors hover:bg-fuchsia-500/15 dark:text-fuchsia-300"
+        aria-label={`Hubungi Instagram ${supportInstagramHandle}`}
+      >
+        <Instagram size={16} />
+        Instagram
       </a>
     </div>
   );
@@ -244,6 +292,54 @@ function AiAccessGateDialog({
           WebkitOverflowScrolling: 'touch',
         }}
       >
+        {/* Pending manual payment: no plan switching or duplicate proof submission. */}
+        {step === 'pending' && (
+          <div className="flex flex-col gap-4 p-1 text-center">
+            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-500">
+              <ShieldCheck size={28} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-500">
+                Menunggu review admin
+              </p>
+              <h2 className="mt-1 text-xl font-black leading-tight text-primary">
+                Bukti pembayaran sedang diperiksa
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-secondary">
+                Bukti transfer Anda sudah masuk antrean review. Jangan kirim ulang bukti atau membuat invoice baru kecuali diminta oleh support.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-left text-xs leading-5 text-amber-700 dark:text-amber-200">
+              Plan akan aktif setelah admin memverifikasi pembayaran. Jika sudah transfer dan butuh bantuan cepat, hubungi customer service.
+            </div>
+            {checkoutError ? (
+              <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
+                {checkoutError}
+              </div>
+            ) : null}
+            <div className="grid gap-2">
+              <button
+                type="button"
+                onClick={onRefresh}
+                disabled={refreshBusy}
+                aria-busy={refreshBusy}
+                className="motion-pressable inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-600 disabled:opacity-70"
+              >
+                <RefreshCcw size={16} className={refreshBusy ? 'animate-spin' : undefined} />
+                Sinkronkan status
+              </button>
+              {renderSupportLinks()}
+              <button
+                type="button"
+                onClick={onClose}
+                className="motion-pressable inline-flex min-h-12 items-center justify-center rounded-2xl border border-glass bg-surface-alpha px-4 text-sm font-semibold text-primary transition-colors hover:bg-surface-alpha-hover"
+              >
+                Mengerti
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Step 1: PILIH PLAN */}
         {step === 'pilih' && (
           <>
@@ -265,7 +361,9 @@ function AiAccessGateDialog({
               </button>
             </div>
 
-            <p className="mt-3 text-sm leading-6 text-secondary">{body}</p>
+            {state.mode !== 'upgrade' && (
+              <p className="mt-3 text-sm leading-6 text-secondary">{body}</p>
+            )}
 
             {state.mode === 'login' ? (
               <div className="mt-5 grid gap-2">
@@ -691,7 +789,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   const [refreshBusy, setRefreshBusy] = useState(false);
 
   // 3-step checkout states
-  const [step, setStep] = useState<'pilih' | 'checkout' | 'success'>('pilih');
+  const [step, setStep] = useState<CheckoutStep>('pilih');
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro'>('starter');
   const [selectedDuration, setSelectedDuration] = useState<BillingDuration>('quarterly');
 
@@ -700,6 +798,14 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   const tokenPlanCode = normalizePlanCode(user?.planCode);
   const effectivePlanCode = normalizePlanCode(snapshot?.user.planCode || snapshot?.plan.code) || tokenPlanCode;
   const hasPaidAiAccess = isAuthenticated && !isGuest && isPaidPlanCode(effectivePlanCode);
+  const hasPendingManualPayment = isAuthenticated && !isGuest && !hasPaidAiAccess && (
+    readPendingManualPaymentMarker()
+    || (
+      snapshot?.billing.provider === 'manual'
+      && snapshot.billing.paymentActionRequired
+      && snapshot.billing.paymentAction === 'contact_support'
+    )
+  );
 
   useEffect(() => {
     if (minimumPaidPlan) {
@@ -725,8 +831,8 @@ export function useAiAccessGate(feature: AiPaidFeature): {
     setManualProofStatus('idle');
     setManualProofDelivery(null);
     setState({ mode, source });
-    setStep('pilih');
-  }, []);
+    setStep(mode === 'upgrade' && hasPendingManualPayment ? 'pending' : 'pilih');
+  }, [hasPendingManualPayment]);
 
   const ensureAiAccess = useCallback((source: string) => {
     if (!isAuthenticated || isGuest) {
@@ -782,6 +888,12 @@ export function useAiAccessGate(feature: AiPaidFeature): {
       : current);
   }, [close, hasPaidAiAccess, loading, snapshot, state?.mode]);
 
+  useEffect(() => {
+    if (state?.mode === 'upgrade' && hasPendingManualPayment && step !== 'pending') {
+      setStep('pending');
+    }
+  }, [hasPendingManualPayment, state?.mode, step]);
+
   const handleRefresh = useCallback(async () => {
     setRefreshBusy(true);
     setCheckoutError('');
@@ -831,6 +943,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
         mimeType: manualProofFile.type,
         sizeBytes: manualProofFile.size,
       });
+      writePendingManualPaymentMarker(manualInvoice.paymentRequestId, selectedPlan);
       if (proofResponse.uploadUrl) {
         const uploadResponse = await fetch(proofResponse.uploadUrl, {
           method: 'PUT',
@@ -843,6 +956,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
           setCheckoutError('Upload otomatis belum berhasil. Invoice tetap masuk antrean admin; kirim file bukti lewat WhatsApp/Instagram dengan ID invoice.');
           setManualProofDelivery('manual_support');
           setManualProofStatus('submitted');
+          void refreshAccountStatus();
           return;
         }
       } else {
@@ -851,6 +965,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
       }
       setManualProofDelivery(proofResponse.deliveryMode);
       setManualProofStatus('submitted');
+      void refreshAccountStatus();
     } catch (error) {
       setCheckoutError(error instanceof BillingApiError
         ? `${error.message}${error.details ? `: ${error.details}` : ''}`
@@ -858,7 +973,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
       setManualProofStatus('idle');
       throw error; // Re-throw to prevent step progression in UI if submit failed
     }
-  }, [manualInvoice, manualProofFile, t.aiGateCheckoutFailed]);
+  }, [manualInvoice, manualProofFile, refreshAccountStatus, selectedPlan, t.aiGateCheckoutFailed]);
 
   const handleCopyManualAccount = useCallback(async (accountNum?: string) => {
     if (!manualInvoice) return;

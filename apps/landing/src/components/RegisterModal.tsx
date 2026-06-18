@@ -1,4 +1,4 @@
-import { ArrowRight, Loader2, X, Check, UploadCloud, AlertCircle, ArrowLeft } from 'lucide-react';
+import { ArrowRight, Loader2, X, Check, UploadCloud, AlertCircle, ArrowLeft, MessageCircle, Instagram } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import type { Language } from '../i18n';
 import { t } from '../i18n';
@@ -61,12 +61,14 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     || `https://wa.me/6738270092?text=${encodeURIComponent(`Halo Baristachaw, saya sudah transfer untuk invoice ${invoice?.id || ''} dan ingin mengirim bukti pembayaran.`)}`;
 
   const renderSupportLinks = () => (
-    <div className="checkout-support-links" style={{ display: 'flex', gap: '16px', justifyContent: 'center', margin: '14px 0 6px', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>
-      <a href={supportWhatsappUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
-        WhatsApp Support
+    <div className="checkout-support-links">
+      <a href={supportWhatsappUrl} target="_blank" rel="noopener noreferrer" aria-label={`Hubungi WhatsApp ${supportWhatsappNumber}`}>
+        <MessageCircle size={16} />
+        WhatsApp
       </a>
-      <a href={supportInstagramUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
-        Instagram CS
+      <a href={supportInstagramUrl} target="_blank" rel="noopener noreferrer" aria-label={`Hubungi Instagram ${supportInstagramHandle}`}>
+        <Instagram size={16} />
+        Instagram
       </a>
     </div>
   );

@@ -469,6 +469,12 @@ function paymentReceiptPayload(request: ManualPaymentRequest): Record<string, un
   };
 }
 
+function billingMarketForCurrency(currency: CurrencyCode): string {
+  if (currency === 'idr') return 'indonesia';
+  if (currency === 'bnd') return 'brunei';
+  return 'global';
+}
+
 async function ensureManualPaymentAppUser(
   config: Extract<SupabaseAdminConfig, { configured: true }>,
   request: ManualPaymentRequest,
@@ -483,6 +489,9 @@ async function ensureManualPaymentAppUser(
       headers: { Prefer: 'return=minimal' },
       body: JSON.stringify({
         payment_action_required: true,
+        billing_status: request.status === 'pending_review' ? 'none' : 'trialing',
+        billing_provider: request.status === 'pending_review' ? 'none' : 'manual',
+        billing_market: billingMarketForCurrency(request.currency),
         billing_last_event_at: new Date(request.updatedAt).toISOString(),
         last_seen_at: new Date(request.updatedAt).toISOString(),
         updated_at: new Date(request.updatedAt).toISOString(),
@@ -591,6 +600,7 @@ export async function persistManualPaymentRequest(request: ManualPaymentRequest)
 export async function persistManualPaymentProof(request: ManualPaymentRequest): Promise<boolean> {
   const config = getSupabaseAdminConfig();
   if (!hasSupabaseConfig(config)) return false;
+  await ensureManualPaymentAppUser(config, request);
   await supabaseAdminRest(config, `payment_receipts?manual_request_id=eq.${encodeURIComponent(request.id)}`, {
     method: 'PATCH',
     headers: { Prefer: 'return=minimal' },

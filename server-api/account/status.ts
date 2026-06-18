@@ -378,10 +378,11 @@ function billingFromRow(row: any, user: AccountUser): AccountBilling {
     && rawStatus !== 'refunded';
   const status = unverifiedPaidPlan ? 'trialing' : rawStatus;
   const paymentActionRequired = Boolean(row?.payment_action_required ?? metadata.paymentActionRequired ?? (status === 'past_due')) || unverifiedPaidPlan;
+  const manualReviewPending = provider === 'manual' && paymentActionRequired && status === 'trialing';
   const manageUrl = readPublicUrl('BILLING_PORTAL_URL', 'STRIPE_CUSTOMER_PORTAL_URL', 'REVENUECAT_CUSTOMER_CENTER_URL');
   const checkoutUrl = readPublicUrl(`BILLING_CHECKOUT_URL_${user.planCode.toUpperCase()}`, `STRIPE_CHECKOUT_URL_${user.planCode.toUpperCase()}`, `REVENUECAT_CHECKOUT_URL_${user.planCode.toUpperCase()}`, 'BILLING_CHECKOUT_URL');
   const paymentAction: AccountBilling['paymentAction'] = paymentActionRequired || status === 'past_due'
-    ? unverifiedPaidPlan ? 'contact_support' : 'manage'
+    ? (unverifiedPaidPlan || provider === 'manual') ? 'contact_support' : 'manage'
     : user.planCode === 'free'
       ? 'checkout'
       : provider === 'manual'
@@ -389,6 +390,8 @@ function billingFromRow(row: any, user: AccountUser): AccountBilling {
         : 'none';
   const message = unverifiedPaidPlan
     ? 'Your paid plan is waiting for admin billing verification. Contact support before relying on paid limits.'
+    : manualReviewPending
+    ? 'Your payment proof is waiting for admin review. Please do not submit another payment proof unless support asks for it.'
     : status === 'past_due'
     ? 'Your payment needs attention. Update billing to keep paid limits active.'
     : status === 'cancelled' || status === 'expired'

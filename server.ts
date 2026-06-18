@@ -7,6 +7,7 @@ import path from "node:path";
 import aiHandler from "./server-api/ai";
 import chatHandler from "./server-api/chat";
 import healthHandler from "./server-api/health";
+import geoHandler from "./server-api/geo";
 import waterSearchHandler from "./server-api/waters/search";
 import waterDetailHandler from "./server-api/waters/[id]";
 import dripperSearchHandler from "./server-api/drippers/search";
@@ -127,6 +128,7 @@ function applySecurityHeaders(_req: express.Request, res: express.Response, next
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ API routes (local dev mirror of Vercel serverless functions) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 app.use(applySecurityHeaders);
 app.all("/api/health", wrapVercelHandler(healthHandler as unknown as LocalApiHandler));
+app.all("/api/geo", wrapVercelHandler(geoHandler as unknown as LocalApiHandler));
 app.all("/api/chat", wrapVercelHandler(chatHandler as unknown as LocalApiHandler));
 app.all("/api/ai", wrapVercelHandler(aiHandler as unknown as LocalApiHandler));
 app.all("/api/waters/search", wrapVercelHandler(waterSearchHandler as unknown as LocalApiHandler));

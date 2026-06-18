@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
+import { inferAppLanguage, inferRegion } from '@baristachaw/shared/locale';
 import { isReusableDraftSession } from '@baristachaw/shared';
 import {
     AiSettings,
@@ -135,25 +136,23 @@ function browserLocaleParts(): { languages: string[]; timeZone: string } {
 }
 
 function inferInitialLanguage(): Language {
-    const { languages, timeZone } = browserLocaleParts();
-    if (languages.some((item) => item === 'id' || item.startsWith('id-')) || /jakarta|makassar|jayapura|pontianak/i.test(timeZone)) {
-        return 'id';
-    }
-    if (languages.some((item) => item === 'ms' || item.startsWith('ms-') || item.endsWith('-bn')) || /brunei/i.test(timeZone)) {
-        return 'ms';
-    }
-    return DEFAULT_LANGUAGE;
+    const inferred = inferAppLanguage(browserLocaleParts());
+    return isSupportedLanguage(inferred) ? inferred : DEFAULT_LANGUAGE;
 }
 
 function inferInitialRegion(): Region {
-    const { languages, timeZone } = browserLocaleParts();
-    if (languages.some((item) => item === 'id' || item.startsWith('id-')) || /jakarta|makassar|jayapura|pontianak/i.test(timeZone)) return 'id';
-    if (languages.some((item) => item.endsWith('-bn') || item === 'ms-bn') || /brunei/i.test(timeZone)) return 'bn';
-    if (languages.some((item) => item.endsWith('-my')) || /kuala_lumpur|kuching/i.test(timeZone)) return 'my';
-    if (languages.some((item) => item.endsWith('-sg')) || /singapore/i.test(timeZone)) return 'sg';
-    if (languages.some((item) => item.endsWith('-au')) || /sydney|melbourne|perth|brisbane|adelaide/i.test(timeZone)) return 'au';
-    if (languages.some((item) => item.endsWith('-us')) || /new_york|los_angeles|chicago|denver/i.test(timeZone)) return 'us';
-    return 'global';
+    return inferRegion(browserLocaleParts());
+}
+
+function isSupportedRegion(value: unknown): value is Region {
+    return value === 'id'
+        || value === 'bn'
+        || value === 'my'
+        || value === 'sg'
+        || value === 'au'
+        || value === 'eu'
+        || value === 'us'
+        || value === 'global';
 }
 
 // ─── Default Settings ───
@@ -202,13 +201,13 @@ function loadRegion(): Region {
     try {
         const params = new URLSearchParams(window.location.search);
         const requested = params.get('region');
-        if (requested === 'id' || requested === 'bn' || requested === 'my' || requested === 'sg' || requested === 'au' || requested === 'eu' || requested === 'us' || requested === 'global') {
+        if (isSupportedRegion(requested)) {
             safeSetLocalStorageItem(REGION_KEY, requested);
-            return requested as Region;
+            return requested;
         }
     } catch { }
     const stored = safeGetLocalStorageItem(REGION_KEY);
-    if (stored === 'id' || stored === 'bn' || stored === 'my' || stored === 'sg' || stored === 'au' || stored === 'eu' || stored === 'us' || stored === 'global') return stored as Region;
+    if (isSupportedRegion(stored)) return stored;
     return inferInitialRegion();
 }
 
@@ -226,6 +225,8 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     const [folders, setFolders] = useState<Folder[]>([]);
     const [userBio, setUserBioState] = useState(getUserBio());
     const bootstrapped = useRef(false);
+    const hadStoredLanguageAtBoot = useRef(isSupportedLanguage(safeGetLocalStorageItem(LANGUAGE_KEY)));
+    const hadStoredRegionAtBoot = useRef(isSupportedRegion(safeGetLocalStorageItem(REGION_KEY)));
 
     const t = useMemo(() => getTranslations(language), [language]);
     const userName = useMemo(() => getStoredUserName() || aiSettings.name || 'Baristachaw', [aiSettings.name]);
@@ -242,6 +243,35 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         safeSetLocalStorageItem(REGION_KEY, region);
     }, [region]);
+
+    useEffect(() => {
+        const hasManualLanguage = hadStoredLanguageAtBoot.current;
+        const hasManualRegion = hadStoredRegionAtBoot.current;
+        if (hasManualLanguage && hasManualRegion) return;
+
+        let cancelled = false;
+        const applyServerLocale = async () => {
+            try {
+                const response = await fetch('/api/geo', { credentials: 'same-origin' });
+                if (!response.ok) return;
+                const data = await response.json();
+                if (cancelled) return;
+                if (!hasManualLanguage && isSupportedLanguage(data.appLanguage)) {
+                    setLanguage(data.appLanguage);
+                }
+                if (!hasManualRegion && isSupportedRegion(data.region)) {
+                    setRegion(data.region);
+                }
+            } catch (error) {
+                console.warn('Failed to resolve geo defaults', error);
+            }
+        };
+
+        void applyServerLocale();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     useEffect(() => {
         if (aiSettings.language === language) return;
@@ -473,5 +503,3 @@ export function useGlobalState() {
     }
     return context;
 }
-
-

@@ -1,6 +1,7 @@
 import { ArrowRight, Check, CircleAlert, ChevronDown, Globe } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { Link, Route, Routes, useLocation } from 'react-router-dom';
+import { inferMarketingLanguage, inferRegion, type MarketingLanguage } from '@baristachaw/shared/locale';
 import { BrewerGrid } from './components/BrewerGrid';
 import { DownloadSection } from './components/DownloadSection';
 import { FeatureGraphics } from './components/FeatureGraphics';
@@ -66,34 +67,36 @@ type RegisterState = {
   duration: BillingDuration;
 };
 
+const MARKETING_LANGUAGE_KEY = 'baristachaw-marketing-language';
+const MARKETING_REGION_KEY = 'baristachaw-marketing-region';
+const VALID_MARKETING_REGIONS: Region[] = ['id', 'bn', 'my', 'sg', 'au', 'eu', 'us', 'global'];
+
 function browserLocaleParts(): { languages: string[]; timeZone: string } {
-  const languages = (navigator.languages?.length ? navigator.languages : [navigator.language])
-    .filter(Boolean)
-    .map((item) => item.toLowerCase());
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-  return { languages, timeZone };
+  try {
+    const languages = (navigator.languages?.length ? navigator.languages : [navigator.language])
+      .filter(Boolean)
+      .map((item) => item.toLowerCase());
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    return { languages, timeZone };
+  } catch {
+    return { languages: [], timeZone: '' };
+  }
 }
 
 function inferInitialLanguage(): Language {
-  const { languages, timeZone } = browserLocaleParts();
-  if (languages.some((item) => item === 'id' || item.startsWith('id-')) || /jakarta|makassar|jayapura|pontianak/i.test(timeZone)) {
-    return 'id';
-  }
-  if (languages.some((item) => item.endsWith('-bn') || item === 'ms-bn') || /brunei/i.test(timeZone)) {
-    return 'bn';
-  }
-  return 'en';
+  return inferMarketingLanguage(browserLocaleParts()) as Language;
 }
 
 function inferInitialRegion(): Region {
-  const { languages, timeZone } = browserLocaleParts();
-  if (languages.some((item) => item === 'id' || item.startsWith('id-')) || /jakarta|makassar|jayapura|pontianak/i.test(timeZone)) return 'id';
-  if (languages.some((item) => item.endsWith('-bn') || item === 'ms-bn') || /brunei/i.test(timeZone)) return 'bn';
-  if (languages.some((item) => item.endsWith('-my')) || /kuala_lumpur|kuching/i.test(timeZone)) return 'my';
-  if (languages.some((item) => item.endsWith('-sg')) || /singapore/i.test(timeZone)) return 'sg';
-  if (languages.some((item) => item.endsWith('-au')) || /sydney|melbourne|perth|brisbane|adelaide/i.test(timeZone)) return 'au';
-  if (languages.some((item) => item.endsWith('-us')) || /new_york|los_angeles|chicago|denver/i.test(timeZone)) return 'us';
-  return 'global';
+  return inferRegion(browserLocaleParts());
+}
+
+function isValidMarketingRegion(value: unknown): value is Region {
+  return typeof value === 'string' && VALID_MARKETING_REGIONS.includes(value as Region);
+}
+
+function isValidMarketingLanguage(value: unknown): value is Language {
+  return value === 'en' || value === 'id' || value === 'bn';
 }
 
 function getRegionName(region: Region): string {
@@ -434,16 +437,14 @@ function ScrollManager() {
 
 export function App() {
   const [language, setLanguage] = useState<Language>(() => {
-    const stored = localStorage.getItem('baristachaw-marketing-language');
-    if (stored === 'en') return 'en';
-    if (stored === 'bn') return 'bn';
-    if (stored === 'id') return 'id';
+    const stored = localStorage.getItem(MARKETING_LANGUAGE_KEY);
+    if (isValidMarketingLanguage(stored)) return stored;
     return inferInitialLanguage();
   });
 
   const [region, setRegion] = useState<Region>(() => {
-    const stored = localStorage.getItem('baristachaw-marketing-region');
-    if (stored) return stored as Region;
+    const stored = localStorage.getItem(MARKETING_REGION_KEY);
+    if (isValidMarketingRegion(stored)) return stored;
     return inferInitialRegion();
   });
 
@@ -502,17 +503,46 @@ export function App() {
     }
   }, []);
 
+  useEffect(() => {
+    const hasManualLanguage = isValidMarketingLanguage(localStorage.getItem(MARKETING_LANGUAGE_KEY));
+    const hasManualRegion = isValidMarketingRegion(localStorage.getItem(MARKETING_REGION_KEY));
+    if (hasManualLanguage && hasManualRegion) return;
+
+    let cancelled = false;
+    const applyServerLocale = async () => {
+      try {
+        const res = await fetch(`${APP_ORIGIN}/api/geo`, { credentials: 'omit' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        if (!hasManualLanguage && isValidMarketingLanguage(data.marketingLanguage as MarketingLanguage)) {
+          setLanguage(data.marketingLanguage);
+        }
+        if (!hasManualRegion && isValidMarketingRegion(data.region)) {
+          setRegion(data.region);
+        }
+      } catch (err) {
+        console.warn('Failed to resolve geo defaults', err);
+      }
+    };
+
+    void applyServerLocale();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const location = useLocation();
 
   const handleLanguageChange = (next: Language) => {
     setLanguage(next);
-    localStorage.setItem('baristachaw-marketing-language', next);
+    localStorage.setItem(MARKETING_LANGUAGE_KEY, next);
     document.documentElement.lang = next === 'bn' ? 'ms-BN' : next;
   };
 
   const handleRegionChange = (next: Region) => {
     setRegion(next);
-    localStorage.setItem('baristachaw-marketing-region', next);
+    localStorage.setItem(MARKETING_REGION_KEY, next);
   };
 
   useEffect(() => {

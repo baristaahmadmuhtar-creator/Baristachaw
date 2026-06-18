@@ -28,6 +28,7 @@ async function loadDefaultHandler(loader: () => Promise<{ default: Handler }>): 
 
 const ROUTE_LOADERS: Record<string, () => Promise<{ default: Handler }>> = {
   'health': () => import('../server-api/health.js'),
+  'geo': () => import('../server-api/geo.js'),
   'chat': () => import('../server-api/chat.js'),
   'ai': () => import('../server-api/ai.js'),
   'waters/search': () => import('../server-api/waters/search.js'),

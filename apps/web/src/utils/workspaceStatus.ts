@@ -134,7 +134,9 @@ export function resolveWorkspaceStatus(
       message: id
         ? 'Bukti transfer sudah masuk antrean. Paket aktif setelah admin mencocokkan pembayaran.'
         : 'Your transfer proof is in the queue. The plan activates after admin verifies the payment.',
-      helper: id ? 'Admin dapat approve dari antrean pembayaran manual.' : 'Admin can approve it from the manual payment queue.',
+      helper: id
+        ? 'Tidak perlu kirim ulang bukti atau membuat invoice baru. Hubungi dukungan jika ingin menanyakan status.'
+        : 'No need to resubmit proof or create another invoice. Contact support if you need a status update.',
       shouldFloat: true,
       action: billing.paymentAction,
     };

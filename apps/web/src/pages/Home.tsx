@@ -39,6 +39,7 @@ import { getLanguageDirection, getLanguageLocale, LANGUAGE_OPTIONS } from "../co
 
 const genId = (prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 const SEARCH_CACHE_KEY = 'home_search';
+const SUPPORT_WHATSAPP_URL = `https://wa.me/6738270092?text=${encodeURIComponent('Halo Baristachaw, saya ingin menanyakan status pembayaran yang sedang menunggu review admin.')}`;
 
 type HomeSearchResult = SearchResultPayload & {
   query: string;
@@ -223,6 +224,7 @@ export function Home() {
   const billingStatusLabel = accountSnapshot?.billing.status || 'none';
   const recommendedUpgrade = accountSnapshot?.recommendedUpgrade;
   const showWorkspaceStatusPanel = isAuthenticated && !isGuest;
+  const hasPendingPaymentReview = workspaceStatus.kind === 'pending_review';
   const recommendedUpgradeReason = useMemo(
     () => formatRecommendedUpgradeReason(accountSnapshot, language, locale),
     [accountSnapshot, language, locale],
@@ -560,6 +562,10 @@ export function Home() {
   };
 
   const handleWorkspaceStatusAction = async () => {
+    if (workspaceStatus.kind === 'pending_review') {
+      window.open(SUPPORT_WHATSAPP_URL, '_blank', 'noopener,noreferrer');
+      return;
+    }
     if (workspaceStatus.action === 'checkout') {
       setShowPlanCatalog(true);
       return;
@@ -907,7 +913,7 @@ export function Home() {
                   <span className="rounded-full bg-[var(--bg-base)]/70 px-2 py-0.5 text-[11px] font-semibold capitalize">
                     {formatStatusValue(surface, language)}
                   </span>
-                  {accountSnapshot ? (
+                  {accountSnapshot && !hasPendingPaymentReview ? (
                     <span className="rounded-full bg-[var(--bg-base)]/70 px-2 py-0.5 text-[11px] font-semibold capitalize">
                       {formatText(t.homeBillingStatus, { status: formatStatusValue(billingStatusLabel, language) })}
                     </span>
@@ -976,7 +982,7 @@ export function Home() {
         </section>
       ) : null}
 
-      {isAuthenticated && accountSnapshot ? (
+      {isAuthenticated && accountSnapshot && !hasPendingPaymentReview ? (
         <PlanGrowthSurface
           snapshot={accountSnapshot}
           t={t}

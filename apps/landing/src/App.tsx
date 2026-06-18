@@ -66,6 +66,36 @@ type RegisterState = {
   duration: BillingDuration;
 };
 
+function browserLocaleParts(): { languages: string[]; timeZone: string } {
+  const languages = (navigator.languages?.length ? navigator.languages : [navigator.language])
+    .filter(Boolean)
+    .map((item) => item.toLowerCase());
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+  return { languages, timeZone };
+}
+
+function inferInitialLanguage(): Language {
+  const { languages, timeZone } = browserLocaleParts();
+  if (languages.some((item) => item === 'id' || item.startsWith('id-')) || /jakarta|makassar|jayapura|pontianak/i.test(timeZone)) {
+    return 'id';
+  }
+  if (languages.some((item) => item.endsWith('-bn') || item === 'ms-bn') || /brunei/i.test(timeZone)) {
+    return 'bn';
+  }
+  return 'en';
+}
+
+function inferInitialRegion(): Region {
+  const { languages, timeZone } = browserLocaleParts();
+  if (languages.some((item) => item === 'id' || item.startsWith('id-')) || /jakarta|makassar|jayapura|pontianak/i.test(timeZone)) return 'id';
+  if (languages.some((item) => item.endsWith('-bn') || item === 'ms-bn') || /brunei/i.test(timeZone)) return 'bn';
+  if (languages.some((item) => item.endsWith('-my')) || /kuala_lumpur|kuching/i.test(timeZone)) return 'my';
+  if (languages.some((item) => item.endsWith('-sg')) || /singapore/i.test(timeZone)) return 'sg';
+  if (languages.some((item) => item.endsWith('-au')) || /sydney|melbourne|perth|brisbane|adelaide/i.test(timeZone)) return 'au';
+  if (languages.some((item) => item.endsWith('-us')) || /new_york|los_angeles|chicago|denver/i.test(timeZone)) return 'us';
+  return 'global';
+}
+
 function getRegionName(region: Region): string {
   switch (region) {
     case 'id': return 'Indonesia';
@@ -407,13 +437,14 @@ export function App() {
     const stored = localStorage.getItem('baristachaw-marketing-language');
     if (stored === 'en') return 'en';
     if (stored === 'bn') return 'bn';
-    return 'id';
+    if (stored === 'id') return 'id';
+    return inferInitialLanguage();
   });
 
   const [region, setRegion] = useState<Region>(() => {
     const stored = localStorage.getItem('baristachaw-marketing-region');
     if (stored) return stored as Region;
-    return 'global';
+    return inferInitialRegion();
   });
 
   const [user, setUser] = useState<any>(null);

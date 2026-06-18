@@ -14,6 +14,38 @@ type RegisterModalProps = {
   onClose: () => void;
 };
 
+const MANUAL_PAYMENT_PENDING_STORAGE_KEY = 'BARISTACHAW_MANUAL_PAYMENT_PENDING_V1';
+
+function readPendingManualPaymentMarker(): boolean {
+  try {
+    const raw = window.localStorage.getItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as { status?: string; updatedAt?: number };
+    const updatedAt = Number(parsed.updatedAt || 0);
+    const maxAgeMs = 14 * 24 * 60 * 60 * 1000;
+    if (!updatedAt || Date.now() - updatedAt > maxAgeMs) {
+      window.localStorage.removeItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY);
+      return false;
+    }
+    return parsed.status === 'receipt_received' || parsed.status === 'pending_admin_review';
+  } catch {
+    return false;
+  }
+}
+
+function writePendingManualPaymentMarker(paymentRequestId: string, planCode: string): void {
+  try {
+    window.localStorage.setItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY, JSON.stringify({
+      paymentRequestId,
+      planCode,
+      status: 'pending_admin_review',
+      updatedAt: Date.now(),
+    }));
+  } catch {
+    // Server account status remains the cross-device source of truth.
+  }
+}
+
 export function RegisterModal({ language, plan, duration, user, onLoginSuccess, onClose }: RegisterModalProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -28,8 +60,10 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   const [otpCode, setOtpCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
-  // Step state: 'pilih' | 'checkout' | 'success'
-  const [step, setStep] = useState<'pilih' | 'checkout' | 'success'>('pilih');
+  // Step state: 'pilih' | 'checkout' | 'success' | 'pending'
+  const [step, setStep] = useState<'pilih' | 'checkout' | 'success' | 'pending'>(() => (
+    plan !== 'free' && plan !== 'team' && readPendingManualPaymentMarker() ? 'pending' : 'pilih'
+  ));
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro'>(() => {
     if (plan === 'pro') return 'pro';
     return 'starter';
@@ -72,6 +106,30 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
       </a>
     </div>
   );
+
+  const markPendingReview = (
+    paymentRequestId = invoice?.id || '',
+    planCode = selectedPlan,
+    deliveryMode: 'direct_upload' | 'manual_support' = 'direct_upload',
+  ) => {
+    writePendingManualPaymentMarker(paymentRequestId, planCode);
+    setProofDelivery(deliveryMode);
+    setStep('success');
+  };
+
+  const showPendingReview = () => {
+    setInvoice(null);
+    setUploadedFile(null);
+    setTurnstileVerified(false);
+    setProofDelivery((current) => current || 'manual_support');
+    setStep('pending');
+  };
+
+  useEffect(() => {
+    if (plan !== 'free' && plan !== 'team' && readPendingManualPaymentMarker()) {
+      setStep('pending');
+    }
+  }, [plan]);
 
   useEffect(() => {
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -169,6 +227,10 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        if (data.errorCode === 'pending_invoice_exists') {
+          showPendingReview();
+          return;
+        }
         throw new Error(data.error || data.details || 'Failed to create manual transfer invoice');
       }
       if (data.ok && data.manualInvoice) {
@@ -241,7 +303,11 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
         return;
       }
 
-      setStep('checkout');
+      if (readPendingManualPaymentMarker()) {
+        showPendingReview();
+      } else {
+        setStep('checkout');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -296,7 +362,11 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
         return;
       }
 
-      setStep('checkout');
+      if (readPendingManualPaymentMarker()) {
+        showPendingReview();
+      } else {
+        setStep('checkout');
+      }
       setIsVerifySignupOtp(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid verification code');
@@ -401,7 +471,11 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
         return;
       }
 
-      setStep('checkout');
+      if (readPendingManualPaymentMarker()) {
+        showPendingReview();
+      } else {
+        setStep('checkout');
+      }
       setIsForgotPassword(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Password reset failed');
@@ -498,7 +572,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     if (!proofUploadReady) {
       window.open(manualProofFallbackUrl, '_blank', 'noopener,noreferrer');
       setProofDelivery('manual_support');
-      setStep('success');
+      markPendingReview(invoice.id, selectedPlan, 'manual_support');
       return;
     }
 
@@ -541,7 +615,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
             const supportUrl = data.supportLinks?.whatsappUrl || manualProofFallbackUrl;
             if (supportUrl) window.open(supportUrl, '_blank', 'noopener,noreferrer');
             setProofDelivery('manual_support');
-            setStep('success');
+            markPendingReview(invoice.id, selectedPlan, 'manual_support');
             return;
           }
         } else {
@@ -549,7 +623,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
           if (supportUrl) window.open(supportUrl, '_blank', 'noopener,noreferrer');
         }
         setProofDelivery(data.deliveryMode || 'direct_upload');
-        setStep('success');
+        markPendingReview(invoice.id, selectedPlan, data.deliveryMode || 'direct_upload');
       } else {
         throw new Error(data.error || 'Gagal mengirim bukti transfer');
       }
@@ -653,7 +727,13 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                   <button
                     className="checkout-submit-btn"
                     type="button"
-                    onClick={() => setStep('checkout')}
+                    onClick={() => {
+                      if (readPendingManualPaymentMarker()) {
+                        showPendingReview();
+                      } else {
+                        setStep('checkout');
+                      }
+                    }}
                     style={{ marginBottom: '12px' }}
                   >
                     Lanjut ke Pembayaran <ArrowRight size={16} />
@@ -969,60 +1049,31 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                       <span className="total-transfer-label">TOTAL TRANSFER</span>
                       <strong className="total-transfer-amount">{invoice.amountLabel}</strong>
                       <p className="total-transfer-notice">
-                        *Pastikan transfer sesuai hingga 3 digit terakhir{' '}
-                        <strong>({invoice.uniqueSuffix || invoice.id.slice(-3).replace(/[^0-9]/g, '3')})</strong>
+                        Transfer tepat sebesar <strong>{invoice.amountLabel}</strong>.
+                        {invoice.uniqueSuffix ? (
+                          <> Kode <strong>{invoice.uniqueSuffix}</strong> membantu admin mencocokkan invoice Anda.</>
+                        ) : (
+                          <> Nominal invoice membantu admin mencocokkan pembayaran Anda.</>
+                        )}
                       </p>
                     </div>
 
-                    <div className="qris-box">
-                      <div className="qris-image">
-                        {/* Custom Scalable Red vector QRIS SVG */}
-                        <svg viewBox="0 0 200 200" style={{ width: '100%', height: '100%' }}>
-                          <rect x="0" y="0" width="200" height="28" fill="#E1251B" rx="4" />
-                          <text x="100" y="17" fill="#ffffff" fontSize="9" fontWeight="800" textAnchor="middle" fontFamily="system-ui, -apple-system, sans-serif">QRIS MANUAL</text>
-                          <rect x="25" y="42" width="150" height="150" fill="none" stroke="#E1251B" strokeWidth="2" rx="4" />
-                          <rect x="35" y="52" width="30" height="30" fill="#000000" />
-                          <rect x="40" y="57" width="20" height="20" fill="#ffffff" />
-                          <rect x="45" y="62" width="10" height="10" fill="#000000" />
-                          <rect x="135" y="52" width="30" height="30" fill="#000000" />
-                          <rect x="140" y="57" width="20" height="20" fill="#ffffff" />
-                          <rect x="145" y="62" width="10" height="10" fill="#000000" />
-                          <rect x="35" y="142" width="30" height="30" fill="#000000" />
-                          <rect x="40" y="147" width="20" height="20" fill="#ffffff" />
-                          <rect x="45" y="152" width="10" height="10" fill="#000000" />
-                          <rect x="75" y="52" width="10" height="10" fill="#000000" />
-                          <rect x="95" y="52" width="15" height="5" fill="#000000" />
-                          <rect x="120" y="52" width="5" height="10" fill="#000000" />
-                          <rect x="75" y="72" width="15" height="10" fill="#000000" />
-                          <rect x="100" y="67" width="10" height="15" fill="#000000" />
-                          <rect x="115" y="72" width="10" height="10" fill="#000000" />
-                          <rect x="35" y="92" width="15" height="5" fill="#000000" />
-                          <rect x="60" y="92" width="10" height="10" fill="#000000" />
-                          <rect x="80" y="87" width="25" height="10" fill="#000000" />
-                          <rect x="115" y="92" width="10" height="15" fill="#000000" />
-                          <rect x="135" y="92" width="15" height="10" fill="#000000" />
-                          <rect x="160" y="87" width="5" height="20" fill="#000000" />
-                          <rect x="35" y="112" width="10" height="15" fill="#000000" />
-                          <rect x="55" y="112" width="20" height="10" fill="#000000" />
-                          <rect x="85" y="112" width="10" height="15" fill="#000000" />
-                          <rect x="105" y="107" width="15" height="10" fill="#000000" />
-                          <rect x="130" y="112" width="5" height="10" fill="#000000" />
-                          <rect x="145" y="112" width="20" height="15" fill="#000000" />
-                          <rect x="75" y="132" width="10" height="10" fill="#000000" />
-                          <rect x="95" y="132" width="15" height="15" fill="#000000" />
-                          <rect x="120" y="132" width="10" height="10" fill="#000000" />
-                          <rect x="75" y="152" width="25" height="10" fill="#000000" />
-                          <rect x="110" y="147" width="10" height="15" fill="#000000" />
-                          <rect x="130" y="152" width="15" height="10" fill="#000000" />
-                          <rect x="155" y="147" width="10" height="20" fill="#000000" />
-                          <rect x="75" y="172" width="10" height="10" fill="#000000" />
-                          <rect x="95" y="167" width="15" height="10" fill="#000000" />
-                          <rect x="120" y="172" width="20" height="5" fill="#000000" />
-                          <rect x="150" y="172" width="15" height="10" fill="#000000" />
-                        </svg>
+                    {invoice.instructions.qrisImageUrl ? (
+                      <div className="qris-box">
+                        <img
+                          className="qris-image"
+                          src={invoice.instructions.qrisImageUrl}
+                          alt={invoice.instructions.qrisLabel || 'QRIS manual Baristachaw'}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                        <span>{invoice.instructions.qrisLabel || 'Scan QRIS manual'}</span>
                       </div>
-                      <span>Scan QRIS Manual</span>
-                    </div>
+                    ) : (
+                      <div className="qris-empty-box">
+                        QRIS belum aktif untuk invoice ini. Gunakan transfer bank di bawah.
+                      </div>
+                    )}
 
                     {invoice.instructions.banks && invoice.instructions.banks.length > 0 ? (
                       invoice.instructions.banks.map((bank: any, idx: number) => {
@@ -1147,6 +1198,38 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                 ) : null}
               </div>
           </>
+        )}
+
+        {/* Pending guard: proof already submitted, no duplicate plan/payment flow */}
+        {step === 'pending' && (
+          <div className="checkout-success-view">
+            <div className="success-checkmark-circle pending">
+              <AlertCircle size={30} strokeWidth={2.5} />
+            </div>
+            <div>
+              <h3>Pembayaran Menunggu Review</h3>
+              <p style={{ marginTop: '10px' }}>
+                Bukti transfer sudah masuk antrean admin. Paket aktif setelah admin mencocokkan pembayaran. Jangan memilih paket lain atau mengirim bukti ulang.
+              </p>
+            </div>
+            {renderSupportLinks()}
+            <div style={{ display: 'grid', gap: '10px', marginTop: '12px' }}>
+              <a
+                className="checkout-submit-btn"
+                href={APP_ORIGIN}
+                style={{ textDecoration: 'none' }}
+              >
+                Buka aplikasi <ArrowRight size={16} />
+              </a>
+              <button
+                type="button"
+                className="checkout-secondary-btn"
+                onClick={onClose}
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Step 3: SUCCESS */}

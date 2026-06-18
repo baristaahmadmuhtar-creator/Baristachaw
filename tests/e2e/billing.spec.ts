@@ -131,6 +131,16 @@ test('upgrade gate flows to manual invoice checkout and handles valid/invalid pr
 
   await page.getByRole('button', { name: /Mengerti/i }).click();
   await expect(modal).toHaveCount(0);
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByTestId('home-plan-growth-panel')).toContainText(/Payment waiting for review|Pembayaran menunggu review/i);
+  await expect(page.getByTestId('home-plan-growth-panel').getByRole('button', { name: /View plan options|Lihat pilihan paket/i })).toHaveCount(0);
+  await expect(page.getByTestId('home-plan-growth-panel').getByRole('link', { name: /WhatsApp|Hubungi dukungan/i })).toBeVisible();
+  await page.goto('/scanner', { waitUntil: 'domcontentloaded' });
+  await page.locator('input[type="file"]').first().setInputFiles({
+    name: 'test.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(tinyPngBase64, 'base64'),
+  });
   await page.getByRole('button', { name: /Analyze Image|Analisis Gambar/i }).click();
   await expect(modal).toBeVisible();
   await expect(page.getByText(/Bukti pembayaran sedang diperiksa/i)).toBeVisible();

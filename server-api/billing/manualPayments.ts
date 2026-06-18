@@ -31,6 +31,8 @@ export type ManualPaymentInstructions = {
   supportEmail?: string;
   instagramUrl?: string;
   instagramHandle?: string;
+  qrisImageUrl?: string;
+  qrisLabel?: string;
   notifyWebhookConfigured: boolean;
 };
 
@@ -130,6 +132,18 @@ function safeText(value: unknown, fallback = '', maxLength = 240): string {
   return trimmed ? trimmed.slice(0, maxLength) : fallback;
 }
 
+function safeHttpsUrl(value: unknown, fallback = '', maxLength = 600): string {
+  const candidate = safeText(value, fallback, maxLength);
+  if (!candidate) return '';
+  try {
+    const url = new URL(candidate);
+    if (url.protocol !== 'https:') return '';
+    return url.toString();
+  } catch {
+    return '';
+  }
+}
+
 function safeNumber(value: unknown, fallback = 0): number {
   const amount = Number(value);
   return Number.isFinite(amount) ? amount : fallback;
@@ -226,6 +240,8 @@ function normalizeStoredInstructions(
     supportEmail: safeText(raw.supportEmail, fallback.supportEmail, 320) || undefined,
     instagramUrl: safeText(raw.instagramUrl, fallback.instagramUrl, 500) || undefined,
     instagramHandle: safeText(raw.instagramHandle, fallback.instagramHandle, 80) || undefined,
+    qrisImageUrl: safeHttpsUrl(raw.qrisImageUrl, fallback.qrisImageUrl) || undefined,
+    qrisLabel: safeText(raw.qrisLabel, fallback.qrisLabel, 80) || undefined,
     notifyWebhookConfigured: Boolean(raw.notifyWebhookConfigured ?? fallback.notifyWebhookConfigured),
   };
 }
@@ -260,6 +276,8 @@ export function readManualPaymentInstructions(
   const whatsappNumber = normalizeWhatsappNumber(envText('MANUAL_PAYMENT_WHATSAPP_NUMBER') || '+6738270092');
   const supportEmail = envText('MANUAL_PAYMENT_SUPPORT_EMAIL') || 'support@baristachaw.com';
   const instagram = '@baristachaw';
+  const qrisImageUrl = safeHttpsUrl(envText(`MANUAL_PAYMENT_QRIS_IMAGE_URL_${currency.toUpperCase()}`) || envText('MANUAL_PAYMENT_QRIS_IMAGE_URL'));
+  const qrisLabel = envText(`MANUAL_PAYMENT_QRIS_LABEL_${currency.toUpperCase()}`) || envText('MANUAL_PAYMENT_QRIS_LABEL') || 'QRIS manual';
 
   let banks: BankDetail[] = [];
 
@@ -333,6 +351,8 @@ export function readManualPaymentInstructions(
     supportEmail,
     instagramUrl: `https://instagram.com/${instagram.replace(/^@/, '')}`,
     instagramHandle: instagram,
+    qrisImageUrl: qrisImageUrl || undefined,
+    qrisLabel: qrisImageUrl ? qrisLabel : undefined,
     notifyWebhookConfigured: Boolean(envText('MANUAL_PAYMENT_NOTIFY_WEBHOOK_URL')),
   };
 }

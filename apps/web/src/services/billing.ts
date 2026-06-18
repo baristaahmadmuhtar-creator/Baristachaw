@@ -17,6 +17,8 @@ export type ManualPaymentInstructions = {
   supportEmail?: string;
   instagramUrl?: string;
   instagramHandle?: string;
+  qrisImageUrl?: string;
+  qrisLabel?: string;
   notifyWebhookConfigured: boolean;
 };
 

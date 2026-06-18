@@ -122,6 +122,40 @@ function makeWelcomeMessage(text: string, sessionId: string): ChatMessage {
     };
 }
 
+function browserLocaleParts(): { languages: string[]; timeZone: string } {
+    try {
+        const languages = (navigator.languages?.length ? navigator.languages : [navigator.language])
+            .filter(Boolean)
+            .map((item) => item.toLowerCase());
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+        return { languages, timeZone };
+    } catch {
+        return { languages: [], timeZone: '' };
+    }
+}
+
+function inferInitialLanguage(): Language {
+    const { languages, timeZone } = browserLocaleParts();
+    if (languages.some((item) => item === 'id' || item.startsWith('id-')) || /jakarta|makassar|jayapura|pontianak/i.test(timeZone)) {
+        return 'id';
+    }
+    if (languages.some((item) => item === 'ms' || item.startsWith('ms-') || item.endsWith('-bn')) || /brunei/i.test(timeZone)) {
+        return 'ms';
+    }
+    return DEFAULT_LANGUAGE;
+}
+
+function inferInitialRegion(): Region {
+    const { languages, timeZone } = browserLocaleParts();
+    if (languages.some((item) => item === 'id' || item.startsWith('id-')) || /jakarta|makassar|jayapura|pontianak/i.test(timeZone)) return 'id';
+    if (languages.some((item) => item.endsWith('-bn') || item === 'ms-bn') || /brunei/i.test(timeZone)) return 'bn';
+    if (languages.some((item) => item.endsWith('-my')) || /kuala_lumpur|kuching/i.test(timeZone)) return 'my';
+    if (languages.some((item) => item.endsWith('-sg')) || /singapore/i.test(timeZone)) return 'sg';
+    if (languages.some((item) => item.endsWith('-au')) || /sydney|melbourne|perth|brisbane|adelaide/i.test(timeZone)) return 'au';
+    if (languages.some((item) => item.endsWith('-us')) || /new_york|los_angeles|chicago|denver/i.test(timeZone)) return 'us';
+    return 'global';
+}
+
 // ─── Default Settings ───
 function loadAiSettings(): AiSettings {
     try {
@@ -161,7 +195,7 @@ function loadLanguage(): Language {
             if (isSupportedLanguage(parsed?.language)) return parsed.language;
         }
     } catch { }
-    return DEFAULT_LANGUAGE;
+    return inferInitialLanguage();
 }
 
 function loadRegion(): Region {
@@ -175,7 +209,7 @@ function loadRegion(): Region {
     } catch { }
     const stored = safeGetLocalStorageItem(REGION_KEY);
     if (stored === 'id' || stored === 'bn' || stored === 'my' || stored === 'sg' || stored === 'au' || stored === 'eu' || stored === 'us' || stored === 'global') return stored as Region;
-    return 'id'; // default region
+    return inferInitialRegion();
 }
 
 // ─── Provider ───
@@ -439,6 +473,5 @@ export function useGlobalState() {
     }
     return context;
 }
-
 
 

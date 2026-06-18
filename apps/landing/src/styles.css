@@ -1817,6 +1817,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   width: 200px;
   height: 200px;
+  object-fit: contain;
 }
 .qris-box span {
   font-size: 12px;
@@ -1824,6 +1825,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   color: rgba(255, 255, 255, 0.6);
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+.qris-empty-box {
+  border: 1px solid rgba(59, 130, 246, 0.28);
+  background: rgba(59, 130, 246, 0.08);
+  color: rgba(255, 255, 255, 0.78);
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: center;
 }
 
 /* Bank Account Detail */
@@ -2010,6 +2022,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   color: #10b981;
   animation: scaleSuccess 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+.success-checkmark-circle.pending {
+  background: rgba(250, 204, 21, 0.1);
+  border-color: rgba(250, 204, 21, 0.45);
+  color: #facc15;
+}
 @keyframes scaleSuccess {
   from { transform: scale(0.6); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
@@ -2052,4 +2069,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .checkout-submit-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+.checkout-secondary-btn {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  border-radius: 99px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.checkout-secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
 }

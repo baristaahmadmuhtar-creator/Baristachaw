@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { ChevronDown } from 'lucide-react';
-import { ArrowRight, Check, CreditCard, Crown, Gauge, RefreshCw, ShieldCheck, Sparkles, X } from '../icons';
+import { Instagram, MessageCircle } from 'lucide-react';
+import { ArrowRight, Check, CreditCard, Gauge, RefreshCw, ShieldCheck, Sparkles, X } from '../icons';
 import type { AccountPlan, AccountStatusSnapshot, PlanCode } from '../../services/accountStatus';
 import { BillingApiError, planDisplayName, startBillingCheckout, submitManualPaymentProof, type BillingManualInvoiceResponse } from '../../services/billing';
 import { getCurrencyForRegion, PLAN_CATALOG, PRICING, formatCurrency } from '../../services/billingConfig';
@@ -24,22 +24,28 @@ type PlanGrowthSurfaceProps = {
 const currentColorIconStyle = { '--icon-glyph-color': 'currentColor' } as CSSProperties;
 
 const PLAN_ORDER: PlanCode[] = ['free', 'starter', 'pro', 'team'];
+const MANUAL_PAYMENT_PENDING_STORAGE_KEY = 'BARISTACHAW_MANUAL_PAYMENT_PENDING_V1';
+
+function readPendingManualPaymentMarker(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const raw = window.localStorage.getItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as { status?: string; updatedAt?: number };
+    const updatedAt = Number(parsed.updatedAt || 0);
+    const maxAgeMs = 14 * 24 * 60 * 60 * 1000;
+    if (!updatedAt || Date.now() - updatedAt > maxAgeMs) {
+      window.localStorage.removeItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY);
+      return false;
+    }
+    return parsed.status === 'receipt_received' || parsed.status === 'pending_admin_review';
+  } catch {
+    return false;
+  }
+}
 
 function catalogFeatures(planCode: 'free' | 'starter' | 'pro' | 'team'): string[] {
   return PLAN_CATALOG.find((plan) => plan.code === planCode)?.features || [];
-}
-
-function getRegionName(region: string): string {
-  switch (region) {
-    case 'id': return 'Indonesia';
-    case 'bn': return 'Brunei';
-    case 'my': return 'Malaysia';
-    case 'sg': return 'Singapore';
-    case 'eu': return 'Europe';
-    case 'au': return 'Australia';
-    case 'us': return 'United States';
-    default: return 'Global';
-  }
 }
 
 function formatCompactNumber(value: number, locale = 'en'): string {
@@ -377,14 +383,25 @@ export function PlanGrowthSurface({
   const recommendedPlan = useMemo(() => snapshot ? resolveRecommendedPlan(snapshot) : null, [snapshot]);
   const currentPlanCode = snapshot?.user.planCode || snapshot?.plan.code || 'free';
   const currentPlan = displayPlans.find((plan) => plan.code === currentPlanCode) || snapshot?.plan || null;
-  const showUpgradeFraming = currentPlanCode === 'free' || snapshot?.recommendedUpgrade.action === 'checkout';
+  const hasPendingManualPayment = Boolean(
+    (snapshot?.billing.provider === 'manual' && snapshot?.billing.paymentActionRequired)
+      || (snapshot?.billing.paymentAction === 'contact_support' && snapshot?.billing.paymentActionRequired)
+      || readPendingManualPaymentMarker(),
+  );
+  const showUpgradeFraming = !hasPendingManualPayment && (currentPlanCode === 'free' || snapshot?.recommendedUpgrade.action === 'checkout');
   const showCompactPaidSurface = !showUpgradeFraming;
-  const hasActivePaidPlan = currentPlanCode !== 'free';
+  const hasActivePaidPlan = currentPlanCode !== 'free' && !hasPendingManualPayment;
+  const pendingSupportWhatsappUrl = manualInvoice?.manualInvoice.instructions.whatsappUrl || 'https://wa.me/6738270092';
+  const pendingSupportInstagramUrl = manualInvoice?.manualInvoice.instructions.instagramUrl || 'https://instagram.com/baristachaw';
+  const pendingTitle = language === 'id' ? 'Pembayaran menunggu review' : 'Payment waiting for review';
+  const pendingBody = language === 'id'
+    ? 'Bukti transfer sudah masuk antrean admin. Paket aktif setelah admin mencocokkan pembayaran. Jangan kirim ulang bukti atau membuat invoice baru.'
+    : 'Your transfer proof is already in the admin queue. The plan becomes active after payment review. Do not submit another proof or create a new invoice.';
 
   useEffect(() => {
     if (!isOpen) return;
     setActionError('');
-    if (manualProofStatus === 'submitted') {
+    if (hasPendingManualPayment || manualProofStatus === 'submitted') {
       setCheckoutStep('success');
     } else {
       setManualProofStatus('idle');
@@ -399,7 +416,7 @@ export function PlanGrowthSurface({
       window.clearTimeout(timer);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [isOpen, manualInvoice, onClose]);
+  }, [hasPendingManualPayment, isOpen, manualInvoice, manualProofStatus, onClose]);
 
   useEffect(() => {
     if (isOpen) return;
@@ -417,6 +434,10 @@ export function PlanGrowthSurface({
 
   const handleChoosePlan = async (planCode: string) => {
     setActionError('');
+    if (hasPendingManualPayment) {
+      setCheckoutStep('success');
+      return;
+    }
     setManualInvoice(null);
     setManualProofFile(null);
     setManualProofStatus('idle');
@@ -539,10 +560,10 @@ export function PlanGrowthSurface({
             <div className={`flex items-start justify-between gap-4 border-b border-glass px-5 py-4 sm:px-6 ${isRtl ? 'flex-row-reverse text-right' : ''}`}>
               <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">
-                  {checkoutStep === 'choose' ? t.homePlanCatalogEyebrow : checkoutStep === 'success' ? 'Berhasil' : 'Checkout'}
+                  {hasPendingManualPayment ? 'Review admin' : checkoutStep === 'choose' ? t.homePlanCatalogEyebrow : checkoutStep === 'success' ? 'Berhasil' : 'Checkout'}
                 </p>
                 <h2 className="mt-1 text-xl font-black tracking-tight text-primary sm:text-2xl">
-                  {checkoutStep === 'choose' ? t.homePlanCatalogTitle : checkoutStep === 'success' ? 'Menunggu Peninjauan' : 'Selesaikan Pembayaran'}
+                  {hasPendingManualPayment ? pendingTitle : checkoutStep === 'choose' ? t.homePlanCatalogTitle : checkoutStep === 'success' ? 'Menunggu Peninjauan' : 'Selesaikan Pembayaran'}
                 </h2>
               </div>
               <button
@@ -710,16 +731,38 @@ export function PlanGrowthSurface({
                   <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600">
                     <Check size={28} />
                   </div>
-                  <h3 className="mt-4 text-xl font-black">Bukti Diterima - Menunggu Review</h3>
+                  <h3 className="mt-4 text-xl font-black">{hasPendingManualPayment ? pendingTitle : 'Bukti Diterima - Menunggu Review'}</h3>
                   <p className="mt-2 text-sm leading-6 text-secondary">
-                    {manualProofDelivery === 'manual_support'
+                    {hasPendingManualPayment
+                      ? pendingBody
+                      : manualProofDelivery === 'manual_support'
                       ? 'Invoice sudah masuk antrean admin. Kirim file bukti lewat WhatsApp atau Instagram dengan ID invoice agar review lebih cepat.'
                       : 'Admin sedang memverifikasi transaksi Anda. Harap tunggu hingga proses review selesai sebelum plan aktif.'}
                   </p>
+                  <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+                    <a
+                      href={pendingSupportWhatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 font-extrabold text-white transition-colors hover:bg-blue-700"
+                    >
+                      <MessageCircle size={18} />
+                      WhatsApp
+                    </a>
+                    <a
+                      href={pendingSupportInstagramUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)] px-5 font-extrabold text-primary transition-colors hover:bg-surface-alpha"
+                    >
+                      <Instagram size={18} />
+                      Instagram
+                    </a>
+                  </div>
                   <button
                     type="button"
                     onClick={onClose}
-                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-600 px-5 font-extrabold text-white transition-colors hover:bg-blue-700"
+                    className="mt-3 inline-flex min-h-11 items-center justify-center rounded-xl border border-glass bg-[var(--bg-base)] px-5 font-extrabold text-primary transition-colors hover:bg-surface-alpha"
                   >
                     Tutup
                   </button>
@@ -837,22 +880,46 @@ export function PlanGrowthSurface({
               <ShieldCheck className="shrink-0" size={34} variant="tile" tone="green" intensity="micro" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-black text-primary">
-                  {t.homePlanPaidTitle.replace('{plan}', formatPlanName(currentPlan, language))}
+                  {hasPendingManualPayment
+                    ? pendingTitle
+                    : t.homePlanPaidTitle.replace('{plan}', formatPlanName(currentPlan, language))}
                 </p>
                 <p className="mt-0.5 text-xs font-semibold text-secondary">
-                  {t.homePlanPaidProof}
+                  {hasPendingManualPayment ? pendingBody : t.homePlanPaidProof}
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onOpen}
-              data-testid="home-plan-open-catalog"
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)]/70 px-3 text-sm font-bold text-primary transition-colors hover:bg-[var(--bg-base)]"
-            >
-              <Gauge size={16} variant="glyph" tone="blue" />
-              {t.homePlanCompare}
-            </button>
+            {hasPendingManualPayment ? (
+              <div className={`flex shrink-0 flex-col gap-2 sm:flex-row ${isRtl ? 'sm:flex-row-reverse' : ''}`}>
+                <a
+                  href={pendingSupportWhatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-bold text-white transition-colors hover:bg-blue-700"
+                >
+                  <MessageCircle size={16} />
+                  WhatsApp
+                </a>
+                <button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)]/70 px-3 text-sm font-bold text-primary transition-colors hover:bg-[var(--bg-base)]"
+                >
+                  <RefreshCw size={16} variant="glyph" tone="blue" />
+                  Sinkronkan status
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpen}
+                data-testid="home-plan-open-catalog"
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)]/70 px-3 text-sm font-bold text-primary transition-colors hover:bg-[var(--bg-base)]"
+              >
+                <Gauge size={16} variant="glyph" tone="blue" />
+                {t.homePlanCompare}
+              </button>
+            )}
           </div>
         </section>
         {modal}
@@ -878,15 +945,21 @@ export function PlanGrowthSurface({
                 {t.homePlanMetricCurrent}: {formatPlanName(currentPlan, language)}
               </span>
               <span className="rounded-full bg-[var(--bg-base)]/70 px-3 py-1 text-xs font-bold text-secondary">
-                {showUpgradeFraming ? `${t.homePlanRecommended}: ${formatPlanName(recommendedPlan, language)}` : t.homePlanPaidProof}
+                {hasPendingManualPayment
+                  ? pendingTitle
+                  : showUpgradeFraming ? `${t.homePlanRecommended}: ${formatPlanName(recommendedPlan, language)}` : t.homePlanPaidProof}
               </span>
             </div>
             <h2 className="text-lg font-black tracking-tight text-primary sm:text-xl">
-              {(showUpgradeFraming ? t.homePlanGrowthTitle : t.homePlanPaidTitle)
+              {hasPendingManualPayment ? pendingTitle : (showUpgradeFraming ? t.homePlanGrowthTitle : t.homePlanPaidTitle)
                 .replace('{plan}', formatPlanName(currentPlan, language))
                 .replace('{recommendedPlan}', formatPlanName(recommendedPlan, language))}
             </h2>
-            {!showUpgradeFraming && t.homePlanPaidBody ? (
+            {hasPendingManualPayment ? (
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-secondary">
+                {pendingBody}
+              </p>
+            ) : !showUpgradeFraming && t.homePlanPaidBody ? (
               <p className="mt-1 max-w-3xl text-sm leading-6 text-secondary">
                 {t.homePlanPaidBody
                   .replace('{plan}', formatPlanName(currentPlan, language))
@@ -896,30 +969,55 @@ export function PlanGrowthSurface({
           </div>
 
           <div className={`flex shrink-0 flex-col gap-2 sm:flex-row sm:flex-wrap ${isRtl ? 'sm:justify-end' : ''}`}>
-            <button
-              type="button"
-              onClick={onOpen}
-              data-testid="home-plan-open-catalog"
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 text-sm font-bold text-white shadow-[0_14px_30px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-700"
-            >
-              <CreditCard size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />
-              {t.homePlanViewOptions}
-              <ArrowRight
-                size={16}
-                className={isRtl ? 'rotate-180' : ''}
-                variant="glyph"
-                tone="neutral"
-                style={currentColorIconStyle}
-              />
-            </button>
-            <button
-              type="button"
-              onClick={onOpen}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-glass bg-[var(--bg-base)]/70 px-4 text-sm font-bold text-primary transition-colors hover:bg-[var(--bg-base)]"
-            >
-              <Gauge size={17} variant="glyph" tone="blue" />
-              {t.homePlanCompare}
-            </button>
+            {hasPendingManualPayment ? (
+              <>
+                <a
+                  href={pendingSupportWhatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 text-sm font-bold text-white shadow-[0_14px_30px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-700"
+                >
+                  <MessageCircle size={17} />
+                  Hubungi dukungan
+                </a>
+                <a
+                  href={pendingSupportInstagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-glass bg-[var(--bg-base)]/70 px-4 text-sm font-bold text-primary transition-colors hover:bg-[var(--bg-base)]"
+                >
+                  <Instagram size={17} />
+                  Instagram
+                </a>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={onOpen}
+                  data-testid="home-plan-open-catalog"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 text-sm font-bold text-white shadow-[0_14px_30px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-700"
+                >
+                  <CreditCard size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />
+                  {t.homePlanViewOptions}
+                  <ArrowRight
+                    size={16}
+                    className={isRtl ? 'rotate-180' : ''}
+                    variant="glyph"
+                    tone="neutral"
+                    style={currentColorIconStyle}
+                  />
+                </button>
+                <button
+                  type="button"
+                  onClick={onOpen}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-glass bg-[var(--bg-base)]/70 px-4 text-sm font-bold text-primary transition-colors hover:bg-[var(--bg-base)]"
+                >
+                  <Gauge size={17} variant="glyph" tone="blue" />
+                  {t.homePlanCompare}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </section>

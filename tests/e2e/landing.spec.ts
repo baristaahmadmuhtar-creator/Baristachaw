@@ -2,6 +2,10 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('baristachaw-marketing-language', 'id');
+    localStorage.setItem('baristachaw-marketing-region', 'id');
+  });
   await page.route('**/api/auth/me?soft=1', async (route) => {
     await route.fulfill({
       status: 200,
@@ -137,6 +141,8 @@ test('billing modal creates manual invoice and submits proof with inline validat
             whatsappUrl: 'https://wa.me/6738270092',
             instagramUrl: 'https://instagram.com/baristachaw',
             instagramHandle: '@baristachaw',
+            qrisImageUrl: 'https://cdn.example.com/qris.png',
+            qrisLabel: 'QRIS Baristachaw QA',
           },
           proof: {
             endpoint: '/api/billing/proof',
@@ -189,6 +195,8 @@ test('billing modal creates manual invoice and submits proof with inline validat
   await page.getByRole('button', { name: /Daftar & Bayar/i }).click();
 
   await expect(page.getByText(/TOTAL TRANSFER/i)).toBeVisible();
+  await expect(page.getByText(/Kode 123 membantu admin/i)).toBeVisible();
+  await expect(page.getByRole('img', { name: /QRIS Baristachaw QA/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /Kirim Bukti/i })).toBeDisabled();
 
   const proofInput = page.locator('input[type="file"][accept*="image/png"]').last();
@@ -209,6 +217,11 @@ test('billing modal creates manual invoice and submits proof with inline validat
   await page.getByRole('button', { name: /Kirim Bukti/i }).click();
 
   await expect(page.getByRole('heading', { name: /Pembayaran Menunggu Review/i })).toBeVisible();
+  await page.getByRole('button', { name: 'Selesai' }).click();
+  await page.getByRole('button', { name: /Get Barista Starter/i }).click();
+  await expect(page.getByRole('heading', { name: /Pembayaran Menunggu Review/i })).toBeVisible();
+  await expect(page.getByText(/Jangan memilih paket lain atau mengirim bukti ulang/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: /Kirim Bukti/i })).toHaveCount(0);
 });
 
 test('has no serious or critical axe violations', async ({ page }) => {

@@ -53,6 +53,7 @@ import {
   updateAdminUser,
   updateFeatureFlag,
   updateManualPayment,
+  updateManualPaymentQr,
   type AccountRecoveryStatus,
   type AccountStatus,
   type AdminAiUsageAggregate,
@@ -62,6 +63,7 @@ import {
   type AdminFeatureFlag,
   type AdminFeatureFlagPatch,
   type AdminManualPaymentRequest,
+  type AdminManualPaymentQrConfig,
   type AdminPlan,
   type AdminPlanPatch,
   type AdminRole,
@@ -78,6 +80,7 @@ import {
   type FeatureSurface,
   type LaunchChecklistItem,
   type ManualPaymentAction,
+  type ManualPaymentQrCurrency,
   type PlanCode,
 } from '../services/adminApi';
 
@@ -2461,14 +2464,180 @@ function ManualPaymentQueuePanel({
   );
 }
 
+const MANUAL_QR_CURRENCIES: ManualPaymentQrCurrency[] = ['idr', 'bnd', 'myr', 'sgd', 'usd', 'eur', 'aud'];
+
+function ManualPaymentQrPanel({
+  configs,
+  busyCurrency,
+  onSave,
+}: {
+  configs: AdminManualPaymentQrConfig[];
+  busyCurrency: ManualPaymentQrCurrency | null;
+  onSave: (input: { currency: ManualPaymentQrCurrency; qrisImageUrl: string; qrisLabel: string; operatorNote: string }) => void;
+}) {
+  const [currency, setCurrency] = useState<ManualPaymentQrCurrency>('idr');
+  const activeConfig = configs.find((item) => item.currency === currency);
+  const [qrisImageUrl, setQrisImageUrl] = useState(activeConfig?.qrisImageUrl || '');
+  const [qrisLabel, setQrisLabel] = useState(activeConfig?.qrisLabel || 'QRIS manual');
+  const [operatorNote, setOperatorNote] = useState('');
+  const [error, setError] = useState('');
+  const inputId = useId();
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const busy = busyCurrency === currency;
+
+  useEffect(() => {
+    setQrisImageUrl(activeConfig?.qrisImageUrl || '');
+    setQrisLabel(activeConfig?.qrisLabel || 'QRIS manual');
+    setOperatorNote('');
+    setError('');
+  }, [activeConfig?.qrisImageUrl, activeConfig?.qrisLabel, currency]);
+
+  const readFile = (file: File) => {
+    setError('');
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('QR image must be PNG, JPG, or WebP.');
+      return;
+    }
+    if (file.size > 350 * 1024) {
+      setError('QR image must be 350KB or smaller.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : '';
+      if (!/^data:image\/(?:png|jpeg|webp);base64,/i.test(result)) {
+        setError('QR image could not be read safely.');
+        return;
+      }
+      setQrisImageUrl(result);
+      if (!operatorNote) setOperatorNote(`Update ${currency.toUpperCase()} manual payment QR`);
+    };
+    reader.onerror = () => setError('QR image could not be read.');
+    reader.readAsDataURL(file);
+  };
+
+  const canSave = !busy && operatorNote.trim().length >= 3 && (qrisImageUrl === '' || /^data:image\/(?:png|jpeg|webp);base64,/i.test(qrisImageUrl));
+
+  return (
+    <section className="mb-4 rounded-2xl border border-glass bg-surface-alpha p-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-primary">Manual payment QR</p>
+          <p className="mt-1 max-w-2xl text-xs leading-5 text-secondary">
+            Upload QRIS/payment QR per currency. Only admins can change this; checkout displays the active server-controlled image to customers.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {configs.map((item) => (
+            <StatusBadge key={item.currency} value={item.qrisImageUrl ? 'pass' : 'warn'} label={`${item.currency.toUpperCase()} ${item.qrisImageUrl ? 'QR active' : 'QR empty'}`} />
+          ))}
+        </div>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-[12rem_1fr_1fr_auto] lg:items-end">
+        <label className="block">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-tertiary">Currency</span>
+          <select
+            value={currency}
+            onChange={(event) => setCurrency(event.currentTarget.value as ManualPaymentQrCurrency)}
+            className="mt-1 min-h-11 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold text-primary"
+          >
+            {MANUAL_QR_CURRENCIES.map((item) => (
+              <option key={item} value={item}>{item.toUpperCase()}</option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-tertiary">QR label</span>
+          <input
+            value={qrisLabel}
+            onChange={(event) => setQrisLabel(event.currentTarget.value)}
+            className="mt-1 min-h-11 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold text-primary"
+            placeholder="QRIS Baristachaw"
+            maxLength={80}
+          />
+        </label>
+        <label className="block">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-tertiary">Operator note</span>
+          <input
+            value={operatorNote}
+            onChange={(event) => setOperatorNote(event.currentTarget.value)}
+            className="mt-1 min-h-11 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold text-primary"
+            placeholder="Reason for QR change"
+            maxLength={240}
+          />
+        </label>
+        <div className="flex gap-2">
+          <input
+            ref={fileRef}
+            id={inputId}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.currentTarget.files?.[0];
+              if (file) readFile(file);
+              event.currentTarget.value = '';
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-glass bg-[var(--bg-base)] px-4 text-sm font-bold text-primary transition-colors hover:bg-surface-alpha"
+          >
+            Upload
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setQrisImageUrl('');
+              if (!operatorNote) setOperatorNote(`Disable ${currency.toUpperCase()} manual payment QR`);
+            }}
+            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-glass bg-[var(--bg-base)] px-4 text-sm font-bold text-primary transition-colors hover:bg-surface-alpha"
+          >
+            Clear
+          </button>
+          <button
+            type="button"
+            disabled={!canSave}
+            onClick={() => onSave({ currency, qrisImageUrl, qrisLabel, operatorNote })}
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {busy ? 'Saving...' : 'Save QR'}
+          </button>
+        </div>
+      </div>
+      {error ? <p role="alert" className="mt-3 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-300">{error}</p> : null}
+      <div className="mt-4 grid gap-3 md:grid-cols-[auto_1fr] md:items-center">
+        <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-2xl border border-glass bg-white p-2">
+          {qrisImageUrl ? (
+            <img src={qrisImageUrl} alt={qrisLabel || 'Manual payment QR preview'} className="h-full w-full object-contain" />
+          ) : (
+            <span className="px-2 text-center text-xs font-bold text-slate-500">No QR</span>
+          )}
+        </div>
+        <div className="text-xs leading-5 text-secondary">
+          <p><strong className="text-primary">{currency.toUpperCase()}</strong> QR status: {qrisImageUrl ? 'active for new manual invoices' : 'disabled; checkout will show bank transfer only'}.</p>
+          {activeConfig?.updatedAt ? <p>Last updated: {new Date(activeConfig.updatedAt).toLocaleString()}</p> : null}
+          {activeConfig?.updatedBy ? <p>Updated by: {activeConfig.updatedBy}</p> : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function BillingReadinessPanel({
   snapshot,
   busyPaymentId,
+  busyQrCurrency,
   onManualPaymentAction,
+  onManualQrSave,
 }: {
   snapshot: AdminSnapshot;
   busyPaymentId: string | null;
+  busyQrCurrency: ManualPaymentQrCurrency | null;
   onManualPaymentAction: (paymentRequestId: string, action: ManualPaymentAction, reason?: string) => void;
+  onManualQrSave: (input: { currency: ManualPaymentQrCurrency; qrisImageUrl: string; qrisLabel: string; operatorNote: string }) => void;
 }) {
   const admin = useAdminCopy();
   return (
@@ -2519,6 +2688,11 @@ function BillingReadinessPanel({
         {snapshot.billing.gaps[0] ? <p className="mt-3 text-xs leading-5 text-secondary">{snapshot.billing.gaps[0]}</p> : null}
       </div>
     </div>
+    <ManualPaymentQrPanel
+      configs={snapshot.billing.manualQrConfigs || []}
+      busyCurrency={busyQrCurrency}
+      onSave={onManualQrSave}
+    />
     <ManualPaymentQueuePanel
       payments={snapshot.billing.manualPayments}
       busyPaymentId={busyPaymentId}
@@ -3502,6 +3676,7 @@ export function AdminManagement() {
   const [busyFlagKey, setBusyFlagKey] = useState<string | null>(null);
   const [busyPlanCode, setBusyPlanCode] = useState<PlanCode | null>(null);
   const [busyManualPaymentId, setBusyManualPaymentId] = useState<string | null>(null);
+  const [busyQrCurrency, setBusyQrCurrency] = useState<ManualPaymentQrCurrency | null>(null);
   const [busyCatalogRequest, setBusyCatalogRequest] = useState(false);
   const [aiUsageRange, setAiUsageRange] = useState<AdminAiUsageRange>({});
   const [pendingUserPatch, setPendingUserPatch] = useState<PendingUserPatch | null>(null);
@@ -3618,6 +3793,7 @@ export function AdminManagement() {
       || busyFlagKey
       || busyPlanCode
       || busyManualPaymentId
+      || busyQrCurrency
       || busyCatalogRequest
       || dirtyAccountIds.size
       || dirtyPlanCodes.size,
@@ -3939,6 +4115,23 @@ export function AdminManagement() {
       setToast('Manual payment update failed');
     } finally {
       setBusyManualPaymentId(null);
+    }
+  };
+
+  const commitManualQrSave = async (input: { currency: ManualPaymentQrCurrency; qrisImageUrl: string; qrisLabel: string; operatorNote: string }) => {
+    invalidateInFlightRefreshes();
+    setBusyQrCurrency(input.currency);
+    setAccountErrorUserId(null);
+    try {
+      const next = await updateManualPaymentQr(input);
+      setSnapshot(next);
+      setError(null);
+      setToast(input.qrisImageUrl ? 'Manual payment QR updated' : 'Manual payment QR disabled');
+    } catch (err) {
+      if (err instanceof AdminApiError) setError(err);
+      setToast('Manual payment QR update failed');
+    } finally {
+      setBusyQrCurrency(null);
     }
   };
 
@@ -4493,7 +4686,9 @@ export function AdminManagement() {
                   <BillingReadinessPanel
                     snapshot={snapshot}
                     busyPaymentId={busyManualPaymentId}
+                    busyQrCurrency={busyQrCurrency}
                     onManualPaymentAction={(paymentRequestId, action, reason) => void commitManualPaymentAction(paymentRequestId, action, reason)}
+                    onManualQrSave={(input) => void commitManualQrSave(input)}
                   />
                   <PlansPanel
                     plans={snapshot.plans}

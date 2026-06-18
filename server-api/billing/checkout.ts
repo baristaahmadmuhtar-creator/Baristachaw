@@ -9,6 +9,7 @@ import {
 } from '../_shared.js';
 import {
   createManualPaymentRequest,
+  loadPersistedManualPaymentQrConfigs,
   normalizeManualCurrency,
   persistManualPaymentRequest,
 } from './manualPayments.js';
@@ -201,6 +202,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
     }
+
+    await loadPersistedManualPaymentQrConfigs().catch((error) => {
+      console.error('Failed to load manual payment QR config:', error);
+    });
 
     const manualRequest = createManualPaymentRequest({
       userId: authResult.auth.userId,

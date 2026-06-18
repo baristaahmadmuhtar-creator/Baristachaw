@@ -29,9 +29,14 @@ import { PLAN_CATALOG, PLAN_PRICING, formatCurrency } from '../../packages/share
 import {
   listPersistedManualPaymentRequests,
   listManualPaymentRequests,
+  getRuntimeManualPaymentQrConfigs,
+  loadPersistedManualPaymentQrConfigs,
+  normalizeManualCurrency,
   readManualPaymentInstructions,
+  setRuntimeManualPaymentQrConfig,
   updatePersistedManualPaymentStatus,
   updateManualPaymentStatus,
+  type ManualPaymentQrConfig,
   type ManualPaymentAction,
   type ManualPaymentRequest,
 } from '../billing/manualPayments.js';
@@ -269,6 +274,7 @@ type AdminSnapshot = {
     gaps: string[];
     manualPayments: ManualPaymentRequest[];
     manualQueueCounts: Record<'pending_review' | 'receipt_received' | 'verified_paid' | 'rejected' | 'expired', number>;
+    manualQrConfigs: ManualPaymentQrConfig[];
     planParity: {
       ok: boolean;
       mismatches: string[];
@@ -1464,6 +1470,12 @@ async function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[],
       })
     : listManualPaymentRequests();
   const manualQueueCounts = buildManualQueueCounts(manualPayments);
+  const manualQrConfigs = dataMode === 'supabase'
+    ? await loadPersistedManualPaymentQrConfigs().catch((error) => {
+        console.error('Failed to load manual payment QR configs:', error);
+        return getRuntimeManualPaymentQrConfigs();
+      })
+    : getRuntimeManualPaymentQrConfigs();
   const planParity = buildPlanParity(plans);
   const activeStatuses = new Set<BillingStatus>(['active', 'trialing']);
   const paidUsers = users.filter((user) => user.planCode !== 'free' && user.status !== 'deleted');
@@ -1507,6 +1519,7 @@ async function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[],
     gaps,
     manualPayments,
     manualQueueCounts,
+    manualQrConfigs,
     planParity,
   };
 }
@@ -3115,6 +3128,101 @@ function normalizeManualPaymentAction(value: unknown): ManualPaymentAction | '' 
   return '';
 }
 
+function normalizeQrImageDataUrl(value: unknown): { ok: true; value: string } | { ok: false; error: string } {
+  const raw = normalizeText(value);
+  if (!raw) return { ok: true, value: '' };
+  const match = raw.match(/^data:image\/(png|jpeg|webp);base64,([a-z0-9+/=]+)$/i);
+  if (!match) {
+    return { ok: false, error: 'QR image must be PNG, JPG, or WebP.' };
+  }
+  const decodedBytes = Math.floor((match[2].length * 3) / 4);
+  if (decodedBytes <= 0 || decodedBytes > 350 * 1024) {
+    return { ok: false, error: 'QR image must be 350KB or smaller.' };
+  }
+  return { ok: true, value: raw };
+}
+
+function validateManualQrPatch(body: any): (
+  | { ok: true; config: ManualPaymentQrConfig; operatorNote: string }
+  | { ok: false; error: string; details?: string }
+) {
+  const currency = normalizeManualCurrency(body?.currency);
+  const qrisLabel = normalizeText(body?.qrisLabel).slice(0, 80) || 'QRIS manual';
+  const operatorNote = normalizeText(body?.operatorNote).slice(0, 240);
+  const image = normalizeQrImageDataUrl(body?.qrisImageUrl);
+  if (image.ok === false) {
+    return { ok: false, error: image.error };
+  }
+  if (!operatorNote || operatorNote.length < 3) {
+    return { ok: false, error: 'QR changes require an operator note', details: 'Add a short reason such as "replace IDR QRIS June 2026".' };
+  }
+  return {
+    ok: true,
+    operatorNote,
+    config: {
+      currency,
+      qrisImageUrl: image.value || undefined,
+      qrisLabel: image.value ? qrisLabel : undefined,
+      updatedAt: nowIso(),
+    },
+  };
+}
+
+async function updateManualPaymentQrConfig(
+  admin: AdminAccess,
+  rawUser: Record<string, unknown> | undefined,
+  configPatch: ManualPaymentQrConfig,
+  operatorNote: string,
+): Promise<AdminSnapshot> {
+  const requestId = `admin_manual_qr_${Date.now()}`;
+  const normalized = setRuntimeManualPaymentQrConfig({
+    ...configPatch,
+    updatedAt: nowIso(),
+    updatedBy: admin.email || admin.userId || 'admin',
+  });
+  const supabase = getSupabaseConfig();
+  if (supabase.configured) {
+    await supabaseRest(supabase, 'admin_audit_events', {
+      method: 'POST',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify([{
+        actor_user_id: admin.userId,
+        actor_email: admin.email,
+        target_type: 'manual_payment_qr_config',
+        target_id: normalized.currency,
+        action: 'update_manual_payment_qr',
+        detail: operatorNote,
+        after: {
+          currency: normalized.currency,
+          qrisLabel: normalized.qrisLabel || '',
+          enabled: Boolean(normalized.qrisImageUrl),
+        },
+        metadata: {
+          qrConfig: normalized,
+        },
+        severity: 'info',
+      }]),
+    }).catch((error) => {
+      throw new AdminMutationError('Failed to persist manual payment QR config', {
+        statusCode: 503,
+        errorCode: 'manual_qr_storage_unavailable',
+        details: sanitizeErrorDetails(error, 180),
+      });
+    });
+  } else {
+    RUNTIME_AUDIT.unshift({
+      id: `runtime_manual_qr_${Date.now()}`,
+      actor: admin.email || admin.userId || 'admin',
+      target: normalized.currency,
+      action: 'update_manual_payment_qr',
+      createdAt: nowIso(),
+      detail: operatorNote,
+      severity: 'info',
+    });
+  }
+  return buildAdminSnapshot(requestId, admin, rawUser);
+}
+
 function manualPaymentPeriodEnd(startIso: string, duration: ManualPaymentRequest['duration']): string {
   const end = new Date(startIso);
   if (duration === 'yearly') {
@@ -3394,7 +3502,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === 'PATCH') {
       const action = normalizeText(req.body?.action);
-      if (action !== 'update_user' && action !== 'update_feature_flag' && action !== 'update_plan' && action !== 'create_catalog_request' && action !== 'update_manual_payment') {
+      if (action !== 'update_user' && action !== 'update_feature_flag' && action !== 'update_plan' && action !== 'create_catalog_request' && action !== 'update_manual_payment' && action !== 'update_manual_payment_qr') {
         return res.status(400).json({
           ok: false,
           requestId,
@@ -3505,6 +3613,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           });
         }
         const snapshot = await updateManualPayment(access.admin, access.auth.user, paymentRequestId, manualAction, reason);
+        return res.status(200).json({
+          ...snapshot,
+          requestId,
+        });
+      }
+      if (action === 'update_manual_payment_qr') {
+        const validated = validateManualQrPatch(req.body);
+        if (validated.ok === false) {
+          return res.status(400).json({
+            ok: false,
+            requestId,
+            error: validated.error,
+            errorCode: validated.details ? 'operator_reason_required' : 'validation_error',
+            details: validated.details,
+          });
+        }
+        const authorization = authorizeUserMutation(access.admin, { planCode: 'starter' });
+        if (authorization) {
+          return res.status(authorization.statusCode).json({
+            ok: false,
+            requestId,
+            error: authorization.error,
+            errorCode: authorization.errorCode,
+            details: authorization.details,
+          });
+        }
+        const snapshot = await updateManualPaymentQrConfig(access.admin, access.auth.user, validated.config, validated.operatorNote);
         return res.status(200).json({
           ...snapshot,
           requestId,

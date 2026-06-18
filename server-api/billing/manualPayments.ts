@@ -36,6 +36,14 @@ export type ManualPaymentInstructions = {
   notifyWebhookConfigured: boolean;
 };
 
+export type ManualPaymentQrConfig = {
+  currency: CurrencyCode;
+  qrisImageUrl?: string;
+  qrisLabel?: string;
+  updatedAt?: string;
+  updatedBy?: string;
+};
+
 export type ManualPaymentProof = {
   generatedFileName: string;
   mimeType: string;
@@ -108,6 +116,7 @@ const ALLOWED_PROOF_TYPES: ReadonlyMap<string, string> = new Map([
   ['application/pdf', 'pdf'],
 ] as const);
 const REQUESTS = new Map<string, ManualPaymentRequest>();
+const RUNTIME_QR_CONFIGS = new Map<CurrencyCode, ManualPaymentQrConfig>();
 
 function envText(name: string): string {
   return String(process.env[name] || '').trim();
@@ -142,6 +151,66 @@ function safeHttpsUrl(value: unknown, fallback = '', maxLength = 600): string {
   } catch {
     return '';
   }
+}
+
+function safeDataImageUrl(value: unknown, maxLength = 420_000): string {
+  const candidate = safeText(value, '', maxLength);
+  if (!candidate || candidate.length > maxLength) return '';
+  if (!/^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(candidate)) return '';
+  return candidate;
+}
+
+function safeQrImageUrl(value: unknown): string {
+  return safeDataImageUrl(value) || safeHttpsUrl(value);
+}
+
+function normalizeQrConfig(value: unknown): ManualPaymentQrConfig | null {
+  const raw = readMetadataObject(value);
+  const currency = normalizeManualCurrency(raw.currency);
+  const qrisImageUrl = safeQrImageUrl(raw.qrisImageUrl);
+  const qrisLabel = safeText(raw.qrisLabel, '', 80);
+  const updatedAt = safeText(raw.updatedAt, '', 80);
+  const updatedBy = safeText(raw.updatedBy, '', 120);
+  return {
+    currency,
+    qrisImageUrl: qrisImageUrl || undefined,
+    qrisLabel: qrisImageUrl ? (qrisLabel || 'QRIS manual') : undefined,
+    updatedAt: updatedAt || undefined,
+    updatedBy: updatedBy || undefined,
+  };
+}
+
+export function setRuntimeManualPaymentQrConfig(config: ManualPaymentQrConfig): ManualPaymentQrConfig {
+  const normalized = normalizeQrConfig(config) || { currency: normalizeManualCurrency(config.currency) };
+  RUNTIME_QR_CONFIGS.set(normalized.currency, normalized);
+  return normalized;
+}
+
+export function getRuntimeManualPaymentQrConfigs(): ManualPaymentQrConfig[] {
+  return [...RUNTIME_QR_CONFIGS.values()].sort((a, b) => a.currency.localeCompare(b.currency));
+}
+
+export async function loadPersistedManualPaymentQrConfigs(): Promise<ManualPaymentQrConfig[]> {
+  const config = getSupabaseAdminConfig();
+  if (!hasSupabaseConfig(config)) return getRuntimeManualPaymentQrConfigs();
+  const rows = await supabaseAdminRest<Array<{ metadata?: Record<string, unknown> | null; created_at?: string }>>(
+    config,
+    'admin_audit_events?target_type=eq.manual_payment_qr_config&action=eq.update_manual_payment_qr&select=metadata,created_at&order=created_at.desc&limit=64',
+  );
+  const byCurrency = new Map<CurrencyCode, ManualPaymentQrConfig>();
+  for (const row of rows || []) {
+    const metadata = readMetadataObject(row.metadata);
+    const qrConfig = normalizeQrConfig(metadata.qrConfig || metadata);
+    if (!qrConfig || byCurrency.has(qrConfig.currency)) continue;
+    byCurrency.set(qrConfig.currency, {
+      ...qrConfig,
+      updatedAt: qrConfig.updatedAt || row.created_at,
+    });
+  }
+  for (const item of byCurrency.values()) {
+    RUNTIME_QR_CONFIGS.set(item.currency, item);
+  }
+  return [...byCurrency.values()].sort((a, b) => a.currency.localeCompare(b.currency));
 }
 
 function safeNumber(value: unknown, fallback = 0): number {
@@ -276,8 +345,13 @@ export function readManualPaymentInstructions(
   const whatsappNumber = normalizeWhatsappNumber(envText('MANUAL_PAYMENT_WHATSAPP_NUMBER') || '+6738270092');
   const supportEmail = envText('MANUAL_PAYMENT_SUPPORT_EMAIL') || 'support@baristachaw.com';
   const instagram = '@baristachaw';
-  const qrisImageUrl = safeHttpsUrl(envText(`MANUAL_PAYMENT_QRIS_IMAGE_URL_${currency.toUpperCase()}`) || envText('MANUAL_PAYMENT_QRIS_IMAGE_URL'));
-  const qrisLabel = envText(`MANUAL_PAYMENT_QRIS_LABEL_${currency.toUpperCase()}`) || envText('MANUAL_PAYMENT_QRIS_LABEL') || 'QRIS manual';
+  const runtimeQr = RUNTIME_QR_CONFIGS.get(currency);
+  const qrisImageUrl = runtimeQr?.qrisImageUrl
+    || safeHttpsUrl(envText(`MANUAL_PAYMENT_QRIS_IMAGE_URL_${currency.toUpperCase()}`) || envText('MANUAL_PAYMENT_QRIS_IMAGE_URL'));
+  const qrisLabel = runtimeQr?.qrisLabel
+    || envText(`MANUAL_PAYMENT_QRIS_LABEL_${currency.toUpperCase()}`)
+    || envText('MANUAL_PAYMENT_QRIS_LABEL')
+    || 'QRIS manual';
 
   let banks: BankDetail[] = [];
 

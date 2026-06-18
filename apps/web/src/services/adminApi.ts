@@ -14,6 +14,7 @@ export type AdminCatalogKind = 'water' | 'dripper' | 'grinder';
 export type AdminCatalogReviewStatus = 'queued' | 'approved' | 'published' | 'rejected' | 'needs_source';
 export type ManualPaymentStatus = 'pending_review' | 'receipt_received' | 'verified_paid' | 'rejected' | 'expired';
 export type ManualPaymentAction = 'receipt_received' | 'verified_paid' | 'rejected' | 'expired' | 'downgrade_free';
+export type ManualPaymentQrCurrency = 'idr' | 'bnd' | 'myr' | 'sgd' | 'usd' | 'eur' | 'aud';
 
 export type AdminPlan = {
   code: PlanCode;
@@ -307,6 +308,8 @@ export type AdminManualPaymentRequest = {
     supportEmail?: string;
     instagramUrl?: string;
     instagramHandle?: string;
+    qrisImageUrl?: string;
+    qrisLabel?: string;
     notifyWebhookConfigured: boolean;
   };
   proof?: {
@@ -319,6 +322,14 @@ export type AdminManualPaymentRequest = {
   reason?: string;
   createdAt: number;
   updatedAt: number;
+};
+
+export type AdminManualPaymentQrConfig = {
+  currency: ManualPaymentQrCurrency;
+  qrisImageUrl?: string;
+  qrisLabel?: string;
+  updatedAt?: string;
+  updatedBy?: string;
 };
 
 export type AdminSystemCheck = {
@@ -387,6 +398,7 @@ export type AdminSnapshot = {
     gaps: string[];
     manualPayments: AdminManualPaymentRequest[];
     manualQueueCounts: Record<ManualPaymentStatus, number>;
+    manualQrConfigs: AdminManualPaymentQrConfig[];
     planParity: {
       ok: boolean;
       mismatches: string[];
@@ -593,6 +605,21 @@ export function updateManualPayment(
       paymentRequestId,
       manualAction,
       ...(reason ? { reason } : {}),
+    }),
+  }, 18_000);
+}
+
+export function updateManualPaymentQr(input: {
+  currency: ManualPaymentQrCurrency;
+  qrisImageUrl: string;
+  qrisLabel: string;
+  operatorNote: string;
+}): Promise<AdminSnapshot> {
+  return adminRequest<AdminSnapshot>('/api/admin/management', {
+    method: 'PATCH',
+    body: JSON.stringify({
+      action: 'update_manual_payment_qr',
+      ...input,
     }),
   }, 18_000);
 }

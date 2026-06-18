@@ -1,7 +1,6 @@
 import { ArrowRight, Check, CircleAlert, ChevronDown, Globe } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { Link, Route, Routes, useLocation } from 'react-router-dom';
-import { inferMarketingLanguage, inferRegion, type MarketingLanguage } from '@baristachaw/shared/locale';
 import { BrewerGrid } from './components/BrewerGrid';
 import { DownloadSection } from './components/DownloadSection';
 import { FeatureGraphics } from './components/FeatureGraphics';
@@ -16,6 +15,7 @@ import { ToolsShowcase } from './components/ToolsShowcase';
 import { APK_AVAILABLE, APK_URL, APP_LINKS, APP_ORIGIN, PLAN_CATALOG, PRICING, RELEASE_VERSION, type BillingDuration, formatCurrency, getCurrencyForRegion, type Region } from './config';
 import type { Language } from './i18n';
 import { t } from './i18n';
+import { inferLandingLocale } from './localeDefaults';
 import { DownloadPage } from './pages/DownloadPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { SupportPage } from './pages/SupportPage';
@@ -84,11 +84,11 @@ function browserLocaleParts(): { languages: string[]; timeZone: string } {
 }
 
 function inferInitialLanguage(): Language {
-  return inferMarketingLanguage(browserLocaleParts()) as Language;
+  return inferLandingLocale(browserLocaleParts()).marketingLanguage;
 }
 
 function inferInitialRegion(): Region {
-  return inferRegion(browserLocaleParts());
+  return inferLandingLocale(browserLocaleParts()).region;
 }
 
 function isValidMarketingRegion(value: unknown): value is Region {
@@ -515,7 +515,7 @@ export function App() {
         if (!res.ok) return;
         const data = await res.json();
         if (cancelled) return;
-        if (!hasManualLanguage && isValidMarketingLanguage(data.marketingLanguage as MarketingLanguage)) {
+        if (!hasManualLanguage && isValidMarketingLanguage(data.marketingLanguage)) {
           setLanguage(data.marketingLanguage);
         }
         if (!hasManualRegion && isValidMarketingRegion(data.region)) {

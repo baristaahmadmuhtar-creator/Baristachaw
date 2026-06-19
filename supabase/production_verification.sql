@@ -10,6 +10,9 @@ where table_schema = 'public'
     'app_plans',
     'app_users',
     'app_usage_daily',
+    'ai_quota_ledger',
+    'ai_provider_events',
+    'app_rate_limits',
     'user_entitlements',
     'payment_receipts',
     'app_feature_flags',
@@ -28,6 +31,51 @@ where table_schema = 'public'
   );
 
 select
+  'ai_quota_ledger_table' as check_name,
+  count(*) as found_count
+from information_schema.tables
+where table_schema = 'public'
+  and table_name = 'ai_quota_ledger';
+
+select
+  'ai_provider_events_table' as check_name,
+  count(*) as found_count
+from information_schema.tables
+where table_schema = 'public'
+  and table_name = 'ai_provider_events';
+
+select
+  'app_rate_limits_table' as check_name,
+  count(*) as found_count
+from information_schema.tables
+where table_schema = 'public'
+  and table_name = 'app_rate_limits';
+
+select
+  'reserve_app_quota_rpc' as check_name,
+  count(*) as found_count
+from information_schema.routines
+where specific_schema = 'public'
+  and routine_name = 'reserve_app_quota'
+  and routine_type = 'FUNCTION';
+
+select
+  'commit_app_quota_rpc' as check_name,
+  count(*) as found_count
+from information_schema.routines
+where specific_schema = 'public'
+  and routine_name = 'commit_app_quota'
+  and routine_type = 'FUNCTION';
+
+select
+  'refund_app_quota_rpc' as check_name,
+  count(*) as found_count
+from information_schema.routines
+where specific_schema = 'public'
+  and routine_name = 'refund_app_quota'
+  and routine_type = 'FUNCTION';
+
+select
   'consume_app_quota_rpc' as check_name,
   count(*) as found_count
 from information_schema.routines
@@ -42,7 +90,7 @@ select
   security_type
 from information_schema.routines
 where routine_schema = 'public'
-  and routine_name = 'consume_app_quota';
+  and routine_name in ('reserve_app_quota', 'commit_app_quota', 'refund_app_quota', 'consume_app_quota');
 
 select
   schemaname,
@@ -54,6 +102,9 @@ where schemaname = 'public'
     'app_plans',
     'app_users',
     'app_usage_daily',
+    'ai_quota_ledger',
+    'ai_provider_events',
+    'app_rate_limits',
     'user_entitlements',
     'payment_receipts',
     'app_feature_flags',

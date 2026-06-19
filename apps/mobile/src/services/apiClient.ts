@@ -42,11 +42,11 @@ const MULTIMODAL_AI_ACTIONS = new Set<AiAction>(['analyze_image', 'analyze_attac
 const DEFAULT_REQUEST_TIMEOUT_MS = 25_000;
 const CHAT_TEXT_TIMEOUT_MS = 50_000;
 const AI_FAST_TIMEOUT_MS = 40_000;
-const AI_BALANCED_TIMEOUT_MS = 65_000;
-const AI_DEEP_TIMEOUT_MS = 150_000;
-const AI_SEARCH_TIMEOUT_MS = 75_000;
-const AI_TEXT_ATTACHMENT_TIMEOUT_MS = 65_000;
-const AI_MULTIMODAL_TIMEOUT_MS = 75_000;
+const AI_BALANCED_TIMEOUT_MS = 50_000;
+const AI_DEEP_TIMEOUT_MS = 55_000;
+const AI_SEARCH_TIMEOUT_MS = 55_000;
+const AI_TEXT_ATTACHMENT_TIMEOUT_MS = 50_000;
+const AI_MULTIMODAL_TIMEOUT_MS = 55_000;
 
 export function resolveMobileAiActionTimeoutMs(action: AiAction, explicitTimeoutMs?: number): number {
   if (Number.isFinite(explicitTimeoutMs) && Number(explicitTimeoutMs) > 0) {

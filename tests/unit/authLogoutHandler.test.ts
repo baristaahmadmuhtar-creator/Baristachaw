@@ -89,6 +89,34 @@ test('auth logout handler clears auth and oauth cookies in development', () => {
   ]);
 });
 
+test('auth logout handler rejects unsafe headerless POST requests', () => {
+  const req = makeReq({ headers: {} });
+  const res = createMockRes();
+
+  logoutHandler(req, res as any);
+
+  assert.equal(res.statusCode, 403);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'csrf_origin_denied');
+});
+
+test('auth logout handler does not trust client supplied request ids', () => {
+  const req = makeReq({
+    headers: {
+      origin: 'http://127.0.0.1:3000',
+      'x-request-id': 'client-controlled-request-id',
+    },
+  });
+  const res = createMockRes();
+
+  logoutHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(typeof body.requestId, 'string');
+  assert.notEqual(body.requestId, 'client-controlled-request-id');
+});
+
 test('auth logout handler keeps secure cookie attributes in production', () => {
   process.env.NODE_ENV = 'production';
 

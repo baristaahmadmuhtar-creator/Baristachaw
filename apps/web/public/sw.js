@@ -1,5 +1,24 @@
-const SHELL_CACHE = 'baristachaw-shell-v22';
-const API_CACHE = 'baristachaw-api-v22';
+const SHELL_CACHE = 'baristachaw-shell-v23';
+const API_CACHE = 'baristachaw-api-v23';
+
+const API_CACHE_ALLOWLIST = [
+  '/api/waters/search',
+  '/api/drippers/search',
+  '/api/grinders/search',
+];
+
+const API_CACHE_DENYLIST = [
+  '/api/account',
+  '/api/admin',
+  '/api/auth',
+  '/api/billing',
+  '/api/chat',
+  '/api/ai',
+  '/api/health',
+  '/api/geo',
+  '/api/library',
+  '/api/payment',
+];
 
 const SHELL_ASSETS = [
   '/',
@@ -16,25 +35,6 @@ const SHELL_ASSETS = [
   '/icons/icon-512-maskable.png?v=20260430c',
   '/icons/icon-1024.png?v=20260430c',
   '/icons/google-g.png?v=20260430c',
-  '/data/ai-brew/drippers.v2026-03.json',
-  '/data/ai-brew/grinders.v2026-03.json',
-  '/data/ai-brew/target-profiles.v2026-03.json',
-  '/data/ai-brew/processes.v2026-06.json',
-  '/data/ai-brew/varieties.v2026-06.json',
-  '/data/ai-brew/water-guidance.v2026-06.json',
-  '/data/ai-brew/device-brew-profiles.v2026-06.json',
-  '/data/ai-brew/grinder-settings.v2026-06.json',
-  '/data/ai-brew/market-signals.v2026-06.json',
-  '/data/ai-brew/switch-programmes.v2026-05.json',
-  '/data/ai-brew/switch-dose-matrix.v2026-05.json',
-  '/data/ai-brew/switch-troubleshooting.v2026-05.json',
-  '/data/ai-brew/switch-knowledge.v2026-05.json',
-  '/data/ai-brew/manual-brew-presets.v2026-06.json',
-  '/data/catalog/phase1/meta.json',
-  '/data/catalog/phase1/waters.catalog.json',
-  '/data/catalog/phase1/waters.search.json',
-  '/data/catalog/phase1/drippers.search.json',
-  '/data/catalog/phase1/grinders.search.json',
 ];
 
 self.addEventListener('install', (event) => {
@@ -61,20 +61,28 @@ self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
+function isSafeApiCacheRequest(url) {
+  const path = url.pathname;
+  if (API_CACHE_DENYLIST.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) {
+    return false;
+  }
+  return API_CACHE_ALLOWLIST.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+}
+
 async function networkFirstApi(request, url) {
   try {
     const response = await fetch(request);
     if (
       response.ok
       && request.method === 'GET'
-      && !url.pathname.startsWith('/api/auth/')
+      && isSafeApiCacheRequest(url)
     ) {
       const cache = await caches.open(API_CACHE);
       await cache.put(request, response.clone());
     }
     return response;
   } catch {
-    if (request.method === 'GET' && !url.pathname.startsWith('/api/auth/')) {
+    if (request.method === 'GET' && isSafeApiCacheRequest(url)) {
       const cached = await caches.match(request);
       if (cached) return cached;
     }

@@ -881,7 +881,7 @@ export function Home() {
             className={`w-full glass-input py-5 text-lg font-medium ${isRtl ? 'pr-16 pl-16 text-right' : 'pl-16 pr-16 text-left'}`}
           />
           {loading && (
-            <div className={`absolute ${isRtl ? 'left-6' : 'right-6'} flex gap-1`}>
+            <div className={`absolute ${isRtl ? 'left-6' : 'right-6'} flex gap-1`} role="status" aria-live="polite" aria-label={statusMessages[statusIdx]}>
               <span className="w-2 h-2 rounded-full bg-blue-500/70" style={{ animation: 'coffee-ripple 1.4s ease-in-out infinite' }} />
               <span className="w-2 h-2 rounded-full bg-blue-500/50" style={{ animation: 'coffee-ripple 1.4s ease-in-out infinite 0.2s' }} />
               <span className="w-2 h-2 rounded-full bg-blue-500/30" style={{ animation: 'coffee-ripple 1.4s ease-in-out infinite 0.4s' }} />
@@ -1192,7 +1192,7 @@ export function Home() {
               {/* Modal Body */}
               <div className="flex-1 overflow-y-auto px-6 py-6" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
                 {loading && !result ? (
-                  <div className="flex flex-col items-center justify-center h-full gap-6">
+                  <div className="flex flex-col items-center justify-center h-full gap-6" role="status" aria-live="polite" aria-busy="true">
                     {/* Coffee Cup Latte Art Animation */}
                     <div className="relative w-24 h-24">
                       <svg viewBox="0 0 96 96" className="w-full h-full" style={{ animation: 'latte-swirl 3s ease-in-out infinite' }}>

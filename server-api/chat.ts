@@ -32,7 +32,13 @@ import {
     STRUCTURED_AI_PROMPT_MAX_CHARS,
     type ConversationContext,
 } from './_contracts.js';
-import { requirePaidAiAccess, type PaidAiFeature } from './account/aiAccess.js';
+import {
+    commitPaidAiQuota,
+    refundPaidAiQuota,
+    requirePaidAiAccess,
+    type PaidAiFeature,
+    type PaidAiQuotaReservation,
+} from './account/aiAccess.js';
 import {
     aiProviderDisabledMessage,
     getAiProviderKeys,
@@ -665,34 +671,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
     }
 
-    const rawChatClientContext = req.body?.clientContext;
-    const rawChatFeature = rawChatClientContext && typeof rawChatClientContext === 'object'
-        ? String((rawChatClientContext as { feature?: unknown }).feature || '').trim().toLowerCase()
-        : '';
-    const rawChatSurface = rawChatClientContext && typeof rawChatClientContext === 'object'
-        ? String((rawChatClientContext as { surface?: unknown }).surface || '').trim().toLowerCase()
-        : '';
-    const usageFeature = aiUsageFeatureFromContext(rawChatFeature, rawChatSurface);
-    const paidFeature: PaidAiFeature = rawChatFeature === 'ai_brew' || rawChatFeature === 'brew' ? 'brew' : 'chat';
-    const rawChatMode = String(req.body?.mode || '').trim().toLowerCase();
-    const aiAccess = await requirePaidAiAccess({
-        requestId,
-        auth: authResult.auth,
-        rawClientContext: rawChatClientContext,
-        feature: paidFeature,
-        quotaKind: rawChatMode === 'deep' || rawChatMode === 'deep_think' ? 'deep' : 'ai',
-    });
-    if (aiAccess.ok === false) {
-        return res.status(aiAccess.statusCode).json({
-            ok: false,
-            requestId,
-            error: aiAccess.error,
-            errorCode: aiAccess.errorCode,
-            retryable: aiAccess.retryable,
-            minimumPlan: aiAccess.minimumPlan,
-        });
-    }
-
     const limit = checkRateLimit(req, '/api/chat', authResult.auth.userId, CHAT_RATE_LIMIT);
     applyRateLimitHeaders(res, limit);
     if (!limit.allowed) {
@@ -707,6 +685,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     let latestMessageForFallback = '';
     let resolvedProfileForFallback = DEFAULT_NORMAL_PROFILE;
+    let quotaReservation: PaidAiQuotaReservation | undefined;
 
     try {
         const {
@@ -753,6 +732,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const requestedProvider =
             typeof requestedProviderRaw === 'string' ? requestedProviderRaw.toUpperCase() : undefined;
         const normalizedMode = typeof mode === 'string' ? mode.toLowerCase() : '';
+        const rawChatFeature = rawClientContext && typeof rawClientContext === 'object'
+            ? String((rawClientContext as { feature?: unknown }).feature || '').trim().toLowerCase()
+            : '';
+        const rawChatSurface = rawClientContext && typeof rawClientContext === 'object'
+            ? String((rawClientContext as { surface?: unknown }).surface || '').trim().toLowerCase()
+            : '';
+        const usageFeature = aiUsageFeatureFromContext(rawChatFeature, rawChatSurface);
+        const paidFeature: PaidAiFeature = rawChatFeature === 'ai_brew' || rawChatFeature === 'brew' ? 'brew' : 'chat';
         const responseProfile = parseResponseProfile(rawResponseProfile);
         const clientContext = parseClientContext(req, rawClientContext);
         const conversationContext = parseConversationContext(rawConversationContext);
@@ -772,6 +759,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 errorCode: 'validation_error',
             });
         }
+
+        const aiAccess = await requirePaidAiAccess({
+            requestId,
+            auth: authResult.auth,
+            rawClientContext,
+            feature: paidFeature,
+            quotaKind: normalizedMode === 'deep' || normalizedMode === 'deep_think' ? 'deep' : 'ai',
+            route: '/api/chat',
+            action: usageFeature,
+            mode: normalizedMode || 'normal',
+        });
+        if (aiAccess.ok === false) {
+            return res.status(aiAccess.statusCode).json({
+                ok: false,
+                requestId,
+                error: aiAccess.error,
+                errorCode: aiAccess.errorCode,
+                retryable: aiAccess.retryable,
+                minimumPlan: aiAccess.minimumPlan,
+            });
+        }
+        quotaReservation = aiAccess.quotaReservation;
 
         const BARISTA_SYSTEM_PROMPT = `You are Baristachaw — the world's most advanced AI barista assistant, built for professional baristas, coffee shop owners, and serious coffee enthusiasts.
 
@@ -943,6 +952,13 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
             res.setHeader('X-Degraded', 'false');
             res.setHeader('X-Resolved-Language', resolvedProfile.language);
             const text = buildE2eMockChatText(resolvedProfile.language);
+            await commitPaidAiQuota(quotaReservation, {
+                provider: E2E_MOCK_PROVIDER,
+                model: E2E_MOCK_MODEL,
+                inputTokens: inputTokensForUsage,
+                outputTokens: estimateAiTokenCount(text),
+                outcome: 'mock_success',
+            });
             res.end(text);
             console.info(`[api/chat][${requestId}] winner=${E2E_MOCK_PROVIDER}:${E2E_MOCK_MODEL} raceLatency=0ms repaired=0 mocked=1`);
             return;
@@ -954,8 +970,9 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
         const racers: Promise<RaceResult>[] = [];
         const controllers: Map<string, AbortController> = new Map();
 
-        // If mode is 'race' or no specific provider, race all available
-        const isRaceMode = !requestedProvider || requestedProvider === 'AUTO' || normalizedMode === 'race';
+        // Race fan-out is opt-in only. Default AUTO is serial primary-plus-fallback.
+        const isRaceMode = normalizedMode === 'race';
+        const isAutoRoute = !requestedProvider || requestedProvider === 'AUTO';
 
         if (isRaceMode) {
             // RACE MODE: fire all providers simultaneously, fastest wins
@@ -999,6 +1016,57 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
                     throw classified;
                 }));
             }
+        } else if (isAutoRoute) {
+            racers.push((async () => {
+                const errors: string[] = [];
+                for (const config of availableRacerConfigs) {
+                    const key = getNextKey(config.provider);
+                    if (!key) {
+                        recordAiProviderFailure({
+                            provider: config.provider,
+                            model: config.model,
+                            feature: usageFeature,
+                            route: '/api/chat',
+                            action: 'auto_fallback',
+                            mode: normalizedMode || 'auto',
+                            inputTokens: inputTokensForUsage,
+                            errorCode: 'no_key',
+                        });
+                        continue;
+                    }
+
+                    const controller = new AbortController();
+                    controllers.set(config.provider, controller);
+                    const timeoutId = setTimeout(() => controller.abort(), config.timeout);
+                    try {
+                        if (config.provider === 'GEMINI') {
+                            return await fetchGemini(config.model, key, conversationMessages, controller.signal)
+                                .finally(() => clearTimeout(timeoutId));
+                        }
+                        return await fetchOpenAICompatible(config, key, conversationMessages, controller.signal)
+                            .finally(() => clearTimeout(timeoutId));
+                    } catch (err) {
+                        clearTimeout(timeoutId);
+                        const classified = classifyProviderError(err, config.provider);
+                        errors.push(`${config.provider}:${classified.code}`);
+                        registerAiProviderResult({ provider: config.provider, ok: false, errorCode: classified.code });
+                        recordAiProviderFailure({
+                            provider: config.provider,
+                            model: config.model,
+                            feature: usageFeature,
+                            route: '/api/chat',
+                            action: 'auto_fallback',
+                            mode: normalizedMode || 'auto',
+                            inputTokens: inputTokensForUsage,
+                            errorCode: classified.code,
+                        });
+                        console.error(
+                            `[api/chat][${requestId}] auto_fallback_fail provider=${config.provider} details="${sanitizeErrorDetails(classified, 180)}"`,
+                        );
+                    }
+                }
+                throw new Error(`All auto providers failed: ${errors.join('; ') || 'no_key'}`);
+            })());
         } else {
             // TARGETED MODE: specific provider with model fallback
             const targetProvider = requestedProvider as ProviderId;
@@ -1013,6 +1081,7 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
                     inputTokens: inputTokensForUsage,
                     errorCode: 'provider_disabled',
                 });
+                await refundPaidAiQuota(quotaReservation, 'provider_disabled');
                 return res.status(503).json({
                     requestId,
                     error: aiProviderDisabledMessage(targetProvider) || `${targetProvider} is unavailable by admin control.`,
@@ -1031,6 +1100,7 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
                     inputTokens: inputTokensForUsage,
                     errorCode: 'no_key',
                 });
+                await refundPaidAiQuota(quotaReservation, 'no_key');
                 sendLocalChatFallback({
                     res,
                     requestId,
@@ -1076,6 +1146,7 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
             } else {
                 const config = racerConfigs.find(c => c.provider === targetProvider);
                 if (!config) {
+                    await refundPaidAiQuota(quotaReservation, 'validation_error');
                     return res.status(400).json({
                         requestId,
                         error: `Unknown provider: ${targetProvider}`,
@@ -1109,6 +1180,7 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
         }
 
         if (racers.length === 0) {
+            await refundPaidAiQuota(quotaReservation, 'no_key');
             sendLocalChatFallback({
                 res,
                 requestId,
@@ -1128,7 +1200,20 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
         // Abort losers
         for (const [id, controller] of controllers.entries()) {
             if (id !== winner.provider && !id.startsWith(`${winner.provider}_`)) {
-                try { controller.abort(); } catch { }
+                try {
+                    controller.abort();
+                    const abortedProvider = id.split('_')[0] as ProviderId;
+                    recordAiProviderFailure({
+                        provider: abortedProvider,
+                        model: '',
+                        feature: usageFeature,
+                        route: '/api/chat',
+                        action: isRaceMode ? 'race_aborted' : 'fallback_aborted',
+                        mode: normalizedMode || (isRaceMode ? 'race' : 'auto'),
+                        inputTokens: inputTokensForUsage,
+                        errorCode: 'aborted',
+                    });
+                } catch { }
             }
         }
 
@@ -1160,6 +1245,13 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
             outputTokens: estimateAiTokenCount(finalText),
             latencyMs: winner.latency,
         });
+        await commitPaidAiQuota(quotaReservation, {
+            provider: winner.provider,
+            model: winner.model,
+            inputTokens: inputTokensForUsage,
+            outputTokens: estimateAiTokenCount(finalText),
+            outcome: 'success',
+        });
         res.end(finalText);
         console.info(
             `[api/chat][${requestId}] winner=${winner.provider}:${winner.model} raceLatency=${raceLatency}ms repaired=${needsRepair(rawText) ? 1 : 0}`,
@@ -1168,6 +1260,7 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
     } catch (error: any) {
         const details = sanitizeErrorDetails(error, 200);
         console.error(`[api/chat][${requestId}] fatal="${details}"`);
+        await refundPaidAiQuota(quotaReservation, 'provider_error');
 
         if (!res.headersSent) {
             sendLocalChatFallback({

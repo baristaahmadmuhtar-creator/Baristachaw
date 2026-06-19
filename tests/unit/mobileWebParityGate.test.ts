@@ -207,6 +207,8 @@ test('WebParityScreen sends native shell parity params, language, safe area, bro
     "headers.set('Authorization', 'Bearer ' + nativeSession.accessToken)",
     'BARISTA_NATIVE_LOGOUT',
     'BARISTA_NATIVE_AUTH_EXPIRED',
+    'BARISTA_WEB_APP_READY',
+    'window.__BARISTACHAW_NOTIFY_NATIVE_READY__ = notifyNativeReady',
     'accounts.google.com',
     'oauth2.googleapis.com',
     'appleid.apple.com',
@@ -217,10 +219,22 @@ test('WebParityScreen sends native shell parity params, language, safe area, bro
   }
 
   assert.doesNotMatch(source, /guest_mode/);
+  assert.doesNotMatch(source, /progress >= 0\.85[\s\S]*markParityReady\(\)/);
+  assert.doesNotMatch(source, /onLoadEnd=\{\(\) => \{\s*markParityReady\(\);\s*\}\}/);
 
   assert.match(source, /case 'id':\s*return \{\s*loading: 'Membuka Baristachaw\.\.\.'/s);
   assert.match(source, /default:\s*return \{\s*loading: 'Opening Baristachaw\.\.\.'/s);
   assert.doesNotMatch(source, /loading: 'Memuat tampilan paritas web|loading: 'Loading web parity/);
+});
+
+test('mobile loading screen respects reduced motion preferences', () => {
+  const source = read('apps/mobile/src/components/AppLoadingScreen.tsx');
+
+  assert.match(source, /AccessibilityInfo\.isReduceMotionEnabled\(\)/);
+  assert.match(source, /reduceMotionChanged/);
+  assert.match(source, /reduceMotionEnabled \? 1 : pulseAnim/);
+  assert.match(source, /styles\.staticIndicator/);
+  assert.doesNotMatch(source, /letterSpacing:\s*-\d/);
 });
 
 test('mobile auth bootstrap cannot trap Android on an endless session loading screen', () => {

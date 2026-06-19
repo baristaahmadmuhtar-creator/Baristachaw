@@ -29,6 +29,8 @@ import { PLAN_CATALOG, PLAN_PRICING, formatCurrency } from '../../packages/share
 import {
   listPersistedManualPaymentRequests,
   listManualPaymentRequests,
+  getManualPaymentRequest,
+  loadPersistedManualPaymentRequest,
   getRuntimeManualPaymentQrConfigs,
   loadPersistedManualPaymentQrConfigs,
   normalizeManualCurrency,
@@ -3320,6 +3322,25 @@ async function updateManualPayment(
 ): Promise<AdminSnapshot> {
   const config = getSupabaseConfig();
   const requestId = `admin_manual_payment_${Date.now()}`;
+  let existingRequest: ManualPaymentRequest | undefined;
+  if (config.configured) {
+    existingRequest = await loadPersistedManualPaymentRequest(paymentRequestId).catch(() => undefined);
+  }
+  existingRequest = existingRequest || getManualPaymentRequest(paymentRequestId);
+  if (!existingRequest) {
+    throw new AdminMutationError('Manual payment request was not found', {
+      statusCode: 404,
+      errorCode: 'manual_payment_not_found',
+    });
+  }
+  const targetAuthorization = await authorizeUserTargetMutation(admin, rawUser, existingRequest.userId, {});
+  if (targetAuthorization) {
+    throw new AdminMutationError(targetAuthorization.error, {
+      statusCode: targetAuthorization.statusCode,
+      errorCode: targetAuthorization.errorCode,
+      details: targetAuthorization.details,
+    });
+  }
   const request = config.configured
     ? await updatePersistedManualPaymentStatus(
         paymentRequestId,

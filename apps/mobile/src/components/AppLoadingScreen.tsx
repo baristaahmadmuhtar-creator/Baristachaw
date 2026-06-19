@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { Animated, Image, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { AccessibilityInfo, ActivityIndicator, Animated, Image, StyleSheet, Text, View } from 'react-native';
 import { uiTokens } from '../theme/tokens';
 
 type AppLoadingScreenProps = {
@@ -18,8 +18,29 @@ export function AppLoadingScreen({
   accentColor = '#1D4ED8',
 }: AppLoadingScreenProps) {
   const pulseAnim = useRef(new Animated.Value(0.6)).current;
+  const [reduceMotionEnabled, setReduceMotionEnabled] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((enabled) => {
+        if (mounted) setReduceMotionEnabled(Boolean(enabled));
+      })
+      .catch(() => undefined);
+
+    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotionEnabled);
+    return () => {
+      mounted = false;
+      subscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotionEnabled) {
+      pulseAnim.setValue(1);
+      return undefined;
+    }
+
     const pulse = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
@@ -36,15 +57,19 @@ export function AppLoadingScreen({
     );
     pulse.start();
     return () => pulse.stop();
-  }, [pulseAnim]);
+  }, [pulseAnim, reduceMotionEnabled]);
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
       <View style={styles.content}>
-        <Animated.View style={[styles.logoContainer, { opacity: pulseAnim }]}>
+        <Animated.View style={[styles.logoContainer, { opacity: reduceMotionEnabled ? 1 : pulseAnim }]}>
           <Image source={BRAND_ICON} style={styles.logo} resizeMode="contain" />
         </Animated.View>
-        <ActivityIndicator size="small" color={accentColor} style={styles.spinner} />
+        {reduceMotionEnabled ? (
+          <View style={[styles.staticIndicator, { backgroundColor: accentColor }]} />
+        ) : (
+          <ActivityIndicator size="small" color={accentColor} style={styles.spinner} />
+        )}
         <Text style={[styles.text, { color: textColor }]}>{text}</Text>
       </View>
     </View>
@@ -83,10 +108,16 @@ const styles = StyleSheet.create({
   spinner: {
     marginTop: 4,
   },
+  staticIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+    marginTop: 4,
+  },
   text: {
     fontSize: 14,
     fontWeight: '600',
     fontFamily: uiTokens.fontFamily.semibold || 'System',
-    letterSpacing: -0.2,
+    letterSpacing: 0,
   },
 });

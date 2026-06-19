@@ -110,6 +110,13 @@ function buildNativeShellBootstrap(platform: 'ios' | 'android', authSession?: Au
         }
       }
       try {
+        var notifyNativeReady = function () {
+          try {
+            window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'BARISTA_WEB_APP_READY' }));
+          } catch (error) {}
+        };
+        window.__BARISTACHAW_NOTIFY_NATIVE_READY__ = notifyNativeReady;
+        window.addEventListener('barista:web-app-ready', notifyNativeReady);
         window.dispatchEvent(new Event('barista:native-session-ready'));
       } catch (error) {}
     })();
@@ -247,6 +254,7 @@ export function WebParityScreen({
   const handleReload = () => {
     setError('');
     setLoading(true);
+    didReportReady.current = false;
     loadFailed.current = false;
     webRef.current?.reload();
   };
@@ -298,19 +306,16 @@ export function WebParityScreen({
           loadFailed.current = false;
         }}
         onLoadProgress={({ nativeEvent }) => {
-          if (nativeEvent.progress >= 0.85) {
-            markParityReady();
-          }
+          void nativeEvent.progress;
         }}
-        onLoadEnd={() => {
-          markParityReady();
-        }}
+        onLoadEnd={() => undefined}
         onNavigationStateChange={(state) => {
           if (state.url) setCurrentUrl(state.url);
         }}
         onMessage={({ nativeEvent }) => {
           try {
             const payload = JSON.parse(nativeEvent.data || '{}') as { type?: string };
+            if (payload.type === 'BARISTA_WEB_APP_READY') markParityReady();
             if (payload.type === 'BARISTA_NATIVE_LOGOUT') onNativeLogout?.();
             if (payload.type === 'BARISTA_NATIVE_AUTH_EXPIRED') onNativeAuthExpired?.();
           } catch {

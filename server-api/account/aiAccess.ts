@@ -6,8 +6,20 @@ import { buildAccountStatus, type AccountStatusResponse, type PlanCode } from '.
 export type PaidAiFeature = 'chat' | 'scanner' | 'search' | 'brew';
 export type PaidAiQuotaKind = 'ai' | 'deep' | 'scanner';
 
+export type PaidAiQuotaReservation = {
+  requestId: string;
+  userId: string;
+  kind: PaidAiQuotaKind;
+  route: string;
+  action: string;
+  mode: string;
+  used: number;
+  limit: number;
+  planCode: string;
+};
+
 export type PaidAiAccessResult =
-  | { ok: true; snapshot: AccountStatusResponse }
+  | { ok: true; snapshot: AccountStatusResponse; quotaReservation?: PaidAiQuotaReservation }
   | {
       ok: false;
       statusCode: 401 | 402 | 403 | 503;
@@ -93,27 +105,115 @@ type QuotaConsumeRow = {
   daily_limit?: number;
   plan_code?: string;
   reason?: string;
+  request_id?: string;
 };
 
-async function consumeDailyQuota(userId: string, quotaKind: PaidAiQuotaKind): Promise<QuotaConsumeRow> {
+type QuotaFinalizeRow = {
+  committed?: boolean;
+  refunded?: boolean;
+  request_id?: string;
+  reason?: string;
+};
+
+async function reserveDailyQuota(params: {
+  requestId: string;
+  userId: string;
+  quotaKind: PaidAiQuotaKind;
+  route: string;
+  action: string;
+  mode: string;
+}): Promise<QuotaConsumeRow> {
   const config = getSupabaseAdminConfig();
   if (!config.configured) {
     throw new Error('Supabase service role is required for plan quota enforcement.');
   }
 
-  const result = await supabaseAdminRest<QuotaConsumeRow[] | QuotaConsumeRow>(config, 'rpc/consume_app_quota', {
+  const reservation = await supabaseAdminRest<QuotaConsumeRow[] | QuotaConsumeRow>(config, 'rpc/reserve_app_quota', {
     method: 'POST',
     body: JSON.stringify({
-      p_user_id: userId,
-      p_feature: quotaKind,
+      p_request_id: params.requestId,
+      p_user_id: params.userId,
+      p_feature: params.quotaKind,
       p_amount: 1,
+      p_route: params.route,
+      p_action: params.action,
+      p_mode: params.mode,
     }),
+  });
+
+  const row = Array.isArray(reservation) ? reservation[0] : reservation;
+  if (!row || typeof row !== 'object') {
+    throw new Error('Supabase quota reservation RPC returned an empty response.');
+  }
+  return row;
+}
+
+async function callQuotaFinalizeRpc(
+  path: 'rpc/commit_app_quota' | 'rpc/refund_app_quota',
+  body: Record<string, unknown>,
+): Promise<QuotaFinalizeRow> {
+  const config = getSupabaseAdminConfig();
+  if (!config.configured) {
+    throw new Error('Supabase service role is required for plan quota finalization.');
+  }
+
+  const result = await supabaseAdminRest<QuotaFinalizeRow[] | QuotaFinalizeRow>(config, path, {
+    method: 'POST',
+    body: JSON.stringify(body),
   });
   const row = Array.isArray(result) ? result[0] : result;
   if (!row || typeof row !== 'object') {
-    throw new Error('Supabase quota RPC returned an empty response.');
+    throw new Error(`Supabase quota finalization RPC returned an empty response for ${path}.`);
   }
   return row;
+}
+
+export async function commitPaidAiQuota(
+  reservation: PaidAiQuotaReservation | undefined,
+  details: {
+    provider?: string;
+    model?: string;
+    inputTokens?: number;
+    outputTokens?: number;
+    totalTokens?: number;
+    estimatedCostUsd?: number;
+    outcome?: string;
+  } = {},
+): Promise<boolean> {
+  if (!reservation?.requestId) return true;
+  try {
+    const row = await callQuotaFinalizeRpc('rpc/commit_app_quota', {
+      p_request_id: reservation.requestId,
+      p_total_tokens: Math.max(0, Number(details.totalTokens || 0)),
+      p_cost_usd: Math.max(0, Number(details.estimatedCostUsd || 0)),
+      p_input_tokens: Math.max(0, Number(details.inputTokens || 0)),
+      p_output_tokens: Math.max(0, Number(details.outputTokens || 0)),
+      p_provider: details.provider || '',
+      p_model: details.model || '',
+      p_outcome: details.outcome || 'success',
+    });
+    return row.committed !== false;
+  } catch (error) {
+    console.error(`[account/aiAccess][${reservation.requestId}] quota_commit_failed:`, error);
+    return false;
+  }
+}
+
+export async function refundPaidAiQuota(
+  reservation: PaidAiQuotaReservation | undefined,
+  reason = 'refunded',
+): Promise<boolean> {
+  if (!reservation?.requestId) return true;
+  try {
+    const row = await callQuotaFinalizeRpc('rpc/refund_app_quota', {
+      p_request_id: reservation.requestId,
+      p_reason: reason,
+    });
+    return row.refunded !== false;
+  } catch (error) {
+    console.error(`[account/aiAccess][${reservation.requestId}] quota_refund_failed:`, error);
+    return false;
+  }
 }
 
 export function featureSurfaceFromClientContext(rawClientContext: unknown): FeatureSurface {
@@ -130,6 +230,9 @@ export async function requirePaidAiAccess(params: {
   rawClientContext?: unknown;
   feature: PaidAiFeature;
   quotaKind?: PaidAiQuotaKind;
+  route?: string;
+  action?: string;
+  mode?: string;
 }): Promise<PaidAiAccessResult> {
   if (isGuestAuth(params.auth)) {
     return {
@@ -222,7 +325,14 @@ export async function requirePaidAiAccess(params: {
 
     const quotaKind = params.quotaKind || quotaKindForFeature(params.feature);
     try {
-      const quota = await consumeDailyQuota(snapshot.user.id, quotaKind);
+      const quota = await reserveDailyQuota({
+        requestId: params.requestId,
+        userId: snapshot.user.id,
+        quotaKind,
+        route: params.route || '',
+        action: params.action || params.feature,
+        mode: params.mode || '',
+      });
       if (quota.allowed === false) {
         return {
           ok: false,
@@ -238,6 +348,21 @@ export async function requirePaidAiAccess(params: {
           },
         };
       }
+      return {
+        ok: true,
+        snapshot,
+        quotaReservation: {
+          requestId: quota.request_id || params.requestId,
+          userId: snapshot.user.id,
+          kind: quotaKind,
+          route: params.route || '',
+          action: params.action || params.feature,
+          mode: params.mode || '',
+          used: Number(quota.used || 0),
+          limit: Number(quota.daily_limit || 0),
+          planCode: typeof quota.plan_code === 'string' ? quota.plan_code : snapshot.user.planCode,
+        },
+      };
     } catch (error) {
       console.error(`[account/aiAccess][${params.requestId}] QUOTA_ERROR_DEBUG:`, error);
       if (strictQuotaEnforcementEnabled()) {

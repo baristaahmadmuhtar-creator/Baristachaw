@@ -40,7 +40,13 @@ import {
   E2E_MOCK_MODEL,
   E2E_MOCK_PROVIDER,
 } from './_e2eMock.js';
-import { requirePaidAiAccess, type PaidAiFeature } from './account/aiAccess.js';
+import {
+  commitPaidAiQuota,
+  refundPaidAiQuota,
+  requirePaidAiAccess,
+  type PaidAiFeature,
+  type PaidAiQuotaReservation,
+} from './account/aiAccess.js';
 import {
   aiProviderDisabledMessage,
   getAiProviderKeys,
@@ -946,7 +952,15 @@ async function fetchInlineAttachmentUrl(
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), ATTACHMENT_URL_FETCH_TIMEOUT_MS);
   try {
-    const response = await fetch(url, { signal: controller.signal, redirect: 'follow' });
+    const response = await fetch(url, { signal: controller.signal, redirect: 'manual' });
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location') || '';
+      const nextUrl = location ? parsePublicAttachmentUrl(new URL(location, url).toString()) : null;
+      if (!nextUrl) {
+        return { ok: false, statusCode: 400, error: 'attachment URL redirect target must be public HTTPS' };
+      }
+      return { ok: false, statusCode: 400, error: 'attachment URL redirects are not allowed' };
+    }
     const finalUrl = parsePublicAttachmentUrl(response.url || url.toString());
     if (!finalUrl) {
       return { ok: false, statusCode: 400, error: 'attachment URL must be public HTTPS' };
@@ -2375,34 +2389,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           : clientSurface === 'chat'
             ? 'chat'
             : clientSurface === 'home'
-              ? 'search'
-              : null);
-  if (paidFeature) {
-    const aiAccess = await requirePaidAiAccess({
-      requestId,
-      auth: authResult.auth,
-      rawClientContext,
-      feature: paidFeature,
-      quotaKind: action === 'deep_think'
-        ? 'deep'
-        : paidFeature === 'scanner'
-          ? 'scanner'
-          : 'ai',
-    });
-    if (aiAccess.ok === false) {
-      return res.status(aiAccess.statusCode).json({
-        ok: false,
-        requestId,
-        action,
-        error: aiAccess.error,
-        errorCode: aiAccess.errorCode,
-        retryable: aiAccess.retryable,
-        minimumPlan: aiAccess.minimumPlan,
-      });
-    }
-  }
-
-
+            ? 'search'
+            : null);
+  let quotaReservation: PaidAiQuotaReservation | undefined;
 
   if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > 15000) {
     return sendBadRequest(
@@ -2458,6 +2447,48 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     );
   }
 
+  if (paidFeature) {
+    const aiAccess = await requirePaidAiAccess({
+      requestId,
+      auth: authResult.auth,
+      rawClientContext,
+      route: '/api/ai',
+      action,
+      mode: action === 'deep_think' ? 'deep' : action,
+      feature: paidFeature,
+      quotaKind: action === 'deep_think'
+        ? 'deep'
+        : paidFeature === 'scanner'
+          ? 'scanner'
+          : 'ai',
+    });
+    if (aiAccess.ok === false) {
+      return res.status(aiAccess.statusCode).json({
+        ok: false,
+        requestId,
+        action,
+        error: aiAccess.error,
+        errorCode: aiAccess.errorCode,
+        retryable: aiAccess.retryable,
+        minimumPlan: aiAccess.minimumPlan,
+      });
+    }
+    quotaReservation = aiAccess.quotaReservation;
+  }
+
+  const commitQuotaForText = async (
+    provider: string,
+    modelName: string | undefined,
+    text: unknown,
+    outcome = 'success',
+  ) => commitPaidAiQuota(quotaReservation, {
+    provider,
+    model: modelName || '',
+    inputTokens: estimateAiTokenCount(promptForModel),
+    outputTokens: estimateAiTokenCount(String(text || '')),
+    outcome,
+  });
+
   if (isE2eMockRequest(req)) {
     const mockPayload = buildE2eMockAiPayload(action, promptPlan.resolved.language);
     if (action === 'deep_think') {
@@ -2469,6 +2500,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.info(
       `[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms provider=${E2E_MOCK_PROVIDER} mode=mock grounded=${action === 'deep_think' || action === 'search' ? 1 : 0} fallback_used=0 deep_quality_pass=${action === 'deep_think' ? 1 : 0} source_count=${Array.isArray((mockPayload as { sources?: unknown[] }).sources) ? (mockPayload as { sources?: unknown[] }).sources?.length || 0 : 0} degraded=0`,
     );
+    await commitPaidAiQuota(quotaReservation, {
+      provider: E2E_MOCK_PROVIDER,
+      model: E2E_MOCK_MODEL,
+      inputTokens: estimateAiTokenCount(promptForModel),
+      outputTokens: estimateAiTokenCount(String((mockPayload as { text?: unknown }).text || '')),
+      outcome: 'mock_success',
+    });
     return res.json({
       ...mockPayload,
       requestId,
@@ -2482,6 +2520,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (typeof image === 'string' && image.length > INLINE_ATTACHMENT_MAX_BASE64_CHARS + 2048) {
+      await refundPaidAiQuota(quotaReservation, 'validation_error');
       return res.status(413).json({
         ok: false,
         requestId,
@@ -2492,6 +2531,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
     if (textContent && (typeof textContent !== 'string' || textContent.length > 50_000)) {
+      await refundPaidAiQuota(quotaReservation, 'validation_error');
       return sendBadRequest(res, requestId, action, 'textContent must be a string under 50000 chars');
     }
 
@@ -2525,6 +2565,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         outputTokens: estimateAiTokenCount(text),
         latencyMs,
       });
+      await commitQuotaForText(fallback.provider, fallback.model, text);
       return res.json({
         ok: true,
         requestId,
@@ -2566,6 +2607,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         outputTokens: estimateAiTokenCount(text),
         latencyMs,
       });
+      await commitQuotaForText(fallback.provider, fallback.model, text);
       return res.json({
         ok: true,
         requestId,
@@ -2582,6 +2624,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         expectedMimePrefix: 'image/',
       });
       if (attachment.ok === false) {
+        await refundPaidAiQuota(quotaReservation, 'validation_error');
         return res.status(attachment.statusCode).json({
           ok: false,
           requestId,
@@ -2592,6 +2635,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
       if (!isSupportedInlineAttachmentMime(attachment.payload.mimeType)) {
+        await refundPaidAiQuota(quotaReservation, 'validation_error');
         return sendBadRequest(
           res,
           requestId,
@@ -2629,6 +2673,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       );
 
       console.info(`[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms provider=${activeProvider} model=${activeModel}`);
+      await commitQuotaForText(activeProvider, activeModel, text);
       return jsonHeartbeat.end({ ok: true, requestId, action, text, provider: activeProvider, model: activeModel });
     }
 
@@ -2637,6 +2682,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         allowAnySupportedAttachment: true,
       });
       if (attachment.ok === false) {
+        await refundPaidAiQuota(quotaReservation, 'validation_error');
         return res.status(attachment.statusCode).json({
           ok: false,
           requestId,
@@ -2666,11 +2712,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       );
 
       console.info(`[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms`);
+      await commitQuotaForText('GEMINI', visionModel, text);
       return jsonHeartbeat.end({ ok: true, requestId, action, text, provider: 'GEMINI', model: visionModel });
     }
 
     if (action === 'analyze_text') {
       if (typeof textContent !== 'string' || !textContent.trim()) {
+        await refundPaidAiQuota(quotaReservation, 'validation_error');
         return sendBadRequest(res, requestId, action, 'textContent required for analyze_text');
       }
 
@@ -2685,6 +2733,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       );
 
       console.info(`[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms`);
+      await commitQuotaForText('GEMINI', selectedModel || 'gemini-2.5-flash', text);
       return res.json({ ok: true, requestId, action, text });
     }
 
@@ -2693,6 +2742,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         expectedMimePrefix: 'audio/',
       });
       if (attachment.ok === false) {
+        await refundPaidAiQuota(quotaReservation, 'validation_error');
         return res.status(attachment.statusCode).json({
           ok: false,
           requestId,
@@ -2721,6 +2771,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       );
 
       console.info(`[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms`);
+      await commitQuotaForText('GEMINI', visionModel, text);
       return jsonHeartbeat.end({ ok: true, requestId, action, text, provider: 'GEMINI', model: visionModel });
     }
 
@@ -2734,6 +2785,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       console.info(`[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms`);
+      await commitQuotaForText('GEMINI', selectedModel || 'gemini-2.5-flash', 'image_generated');
       return res.json({ ok: true, requestId, action, imageDataUrl });
     }
 
@@ -2742,6 +2794,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         expectedMimePrefix: 'image/',
       });
       if (attachment.ok === false) {
+        await refundPaidAiQuota(quotaReservation, 'validation_error');
         return res.status(attachment.statusCode).json({
           ok: false,
           requestId,
@@ -2752,6 +2805,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
       if (!isSupportedInlineAttachmentMime(attachment.payload.mimeType)) {
+        await refundPaidAiQuota(quotaReservation, 'validation_error');
         return sendBadRequest(
           res,
           requestId,
@@ -2782,6 +2836,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.info(
         `[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms provider=OPENAI model=${edited.model}`,
       );
+      await commitQuotaForText('OPENAI', edited.model, 'image_edit');
       return jsonHeartbeat.end({
         ok: true,
         requestId,
@@ -2802,6 +2857,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       console.info(`[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms`);
+      await commitQuotaForText('GEMINI', selectedModel || 'gemini-2.5-flash', 'speech_generated');
       return res.json({ ok: true, requestId, action, audioDataUrl });
     }
 
@@ -2860,6 +2916,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           outputTokens: estimateAiTokenCount(repaired.text),
           latencyMs: Date.now() - startedAt,
         });
+        await commitQuotaForText('GEMINI', geminiModel, repaired.text);
         return res.json({ ok: true, requestId, action, text: repaired.text, provider: 'GEMINI' });
       } catch (geminiError) {
         const classifiedGemini = classifyProviderError(geminiError, 'GEMINI');
@@ -2903,6 +2960,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           outputTokens: estimateAiTokenCount(repaired.text),
           latencyMs: Date.now() - startedAt,
         });
+        await commitQuotaForText(fallback.provider, fallback.model, repaired.text, 'fallback_success');
         return res.json({
           ok: true,
           requestId,
@@ -3051,6 +3109,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           outputTokens: estimateAiTokenCount(quality.text),
           latencyMs,
         });
+        await commitQuotaForText(providerForResponse, modelForResponse, quality.text);
         return res.json({
           ok: true,
           requestId,
@@ -3124,6 +3183,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           outputTokens: estimateAiTokenCount(quality.text),
           latencyMs,
         });
+        await commitQuotaForText(fallback.provider, fallback.model, quality.text, 'fallback_success');
         return res.json({
           ok: true,
           requestId,
@@ -3189,6 +3249,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           latencyMs: Date.now() - startedAt,
           errorCode,
         });
+        await refundPaidAiQuota(quotaReservation, errorCode);
         return res.status(200).json({
           ok: false,
           requestId,
@@ -3222,6 +3283,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         outputTokens: estimateAiTokenCount(text),
         latencyMs: Date.now() - startedAt,
       });
+      await commitQuotaForText('GEMINI', selectedModel || 'gemini-2.5-flash', text);
       return res.json({
         ok: true,
         requestId,
@@ -3259,6 +3321,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       latencyMs: Date.now() - startedAt,
       errorCode: classified.code,
     });
+    await refundPaidAiQuota(quotaReservation, classified.code);
 
     if (action === 'search') {
       if (jsonHeartbeat) {

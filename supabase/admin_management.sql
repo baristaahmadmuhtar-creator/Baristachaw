@@ -233,6 +233,444 @@ alter table public.app_usage_daily
   add column if not exists total_tokens integer not null default 0,
   add column if not exists cost_usd numeric not null default 0;
 
+create table if not exists public.ai_quota_ledger (
+  request_id text primary key,
+  user_id text not null references public.app_users(id) on delete cascade,
+  route text not null default '',
+  action text not null default '',
+  mode text not null default '',
+  quota_kind text not null default 'ai' check (quota_kind in ('ai', 'deep', 'scanner')),
+  requested_units integer not null default 1 check (requested_units > 0),
+  reservation_status text not null default 'reserved' check (reservation_status in ('reserved', 'committed', 'refunded', 'rejected')),
+  charged_units integer not null default 0 check (charged_units >= 0),
+  input_tokens integer not null default 0 check (input_tokens >= 0),
+  output_tokens integer not null default 0 check (output_tokens >= 0),
+  estimated_cost_usd numeric not null default 0 check (estimated_cost_usd >= 0),
+  provider text not null default '',
+  model text not null default '',
+  outcome text not null default '',
+  reason text not null default '',
+  created_at timestamptz not null default now(),
+  finalized_at timestamptz,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.ai_quota_ledger
+  add column if not exists route text not null default '',
+  add column if not exists action text not null default '',
+  add column if not exists mode text not null default '',
+  add column if not exists quota_kind text not null default 'ai' check (quota_kind in ('ai', 'deep', 'scanner')),
+  add column if not exists requested_units integer not null default 1 check (requested_units > 0),
+  add column if not exists reservation_status text not null default 'reserved' check (reservation_status in ('reserved', 'committed', 'refunded', 'rejected')),
+  add column if not exists charged_units integer not null default 0 check (charged_units >= 0),
+  add column if not exists input_tokens integer not null default 0 check (input_tokens >= 0),
+  add column if not exists output_tokens integer not null default 0 check (output_tokens >= 0),
+  add column if not exists estimated_cost_usd numeric not null default 0 check (estimated_cost_usd >= 0),
+  add column if not exists provider text not null default '',
+  add column if not exists model text not null default '',
+  add column if not exists outcome text not null default '',
+  add column if not exists reason text not null default '',
+  add column if not exists finalized_at timestamptz,
+  add column if not exists updated_at timestamptz not null default now();
+
+create index if not exists ai_quota_ledger_user_status_idx
+  on public.ai_quota_ledger (user_id, reservation_status, quota_kind, created_at desc);
+
+create table if not exists public.ai_provider_events (
+  id uuid primary key default gen_random_uuid(),
+  request_id text not null,
+  user_id text not null default '',
+  provider text not null,
+  model text not null default '',
+  attempt_order integer not null,
+  outcome text not null default '',
+  latency_ms integer not null default 0 check (latency_ms >= 0),
+  input_tokens integer not null default 0 check (input_tokens >= 0),
+  output_tokens integer not null default 0 check (output_tokens >= 0),
+  estimated_cost_usd numeric not null default 0 check (estimated_cost_usd >= 0),
+  error_code text not null default '',
+  aborted boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists ai_provider_events_request_idx
+  on public.ai_provider_events (request_id, attempt_order);
+
+create table if not exists public.app_rate_limits (
+  bucket_key text primary key,
+  route text not null,
+  user_id text not null default '',
+  ip_hash text not null default '',
+  window_start timestamptz not null,
+  window_seconds integer not null,
+  request_count integer not null default 0 check (request_count >= 0),
+  burst_count integer not null default 0 check (burst_count >= 0),
+  reset_at timestamptz not null,
+  metadata jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists app_rate_limits_reset_idx
+  on public.app_rate_limits (reset_at);
+
+create or replace function public.reserve_app_quota(
+  p_request_id text,
+  p_user_id text,
+  p_feature text,
+  p_amount integer default 1,
+  p_route text default '',
+  p_action text default '',
+  p_mode text default ''
+)
+returns table (
+  allowed boolean,
+  usage_date date,
+  used integer,
+  daily_limit integer,
+  plan_code text,
+  reason text,
+  request_id text
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_today date := current_date;
+  v_feature text := lower(coalesce(p_feature, 'ai'));
+  v_amount integer := greatest(coalesce(p_amount, 1), 1);
+  v_request_id text := nullif(trim(coalesce(p_request_id, '')), '');
+  v_plan_code text;
+  v_ai_limit integer := 0;
+  v_deep_limit integer := 0;
+  v_scanner_limit integer := 0;
+  v_usage public.app_usage_daily%rowtype;
+  v_current integer := 0;
+  v_limit integer := 0;
+  v_reserved integer := 0;
+  v_reserved_ai integer := 0;
+  v_existing public.ai_quota_ledger%rowtype;
+begin
+  if v_request_id is null then
+    raise exception 'request_id is required';
+  end if;
+
+  if v_feature not in ('ai', 'deep', 'scanner') then
+    v_feature := 'ai';
+  end if;
+
+  select *
+    into v_existing
+  from public.ai_quota_ledger
+  where public.ai_quota_ledger.request_id = v_request_id
+  for update;
+
+  if v_existing.request_id is not null then
+    if v_existing.reservation_status = 'rejected' then
+      return query select false, v_today, 0, 0, v_existing.user_id, coalesce(v_existing.reason, 'quota_rejected'), v_request_id;
+      return;
+    end if;
+
+    return query select true, v_today, v_existing.requested_units, v_existing.requested_units, v_existing.quota_kind, v_existing.reservation_status, v_request_id;
+    return;
+  end if;
+
+  select u.plan_code, p.ai_daily_limit, p.deep_daily_limit, p.scanner_daily_limit
+    into v_plan_code, v_ai_limit, v_deep_limit, v_scanner_limit
+  from public.app_users u
+  join public.app_plans p on p.code = u.plan_code
+  where u.id = p_user_id
+    and u.status in ('active', 'trialing');
+
+  if v_plan_code is null then
+    return query select false, v_today, 0, 0, ''::text, 'account_not_active'::text, v_request_id;
+    return;
+  end if;
+
+  insert into public.app_usage_daily (user_id, usage_date)
+  values (p_user_id, v_today)
+  on conflict (user_id, usage_date) do nothing;
+
+  select *
+    into v_usage
+  from public.app_usage_daily
+  where public.app_usage_daily.user_id = p_user_id
+    and public.app_usage_daily.usage_date = v_today
+  for update;
+
+  select coalesce(sum(requested_units), 0)
+    into v_reserved
+  from public.ai_quota_ledger
+  where public.ai_quota_ledger.user_id = p_user_id
+    and public.ai_quota_ledger.quota_kind = v_feature
+    and public.ai_quota_ledger.reservation_status = 'reserved'
+    and public.ai_quota_ledger.created_at >= v_today::timestamptz
+    and public.ai_quota_ledger.created_at < (v_today + 1)::timestamptz;
+
+  select coalesce(sum(requested_units), 0)
+    into v_reserved_ai
+  from public.ai_quota_ledger
+  where public.ai_quota_ledger.user_id = p_user_id
+    and public.ai_quota_ledger.quota_kind in ('ai', 'deep')
+    and public.ai_quota_ledger.reservation_status = 'reserved'
+    and public.ai_quota_ledger.created_at >= v_today::timestamptz
+    and public.ai_quota_ledger.created_at < (v_today + 1)::timestamptz;
+
+  if v_feature = 'deep' then
+    v_current := coalesce(v_usage.deep_requests, 0);
+    v_limit := v_deep_limit;
+    if v_current + v_reserved + v_amount > v_limit or coalesce(v_usage.ai_requests, 0) + v_reserved_ai + v_amount > v_ai_limit then
+      insert into public.ai_quota_ledger (
+        request_id, user_id, route, action, mode, quota_kind, requested_units, reservation_status, reason, outcome
+      ) values (
+        v_request_id, p_user_id, coalesce(p_route, ''), coalesce(p_action, ''), coalesce(p_mode, ''), v_feature, v_amount, 'rejected', 'quota_exceeded', 'rejected'
+      )
+      on conflict (request_id) do nothing;
+
+      return query select false, v_today, v_current + v_reserved, v_limit, v_plan_code, 'quota_exceeded'::text, v_request_id;
+      return;
+    end if;
+  elsif v_feature = 'scanner' then
+    v_current := coalesce(v_usage.scanner_runs, 0);
+    v_limit := v_scanner_limit;
+    if v_current + v_reserved + v_amount > v_limit then
+      insert into public.ai_quota_ledger (
+        request_id, user_id, route, action, mode, quota_kind, requested_units, reservation_status, reason, outcome
+      ) values (
+        v_request_id, p_user_id, coalesce(p_route, ''), coalesce(p_action, ''), coalesce(p_mode, ''), v_feature, v_amount, 'rejected', 'quota_exceeded', 'rejected'
+      )
+      on conflict (request_id) do nothing;
+
+      return query select false, v_today, v_current + v_reserved, v_limit, v_plan_code, 'quota_exceeded'::text, v_request_id;
+      return;
+    end if;
+  else
+    v_current := coalesce(v_usage.ai_requests, 0);
+    v_limit := v_ai_limit;
+    if v_current + v_reserved_ai + v_amount > v_limit then
+      insert into public.ai_quota_ledger (
+        request_id, user_id, route, action, mode, quota_kind, requested_units, reservation_status, reason, outcome
+      ) values (
+        v_request_id, p_user_id, coalesce(p_route, ''), coalesce(p_action, ''), coalesce(p_mode, ''), v_feature, v_amount, 'rejected', 'quota_exceeded', 'rejected'
+      )
+      on conflict (request_id) do nothing;
+
+      return query select false, v_today, v_current + v_reserved_ai, v_limit, v_plan_code, 'quota_exceeded'::text, v_request_id;
+      return;
+    end if;
+  end if;
+
+  insert into public.ai_quota_ledger (
+    request_id,
+    user_id,
+    route,
+    action,
+    mode,
+    quota_kind,
+    requested_units,
+    reservation_status,
+    reason,
+    outcome
+  ) values (
+    v_request_id,
+    p_user_id,
+    coalesce(p_route, ''),
+    coalesce(p_action, ''),
+    coalesce(p_mode, ''),
+    v_feature,
+    v_amount,
+    'reserved',
+    'reserved',
+    'reserved'
+  );
+
+  return query select true, v_today, v_current + v_reserved + v_amount, v_limit, v_plan_code, 'reserved'::text, v_request_id;
+end;
+$$;
+
+create or replace function public.commit_app_quota(
+  p_request_id text,
+  p_total_tokens integer default 0,
+  p_cost_usd numeric default 0,
+  p_input_tokens integer default 0,
+  p_output_tokens integer default 0,
+  p_provider text default '',
+  p_model text default '',
+  p_outcome text default 'success'
+)
+returns table (
+  committed boolean,
+  request_id text,
+  reason text
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_today date := current_date;
+  v_request_id text := nullif(trim(coalesce(p_request_id, '')), '');
+  v_total_tokens integer := greatest(coalesce(p_total_tokens, 0), 0);
+  v_input_tokens integer := greatest(coalesce(p_input_tokens, 0), 0);
+  v_output_tokens integer := greatest(coalesce(p_output_tokens, 0), 0);
+  v_cost_usd numeric := greatest(coalesce(p_cost_usd, 0), 0);
+  v_ledger public.ai_quota_ledger%rowtype;
+  v_usage public.app_usage_daily%rowtype;
+  v_amount integer := 1;
+begin
+  if v_request_id is null then
+    return query select false, ''::text, 'request_id_required'::text;
+    return;
+  end if;
+
+  select *
+    into v_ledger
+  from public.ai_quota_ledger
+  where public.ai_quota_ledger.request_id = v_request_id
+  for update;
+
+  if v_ledger.request_id is null then
+    return query select false, v_request_id, 'reservation_not_found'::text;
+    return;
+  end if;
+
+  if v_ledger.reservation_status = 'committed' then
+    return query select true, v_request_id, 'already_committed'::text;
+    return;
+  end if;
+
+  if v_ledger.reservation_status <> 'reserved' then
+    return query select false, v_request_id, v_ledger.reservation_status;
+    return;
+  end if;
+
+  v_amount := greatest(coalesce(v_ledger.requested_units, 1), 1);
+
+  insert into public.app_usage_daily (user_id, usage_date)
+  values (v_ledger.user_id, v_today)
+  on conflict (user_id, usage_date) do nothing;
+
+  select *
+    into v_usage
+  from public.app_usage_daily
+  where public.app_usage_daily.user_id = v_ledger.user_id
+    and public.app_usage_daily.usage_date = v_today
+  for update;
+
+  if v_ledger.quota_kind = 'deep' then
+    update public.app_usage_daily
+      set deep_requests = deep_requests + v_amount,
+          ai_requests = ai_requests + v_amount,
+          total_tokens = total_tokens + v_total_tokens + v_input_tokens + v_output_tokens,
+          cost_usd = cost_usd + v_cost_usd,
+          updated_at = now()
+    where id = v_usage.id
+    returning * into v_usage;
+  elsif v_ledger.quota_kind = 'scanner' then
+    update public.app_usage_daily
+      set scanner_runs = scanner_runs + v_amount,
+          total_tokens = total_tokens + v_total_tokens + v_input_tokens + v_output_tokens,
+          cost_usd = cost_usd + v_cost_usd,
+          updated_at = now()
+    where id = v_usage.id
+    returning * into v_usage;
+  else
+    update public.app_usage_daily
+      set ai_requests = ai_requests + v_amount,
+          total_tokens = total_tokens + v_total_tokens + v_input_tokens + v_output_tokens,
+          cost_usd = cost_usd + v_cost_usd,
+          updated_at = now()
+    where id = v_usage.id
+    returning * into v_usage;
+  end if;
+
+  update public.ai_quota_ledger
+    set reservation_status = 'committed',
+        charged_units = v_amount,
+        input_tokens = v_input_tokens,
+        output_tokens = v_output_tokens,
+        estimated_cost_usd = v_cost_usd,
+        provider = coalesce(p_provider, ''),
+        model = coalesce(p_model, ''),
+        outcome = coalesce(nullif(p_outcome, ''), 'success'),
+        reason = 'committed',
+        finalized_at = now(),
+        updated_at = now()
+  where public.ai_quota_ledger.request_id = v_request_id;
+
+  update public.app_users
+    set usage_today = jsonb_build_object(
+          'ai_requests_today', v_usage.ai_requests,
+          'deep_requests_today', v_usage.deep_requests,
+          'scanner_runs_today', v_usage.scanner_runs,
+          'collection_writes_today', v_usage.collection_writes,
+          'total_tokens_today', v_usage.total_tokens
+        ),
+        last_seen_at = now(),
+        updated_at = now()
+  where id = v_ledger.user_id;
+
+  return query select true, v_request_id, 'committed'::text;
+end;
+$$;
+
+create or replace function public.refund_app_quota(
+  p_request_id text,
+  p_reason text default 'refunded'
+)
+returns table (
+  refunded boolean,
+  request_id text,
+  reason text
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_request_id text := nullif(trim(coalesce(p_request_id, '')), '');
+  v_ledger public.ai_quota_ledger%rowtype;
+  v_reason text := coalesce(nullif(p_reason, ''), 'refunded');
+begin
+  if v_request_id is null then
+    return query select false, ''::text, 'request_id_required'::text;
+    return;
+  end if;
+
+  select *
+    into v_ledger
+  from public.ai_quota_ledger
+  where public.ai_quota_ledger.request_id = v_request_id
+  for update;
+
+  if v_ledger.request_id is null then
+    return query select false, v_request_id, 'reservation_not_found'::text;
+    return;
+  end if;
+
+  if v_ledger.reservation_status = 'committed' then
+    return query select false, v_request_id, 'already_committed'::text;
+    return;
+  end if;
+
+  if v_ledger.reservation_status = 'refunded' then
+    return query select true, v_request_id, 'already_refunded'::text;
+    return;
+  end if;
+
+  update public.ai_quota_ledger
+    set reservation_status = 'refunded',
+        charged_units = 0,
+        outcome = v_reason,
+        reason = v_reason,
+        finalized_at = now(),
+        updated_at = now()
+  where public.ai_quota_ledger.request_id = v_request_id;
+
+  return query select true, v_request_id, v_reason;
+end;
+$$;
+
 create or replace function public.consume_app_quota(
   p_user_id text,
   p_feature text,
@@ -250,118 +688,30 @@ returns table (
 )
 language plpgsql
 security definer
-set search_path = public
+set search_path = ''
 as $$
 declare
-  v_today date := current_date;
-  v_feature text := lower(coalesce(p_feature, 'ai'));
-  v_amount integer := greatest(coalesce(p_amount, 1), 1);
-  v_total_tokens integer := greatest(coalesce(p_total_tokens, 0), 0);
-  v_cost_usd numeric := greatest(coalesce(p_cost_usd, 0), 0);
-  v_plan_code text;
-  v_ai_limit integer := 0;
-  v_deep_limit integer := 0;
-  v_scanner_limit integer := 0;
-  v_usage public.app_usage_daily%rowtype;
-  v_current integer := 0;
-  v_limit integer := 0;
+  v_request_id text := 'legacy-' || pg_catalog.md5(pg_catalog.clock_timestamp()::text || ':' || pg_catalog.random()::text);
+  v_reserved record;
+  v_committed record;
 begin
-  if v_feature not in ('ai', 'deep', 'scanner') then
-    v_feature := 'ai';
-  end if;
-
-  select u.plan_code, p.ai_daily_limit, p.deep_daily_limit, p.scanner_daily_limit
-    into v_plan_code, v_ai_limit, v_deep_limit, v_scanner_limit
-  from public.app_users u
-  join public.app_plans p on p.code = u.plan_code
-  where u.id = p_user_id
-    and u.status in ('active', 'trialing');
-
-  if v_plan_code is null then
-    return query select false, v_today, 0, 0, ''::text, 'account_not_active'::text;
-    return;
-  end if;
-
-  insert into public.app_usage_daily (user_id, usage_date)
-  values (p_user_id, v_today)
-  on conflict (user_id, usage_date) do nothing;
-
   select *
-    into v_usage
-  from public.app_usage_daily
-  where public.app_usage_daily.user_id = p_user_id
-    and public.app_usage_daily.usage_date = v_today
-  for update;
+    into v_reserved
+  from public.reserve_app_quota(v_request_id, p_user_id, p_feature, p_amount, 'legacy', 'consume_app_quota', '');
 
-  if v_feature = 'deep' then
-    v_current := coalesce(v_usage.deep_requests, 0);
-    v_limit := v_deep_limit;
-    if v_current + v_amount > v_limit or coalesce(v_usage.ai_requests, 0) + v_amount > v_ai_limit then
-      return query select false, v_today, v_current, v_limit, v_plan_code, 'quota_exceeded'::text;
-      return;
-    end if;
-
-    update public.app_usage_daily
-      set deep_requests = deep_requests + v_amount,
-          ai_requests = ai_requests + v_amount,
-          total_tokens = total_tokens + v_total_tokens,
-          cost_usd = cost_usd + v_cost_usd,
-          updated_at = now()
-    where id = v_usage.id
-    returning * into v_usage;
-  elsif v_feature = 'scanner' then
-    v_current := coalesce(v_usage.scanner_runs, 0);
-    v_limit := v_scanner_limit;
-    if v_current + v_amount > v_limit then
-      return query select false, v_today, v_current, v_limit, v_plan_code, 'quota_exceeded'::text;
-      return;
-    end if;
-
-    update public.app_usage_daily
-      set scanner_runs = scanner_runs + v_amount,
-          total_tokens = total_tokens + v_total_tokens,
-          cost_usd = cost_usd + v_cost_usd,
-          updated_at = now()
-    where id = v_usage.id
-    returning * into v_usage;
-  else
-    v_current := coalesce(v_usage.ai_requests, 0);
-    v_limit := v_ai_limit;
-    if v_current + v_amount > v_limit then
-      return query select false, v_today, v_current, v_limit, v_plan_code, 'quota_exceeded'::text;
-      return;
-    end if;
-
-    update public.app_usage_daily
-      set ai_requests = ai_requests + v_amount,
-          total_tokens = total_tokens + v_total_tokens,
-          cost_usd = cost_usd + v_cost_usd,
-          updated_at = now()
-    where id = v_usage.id
-    returning * into v_usage;
+  if coalesce(v_reserved.allowed, false) then
+    select *
+      into v_committed
+    from public.commit_app_quota(v_request_id, p_total_tokens, p_cost_usd, 0, 0, '', '', 'legacy_consume');
   end if;
 
-  update public.app_users
-    set usage_today = jsonb_build_object(
-          'ai_requests_today', v_usage.ai_requests,
-          'deep_requests_today', v_usage.deep_requests,
-          'scanner_runs_today', v_usage.scanner_runs,
-          'collection_writes_today', v_usage.collection_writes,
-          'total_tokens_today', v_usage.total_tokens
-        ),
-        last_seen_at = now(),
-        updated_at = now()
-  where id = p_user_id;
-
-  if v_feature = 'deep' then
-    v_current := v_usage.deep_requests;
-  elsif v_feature = 'scanner' then
-    v_current := v_usage.scanner_runs;
-  else
-    v_current := v_usage.ai_requests;
-  end if;
-
-  return query select true, v_today, v_current, v_limit, v_plan_code, 'ok'::text;
+  return query select
+    coalesce(v_reserved.allowed, false),
+    coalesce(v_reserved.usage_date, current_date),
+    coalesce(v_reserved.used, 0),
+    coalesce(v_reserved.daily_limit, 0),
+    coalesce(v_reserved.plan_code, ''::text),
+    case when coalesce(v_reserved.allowed, false) then 'ok'::text else coalesce(v_reserved.reason, 'quota_rejected'::text) end;
 end;
 $$;
 
@@ -693,6 +1043,16 @@ create trigger app_usage_daily_updated_at
 before update on public.app_usage_daily
 for each row execute function public.set_admin_management_updated_at();
 
+drop trigger if exists ai_quota_ledger_updated_at on public.ai_quota_ledger;
+create trigger ai_quota_ledger_updated_at
+before update on public.ai_quota_ledger
+for each row execute function public.set_admin_management_updated_at();
+
+drop trigger if exists app_rate_limits_updated_at on public.app_rate_limits;
+create trigger app_rate_limits_updated_at
+before update on public.app_rate_limits
+for each row execute function public.set_admin_management_updated_at();
+
 drop trigger if exists user_entitlements_updated_at on public.user_entitlements;
 create trigger user_entitlements_updated_at
 before update on public.user_entitlements
@@ -716,6 +1076,9 @@ for each row execute function public.set_admin_management_updated_at();
 alter table public.app_plans enable row level security;
 alter table public.app_users enable row level security;
 alter table public.app_usage_daily enable row level security;
+alter table public.ai_quota_ledger enable row level security;
+alter table public.ai_provider_events enable row level security;
+alter table public.app_rate_limits enable row level security;
 alter table public.user_entitlements enable row level security;
 alter table public.payment_receipts enable row level security;
 alter table public.app_feature_flags enable row level security;
@@ -724,6 +1087,9 @@ alter table public.admin_audit_events enable row level security;
 alter table public.app_plans force row level security;
 alter table public.app_users force row level security;
 alter table public.app_usage_daily force row level security;
+alter table public.ai_quota_ledger force row level security;
+alter table public.ai_provider_events force row level security;
+alter table public.app_rate_limits force row level security;
 alter table public.user_entitlements force row level security;
 alter table public.payment_receipts force row level security;
 alter table public.app_feature_flags force row level security;
@@ -734,6 +1100,9 @@ grant usage on schema public to anon, authenticated, service_role;
 revoke all on public.app_plans from anon, authenticated;
 revoke all on public.app_users from anon, authenticated;
 revoke all on public.app_usage_daily from anon, authenticated;
+revoke all on public.ai_quota_ledger from anon, authenticated;
+revoke all on public.ai_provider_events from anon, authenticated;
+revoke all on public.app_rate_limits from anon, authenticated;
 revoke all on public.user_entitlements from anon, authenticated;
 revoke all on public.payment_receipts from anon, authenticated;
 revoke all on public.app_feature_flags from anon, authenticated;
@@ -748,10 +1117,19 @@ grant select on public.app_feature_flags to anon, authenticated;
 grant all on public.app_plans to service_role;
 grant all on public.app_users to service_role;
 grant all on public.app_usage_daily to service_role;
+grant all on public.ai_quota_ledger to service_role;
+grant all on public.ai_provider_events to service_role;
+grant all on public.app_rate_limits to service_role;
 grant all on public.user_entitlements to service_role;
 grant all on public.payment_receipts to service_role;
 grant all on public.app_feature_flags to service_role;
 grant all on public.admin_audit_events to service_role;
+revoke all on function public.reserve_app_quota(text, text, text, integer, text, text, text) from public;
+grant execute on function public.reserve_app_quota(text, text, text, integer, text, text, text) to service_role;
+revoke all on function public.commit_app_quota(text, integer, numeric, integer, integer, text, text, text) from public;
+grant execute on function public.commit_app_quota(text, integer, numeric, integer, integer, text, text, text) to service_role;
+revoke all on function public.refund_app_quota(text, text) from public;
+grant execute on function public.refund_app_quota(text, text) to service_role;
 revoke all on function public.consume_app_quota(text, text, integer, integer, numeric) from public;
 grant execute on function public.consume_app_quota(text, text, integer, integer, numeric) to service_role;
 
@@ -769,6 +1147,18 @@ create policy "service role manages app users" on public.app_users
 
 drop policy if exists "service role manages app usage" on public.app_usage_daily;
 create policy "service role manages app usage" on public.app_usage_daily
+  for all to service_role using (true) with check (true);
+
+drop policy if exists "service role manages ai quota ledger" on public.ai_quota_ledger;
+create policy "service role manages ai quota ledger" on public.ai_quota_ledger
+  for all to service_role using (true) with check (true);
+
+drop policy if exists "service role manages ai provider events" on public.ai_provider_events;
+create policy "service role manages ai provider events" on public.ai_provider_events
+  for all to service_role using (true) with check (true);
+
+drop policy if exists "service role manages app rate limits" on public.app_rate_limits;
+create policy "service role manages app rate limits" on public.app_rate_limits
   for all to service_role using (true) with check (true);
 
 drop policy if exists "service role manages entitlements" on public.user_entitlements;

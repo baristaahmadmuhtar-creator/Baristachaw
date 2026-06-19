@@ -279,7 +279,7 @@ function ScanningProgressTicker({ mode }: { mode: ScannerMode }) {
   }, [steps.length]);
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-3 text-center select-none py-1">
+    <div className="flex flex-col items-center justify-center space-y-3 text-center select-none py-1" role="status" aria-live="polite" aria-busy="true">
       <div className="flex gap-2.5 items-center justify-center min-h-[30px] overflow-hidden">
         <Loader2 className="animate-spin text-blue-500 shrink-0" size={20} />
         <AnimatePresence mode="wait">
@@ -739,7 +739,7 @@ export function Scanner() {
         <div className="mb-4" />
 
         {authChecking && (
-          <div className="mb-4 mx-auto flex w-fit items-center gap-2 rounded-full border border-border bg-surface-alpha px-3 py-2 text-xs font-medium text-secondary">
+          <div className="mb-4 mx-auto flex w-fit items-center gap-2 rounded-full border border-border bg-surface-alpha px-3 py-2 text-xs font-medium text-secondary" role="status" aria-live="polite" aria-busy="true">
             <Loader2 size={14} className="animate-spin" />
             <span>{t.scannerCheckingSession}</span>
           </div>
@@ -924,7 +924,7 @@ export function Scanner() {
                 <img src={previewSrc || undefined} alt={t.scanResult} className="w-full h-auto max-h-[50vh] object-contain rounded-[2rem]" />
                 
                 {loading && (
-                  <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px] flex flex-col items-center justify-center p-4 z-10 transition-all duration-300">
+                  <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px] flex flex-col items-center justify-center p-4 z-10 transition-all duration-300" role="status" aria-live="polite" aria-busy="true">
                     {/* High-tech grid overlay */}
                     <div 
                       className="absolute inset-0 bg-[linear-gradient(to_right,rgba(59,130,246,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(59,130,246,0.08)_1px,transparent_1px)] bg-[size:28px_28px] pointer-events-none"
@@ -1041,7 +1041,7 @@ export function Scanner() {
               >
                 {loading ? (
                   <>
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-1.5" role="status" aria-live="polite" aria-label={loadingLabel}>
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-500/70" style={{ animation: "coffee-ripple 1.4s ease-in-out infinite" }} />
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-600/70" style={{ animation: "coffee-ripple 1.4s ease-in-out infinite 0.2s" }} />
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-700/70" style={{ animation: "coffee-ripple 1.4s ease-in-out infinite 0.4s" }} />

@@ -270,7 +270,11 @@ function isTrustedBrowserOrigin(req: VercelRequest): boolean {
 
   const fetchSite = firstHeaderValue(req.headers['sec-fetch-site']).trim().toLowerCase();
   if (fetchSite === 'cross-site') return false;
-  return true;
+  if (fetchSite === 'same-origin' || fetchSite === 'same-site' || fetchSite === 'none') return true;
+
+  const authorization = firstHeaderValue(req.headers.authorization).trim().toLowerCase();
+  if (authorization.startsWith('bearer ')) return true;
+  return false;
 }
 
 export function enforceTrustedRequestOrigin(
@@ -292,9 +296,6 @@ export function enforceTrustedRequestOrigin(
 }
 
 export function createRequestId(req: VercelRequest): string {
-  const incoming = req.headers['x-request-id'];
-  if (typeof incoming === 'string' && incoming.trim()) return incoming.trim().slice(0, 64);
-  if (Array.isArray(incoming) && incoming[0]) return incoming[0].trim().slice(0, 64);
   return randomUUID();
 }
 

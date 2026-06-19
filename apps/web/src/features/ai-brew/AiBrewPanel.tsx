@@ -8163,7 +8163,7 @@ function PlanResultDialog({
                             <p><strong>{id ? 'Cadangan' : 'Backup'}:</strong> {activeFeedbackCorrection.backupCorrection}</p>
                           </div>
                         )}
-                        <Suspense fallback={<p className="text-sm text-secondary">{copy.loadingCatalog}</p>}>
+                        <Suspense fallback={<p className="text-sm text-secondary" role="status" aria-live="polite" aria-busy="true">{copy.loadingCatalog}</p>}>
                           <Markdown>{buildAiBrewTasteLoopMarkdown(plan, feedback, language)}</Markdown>
                         </Suspense>
                         <p className="mt-2 text-xs text-secondary">{copy.feedbackCoachHint}</p>
@@ -8943,7 +8943,7 @@ function PlanResultDialog({
                       <div className="mr-auto max-w-[82%] overflow-hidden rounded-2xl rounded-tl-md border panel-divider-subtle bg-surface-alpha px-3 py-3">
                         <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{aiResponse.title}</p>
                         <div className="chat-markdown prose prose-sm mt-2 max-w-none break-words text-primary prose-headings:text-primary prose-strong:text-primary [overflow-wrap:anywhere]">
-                          <Suspense fallback={<p className="text-sm text-secondary">{copy.aiBusy}</p>}>
+                          <Suspense fallback={<p className="text-sm text-secondary" role="status" aria-live="polite" aria-busy="true">{copy.aiBusy}</p>}>
                             <Markdown>{aiResponse.markdown}</Markdown>
                           </Suspense>
                         </div>

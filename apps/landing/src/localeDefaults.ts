@@ -40,4 +40,3 @@ export function inferLandingLocale(signals: LocaleSignal): LocaleProfile {
     || profileFromLanguage(Array.isArray(signals.languages) ? signals.languages : [])
     || { region: 'global', marketingLanguage: 'en' };
 }
-

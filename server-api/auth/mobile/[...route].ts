@@ -85,11 +85,28 @@ function resolveAppleAudience(): string {
   return '';
 }
 
+function isObject(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function verifyMobileOAuthState(state: string, jwtSecret: string): boolean {
+  if (!state.startsWith('mobile.')) return false;
+  try {
+    const payload = jwt.verify(state.slice('mobile.'.length), jwtSecret);
+    return isObject(payload) && payload.purpose === 'mobile_oauth';
+  } catch {
+    return false;
+  }
+}
+
 function toAppleUser(payload: Record<string, unknown>, body: any): MobileAuthUser {
   const sub = typeof payload.sub === 'string' ? payload.sub.trim() : '';
   const tokenEmail = typeof payload.email === 'string' ? payload.email.trim() : '';
   const requestEmail = typeof body?.email === 'string' ? body.email.trim() : '';
-  const email = requestEmail || tokenEmail || '';
+  if (requestEmail && tokenEmail && requestEmail.toLowerCase() !== tokenEmail.toLowerCase()) {
+    throw new Error('Apple request email does not match the verified identity token email.');
+  }
+  const email = tokenEmail || '';
   const nameFromBody = typeof body?.name === 'string' ? body.name.trim() : '';
   const fallbackName = email ? email.split('@')[0] : 'Apple User';
   const name = nameFromBody || fallbackName || 'Apple User';
@@ -168,9 +185,13 @@ async function handleCallback(req: VercelRequest, res: VercelResponse, requestId
 
   try {
     const code = typeof req.query.code === 'string' ? req.query.code.trim() : '';
+    const state = typeof req.query.state === 'string' ? req.query.state.trim() : '';
     if (!code) throw new Error('Missing OAuth code');
 
     const config = resolveMobileOAuthConfig('/api/auth/mobile/callback');
+    if (!state || !verifyMobileOAuthState(state, config.jwtSecret)) {
+      throw new Error('Invalid OAuth state');
+    }
     const accessToken = await exchangeGoogleCodeForToken(code, config);
     const user = await fetchGoogleProfile(accessToken);
     const grant = createMobileAuthGrant(user);
@@ -551,6 +572,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     error: `Unknown mobile auth route: ${routeKey || '(empty)'}`,
   });
 }
-
 
 

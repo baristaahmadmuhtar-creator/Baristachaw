@@ -27,7 +27,9 @@ const BILLING_PROOF_RATE_LIMIT = {
 } as const;
 
 function normalizeRequestId(value: unknown): string {
-  return typeof value === 'string' ? value.trim().slice(0, 80) : '';
+  if (typeof value !== 'string') return '';
+  const normalized = value.trim();
+  return /^manual_[a-z0-9]+_[a-f0-9]{12}$/i.test(normalized) ? normalized : '';
 }
 
 function normalizeMimeType(value: unknown): string {

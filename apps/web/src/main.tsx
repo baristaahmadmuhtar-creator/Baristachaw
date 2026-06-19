@@ -16,6 +16,13 @@ type ViewportMetricsDetail = {
   keyboardOpen: boolean;
 };
 
+type NativeReadyWindow = Window & {
+  ReactNativeWebView?: {
+    postMessage: (message: string) => void;
+  };
+  __BARISTACHAW_NOTIFY_NATIVE_READY__?: () => void;
+};
+
 const IOS_KEYBOARD_THRESHOLD = 80;
 const IOS_KEYBOARD_CLOSE_THRESHOLD = 40;
 const RUNTIME_STORAGE_KEY = 'BARISTA_RUNTIME_MODE';
@@ -301,6 +308,26 @@ function setupOfflineServiceWorker() {
   else window.addEventListener('load', register, { once: true });
 }
 
+function notifyNativeShellReady() {
+  const runtime = readRuntimeFlags();
+  if (!runtime.isWebParity || runtime.uiProfile !== 'native_shell') return;
+
+  const target = window as NativeReadyWindow;
+  try {
+    target.__BARISTACHAW_NOTIFY_NATIVE_READY__?.();
+  } catch {
+    // Ignore native bridge readiness races.
+  }
+  try {
+    target.ReactNativeWebView?.postMessage(JSON.stringify({
+      type: 'BARISTA_WEB_APP_READY',
+      source: 'baristachaw-web',
+    }));
+  } catch {
+    // Ignore web-only or unavailable bridge contexts.
+  }
+}
+
 if (typeof window !== 'undefined') {
   initializeThemeAndPwa();
   setupOfflineServiceWorker();
@@ -355,4 +382,10 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 );
+
+if (typeof window !== 'undefined') {
+  window.requestAnimationFrame(() => {
+    window.setTimeout(notifyNativeShellReady, 0);
+  });
+}
 

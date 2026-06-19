@@ -33,16 +33,67 @@ async function main() {
   const serviceRoleKey = readEnv('SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SERVICE_KEY');
 
   if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required to verify production consume_app_quota RPC.');
+    throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required to verify production quota RPCs.');
   }
 
-  const response = await fetch(joinUrl(supabaseUrl, '/rest/v1/rpc/consume_app_quota'), {
+  const requestId = `baristachaw-quota-verify-${Date.now()}`;
+  const headers = {
+    apikey: serviceRoleKey,
+    Authorization: `Bearer ${serviceRoleKey}`,
+    'Content-Type': 'application/json',
+  };
+
+  async function callRpc(name, body) {
+    const response = await fetch(joinUrl(supabaseUrl, `/rest/v1/rpc/${name}`), {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    const text = await response.text();
+    let payload = null;
+    try {
+      payload = text ? JSON.parse(text) : null;
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok) {
+      const message = typeof payload?.message === 'string' ? payload.message : text.slice(0, 180);
+      throw new Error(`${name} RPC verification failed: http=${response.status} ${message}`);
+    }
+
+    const rows = Array.isArray(payload) ? payload : payload ? [payload] : [];
+    return rows[0] || {};
+  }
+
+  const reserved = await callRpc('reserve_app_quota', {
+    p_request_id: requestId,
+    p_user_id: '__baristachaw_rpc_verify__',
+    p_feature: 'ai',
+    p_amount: 1,
+    p_route: 'verify',
+    p_action: 'supabase_quota_verify',
+    p_mode: 'mock',
+  });
+
+  if (typeof reserved.allowed !== 'boolean' || typeof reserved.reason !== 'string') {
+    throw new Error('reserve_app_quota RPC returned an unexpected payload shape.');
+  }
+
+  if (reserved.allowed) {
+    const refunded = await callRpc('refund_app_quota', {
+      p_request_id: requestId,
+      p_reason: 'verification_refund',
+    });
+    if (refunded.refunded !== true) {
+      throw new Error('refund_app_quota RPC returned an unexpected payload shape.');
+    }
+  }
+
+  const legacyResponse = await fetch(joinUrl(supabaseUrl, '/rest/v1/rpc/consume_app_quota'), {
     method: 'POST',
-    headers: {
-      apikey: serviceRoleKey,
-      Authorization: `Bearer ${serviceRoleKey}`,
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify({
       p_user_id: '__baristachaw_rpc_verify__',
       p_feature: 'ai',
@@ -52,7 +103,7 @@ async function main() {
     }),
   });
 
-  const text = await response.text();
+  const text = await legacyResponse.text();
   let payload = null;
   try {
     payload = text ? JSON.parse(text) : null;
@@ -60,9 +111,9 @@ async function main() {
     payload = null;
   }
 
-  if (!response.ok) {
+  if (!legacyResponse.ok) {
     const message = typeof payload?.message === 'string' ? payload.message : text.slice(0, 180);
-    throw new Error(`consume_app_quota RPC verification failed: http=${response.status} ${message}`);
+    throw new Error(`consume_app_quota RPC verification failed: http=${legacyResponse.status} ${message}`);
   }
 
   const rows = Array.isArray(payload) ? payload : payload ? [payload] : [];
@@ -71,7 +122,7 @@ async function main() {
     throw new Error('consume_app_quota RPC returned an unexpected payload shape.');
   }
 
-  console.log(`[supabase:quota] consume_app_quota RPC verified (${first.reason}).`);
+  console.log(`[supabase:quota] reserve/refund RPCs verified (${reserved.reason}); legacy consume_app_quota verified (${first.reason}).`);
 }
 
 main().catch((error) => {

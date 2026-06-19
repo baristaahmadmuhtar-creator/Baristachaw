@@ -1652,7 +1652,7 @@ export function Chat() {
                 paddingLeft: 'env(safe-area-inset-left, 0px)',
               }}
             >
-              <Suspense fallback={<div className="h-full w-full" aria-busy="true" />}>
+              <Suspense fallback={<div className="h-full w-full" role="status" aria-live="polite" aria-busy="true" aria-label={t.loading} />}>
                 <ChatWorkspacePanel
                   tab={sidebarTab}
                   onTabChange={setSidebarTab}
@@ -1702,7 +1702,7 @@ export function Chat() {
         )}
 
         {authChecking && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center py-8">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center py-8" role="status" aria-live="polite" aria-busy="true">
             <div className="glass-card px-5 py-4 flex items-center gap-3 text-secondary text-sm">
               <Loader2 size={16} className="animate-spin" />
               {t.chatVerifyingSession}
@@ -1893,7 +1893,7 @@ export function Chat() {
         })}
 
         {loading && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start" role="status" aria-live="polite" aria-busy="true">
             <div className={`glass-card px-5 py-4 text-secondary rounded-bl-[0.5rem] relative overflow-hidden ${deepRequestInFlight ? 'deep-thinking-card' : 'flex items-center gap-3'}`}>
               <div className="absolute inset-0 loading-shimmer opacity-30 pointer-events-none" />
               {deepRequestInFlight ? (

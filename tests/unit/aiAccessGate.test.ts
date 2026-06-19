@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { featureSurfaceFromClientContext, requirePaidAiAccess } from '../../server-api/account/aiAccess.ts';
+import {
+  commitPaidAiQuota,
+  featureSurfaceFromClientContext,
+  refundPaidAiQuota,
+  requirePaidAiAccess,
+} from '../../server-api/account/aiAccess.ts';
 import type { AuthContext } from '../../server-api/_shared.ts';
 import type { PlanCode } from '../../server-api/account/status.ts';
 
@@ -132,7 +137,7 @@ test('paid AI quota enforcement requires Supabase account status', async () => {
   assert.equal(result.retryable, true);
 });
 
-test('paid AI quota enforcement blocks exhausted daily quota', async () => {
+test('paid AI quota enforcement blocks exhausted daily reservation', async () => {
   process.env.PLAN_ENFORCEMENT_ENABLED = 'true';
   process.env.SUPABASE_URL = 'https://unit-project.supabase.co';
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
@@ -164,13 +169,14 @@ test('paid AI quota enforcement blocks exhausted daily quota', async () => {
     if (url.includes('app_plans?') || url.includes('app_feature_flags?')) {
       return new Response(JSON.stringify([]), { status: 200 });
     }
-    if (url.includes('rpc/consume_app_quota') && method === 'POST') {
+    if (url.includes('rpc/reserve_app_quota') && method === 'POST') {
       return new Response(JSON.stringify([{
         allowed: false,
         used: 60,
         daily_limit: 60,
         plan_code: 'starter',
         reason: 'quota_exceeded',
+        request_id: 'ai-gate-quota-exhausted',
       }]), { status: 200 });
     }
     throw new Error(`Unexpected fetch ${url} ${method}`);
@@ -192,6 +198,106 @@ test('paid AI quota enforcement blocks exhausted daily quota', async () => {
     assert.equal(result.quota?.kind, 'ai');
     assert.equal(result.quota?.used, 60);
     assert.equal(result.quota?.limit, 60);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('paid AI quota enforcement reserves first and finalizes with commit or refund helpers', async () => {
+  process.env.PLAN_ENFORCEMENT_ENABLED = 'true';
+  process.env.SUPABASE_URL = 'https://unit-project.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
+  const originalFetch = globalThis.fetch;
+  const rpcCalls: Array<{ endpoint: string; body: Record<string, unknown> }> = [];
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    const method = init?.method || 'GET';
+    const body = typeof init?.body === 'string' ? JSON.parse(init.body) as Record<string, unknown> : {};
+    if (url.includes('app_users?on_conflict=')) {
+      return new Response('', { status: 201 });
+    }
+    if (url.includes('app_users?id=eq.reservation-user')) {
+      return new Response(JSON.stringify([{
+        id: 'reservation-user',
+        email: 'reservation-user@example.com',
+        display_name: 'Reservation User',
+        provider: 'email',
+        status: 'active',
+        plan_code: 'starter',
+        billing_status: 'active',
+        billing_provider: 'xendit',
+        billing_market: 'indonesia',
+        payment_action_required: false,
+        updated_at: new Date().toISOString(),
+      }]), { status: 200 });
+    }
+    if (url.includes('user_entitlements?user_id=eq.reservation-user')) {
+      return new Response(JSON.stringify([]), { status: 200 });
+    }
+    if (url.includes('app_plans?') || url.includes('app_feature_flags?')) {
+      return new Response(JSON.stringify([]), { status: 200 });
+    }
+    if (url.includes('rpc/reserve_app_quota') && method === 'POST') {
+      rpcCalls.push({ endpoint: 'reserve', body });
+      assert.equal(body.p_request_id, 'ai-gate-reservation');
+      assert.equal(body.p_user_id, 'reservation-user');
+      assert.equal(body.p_feature, 'ai');
+      return new Response(JSON.stringify([{
+        allowed: true,
+        used: 7,
+        daily_limit: 60,
+        plan_code: 'starter',
+        reason: 'reserved',
+        request_id: 'ai-gate-reservation',
+      }]), { status: 200 });
+    }
+    if (url.includes('rpc/commit_app_quota') && method === 'POST') {
+      rpcCalls.push({ endpoint: 'commit', body });
+      assert.equal(body.p_request_id, 'ai-gate-reservation');
+      assert.equal(body.p_provider, 'gemini');
+      assert.equal(body.p_model, 'gemini-2.5-flash');
+      assert.equal(body.p_input_tokens, 12);
+      assert.equal(body.p_output_tokens, 34);
+      return new Response(JSON.stringify([{ committed: true, request_id: 'ai-gate-reservation', reason: 'committed' }]), { status: 200 });
+    }
+    if (url.includes('rpc/refund_app_quota') && method === 'POST') {
+      rpcCalls.push({ endpoint: 'refund', body });
+      assert.equal(body.p_request_id, 'ai-gate-reservation-refund');
+      assert.equal(body.p_reason, 'provider_timeout');
+      return new Response(JSON.stringify([{ refunded: true, request_id: 'ai-gate-reservation-refund', reason: 'provider_timeout' }]), { status: 200 });
+    }
+    throw new Error(`Unexpected fetch ${url} ${method}`);
+  }) as typeof fetch;
+
+  try {
+    const result = await requirePaidAiAccess({
+      requestId: 'ai-gate-reservation',
+      auth: makeAuth('starter', { id: 'reservation-user' }),
+      rawClientContext: { platform: 'pwa' },
+      feature: 'chat',
+      quotaKind: 'ai',
+    });
+
+    assert.equal(result.ok, true);
+    assert.deepEqual(rpcCalls.map((call) => call.endpoint), ['reserve']);
+    if (!result.ok) throw new Error('expected quota reservation');
+    assert.equal(result.quotaReservation?.requestId, 'ai-gate-reservation');
+    assert.equal(result.quotaReservation?.kind, 'ai');
+
+    await commitPaidAiQuota(result.quotaReservation, {
+      provider: 'gemini',
+      model: 'gemini-2.5-flash',
+      inputTokens: 12,
+      outputTokens: 34,
+      estimatedCostUsd: 0.00025,
+      outcome: 'success',
+    });
+    await refundPaidAiQuota({
+      ...result.quotaReservation,
+      requestId: 'ai-gate-reservation-refund',
+    }, 'provider_timeout');
+
+    assert.deepEqual(rpcCalls.map((call) => call.endpoint), ['reserve', 'commit', 'refund']);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -229,8 +335,8 @@ test('paid AI quota enforcement soft-opens quota RPC outage for verified paid us
     if (url.includes('app_plans?') || url.includes('app_feature_flags?')) {
       return new Response(JSON.stringify([]), { status: 200 });
     }
-    if (url.includes('rpc/consume_app_quota') && method === 'POST') {
-      return new Response(JSON.stringify({ message: 'Could not find function public.consume_app_quota' }), { status: 404 });
+    if (url.includes('rpc/reserve_app_quota') && method === 'POST') {
+      return new Response(JSON.stringify({ message: 'Could not find function public.reserve_app_quota' }), { status: 404 });
     }
     throw new Error(`Unexpected fetch ${url} ${method}`);
   }) as typeof fetch;
@@ -283,8 +389,8 @@ test('paid AI quota enforcement can fail closed on quota RPC outage in strict mo
     if (url.includes('app_plans?') || url.includes('app_feature_flags?')) {
       return new Response(JSON.stringify([]), { status: 200 });
     }
-    if (url.includes('rpc/consume_app_quota') && method === 'POST') {
-      return new Response(JSON.stringify({ message: 'Could not find function public.consume_app_quota' }), { status: 404 });
+    if (url.includes('rpc/reserve_app_quota') && method === 'POST') {
+      return new Response(JSON.stringify({ message: 'Could not find function public.reserve_app_quota' }), { status: 404 });
     }
     throw new Error(`Unexpected fetch ${url} ${method}`);
   }) as typeof fetch;

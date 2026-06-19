@@ -127,6 +127,11 @@ test('mobile auth callback page includes deep link and android intent fallback',
     query: {
       route: ['callback'],
       code: 'oauth-code-123',
+      state: `mobile.${jwt.sign(
+        { purpose: 'mobile_oauth', nonce: 'unit-test-nonce' },
+        'unit-test-secret-32-chars-minimum',
+        { expiresIn: '10m' },
+      )}`,
     },
     headers: {
       host: 'app.baristachaw.com',
@@ -162,6 +167,50 @@ test('mobile auth callback page includes deep link and android intent fallback',
   assert.match(res.body, /intent:\/\/auth\?grant=/);
   assert.match(res.body, /package=com\.baristachaw\.mobile/);
   assert.match(res.body, /open installed app/i);
+});
+
+test('mobile auth callback rejects missing OAuth state', async () => {
+  const originalAppUrl = process.env.APP_URL;
+  const originalJwtSecret = process.env.JWT_SECRET;
+  const originalGoogleClientId = process.env.GOOGLE_CLIENT_ID;
+  const originalGoogleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+  process.env.APP_URL = 'https://app.baristachaw.com';
+  process.env.JWT_SECRET = 'unit-test-secret-32-chars-minimum';
+  process.env.GOOGLE_CLIENT_ID = 'unit-test-google-client-id';
+  process.env.GOOGLE_CLIENT_SECRET = 'unit-test-google-client-secret';
+
+  const req = {
+    method: 'GET',
+    query: {
+      route: ['callback'],
+      code: 'oauth-code-123',
+    },
+    headers: {
+      host: 'app.baristachaw.com',
+      'x-forwarded-proto': 'https',
+    },
+    socket: {
+      remoteAddress: '203.0.113.62',
+    },
+  } as any;
+  const res = createMockRes() as any;
+
+  try {
+    await mobileAuthHandler(req, res);
+  } finally {
+    if (typeof originalAppUrl === 'string') process.env.APP_URL = originalAppUrl;
+    else delete process.env.APP_URL;
+    if (typeof originalJwtSecret === 'string') process.env.JWT_SECRET = originalJwtSecret;
+    else delete process.env.JWT_SECRET;
+    if (typeof originalGoogleClientId === 'string') process.env.GOOGLE_CLIENT_ID = originalGoogleClientId;
+    else delete process.env.GOOGLE_CLIENT_ID;
+    if (typeof originalGoogleClientSecret === 'string') process.env.GOOGLE_CLIENT_SECRET = originalGoogleClientSecret;
+    else delete process.env.GOOGLE_CLIENT_SECRET;
+  }
+
+  assert.equal(res.statusCode, 500);
+  assert.match(res.body, /Invalid OAuth state/);
 });
 
 test('mobile auth exchanges a verified Supabase session for API JWT', async () => {

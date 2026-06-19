@@ -97,6 +97,10 @@ function normalizeRecipeSource(value: unknown): 'collection' | 'ai_brew' | 'impo
   return 'collection';
 }
 
+function scopedLibraryId(userId: string, id: string): string {
+  return `${userId}:${id}`.slice(0, 240);
+}
+
 function isGuestAuth(userId: string, user: Record<string, unknown> | undefined): boolean {
   const provider = text(user?.provider).toLowerCase();
   return provider === 'guest' || userId.startsWith('guest_') || boolValue(user?.isGuest);
@@ -113,7 +117,7 @@ function journalRowFromPayload(item: JsonRecord, userId: string) {
   if (!id) return null;
 
   return {
-    id,
+    id: scopedLibraryId(userId, id),
     user_id: userId,
     fingerprint: text(item.fingerprint || plan.fingerprint, id, 160),
     title: text(item.title, text(plan.coffeeName, 'AI Brew', 120), 160),
@@ -162,7 +166,7 @@ function collectionRowFromPayload(item: JsonRecord, userId: string) {
   const title = text(item.title, type === 'recipe' ? text((content as JsonRecord)?.name, 'Recipe', 120) : 'Collection item', 160);
 
   return {
-    id,
+    id: scopedLibraryId(userId, id),
     user_id: userId,
     source: normalizeRecipeSource(item.source),
     item_type: type,
@@ -308,4 +312,3 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 }
-

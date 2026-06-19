@@ -796,9 +796,13 @@ export function attachManualPaymentProof(input: {
   if (!Number.isFinite(input.sizeBytes) || input.sizeBytes <= 0 || input.sizeBytes > getManualPaymentProofMaxBytes()) {
     return { ok: false, statusCode: 413, errorCode: 'proof_too_large', error: 'Upload proof is too large' };
   }
+  const safeRequestId = input.requestId.trim();
+  if (!/^manual_[a-z0-9]+_[a-f0-9]{12}$/i.test(safeRequestId)) {
+    return { ok: false, statusCode: 400, errorCode: 'invalid_manual_payment_id', error: 'Manual payment request id is invalid' };
+  }
 
   const proof: ManualPaymentProof = {
-    generatedFileName: `${input.requestId}_${randomUUID().replace(/-/g, '').slice(0, 16)}.${extension}`,
+    generatedFileName: `${safeRequestId}_${randomUUID().replace(/-/g, '').slice(0, 16)}.${extension}`,
     mimeType,
     sizeBytes: Math.floor(input.sizeBytes),
     storage: 'metadata_only',

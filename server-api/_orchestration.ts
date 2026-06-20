@@ -134,6 +134,142 @@ const AI_TOOL_GUIDANCE: Record<AiToolSuggestion, string> = {
 const BARISTA_SKILL_PATTERNS: Array<{ skill: AgentBaristaSkillFocus; patterns: RegExp[] }> = [
   {
     skill: 'espresso_dial_in',
+import type {
+  AgentBaristaSkillFocus,
+  AgentProfileMemory,
+  AiChatIntent,
+  AiToolSuggestion,
+  AmbiguityPolicy,
+  ClientContext,
+  ConversationContext,
+  ConversationContextMessage,
+  ExpectationProfile,
+  ResolvedResponseProfile,
+  ResponseFormat,
+  ResponseProfile,
+  ResponseTone,
+  ResponseVerbosity,
+} from './_contracts.js';
+
+export type { ResponseVerbosity, ResponseFormat, ResponseTone };
+
+export type ResponseMode = 'fast' | 'normal' | 'deep';
+export type ResponseProfileInput = ResponseProfile;
+export type ClientContextInput = Pick<ClientContext, 'appLanguage' | 'acceptLanguage'>;
+export type ConversationContextInput = ConversationContext;
+export type AgentProfileInput = AgentProfileMemory;
+export type { ResolvedResponseProfile };
+
+export type ResponseProfileAmbiguityPolicy = NonNullable<ResponseProfile['ambiguityPolicy']>;
+export type ResponseProfileDomainDepth = ExpectationProfile['domainDepth'];
+
+const MODE_DEFAULTS: Record<ResponseMode, Omit<ExpectationProfile, 'ambiguityRisk' | 'ambiguityPolicy'>> = {
+  fast: {
+    verbosity: 'short',
+    format: 'bullets',
+    domainDepth: 'basic',
+    tone: 'neutral',
+  },
+  normal: {
+    verbosity: 'balanced',
+    format: 'plain',
+    domainDepth: 'basic',
+    tone: 'neutral',
+  },
+  deep: {
+    verbosity: 'comprehensive',
+    format: 'steps',
+    domainDepth: 'advanced',
+    tone: 'professional',
+  },
+};
+
+const AGENT_PROFILE_MAX_WORDS = 24;
+const AGENT_PROFILE_MAX_STYLE_NOTES = 280;
+const AGENT_PROFILE_MAX_SKILL_FOCUS = 4;
+const MAX_APP_TOOL_SUGGESTIONS = 3;
+
+const BARISTA_SKILL_FOCUS_VALUES: readonly AgentBaristaSkillFocus[] = [
+  'espresso_dial_in',
+  'brew_recipe_design',
+  'sensory_cupping',
+  'milk_latte_art',
+  'water_chemistry',
+  'grinder_equipment',
+  'cafe_operations',
+  'training_coaching',
+  'menu_costing',
+  'coffee_origin_roast',
+  'troubleshooting',
+] as const;
+
+const BARISTA_SKILL_LABELS: Record<AgentBaristaSkillFocus, string> = {
+  espresso_dial_in: 'espresso dial-in',
+  brew_recipe_design: 'brew recipe design',
+  sensory_cupping: 'sensory and cupping',
+  milk_latte_art: 'milk steaming and latte art',
+  water_chemistry: 'water chemistry',
+  grinder_equipment: 'grinder and equipment setup',
+  cafe_operations: 'cafe operations',
+  training_coaching: 'barista training',
+  menu_costing: 'menu costing',
+  coffee_origin_roast: 'origin and roast interpretation',
+  troubleshooting: 'coffee troubleshooting',
+};
+
+const BARISTA_SKILL_GUIDANCE: Record<AgentBaristaSkillFocus, string> = {
+  espresso_dial_in: 'Use dose, yield, time, grind, temperature, pressure, puck prep, and taste diagnosis. Change one variable at a time.',
+  brew_recipe_design: 'Return repeatable recipes with ratio, dose, water, grind, temperature, pours, total time, and adjustment cues.',
+  sensory_cupping: 'Map aroma, acidity, sweetness, body, aftertaste, defects, and likely extraction or roast causes.',
+  milk_latte_art: 'Cover milk temperature, aeration, texture, pitcher position, flow rate, and pattern troubleshooting.',
+  water_chemistry: 'Use TDS, hardness, alkalinity, pH, buffering, filtration, and recipe impacts on flavor and scale risk.',
+  grinder_equipment: 'Discuss burrs, alignment, retention, RPM or motor behavior, grind distribution, maintenance, and workflow fit.',
+  cafe_operations: 'Prioritize rush workflow, SOPs, consistency, waste, QA checks, prep cadence, and handoff clarity.',
+  training_coaching: 'Teach with drills, rubrics, progressive difficulty, observation points, and short feedback loops.',
+  menu_costing: 'Include ingredient cost, yield, waste, labor touchpoints, margin, pricing guardrails, and portion controls.',
+  coffee_origin_roast: 'Explain variety, process, roast level, rest time, density, solubility, and expected flavor direction.',
+  troubleshooting: 'Start with symptoms, likely causes, quick tests, ranked fixes, and validation criteria.',
+};
+
+const AI_TOOL_SUGGESTION_VALUES: readonly AiToolSuggestion[] = [
+  'ai_brew',
+  'brew_timer',
+  'ratio_calculator',
+  'vision_scan',
+  'save_to_collection',
+  'chat_memory',
+  'home_language',
+  'deep_mode',
+  'web_search',
+] as const;
+
+const AI_TOOL_LABELS: Record<AiToolSuggestion, string> = {
+  ai_brew: 'AI Brew',
+  brew_timer: 'Brew Timer',
+  ratio_calculator: 'Ratio Calculator',
+  vision_scan: 'Vision Scan',
+  save_to_collection: 'Save to Collection',
+  chat_memory: 'Chat Memory',
+  home_language: 'Home language selector',
+  deep_mode: 'Deep mode',
+  web_search: 'Web Search',
+};
+
+const AI_TOOL_GUIDANCE: Record<AiToolSuggestion, string> = {
+  ai_brew: 'Use for brew planning, method selection, dose/water/grind/temp setup, and recipe variants.',
+  brew_timer: 'Use for timed pour structures, espresso timing checks, bloom phases, and repeatable cafe routines.',
+  ratio_calculator: 'Use for dose, water, yield, beverage mass, extraction math, and quick dial-in recalculation.',
+  vision_scan: 'Use when the user shares or should share a bag label, brew bed, shot, milk texture, menu, or equipment photo.',
+  save_to_collection: 'Use when the answer is reusable, such as recipes, SOPs, diagnostics, checklists, and cafe templates.',
+  chat_memory: 'Use when the user wants persistent reply preferences, assistant persona, skill focus, language defaults, or guardrails.',
+  home_language: 'Use when the user wants to change the app interface language globally from the Home language selector.',
+  deep_mode: 'Use for complex decisions, tradeoffs, root cause analysis, SOP design, costing, or multi-step strategy.',
+  web_search: 'Use when the user asks for latest, current, price, availability, regulations, or source-backed claims.',
+};
+
+const BARISTA_SKILL_PATTERNS: Array<{ skill: AgentBaristaSkillFocus; patterns: RegExp[] }> = [
+  {
+    skill: 'espresso_dial_in',
     patterns: [
       /\b(espresso|dial[- ]?in|shot|puck|channel(?:ing)?|bottomless|preinfusion|yield|extraction time)\b/i,
       /\b(ristretto|lungo|portafilter|basket|tamper|tamping)\b/i,
@@ -144,7 +280,7 @@ const BARISTA_SKILL_PATTERNS: Array<{ skill: AgentBaristaSkillFocus; patterns: R
     patterns: [
       /\b(v60|chemex|aeropress|kalita|french press|moka|siphon|cold brew|pour[- ]?over|recipe|brew guide)\b/i,
       /\b(rasio|ratio|bloom|drawdown|pour structure|resep seduh|manual brew)\b/i,
-      /\b(?:buat|buatkan|bikin|racik|susun|create|make|design)\b.{0,72}\b(?:kopi susu|gula aren|latte|cappuccino|flat white|americano|mocha|macchiato|signature drink|signature menu|minuman kopi|drink menu)\b/i,
+      /\b(?:buat|buatkan|bikin|racik|susun|create|make|design)\b.{0,72}\b(?:kopi susu|gula aren|latte|cappuccino|flat white|americano|mocha|macchiato|signature drink|signature menu|minuman kopi|drink menu|mont blanc|monc blanc|mount blanc)\b/i,
     ],
   },
   {
@@ -582,8 +718,8 @@ function isQuestionIntent(text: string): boolean {
 
 function isBeverageRecipeIntent(text: string): boolean {
   return hasAny(text, [
-    /\b(?:buat|buatkan|bikin|racik|susun|create|make|design)\b.{0,72}\b(?:kopi susu|gula aren|latte|cappuccino|flat white|americano|mocha|macchiato|signature drink|signature menu|minuman kopi|drink menu|mocktail|moktail|minuman|monin|sirup|syrup|soda)\b/i,
-    /\b(?:recipe|resep|formula)\b.{0,48}\b(?:kopi susu|gula aren|latte|cappuccino|flat white|americano|mocha|macchiato|signature drink|minuman kopi|mocktail|moktail|minuman|monin|sirup|syrup|soda)\b/i,
+    /\b(?:buat|buatkan|bikin|racik|susun|create|make|design)\b.{0,72}\b(?:kopi susu|gula aren|latte|cappuccino|flat white|americano|mocha|macchiato|signature drink|signature menu|minuman kopi|drink menu|mocktail|moktail|minuman|monin|sirup|syrup|soda|mont blanc|monc blanc|mount blanc)\b/i,
+    /\b(?:recipe|resep|formula)\b.{0,48}\b(?:kopi susu|gula aren|latte|cappuccino|flat white|americano|mocha|macchiato|signature drink|minuman kopi|mocktail|moktail|minuman|monin|sirup|syrup|soda|mont blanc|monc blanc|mount blanc)\b/i,
   ]);
 }
 
@@ -615,6 +751,7 @@ const MENU_DRINK_SIGNALS: RequestSignalSpec[] = [
   { label: 'macchiato', patterns: [/\bmacchiato\b/i] },
   { label: 'mocktail', patterns: [/\b(?:mocktail|moktail)\b/i] },
   { label: 'Monin syrup', patterns: [/\bmonin\b/i, /\b(?:sirup|syrup)\b/i] },
+  { label: 'Mont Blanc', patterns: [/\bmont\s*blanc\b/i, /\bmonc\s*blanc\b/i, /\bmount\s*blanc\b/i] },
 ];
 
 function detectMatchedSignals(text: string, signals: RequestSignalSpec[]): string[] {
@@ -634,12 +771,10 @@ function hasManualBrewResponseTerms(text: string): boolean {
 
 function hasMenuDrinkResponseTerms(text: string): boolean {
   return hasAny(text, [
-    /\b(kopi\s+susu|gula\s+aren|latte|cappuccino|flat\s+white|americano|mocha|macchiato|mocktail|moktail|monin)\b/i,
+    /\b(kopi\s+susu|gula\s+aren|latte|cappuccino|flat\s+white|americano|mocha|macchiato|mocktail|moktail|monin|mont\s*blanc|monc\s*blanc|mount\s*blanc)\b/i,
     /\b(susu|milk|sirup|syrup|brown sugar|steam(?:ed|ing)? milk|espresso shot|soda|juice|jus)\b/i,
   ]);
 }
-
-function isJapaneseIcedBrewRequest(text: string): boolean {
   return hasAny(text, [
     /\bjapanese(?:\s+style)?\b/i,
     /\bover\s+ice\b/i,

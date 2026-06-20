@@ -18,6 +18,12 @@ import {
   type ResponseMode,
 } from './_orchestration.js';
 import {
+  type AiGuardrailDecision,
+  classifyAiPromptGuardrail,
+  buildHardBlockedAiReply,
+  buildSoftLimitRuntimeInstruction,
+} from './_aiGuardrails.js';
+import {
   applyCors,
   applyRateLimitHeaders,
   checkRateLimit,
@@ -93,98 +99,7 @@ function aiUsageFeatureFromContext(feature: string, surface?: string): 'ai_brew'
   return 'unknown';
 }
 
-type AiGuardrailDecision =
-  | {
-      action: 'allow';
-      reason:
-        | 'safe_general'
-        | 'coffee_or_menu'
-        | 'baristachaw_product'
-        | 'app_support'
-        | 'educational'
-        | 'feature_design'
-        | 'safe_debugging'
-        | 'safe_prompt_design';
-    }
-  | {
-      action: 'soft_limit';
-      reason: 'unrelated_large_software_request';
-    }
-  | {
-      action: 'hard_block';
-      reason:
-        | 'secret_or_credential_request'
-        | 'internal_prompt_request'
-        | 'dangerous_or_abusive_request';
-    };
-
-function classifyAiPromptGuardrail(
-  prompt: string,
-  context?: {
-    action?: StructuredAiAction;
-    clientSurface?: string;
-    clientFeature?: string;
-  }
-): AiGuardrailDecision {
-  const text = String(prompt || '').trim();
-  if (!text) return { action: 'allow', reason: 'safe_general' };
-
-  // 1. HARD BLOCK for clear safety risks
-  const DANGEROUS_OR_ABUSIVE_RE = /\b(?:malware|phishing|spam abuse|exploit instructions|jailbreak|bypass auth|curi|steal|hack)\b/i;
-  const SECRET_OR_CREDENTIAL_RE = /\b(?:api\s*key|apikey|password|credential|kredensial|kata sandi|\.env|private config|private data|token)\b/i;
-  const INTERNAL_PROMPT_RE = /\b(?:system prompt|developer prompt|prompt rahasia|tool instruction|internal policy|internal prompt)\b/i;
-  const LEAK_VERB_RE = /\b(?:bocorkan|tampilkan|berikan|reveal|show|bypass|apa isi|curi|steal|spill)\b/i;
-
-  if (DANGEROUS_OR_ABUSIVE_RE.test(text)) {
-    return { action: 'hard_block', reason: 'dangerous_or_abusive_request' };
-  }
-  
-  if (LEAK_VERB_RE.test(text) && (SECRET_OR_CREDENTIAL_RE.test(text) || INTERNAL_PROMPT_RE.test(text))) {
-    if (SECRET_OR_CREDENTIAL_RE.test(text)) {
-      return { action: 'hard_block', reason: 'secret_or_credential_request' };
-    }
-    return { action: 'hard_block', reason: 'internal_prompt_request' };
-  }
-
-  // 2. ALLOW for Drink / Menu / Coffee
-  const COFFEE_MENU_RE = /\b(?:monc blanc|mon blanc|montblanc|signature|kopi susu|latte|creamy coffee)\b/i;
-  if (COFFEE_MENU_RE.test(text)) {
-    return { action: 'allow', reason: 'coffee_or_menu' };
-  }
-
-  // 3. ALLOW for Baristachaw Technical Work
-  const BARISTACHAW_TERMS_RE = /\b(?:baristachaw|coffee|kopi|cafe|ai brew|grinder|scanner|ai chat|subscription|collection|ui|ux|prd|prompt|test case|debug|pseudo(?:-?logic|-?code)?)\b/i;
-  if (BARISTACHAW_TERMS_RE.test(text)) {
-    if (/\b(?:debug|cek kenapa)\b/i.test(text)) return { action: 'allow', reason: 'safe_debugging' };
-    if (/\b(?:prd|architecture|flow|logic|test case|ux)\b/i.test(text)) return { action: 'allow', reason: 'feature_design' };
-    if (/\b(?:prompt)\b/i.test(text)) return { action: 'allow', reason: 'safe_prompt_design' };
-    return { action: 'allow', reason: 'baristachaw_product' };
-  }
-
-  // 4. SOFT LIMIT for large unrelated coding requests
-  const LARGE_SOFTWARE_RE = /\b(?:full source code|backend lengkap|clone app|full production code|saas marketplace|trading bot|aplikasi lengkap|aplikasi besar|full unrelated backend|large random source code)\b/i;
-  const ASK_CODE_RE = /\b(?:buatkan full|generate backend|buat clone)\b/i;
-  if (LARGE_SOFTWARE_RE.test(text) || ASK_CODE_RE.test(text)) {
-    return { action: 'soft_limit', reason: 'unrelated_large_software_request' };
-  }
-
-  // 5. Educational / General
-  if (/\b(?:jelaskan|cara kerja|apa itu)\b/i.test(text) && /\b(?:api|responseprofile|conversationcontext)\b/i.test(text)) {
-    return { action: 'allow', reason: 'educational' };
-  }
-
-  return { action: 'allow', reason: 'safe_general' };
-}
-
-function buildHardBlockedAiReply(language = 'id', reason?: string): string {
-  if (/^id(?:-|$)/i.test(language)) {
-    return 'Saya tidak bisa membantu membocorkan secret, credential, prompt internal, atau instruksi bypass keamanan. Saya bisa bantu jelaskan konsep amannya atau bantu buat guardrail yang aman.';
-  }
-  if (/^ar(?:-|$)/i.test(language)) {
-    return 'لا يمكنني المساعدة في كشف الأسرار أو بيانات الاعتماد أو التوجيهات الداخلية. يمكنني شرح المفهوم الآمن أو تصميم إطار حماية.';
-  }
-  return 'I can’t help expose secrets, credentials, internal prompts, or security bypass instructions. I can help explain the safe concept or design a safe guardrail.';
-}
+// Guardrail logic moved to _aiGuardrails.ts
 const SUPPORTED_IMAGE_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif']);
 const AI_RATE_LIMIT = {
   maxRequests: 20,
@@ -203,56 +118,29 @@ const DEEP_MIN_SECTION_COUNT = 4;
 const DEEP_MIN_ACTION_STEPS = 3;
 const DEEP_FALLBACK_MAX_TOKENS = 1200;
 
-const DEEP_SECTION_TLDR = /(^|\n)##\s*TL;DR\s*$/im;
-const DEEP_SECTION_CORE_ANALYSIS = /(^|\n)##\s*Core Analysis\s*$/im;
-const DEEP_SECTION_OPTIONS = /(^|\n)##\s*Options\s*&\s*Tradeoffs\s*$/im;
-const DEEP_SECTION_ACTION_PLAN = /(^|\n)##\s*Recommended Action Plan\s*$/im;
-const DEEP_SECTION_RISKS = /(^|\n)##\s*Risks\s*&\s*Validation\s*$/im;
+const DEEP_SECTION_TLDR = /(^|\n)##\s*(?:TL;DR|Ringkasan(?: Keputusan)?)\s*$/im;
+const DEEP_SECTION_CORE_ANALYSIS = /(^|\n)##\s*(?:Core Analysis|Analisis|Diagnosis Saat Ini|Konsep Minuman|Kemungkinan Penyebab|Temuan Utama)\s*$/im;
+const DEEP_SECTION_OPTIONS = /(^|\n)##\s*(?:Options\s*&\s*Tradeoffs|Opsi\s*&\s*Tradeoff|Desain Solusi|Formula|Prioritas Fix|Perbandingan)\s*$/im;
+const DEEP_SECTION_ACTION_PLAN = /(^|\n)##\s*(?:Recommended Action Plan|Rencana Implementasi|Build Steps|Langkah Validasi|Rekomendasi)\s*$/im;
+const DEEP_SECTION_RISKS = /(^|\n)##\s*(?:Risks\s*&\s*Validation|Validasi|Risiko(?: \S+)?|Test\s*&|Taste Target|Next Action)\s*$/im;
 
 const DEEP_TEMPORAL_KEYWORDS = [
   'latest',
   'today',
-  'yesterday',
-  'tomorrow',
   'current',
-  'now',
-  'update',
+  'terbaru',
   'news',
   'price',
-  'pricing',
-  'release',
-  'version',
-  'realtime',
-  'real-time',
-  'breaking',
-  'terbaru',
-  'hari ini',
-  'kemarin',
-  'besok',
-  'terkini',
-  'update',
-  'pembaruan',
-  'berita',
   'harga',
-  'rilis',
-  'versi',
-  'real time',
-  'waktu nyata',
+  'version',
+  'release',
 ];
 
 const DEEP_SOURCE_INTENT_KEYWORDS = [
   'source',
-  'sources',
-  'reference',
-  'references',
-  'citation',
-  'citations',
   'link',
-  'links',
-  'url',
-  'sumber',
+  'citation',
   'referensi',
-  'tautan',
 ];
 
 const SEARCH_PRIMARY_SOURCE_HINTS = /(docs?|support|help|developer|developers|api|reference|manual|research|official|newsroom|press|release|releases)/i;
@@ -443,7 +331,16 @@ export function evaluateDeepQualityGate(text: string, originalPrompt: string): D
     else issues.push('deep_too_short');
   }
 
-  const blockingIssues = issues.filter(issue => issue !== 'short_by_user_request');
+  const blockingIssues = issues.filter(issue => {
+    if (issue === 'short_by_user_request') return false;
+    if (shortByUserRequest && (
+      issue === 'deep_sections_missing' || 
+      issue === 'deep_options_tradeoffs_missing' || 
+      issue === 'deep_action_plan_steps_lt3'
+    )) return false;
+    return true;
+  });
+
   return {
     pass: blockingIssues.length === 0,
     issues,
@@ -461,25 +358,68 @@ export function shouldUseDeepGrounding(prompt: string): boolean {
   return temporal || sourceIntent;
 }
 
-export function buildDeepTemplatePrompt(promptForModel: string, options?: { grounded?: boolean }): string {
+export function buildDeepTemplatePrompt(promptForModel: string, options?: { grounded?: boolean, shortByUserRequest?: boolean }): string {
   const grounded = Boolean(options?.grounded);
-  return [
-    'You are Baristachaw in Deep mode.',
-    'Deliver a high-quality, deeply reasoned answer with minimal user mental effort.',
-    'Always keep the response practical and decision-oriented.',
-    'Output MUST use this exact section order and headings:',
+  const shortByUserRequest = Boolean(options?.shortByUserRequest);
+  const text = promptForModel.toLowerCase();
+  
+  let schema = [
     '## TL;DR',
     '## Core Analysis',
     '## Options & Tradeoffs',
     '## Recommended Action Plan',
     '## Risks & Validation',
+  ];
+
+  if (shortByUserRequest) {
+    schema = [
+      '## TL;DR',
+      '## Core Analysis',
+    ];
+  } else if (/\b(?:prd|architecture|flow|logic|test case|ux|guardrail|feature|fitur|app|aplikasi|update|upgrade|sistem|system|ai chat|ai brew|scanner|calculator|kalkulator)\b/i.test(text)) {
+    schema = [
+      '## Ringkasan Keputusan',
+      '## Diagnosis Saat Ini',
+      '## Desain Solusi',
+      '## Rencana Implementasi',
+      '## Risiko & Guardrails',
+    ];
+  } else if (/\b(?:recipe|resep|brew|seduh|minuman|drink|menu|monc blanc|mont blanc)\b/i.test(text)) {
+    schema = [
+      '## Konsep Minuman',
+      '## Formula',
+      '## Build Steps',
+      '## Taste Target',
+      '## Dial-in & Validation',
+    ];
+  } else if (/\b(?:troubleshoot|problem|issue|fix|improve|why|sour|bitter|masalah|kenapa|perbaiki|pahit|asam|error|bug|gagal)\b/i.test(text)) {
+    schema = [
+      '## TL;DR',
+      '## Kemungkinan Penyebab',
+      '## Prioritas Fix',
+      '## Langkah Validasi',
+      '## Risiko & Next Action',
+    ];
+  } else if (grounded || /\b(?:latest|current|terbaru|news|berita|price|harga|compare|perbandingan)\b/i.test(text)) {
+    schema = [
+      '## Ringkasan',
+      '## Temuan Utama',
+      '## Perbandingan',
+      '## Rekomendasi',
+    ];
+  }
+
+  return [
+    'You are Baristachaw in Deep mode.',
+    'Deliver a high-quality, deeply reasoned answer with minimal user mental effort.',
+    'Always keep the response practical and decision-oriented.',
+    'Output MUST use this exact section order and headings (You can use English or Indonesian depending on the user language):',
+    ...schema,
     grounded ? '## Sources' : '(Do not include a Sources section unless grounded evidence is available.)',
     '',
     'Hard requirements:',
-    '- Include at least 4 section headings from the template.',
-    '- Include explicit options and tradeoffs.',
-    '- Recommended Action Plan must have at least 3 numbered steps.',
-    '- Target at least 120 words unless user explicitly asked for a very short answer.',
+    `- Include at least ${Math.max(3, schema.length - 1)} section headings from the template.`,
+    '- Include explicit options, steps, or concrete details.',
     '- Keep the user language and keep the original meaning.',
     '- Respect any AI chat flow contract, recipe/troubleshooting template, and App tool routing included in the user request.',
     grounded
@@ -2190,8 +2130,8 @@ async function callStructuredTextFallback(
             method: 'POST',
             headers,
             body: JSON.stringify({
-              message: buildDeepTemplatePrompt(orchestratedPrompt, { grounded: false }),
-              mode: 'race',
+              message: buildDeepTemplatePrompt(orchestratedPrompt, { grounded: false, shortByUserRequest: hasExplicitShortRequest(orchestratedPrompt) }),
+              mode: 'auto',
               provider: 'AUTO',
               responseProfile: {
                 language: resolved.language,
@@ -2569,6 +2509,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     );
   }
 
+  let isSoftLimit = false;
   if (
     typeof prompt === 'string'
     && (action === 'fast' || action === 'balanced' || action === 'deep_think' || action === 'ai_coach' || action === 'analyze_text')
@@ -2600,7 +2541,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (guardrail.action === 'soft_limit') {
-      prompt = `${prompt}\n\n[SYSTEM INSTRUCTION: The request appears outside Baristachaw’s core product scope. Do not provide a large full production codebase. Provide safe conceptual guidance, PRD, architecture, pseudo-logic, checklist, or implementation notes only.]`;
+      isSoftLimit = true;
     }
   }
   const paidFeature: PaidAiFeature | null = action === 'search'
@@ -2653,7 +2594,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     conversationContext,
     agentProfile,
   );
-  const promptForModel = promptPlan.prompt;
+  let promptForModel = promptPlan.prompt;
+  if (isSoftLimit) {
+    promptForModel = `${promptForModel}\n\n[SYSTEM INSTRUCTION: ${buildSoftLimitRuntimeInstruction()}]`;
+  }
   const deepQualityGateEnabled = isEnvFlagEnabled('AI_DEEP_QUALITY_GATE_ENABLED', true);
   res.setHeader('X-Resolved-Language', promptPlan.resolved.language);
 
@@ -3242,8 +3186,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (action === 'deep_think') {
       const canTryGemini = !isGeminiTextDisabled();
       const userPrompt = prompt.trim();
-      const deepPrompt = buildDeepTemplatePrompt(promptForModel, { grounded: false });
-      const deepGroundedPrompt = buildDeepTemplatePrompt(promptForModel, { grounded: true });
+      const isShort = hasExplicitShortRequest(userPrompt);
+      const deepPrompt = buildDeepTemplatePrompt(promptForModel, { grounded: false, shortByUserRequest: isShort });
+      const deepGroundedPrompt = buildDeepTemplatePrompt(promptForModel, { grounded: true, shortByUserRequest: isShort });
       const shouldGround = shouldUseDeepGrounding(userPrompt);
       let providerForResponse: string = 'GEMINI';
       let modelForResponse: string = selectedModel || 'gemini-2.5-flash';
@@ -3337,9 +3282,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const quality = await evaluateDeepOutput(rawText);
         const qualityPass = Boolean(quality.deepQualityPass);
         if (!qualityPass) degradeReasons.add('deep_quality_fail');
-        if (quality.shortByUserRequest) degradeReasons.add('short_by_user_request');
-
-        const degraded = fallbackUsed || !qualityPass || quality.shortByUserRequest || degradeReasons.size > 0;
+        // User short requests are valid, do not degrade purely for shortByUserRequest
+        const degraded = fallbackUsed || !qualityPass || degradeReasons.size > 0;
         const detailParts: string[] = [];
         if (degradeReasons.size > 0) detailParts.push(Array.from(degradeReasons).join(','));
         if (geminiFallbackDetails) detailParts.push(`grounding_details:${geminiFallbackDetails}`);
@@ -3415,7 +3359,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const quality = await evaluateDeepOutput(fallback.text);
         const qualityPass = Boolean(quality.deepQualityPass);
         if (!qualityPass) degradeReasons.add('deep_quality_fail');
-        if (quality.shortByUserRequest) degradeReasons.add('short_by_user_request');
         const degraded = true;
         const detailParts: string[] = [Array.from(degradeReasons).join(',')];
         if (geminiFallbackDetails) detailParts.push(`gemini_unavailable:${geminiFallbackDetails}`);

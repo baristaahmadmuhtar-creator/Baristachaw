@@ -18,6 +18,7 @@ const CODING_VERB_RE = /\b(?:buat(?:kan)?|berikan|tulis(?:kan)?|generate|create|
 const SECRET_REQUEST_RE = /\b(?:api\s*key|apikey|secret|token|password|credential|kredensial|kata sandi|sandi|system prompt|prompt rahasia|env(?:ironment)?\s*(?:secret|key)|\.env)\b/i;
 const COFFEE_OR_APP_RE = /\b(?:coffee|kopi|barista|brew|seduh|espresso|v60|grind|giling|grinder|beans?|biji|roast|sangrai|latte|milk|susu|air|water|ratio|rasio|extraction|ekstraksi|ai brew|baristachaw|scanner|koleksi|collection|timer|chat memory|pwa|apk|login|masuk)\b/i;
 const APP_SUPPORT_RE = /\b(?:baristachaw|ai brew|scanner|koleksi|collection|timer|chat memory|pwa|apk|login|masuk|akun|workspace|paket|pro|billing|langganan)\b/i;
+const BARISTACHAW_TERMS_RE = /\b(?:baristachaw|coffee|kopi|cafe|ai brew|grinder|scanner|ai chat|subscription|collection|ui|ux|prd|prompt|test case|debug|pseudo(?:-?logic|-?code)?)\b/i;
 
 export function classifyChatUserRequest(message: string): ChatRequestClassification {
   const text = String(message || '').trim();
@@ -34,11 +35,13 @@ export function classifyChatUserRequest(message: string): ChatRequestClassificat
   const asksForSoftware = SOFTWARE_CODING_REQUEST_RE.test(text)
     && (CODING_VERB_RE.test(text) || /\b(?:calculator|kalkulator|app|web|api|function|fungsi|class|komponen|component)\b/i.test(text));
   if (asksForSoftware && !/\b(?:ratio calculator|kalkulator rasio|brew calculator|kalkulator seduh)\b/i.test(text)) {
-    return {
-      allowed: false,
-      scope: 'blocked',
-      reason: 'software_coding_out_of_scope',
-    };
+    if (!BARISTACHAW_TERMS_RE.test(text)) {
+      return {
+        allowed: false,
+        scope: 'blocked',
+        reason: 'software_coding_out_of_scope',
+      };
+    }
   }
 
   if (APP_SUPPORT_RE.test(text)) return { allowed: true, scope: 'app_support' };
@@ -108,7 +111,7 @@ export function guardChatAnswer(params: {
     };
   }
 
-  if (leakedSoftwareAnswer) {
+  if (leakedSoftwareAnswer && !BARISTACHAW_TERMS_RE.test(params.userMessage)) {
     return {
       allowed: false,
       risk: 'blocked',

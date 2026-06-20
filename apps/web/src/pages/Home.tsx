@@ -225,12 +225,20 @@ export function Home() {
   const recommendedUpgrade = accountSnapshot?.recommendedUpgrade;
   const showWorkspaceStatusPanel = isAuthenticated && !isGuest;
   const hasPendingPaymentReview = workspaceStatus.kind === 'pending_review';
-  const shouldShowPlanGrowthSurface = Boolean(
+  const shouldRenderPlanCatalogModal = Boolean(
     isAuthenticated
     && accountSnapshot
-    && workspaceStatus.kind !== 'free'
-    && workspaceStatus.kind !== 'pending_review'
   );
+  const workspacePlanBenefitLine = useMemo(() => {
+    if (!accountSnapshot || accountSnapshot.user.planCode === 'free') return '';
+    if (workspaceStatus.kind !== 'active' && workspaceStatus.kind !== 'expiring') return '';
+    const plan = accountSnapshot.plan;
+    return [
+      t.homePlanBenefitAi.replace('{count}', formatCompactNumber(plan.aiDailyLimit, locale)),
+      t.homePlanBenefitDeep.replace('{count}', formatCompactNumber(plan.deepDailyLimit, locale)),
+      t.homePlanBenefitScanner.replace('{count}', formatCompactNumber(plan.scannerDailyLimit, locale)),
+    ].join(' • ');
+  }, [accountSnapshot, locale, t.homePlanBenefitAi, t.homePlanBenefitDeep, t.homePlanBenefitScanner, workspaceStatus.kind]);
   const recommendedUpgradeReason = useMemo(
     () => formatRecommendedUpgradeReason(accountSnapshot, language, locale),
     [accountSnapshot, language, locale],
@@ -935,6 +943,11 @@ export function Home() {
                     {workspaceStatus.helper}
                   </p>
                 ) : null}
+                {workspacePlanBenefitLine ? (
+                  <p className="mt-1 text-xs leading-5 text-secondary">
+                    {workspacePlanBenefitLine}
+                  </p>
+                ) : null}
                 {recommendedUpgradeReason && recommendedUpgrade?.action !== 'checkout' && workspaceStatus.kind !== 'pending_review' ? (
                   <p className="mt-1 text-xs leading-5 text-secondary">
                     {recommendedUpgradeReason}
@@ -974,6 +987,16 @@ export function Home() {
                         : t.homeUpgradePlan}
                 </button>
               ) : null}
+              {workspacePlanBenefitLine ? (
+                <button
+                  type="button"
+                  onClick={() => setShowPlanCatalog(true)}
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-current/15 bg-[var(--bg-base)]/70 px-3 text-sm font-semibold text-primary transition-colors hover:bg-[var(--bg-base)]"
+                >
+                  <CreditCard size={15} />
+                  {language === 'id' ? 'Lihat manfaat' : 'View benefits'}
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={() => void refreshAccountStatus()}
@@ -988,7 +1011,7 @@ export function Home() {
         </section>
       ) : null}
 
-      {shouldShowPlanGrowthSurface ? (
+      {shouldRenderPlanCatalogModal ? (
         <PlanGrowthSurface
           snapshot={accountSnapshot}
           t={t}
@@ -998,6 +1021,7 @@ export function Home() {
           isOpen={showPlanCatalog}
           onOpen={() => setShowPlanCatalog(true)}
           onClose={() => setShowPlanCatalog(false)}
+          renderSurface={false}
         />
       ) : null}
 

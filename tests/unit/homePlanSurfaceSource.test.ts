@@ -15,9 +15,12 @@ test('paid home plan surface is useful benefits UI, not duplicate workspace stat
 });
 
 test('home premium workflow uses one compact billing surface per account state', () => {
-  assert.match(HOME_SOURCE, /const shouldShowPlanGrowthSurface/);
-  assert.match(HOME_SOURCE, /workspaceStatus\.kind !== 'free'/);
-  assert.match(HOME_SOURCE, /workspaceStatus\.kind !== 'pending_review'/);
+  assert.match(HOME_SOURCE, /const shouldRenderPlanCatalogModal/);
+  assert.match(HOME_SOURCE, /const workspacePlanBenefitLine/);
+  assert.match(HOME_SOURCE, /renderSurface=\{false\}/);
+  assert.match(HOME_SOURCE, /Lihat manfaat/);
+  assert.doesNotMatch(HOME_SOURCE, /const shouldShowPlanGrowthSurface/);
+  assert.doesNotMatch(HOME_SOURCE, /\{shouldShowPlanGrowthSurface \? \(/);
   assert.doesNotMatch(HOME_SOURCE, /isAuthenticated && accountSnapshot && !hasPendingPaymentReview \?/);
 });
 

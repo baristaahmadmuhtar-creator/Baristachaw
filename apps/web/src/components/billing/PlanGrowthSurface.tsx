@@ -19,6 +19,7 @@ type PlanGrowthSurfaceProps = {
   isOpen: boolean;
   onOpen: () => void;
   onClose: () => void;
+  renderSurface?: boolean;
 };
 
 const currentColorIconStyle = { '--icon-glyph-color': 'currentColor' } as CSSProperties;
@@ -316,6 +317,7 @@ export function PlanGrowthSurface({
   isOpen,
   onOpen,
   onClose,
+  renderSurface = true,
 }: PlanGrowthSurfaceProps) {
   const [busyPlanCode, setBusyPlanCode] = useState<string | null>(null);
   const [actionError, setActionError] = useState('');
@@ -886,6 +888,10 @@ export function PlanGrowthSurface({
     </AnimatePresence>,
     document.body,
   ) : null;
+
+  if (!renderSurface) {
+    return <>{modal}</>;
+  }
 
   if (showCompactPaidSurface) {
     return (

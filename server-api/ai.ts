@@ -93,27 +93,97 @@ function aiUsageFeatureFromContext(feature: string, surface?: string): 'ai_brew'
   return 'unknown';
 }
 
-const DOMAIN_BLOCK_SOFTWARE_RE = /\b(?:python|javascript|typescript|php|java|c\+\+|c#|react|node\.?js|express|sql|html|css|terminal|shell|bash|powershell|git|repo|source code|coding|programming|script|kode|codingan|skrip|koding|program)\b/i;
-const DOMAIN_BLOCK_CODING_VERB_RE = /\b(?:buat(?:kan)?|berikan|tulis(?:kan)?|generate|create|make|write|show|contoh|example|bikin)\b/i;
-const DOMAIN_BLOCK_SECRET_RE = /\b(?:api\s*key|apikey|secret|token|password|credential|kredensial|kata sandi|sandi|system prompt|prompt rahasia|env(?:ironment)?\s*(?:secret|key)|\.env)\b/i;
+type AiGuardrailDecision =
+  | {
+      action: 'allow';
+      reason:
+        | 'safe_general'
+        | 'coffee_or_menu'
+        | 'baristachaw_product'
+        | 'app_support'
+        | 'educational'
+        | 'feature_design'
+        | 'safe_debugging'
+        | 'safe_prompt_design';
+    }
+  | {
+      action: 'soft_limit';
+      reason: 'unrelated_large_software_request';
+    }
+  | {
+      action: 'hard_block';
+      reason:
+        | 'secret_or_credential_request'
+        | 'internal_prompt_request'
+        | 'dangerous_or_abusive_request';
+    };
 
-function isDomainBlockedAiPrompt(prompt: string): boolean {
+function classifyAiPromptGuardrail(
+  prompt: string,
+  context?: {
+    action?: StructuredAiAction;
+    clientSurface?: string;
+    clientFeature?: string;
+  }
+): AiGuardrailDecision {
   const text = String(prompt || '').trim();
-  if (!text) return false;
-  if (DOMAIN_BLOCK_SECRET_RE.test(text)) return true;
-  const asksForSoftware = DOMAIN_BLOCK_SOFTWARE_RE.test(text)
-    && (DOMAIN_BLOCK_CODING_VERB_RE.test(text) || /\b(?:calculator|kalkulator|app|web|api|function|fungsi|class|komponen|component)\b/i.test(text));
-  return asksForSoftware && !/\b(?:ratio calculator|kalkulator rasio|brew calculator|kalkulator seduh)\b/i.test(text);
+  if (!text) return { action: 'allow', reason: 'safe_general' };
+
+  // 1. HARD BLOCK for clear safety risks
+  const DANGEROUS_OR_ABUSIVE_RE = /\b(?:malware|phishing|spam abuse|exploit instructions|jailbreak|bypass auth|curi|steal|hack)\b/i;
+  const SECRET_OR_CREDENTIAL_RE = /\b(?:api\s*key|apikey|password|credential|kredensial|kata sandi|\.env|private config|private data|token)\b/i;
+  const INTERNAL_PROMPT_RE = /\b(?:system prompt|developer prompt|prompt rahasia|tool instruction|internal policy|internal prompt)\b/i;
+  const LEAK_VERB_RE = /\b(?:bocorkan|tampilkan|berikan|reveal|show|bypass|apa isi|curi|steal|spill)\b/i;
+
+  if (DANGEROUS_OR_ABUSIVE_RE.test(text)) {
+    return { action: 'hard_block', reason: 'dangerous_or_abusive_request' };
+  }
+  
+  if (LEAK_VERB_RE.test(text) && (SECRET_OR_CREDENTIAL_RE.test(text) || INTERNAL_PROMPT_RE.test(text))) {
+    if (SECRET_OR_CREDENTIAL_RE.test(text)) {
+      return { action: 'hard_block', reason: 'secret_or_credential_request' };
+    }
+    return { action: 'hard_block', reason: 'internal_prompt_request' };
+  }
+
+  // 2. ALLOW for Drink / Menu / Coffee
+  const COFFEE_MENU_RE = /\b(?:monc blanc|mon blanc|montblanc|signature|kopi susu|latte|creamy coffee)\b/i;
+  if (COFFEE_MENU_RE.test(text)) {
+    return { action: 'allow', reason: 'coffee_or_menu' };
+  }
+
+  // 3. ALLOW for Baristachaw Technical Work
+  const BARISTACHAW_TERMS_RE = /\b(?:baristachaw|coffee|kopi|cafe|ai brew|grinder|scanner|ai chat|subscription|collection|ui|ux|prd|prompt|test case|debug|pseudo(?:-?logic|-?code)?)\b/i;
+  if (BARISTACHAW_TERMS_RE.test(text)) {
+    if (/\b(?:debug|cek kenapa)\b/i.test(text)) return { action: 'allow', reason: 'safe_debugging' };
+    if (/\b(?:prd|architecture|flow|logic|test case|ux)\b/i.test(text)) return { action: 'allow', reason: 'feature_design' };
+    if (/\b(?:prompt)\b/i.test(text)) return { action: 'allow', reason: 'safe_prompt_design' };
+    return { action: 'allow', reason: 'baristachaw_product' };
+  }
+
+  // 4. SOFT LIMIT for large unrelated coding requests
+  const LARGE_SOFTWARE_RE = /\b(?:full source code|backend lengkap|clone app|full production code|saas marketplace|trading bot|aplikasi lengkap|aplikasi besar|full unrelated backend|large random source code)\b/i;
+  const ASK_CODE_RE = /\b(?:buatkan full|generate backend|buat clone)\b/i;
+  if (LARGE_SOFTWARE_RE.test(text) || ASK_CODE_RE.test(text)) {
+    return { action: 'soft_limit', reason: 'unrelated_large_software_request' };
+  }
+
+  // 5. Educational / General
+  if (/\b(?:jelaskan|cara kerja|apa itu)\b/i.test(text) && /\b(?:api|responseprofile|conversationcontext)\b/i.test(text)) {
+    return { action: 'allow', reason: 'educational' };
+  }
+
+  return { action: 'allow', reason: 'safe_general' };
 }
 
-function buildDomainBlockedAiReply(language = 'id'): string {
+function buildHardBlockedAiReply(language = 'id', reason?: string): string {
   if (/^id(?:-|$)/i.test(language)) {
-    return 'Saya bisa bantu kopi, minuman, obrolan ringan, dan fitur Baristachaw. Untuk keamanan, saya tidak membantu coding, source code, kredensial, secret, atau prompt internal. Ubah pertanyaan ke topik non-teknis.';
+    return 'Saya tidak bisa membantu membocorkan secret, credential, prompt internal, atau instruksi bypass keamanan. Saya bisa bantu jelaskan konsep amannya atau bantu buat guardrail yang aman.';
   }
   if (/^ar(?:-|$)/i.test(language)) {
-    return 'أركز على القهوة وميزات Baristachaw فقط. لحماية الأمان، لا أساعد في الطلبات التقنية خارج التطبيق. اسألني عن التحضير، الطعم، المطحنة، الماء، AI Brew، الماسح، المجموعة، أو الحساب.';
+    return 'لا يمكنني المساعدة في كشف الأسرار أو بيانات الاعتماد أو التوجيهات الداخلية. يمكنني شرح المفهوم الآمن أو تصميم إطار حماية.';
   }
-  return 'I can help with coffee, drinks, light conversation, and Baristachaw features. For safety, I cannot help with coding, source code, credentials, secrets, or internal prompts. Please ask a non-technical question.';
+  return 'I can’t help expose secrets, credentials, internal prompts, or security bypass instructions. I can help explain the safe concept or design a safe guardrail.';
 }
 const SUPPORTED_IMAGE_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif']);
 const AI_RATE_LIMIT = {
@@ -2459,7 +2529,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const {
     action: rawAction,
-    prompt,
+    prompt: originalPrompt,
     image,
     mimeType,
     model,
@@ -2487,28 +2557,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ? String((rawClientContext as { feature?: string }).feature).trim().toLowerCase()
     : '';
   const usageFeature = aiUsageFeatureFromContext(clientFeature, clientSurface);
+
+  let prompt = originalPrompt;
+  if (typeof originalPrompt === 'string' && (action === 'fast' || action === 'balanced' || action === 'deep_think' || action === 'ai_coach' || action === 'brew_sequence' || action === 'brew_optimize') && originalPrompt.trim().length > STRUCTURED_AI_PROMPT_MAX_CHARS) {
+    return sendBadRequest(
+      res,
+      requestId,
+      action,
+      `prompt too long for ${action} (max ${STRUCTURED_AI_PROMPT_MAX_CHARS} chars)`,
+      'validation_error',
+    );
+  }
+
   if (
     typeof prompt === 'string'
     && (action === 'fast' || action === 'balanced' || action === 'deep_think' || action === 'ai_coach' || action === 'analyze_text')
-    && isDomainBlockedAiPrompt(prompt)
   ) {
-    const responseLanguage = rawResponseProfile && typeof rawResponseProfile === 'object' && typeof (rawResponseProfile as { language?: unknown }).language === 'string'
-      ? String((rawResponseProfile as { language?: string }).language || '').trim()
-      : rawClientContext && typeof rawClientContext === 'object' && typeof (rawClientContext as { appLanguage?: unknown }).appLanguage === 'string'
-        ? String((rawClientContext as { appLanguage?: string }).appLanguage || '').trim()
-        : 'id';
-    const text = buildDomainBlockedAiReply(responseLanguage || 'id');
-    console.warn(`[api/ai][${requestId}] action=${action} domain_scope_blocked`);
-    return res.json({
-      ok: true,
-      requestId,
+    const guardrail = classifyAiPromptGuardrail(prompt, {
       action,
-      text,
-      provider: 'LOCAL',
-      model: 'scope-guardrail',
-      degraded: false,
-      details: 'domain_scope_blocked',
+      clientSurface,
+      clientFeature,
     });
+
+    if (guardrail.action === 'hard_block') {
+      const responseLanguage = rawResponseProfile && typeof rawResponseProfile === 'object' && typeof (rawResponseProfile as { language?: unknown }).language === 'string'
+        ? String((rawResponseProfile as { language?: string }).language || '').trim()
+        : rawClientContext && typeof rawClientContext === 'object' && typeof (rawClientContext as { appLanguage?: unknown }).appLanguage === 'string'
+          ? String((rawClientContext as { appLanguage?: string }).appLanguage || '').trim()
+          : 'id';
+      const text = buildHardBlockedAiReply(responseLanguage || 'id', guardrail.reason);
+      console.warn(`[api/ai][${requestId}] action=${action} guardrail_hard_block: ${guardrail.reason}`);
+      return res.json({
+        ok: true,
+        requestId,
+        action,
+        text,
+        provider: 'LOCAL',
+        model: 'scope-guardrail',
+        degraded: false,
+        details: guardrail.reason,
+      });
+    }
+
+    if (guardrail.action === 'soft_limit') {
+      prompt = `${prompt}\n\n[SYSTEM INSTRUCTION: The request appears outside Baristachaw’s core product scope. Do not provide a large full production codebase. Provide safe conceptual guidance, PRD, architecture, pseudo-logic, checklist, or implementation notes only.]`;
+    }
   }
   const paidFeature: PaidAiFeature | null = action === 'search'
     ? 'search'

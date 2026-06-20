@@ -39,7 +39,7 @@ export function classifyAiPromptGuardrail(
   // 1. HARD BLOCK for clear safety risks
   const DANGEROUS_OR_ABUSIVE_RE = /\b(?:malware|phishing|spam abuse|exploit instructions|jailbreak|bypass auth|curi|steal|hack)\b/i;
   const SECRET_OR_CREDENTIAL_RE = /\b(?:api\s*key|apikey|password|credential|kredensial|kata sandi|\.env|private config|private data|token)\b/i;
-  const INTERNAL_PROMPT_RE = /\b(?:system prompt|developer prompt|prompt rahasia|tool instruction|internal policy|internal prompt)\b/i;
+  const INTERNAL_PROMPT_RE = /\b(?:system prompt|developer prompt|prompt rahasia|tool instruction|internal policy|internal prompt|logika internal|source code internal|kode sumber baristachaw|arsitektur rahasia|internal logic|internal system|sistem internal)\b/i;
   const LEAK_VERB_RE = /\b(?:bocorkan|tampilkan|berikan|reveal|show|bypass|apa isi|curi|steal|spill)\b/i;
 
   if (DANGEROUS_OR_ABUSIVE_RE.test(text)) {
@@ -51,6 +51,11 @@ export function classifyAiPromptGuardrail(
       return { action: 'hard_block', reason: 'secret_or_credential_request' };
     }
     return { action: 'hard_block', reason: 'internal_prompt_request' };
+  }
+
+  // Juga memblokir jika user meminta source code baristachaw secara eksplisit tanpa kata kerja leak
+  if (/\b(?:source code baristachaw|kode sumber baristachaw|logika internal baristachaw)\b/i.test(text)) {
+      return { action: 'hard_block', reason: 'internal_prompt_request' };
   }
 
   // 2. ALLOW for Drink / Menu / Coffee

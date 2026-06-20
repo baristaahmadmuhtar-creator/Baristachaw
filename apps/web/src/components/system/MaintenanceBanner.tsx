@@ -22,6 +22,7 @@ export function MaintenanceBanner() {
   const { language, t } = useGlobalState();
   const { snapshot, maintenance, loading, error } = useAccountStatus();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isChatRoute = location.pathname === '/chat';
   const status = useMemo(() => resolveWorkspaceStatus({
     snapshot,
     loading,
@@ -60,7 +61,7 @@ export function MaintenanceBanner() {
           exit={{ y: 8, opacity: 0 }}
           transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
           onClick={() => setMinimizedKey('')}
-          className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5.25rem)] right-3 z-[70] inline-flex max-w-[72vw] items-center gap-2 rounded-full border border-blue-200/30 bg-slate-950/92 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(0,0,0,0.20)] backdrop-blur lg:bottom-auto lg:right-4 lg:top-[calc(env(safe-area-inset-top,0px)+0.75rem)]"
+          className={`fixed ${isChatRoute ? 'bottom-[calc(env(safe-area-inset-bottom,0px)+10.75rem)]' : 'bottom-[calc(env(safe-area-inset-bottom,0px)+5.25rem)]'} right-3 z-[70] inline-flex max-w-[72vw] items-center gap-2 rounded-full border border-blue-200/30 bg-slate-950/92 px-3 py-2 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(0,0,0,0.20)] backdrop-blur lg:bottom-auto lg:right-4 lg:top-[calc(env(safe-area-inset-top,0px)+0.75rem)]`}
           aria-label={statusLabel}
         >
           <StatusIcon size={13} className="shrink-0" />
@@ -73,17 +74,17 @@ export function MaintenanceBanner() {
           animate={{ y: 0 }}
           exit={{ y: -12 }}
           transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-          className={`${minimized ? 'hidden' : 'block'} pointer-events-none fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5.25rem)] left-3 right-3 z-[70] rounded-2xl border border-blue-200/30 bg-slate-950/92 px-3.5 py-2.5 text-sm text-white shadow-[0_10px_24px_rgba(0,0,0,0.20)] backdrop-blur dark:border-blue-300/20 lg:bottom-auto lg:left-[calc(var(--desktop-rail-current-width,var(--desktop-rail-width-expanded))+1rem)] lg:right-4 lg:top-[calc(env(safe-area-inset-top,0px)+0.75rem)] lg:max-w-3xl`}
+          className={`${minimized ? 'hidden' : 'block'} pointer-events-none fixed ${isChatRoute ? 'bottom-[calc(env(safe-area-inset-bottom,0px)+10.75rem)] px-3 py-2 text-xs' : 'bottom-[calc(env(safe-area-inset-bottom,0px)+5.25rem)] px-3.5 py-2.5 text-sm'} left-3 right-3 z-[70] rounded-2xl border border-blue-200/30 bg-slate-950/92 text-white shadow-[0_10px_24px_rgba(0,0,0,0.20)] backdrop-blur dark:border-blue-300/20 lg:bottom-auto lg:left-[calc(var(--desktop-rail-current-width,var(--desktop-rail-width-expanded))+1rem)] lg:right-4 lg:top-[calc(env(safe-area-inset-top,0px)+0.75rem)] lg:max-w-3xl lg:px-3.5 lg:py-2.5 lg:text-sm`}
           role="status"
           aria-live="polite"
         >
           <div className="flex items-start gap-2 pr-8">
-            <StatusIcon size={14} className="mt-0.5 shrink-0" />
+            <StatusIcon size={isChatRoute ? 13 : 14} className="mt-0.5 shrink-0" />
             <div className="min-w-0">
-              <p className="font-semibold">{status.title}</p>
-              {message ? <p className="mt-0.5 line-clamp-2 leading-5">{message}</p> : null}
-              {status.helper ? <p className="mt-0.5 text-xs opacity-80">{status.helper}</p> : null}
-              {maintenance.length > 1 && status.kind === 'maintenance' ? <p className="mt-0.5 text-xs opacity-80">{t.homeActiveOperationalFlags.replace('{count}', String(maintenance.length))}</p> : null}
+              <p className="truncate font-semibold leading-5">{status.title}</p>
+              {message ? <p className={`${isChatRoute ? 'line-clamp-1 leading-4' : 'mt-0.5 line-clamp-2 leading-5'}`}>{message}</p> : null}
+              {status.helper && !isChatRoute ? <p className="mt-0.5 text-xs opacity-80">{status.helper}</p> : null}
+              {maintenance.length > 1 && status.kind === 'maintenance' && !isChatRoute ? <p className="mt-0.5 text-xs opacity-80">{t.homeActiveOperationalFlags.replace('{count}', String(maintenance.length))}</p> : null}
             </div>
           </div>
           <button

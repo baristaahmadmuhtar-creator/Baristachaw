@@ -1,4 +1,4 @@
-import type { StructuredAiAction } from '../packages/shared/src/domain.js';
+import type { AiAction } from './_contracts.js';
 
 export type AiGuardrailDecision =
   | {
@@ -28,7 +28,7 @@ export type AiGuardrailDecision =
 export function classifyAiPromptGuardrail(
   prompt: string,
   context?: {
-    action?: StructuredAiAction | 'chat';
+    action?: AiAction | 'chat';
     clientSurface?: string;
     clientFeature?: string;
   }

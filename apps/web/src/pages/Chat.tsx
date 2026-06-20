@@ -493,13 +493,38 @@ export function Chat() {
     }
     setInput(normalized);
     setInputLimitNotice(null);
-  }, []);
+  }, [t.chatInputTooLong]);
 
   const activeSession = useMemo(
     () => sessions.find((session) => session.id === activeSessionId) || null,
     [activeSessionId, sessions],
   );
   const canCreateFreshChat = !isReusableDraftSession(activeSession);
+  const chatQuickPrompts = useMemo(() => ([
+    {
+      id: 'explain_recipe',
+      label: t.chatQuickExplainRecipe || 'Explain recipe',
+      prompt: t.chatQuickExplainRecipePrompt || 'Explain this coffee recipe like a barista: recipe goal, ratio, grind, temperature, timing, and what to taste for.',
+    },
+    {
+      id: 'troubleshoot',
+      label: t.chatQuickTroubleshoot || 'Fix taste',
+      prompt: t.chatQuickTroubleshootPrompt || 'Help troubleshoot my coffee taste. Ask one clarifying question if needed, then give the smallest safe next-cup adjustment.',
+    },
+    {
+      id: 'build_recipe',
+      label: t.chatQuickBuildRecipe || 'Build recipe',
+      prompt: t.chatQuickBuildRecipePrompt || 'Create a practical V60 recipe for 15 g coffee with a balanced cup, including grind, water temperature, ratio, pours, timing, and why each step matters.',
+    },
+  ]), [t]);
+
+  const applyQuickPrompt = useCallback((prompt: string) => {
+    setIsComposerMenuOpen(false);
+    applyInputLimit(prompt);
+    window.requestAnimationFrame(() => {
+      composerTextareaRef.current?.focus();
+    });
+  }, [applyInputLimit]);
 
   const persistAgentProfile = useCallback(async (patch: Partial<AgentProfileMemory>) => {
     const requestedLanguage = typeof patch.preferredLanguage === 'string'
@@ -1548,6 +1573,7 @@ export function Chat() {
     ? t.chatOfflineSendUnavailable
     : (!isAuthenticated ? t.signInRequired : null);
   const showComposerMeta = Boolean(inputLimitNotice || input.length >= CHAT_INPUT_WARNING_CHARS || composerDisabledReason);
+  const showComposerQuickPrompts = !input.trim() && !draftAttachment && !loading && !keyboardFix.isKeyboardOpen;
 
   // ─── Render ───
   return (
@@ -1768,11 +1794,11 @@ export function Chat() {
               initial={{ opacity: 0, y: 10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex min-w-0 max-w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div className={`${msg.role === 'user'
-                ? 'max-w-[88%] sm:max-w-[74%] bg-blue-500 text-white rounded-[1.6rem] rounded-br-[0.5rem] px-4 py-3.5 shadow-[0_4px_16px_rgba(0,122,255,0.2)]'
-                : 'w-full max-w-full sm:w-auto sm:max-w-[80%] lg:max-w-[42rem] glass-card px-4 py-3 rounded-bl-[0.5rem]'
+                ? 'min-w-0 max-w-[88%] overflow-hidden bg-blue-500 text-white rounded-[1.6rem] rounded-br-[0.5rem] px-4 py-3.5 shadow-[0_4px_16px_rgba(0,122,255,0.2)] [overflow-wrap:anywhere] sm:max-w-[74%]'
+                : 'min-w-0 w-full max-w-full overflow-hidden glass-card px-4 py-3 rounded-bl-[0.5rem] [overflow-wrap:anywhere] sm:w-auto sm:max-w-[80%] lg:max-w-[42rem]'
                 } ${isRevealBubble ? 'response-reveal' : ''}`}>
                 {(hasNonAudioAttachment || (!!imagePreviewUrl && !primaryAttachment)) && (
                   <div className="mb-3">
@@ -1810,7 +1836,7 @@ export function Chat() {
                 {audioBubbleUrl ? (
                   <AudioBubble url={audioBubbleUrl} isUser={msg.role === 'user'} />
                 ) : hasText ? (
-                  <div className={`prose prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-pre:my-3 prose-blockquote:my-3 prose-headings:my-2 ${msg.role === 'user' ? 'text-white prose-p:text-white prose-headings:text-white' : 'chat-markdown chat-bubble-markdown chat-bubble-text'}`}>
+                  <div className={`prose prose-sm min-w-0 max-w-none overflow-hidden break-words [overflow-wrap:anywhere] prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-pre:my-3 prose-blockquote:my-3 prose-headings:my-2 ${msg.role === 'user' ? 'text-white prose-p:text-white prose-headings:text-white' : 'chat-markdown chat-bubble-markdown chat-bubble-text'}`}>
                     <Suspense fallback={(
                       <p className={`whitespace-pre-wrap break-words ${msg.role === 'user' ? 'text-white' : 'chat-bubble-text'}`}>
                         {msg.text}
@@ -1822,7 +1848,7 @@ export function Chat() {
                 ) : null}
 
                 {msg.role === 'model' && sourceDetails.length > 0 && (
-                  <div className="mt-3 border-t border-white/15 pt-2.5">
+                  <div className="mt-3 min-w-0 overflow-hidden border-t border-white/15 pt-2.5">
                     <p className="text-[11px] uppercase tracking-wide text-tertiary mb-1.5">{t.chatSources}</p>
                     <div className="space-y-1.5">
                       {sourceDetails.map((source, idx) => {
@@ -1833,14 +1859,29 @@ export function Chat() {
                             href={source.uri}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-[12px] text-blue-600 dark:text-blue-300 hover:underline break-all inline-flex items-center gap-1"
+                            className="chat-source-link inline-flex min-w-0 max-w-full items-start gap-1 break-words text-[12px] text-blue-600 hover:underline dark:text-blue-300 [overflow-wrap:anywhere]"
                           >
-                            <ExternalLink size={12} />
-                            {label}
+                            <ExternalLink size={12} className="mt-0.5 shrink-0" />
+                            <span className="min-w-0">{label}</span>
                           </a>
                         );
                       })}
                     </div>
+                  </div>
+                )}
+
+                {msg.role === 'model' && import.meta.env.DEV && (msg.regenerated || msg.caveatApplied) && (
+                  <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] uppercase tracking-wide text-tertiary">
+                    {msg.regenerated && (
+                      <span className="rounded-full border panel-divider-subtle bg-surface-alpha px-2 py-1">
+                        regenerated: yes
+                      </span>
+                    )}
+                    {msg.caveatApplied && (
+                      <span className="rounded-full border panel-divider-subtle bg-surface-alpha px-2 py-1">
+                        caveat applied
+                      </span>
+                    )}
                   </div>
                 )}
 
@@ -1996,6 +2037,25 @@ export function Chat() {
           )}
         </AnimatePresence>
 
+        {showComposerQuickPrompts && (
+          <div className="chat-quick-prompt-strip mb-2 grid min-w-0 max-w-full grid-cols-3 gap-1.5" data-testid="chat-quick-prompts">
+            {chatQuickPrompts.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => applyQuickPrompt(item.prompt)}
+                className="min-w-0 rounded-full border panel-divider-subtle bg-[var(--nav-bg)]/90 px-2.5 py-2 text-left text-[11px] font-semibold text-primary shadow-[0_8px_18px_rgba(15,23,42,0.08)] transition-colors hover:bg-surface-alpha-hover focus-soft sm:px-3 sm:text-xs"
+                data-testid={`chat-quick-prompt-${item.id}`}
+              >
+                <span className="flex min-w-0 items-center justify-center gap-1.5">
+                  <MessageSquare size={12} className="shrink-0 text-blue-500" />
+                  <span className="min-w-0 truncate">{item.label}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Recording indicator */}
         {isRecording && (
           <div className="mb-2 inline-flex max-w-full items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs text-red-500">
@@ -2051,7 +2111,7 @@ export function Chat() {
           </div>
         )}
 
-        <div className="relative flex items-end gap-2">
+        <div className="relative flex min-w-0 items-end gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={() => {
@@ -2059,13 +2119,13 @@ export function Chat() {
               navigate('/');
             }}
             aria-label={t.chatGoHome}
-            className="pointer-events-auto h-12 w-12 rounded-full border border-glass bg-[var(--bg-base)]/82 text-primary flex items-center justify-center shrink-0 shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition-all duration-200 hover:bg-surface-alpha-hover active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed focus-soft"
+            className="pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-glass bg-[var(--bg-base)]/82 text-primary shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition-all duration-200 hover:bg-surface-alpha-hover active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed focus-soft sm:h-12 sm:w-12"
           >
-            <AppHomeIcon size={22} variant="glyph" tone="blue" />
+            <AppHomeIcon size={20} variant="glyph" tone="blue" />
           </button>
 
           <div className="chat-composer-shell flex-1 min-w-0 overflow-hidden rounded-[1.65rem] border">
-            <div className="flex items-end gap-1.5 px-2 py-2 sm:gap-2 sm:px-2.5">
+            <div className="flex min-w-0 items-end gap-1 px-1.5 py-1.5 sm:gap-2 sm:px-2.5 sm:py-2">
               <textarea
                 ref={composerTextareaRef}
                 value={input}
@@ -2090,7 +2150,7 @@ export function Chat() {
                   }
                 }}
                 placeholder={t.typeMessage}
-                className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 resize-none py-2.5 px-2.5 text-base leading-6 text-primary placeholder:text-tertiary min-h-[44px] max-h-[132px] focus:outline-none"
+                className="min-h-[42px] min-w-0 max-h-[132px] flex-1 resize-none border-none bg-transparent px-2 py-2 text-base leading-6 text-primary placeholder:text-tertiary focus:outline-none focus:ring-0 sm:min-h-[44px] sm:px-2.5 sm:py-2.5"
                 rows={1}
                 maxLength={CHAT_INPUT_MAX_CHARS}
                 disabled={interactionDisabled}
@@ -2100,7 +2160,7 @@ export function Chat() {
                 spellCheck
               />
 
-              <div className="flex items-center gap-1 shrink-0 pb-0.5 pr-0.5 sm:gap-1.5">
+              <div className="flex shrink-0 items-center gap-0.5 pb-0.5 pr-0.5 sm:gap-1.5">
                 <button
                   type="button"
                   onClick={() => setIsComposerMenuOpen((prev) => !prev)}
@@ -2109,7 +2169,7 @@ export function Chat() {
                   aria-haspopup="menu"
                   aria-expanded={isComposerMenuOpen}
                   aria-controls="chat-composer-menu"
-                  className="h-11 w-11 rounded-full flex items-center justify-center border border-glass bg-surface-alpha text-secondary hover:bg-surface-alpha-hover hover:text-primary shrink-0 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed focus-soft"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-glass bg-surface-alpha text-secondary transition-all duration-200 hover:bg-surface-alpha-hover hover:text-primary active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus-soft sm:h-11 sm:w-11"
                 >
                   <AppPaperclipIcon size={19} variant="glyph" tone="neutral" />
                 </button>
@@ -2119,7 +2179,7 @@ export function Chat() {
                   onClick={toggleRecording}
                   disabled={interactionDisabled}
                   aria-label={isRecording ? t.chatStopRecording : t.chatRecordVoice}
-                  className={`h-11 w-11 rounded-full flex items-center justify-center border shrink-0 transition-all duration-200 focus-soft disabled:opacity-50 disabled:cursor-not-allowed ${isRecording
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-all duration-200 focus-soft disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:w-11 ${isRecording
                     ? 'border-red-400/30 bg-red-500 text-white shadow-[0_4px_14px_rgba(239,68,68,0.28)] animate-pulse'
                     : 'border-glass bg-surface-alpha text-secondary hover:bg-surface-alpha-hover hover:text-primary'
                     }`}
@@ -2137,7 +2197,7 @@ export function Chat() {
                   onClick={handleComposerSend}
                   disabled={(!input.trim() && !draftAttachment) || interactionDisabled}
                   aria-label={t.chatSendMessageAria}
-                  className={`h-11 w-11 rounded-full flex items-center justify-center border shrink-0 transition-all duration-200 focus-soft ${(input.trim() || draftAttachment) && !interactionDisabled
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-all duration-200 focus-soft sm:h-11 sm:w-11 ${(input.trim() || draftAttachment) && !interactionDisabled
                     ? 'border-blue-500/35 bg-blue-600 text-white shadow-[0_8px_20px_rgba(37,99,235,0.28)] hover:bg-blue-700 hover:scale-[1.03] active:scale-95'
                     : 'border-glass bg-surface-alpha text-tertiary'
                     } ${loadingPhase === 'sending' ? 'chat-send-morph' : ''}`}

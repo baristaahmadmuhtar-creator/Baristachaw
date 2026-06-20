@@ -28,6 +28,11 @@ import {
     E2E_MOCK_PROVIDER,
 } from './_e2eMock.js';
 import {
+    buildHardBlockedAiReply,
+    buildSoftLimitRuntimeInstruction,
+    classifyAiPromptGuardrail,
+} from './_aiGuardrails.js';
+import {
     CHAT_INPUT_MAX_CHARS,
     STRUCTURED_AI_PROMPT_MAX_CHARS,
     type ConversationContext,
@@ -183,6 +188,29 @@ const DEFAULT_NORMAL_PROFILE: ResolvedResponseProfile = {
         ambiguityPolicy: 'assume',
     },
 };
+
+function resolveRequestLanguage(rawResponseProfile: unknown, rawClientContext: unknown): string {
+    if (
+        rawResponseProfile
+        && typeof rawResponseProfile === 'object'
+        && typeof (rawResponseProfile as { language?: unknown }).language === 'string'
+    ) {
+        const language = String((rawResponseProfile as { language?: string }).language || '').trim();
+        if (language) return language;
+    }
+
+    if (rawClientContext && typeof rawClientContext === 'object') {
+        const appLanguage = (rawClientContext as { appLanguage?: unknown }).appLanguage;
+        if (typeof appLanguage === 'string' && appLanguage.trim()) return appLanguage.trim();
+
+        const acceptLanguage = (rawClientContext as { acceptLanguage?: unknown }).acceptLanguage;
+        if (typeof acceptLanguage === 'string' && acceptLanguage.trim()) {
+            return acceptLanguage.split(',')[0]?.split(';')[0]?.trim() || 'id';
+        }
+    }
+
+    return 'id';
+}
 
 function hasBalancedCodeFences(text: string): boolean {
     const matches = text.match(/```/g);
@@ -679,8 +707,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const preliminaryMessage = typeof req.body?.message === 'string' ? req.body.message : '';
     const preliminaryLanguage = resolveRequestLanguage(req.body?.responseProfile, rawChatClientContext);
     
-    const guardrail = classifyAiPromptGuardrail(preliminaryMessage);
-    if (guardrail.decision === 'hard_block') {
+    const guardrail = classifyAiPromptGuardrail(preliminaryMessage, {
+        action: 'chat',
+        clientSurface: rawChatClientContext && typeof rawChatClientContext === 'object'
+            ? String((rawChatClientContext as { surface?: unknown }).surface || '')
+            : undefined,
+        clientFeature: rawChatClientContext && typeof rawChatClientContext === 'object'
+            ? String((rawChatClientContext as { feature?: unknown }).feature || '')
+            : undefined,
+    });
+    if (guardrail.action === 'hard_block') {
         res.status(200);
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         res.setHeader('Cache-Control', 'no-cache, no-store');
@@ -956,8 +992,8 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
             { role: 'system', content: systemPrompt },
             ...contextMessages,
             { role: 'system', content: buildLatestTurnGuardPrompt() },
-            ...(guardrail.decision === 'soft_limit'
-                ? [{ role: 'system', content: buildSoftLimitRuntimeInstruction(preliminaryLanguage) }]
+            ...(guardrail.action === 'soft_limit'
+                ? [{ role: 'system', content: buildSoftLimitRuntimeInstruction() }]
                 : []),
             { role: 'user', content: messageForModel },
         ];

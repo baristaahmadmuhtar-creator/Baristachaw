@@ -980,6 +980,21 @@
     --tw-prose-td-borders: var(--glass-border);
   }
 
+  .chat-container :where(div, form, article, section, main, header, footer, p, ul, ol, li, span, a, pre, code, table, blockquote) {
+    min-width: 0;
+  }
+
+  .chat-container {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  @supports not (overflow: clip) {
+    .chat-container {
+      overflow-x: hidden;
+    }
+  }
+
   .chat-markdown :where(p, li, span, strong, em, small, code, blockquote) {
     opacity: 1;
   }
@@ -1001,6 +1016,48 @@
     --tw-prose-bold: var(--text-primary);
     --tw-prose-quotes: var(--text-primary);
     --tw-prose-code: var(--text-primary);
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .chat-bubble-markdown *,
+  .chat-source-link,
+  .chat-source-link * {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .chat-bubble-markdown :where(a) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .chat-bubble-markdown :where(code):not(:where(pre code)) {
+    white-space: normal;
+  }
+
+  .chat-bubble-markdown :where(pre) {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .chat-bubble-markdown :where(table) {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .chat-bubble-markdown :where(img, video) {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .chat-quick-prompt-strip {
+    contain: inline-size;
   }
 
   .chat-bubble-text {

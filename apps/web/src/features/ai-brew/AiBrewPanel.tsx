@@ -7083,8 +7083,8 @@ function PlanResultDialog({
   const coachCurrentCupTitle = `${plan.dripper.name} - ${coachBeanLabel}`;
   const coachCurrentCupMeta = `${formatRoundedGrams(plan.doseG)} ${id ? 'kopi' : 'coffee'} - ${formatRoundedMl(plan.totalWaterMl)} ${id ? 'air' : 'water'} - ${formatRoundedTemperature(plan.waterTempC)}`;
   const coachInfoNote = id
-    ? 'AI Coach hanya memakai context cup ini. Jawaban dibuat singkat, angka resep tetap dikunci, dan request di luar kopi ditolak.'
-    : 'AI Coach only uses this cup context. Replies stay short, recipe numbers stay locked, and non-coffee requests are refused.';
+    ? 'AI Coach memakai context cup ini, menjaga angka resep tetap terkunci, dan menolak coding atau data rahasia.'
+    : 'AI Coach uses this cup context, keeps recipe numbers locked, and refuses coding or secret data.';
   const coachConfidenceNotes = [
     predictionPrecisionLabel,
     ...plan.confidenceNotes.slice(0, 2).map((note) => localizeAiBrewDynamicText(note, language)),
@@ -7129,15 +7129,24 @@ function PlanResultDialog({
   };
   const buildLocalCoachReply = (question: string) => {
     if (isCoachQuestionOutOfScope(question)) return buildCoachScopeReply();
+    const asksTasteWhy = /\b(?:kurang|tidak|ga|gak|nggak|ngga|why|kenapa|bad|off|aneh|pahit|asam|tipis|flat|muddy|astringent|kering|rough|hambar)\b/i.test(question);
     const feedbackLine = feedback
       ? `${activeFeedbackLabel}${feedbackNoteDraft.trim() ? `: ${feedbackNoteDraft.trim()}` : ''}`
-      : (id ? 'Belum ada feedback seduh nyata; validasi cup pertama dulu sebelum koreksi besar.' : 'No real brew feedback yet; validate the first cup before making large corrections.');
+      : asksTasteWhy
+        ? (id
+          ? 'Belum ada feedback spesifik. Kemungkinan cek dulu: asam tajam = ekstraksi kurang, pahit/kering = ekstraksi berlebih, tipis = rasio/agitasinya kurang kuat.'
+          : 'No specific taste feedback yet. First checks: sharp sour = under-extracted, bitter/dry = over-extracted, thin = ratio/agitation may be too weak.')
+        : (id ? 'Belum ada feedback seduh nyata; validasi cup pertama dulu sebelum koreksi besar.' : 'No real brew feedback yet; validate the first cup before making large corrections.');
+    const quickCheckLine = id
+      ? `Bandingkan waktu air turun dengan target ${formatGuideTime(extractionSeconds)} dan catat satu rasa dominan.`
+      : `Compare drawdown with the ${formatGuideTime(extractionSeconds)} target and note one dominant taste.`;
     const correctionLine = activeFeedbackCorrection
       ? activeFeedbackCorrection
       : (id ? 'Koreksi aman: ubah satu variabel kecil saja setelah mencicipi, biasanya gilingan 1 klik/angka atau suhu 1C.' : 'Safe correction: change one small variable after tasting, usually 1 grind click/number or 1C.');
     return [
       `- ${id ? 'Context' : 'Context'}: ${plan.dripper.name}, ${formatRoundedGrams(plan.doseG)}, ${formatRoundedMl(plan.totalWaterMl)}, ${formatRoundedTemperature(plan.waterTempC)}, ${localizedGrindHeadline}.`,
       `- ${id ? 'Feedback' : 'Feedback'}: ${feedbackLine}`,
+      `- ${id ? 'Cek cepat' : 'Quick check'}: ${quickCheckLine}`,
       `- ${id ? 'Aksi kecil' : 'Small move'}: ${correctionLine}`,
     ].join('\n');
   };

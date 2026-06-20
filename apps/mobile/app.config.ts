@@ -6,8 +6,8 @@ const DEFAULT_SCHEME = 'baristachaw';
 const LEGACY_SCHEME = 'baristaclaw';
 const DEFAULT_BUNDLE_ID = 'com.baristachaw.app';
 const DEFAULT_ANDROID_PACKAGE = 'com.baristachaw.mobile';
-const LIGHT_SPLASH_BACKGROUND = '#F2F2F7';
-const DARK_SPLASH_BACKGROUND = '#000000';
+const LIGHT_SPLASH_BACKGROUND = '#F5F8FE';
+const DARK_SPLASH_BACKGROUND = '#EEF4FF';
 const IOS_APP_ICON = {
   light: './assets/ios-appicon/AppIcon-Light-1024.png',
   dark: './assets/ios-appicon/AppIcon-Dark-1024.png',

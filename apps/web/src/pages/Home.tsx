@@ -225,6 +225,12 @@ export function Home() {
   const recommendedUpgrade = accountSnapshot?.recommendedUpgrade;
   const showWorkspaceStatusPanel = isAuthenticated && !isGuest;
   const hasPendingPaymentReview = workspaceStatus.kind === 'pending_review';
+  const shouldShowPlanGrowthSurface = Boolean(
+    isAuthenticated
+    && accountSnapshot
+    && workspaceStatus.kind !== 'free'
+    && workspaceStatus.kind !== 'pending_review'
+  );
   const recommendedUpgradeReason = useMemo(
     () => formatRecommendedUpgradeReason(accountSnapshot, language, locale),
     [accountSnapshot, language, locale],
@@ -982,7 +988,7 @@ export function Home() {
         </section>
       ) : null}
 
-      {isAuthenticated && accountSnapshot && !hasPendingPaymentReview ? (
+      {shouldShowPlanGrowthSurface ? (
         <PlanGrowthSurface
           snapshot={accountSnapshot}
           t={t}

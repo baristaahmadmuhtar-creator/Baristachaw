@@ -38,6 +38,13 @@ function getOrientationKey() {
   return window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
 }
 
+function shouldUseViewportKeyboardDocking() {
+  if (typeof window === 'undefined') return false;
+  const nav = window.navigator;
+  return /iPad|iPhone|iPod/.test(nav.userAgent)
+    || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
+}
+
 function computeKeyboardOffsetFromViewport(args: {
   lastOpen: boolean;
   baselineLayoutHeight: number;
@@ -141,11 +148,15 @@ export function useIOSKeyboardFix({
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    const enableViewportKeyboardDocking = shouldUseViewportKeyboardDocking();
 
     const applyMetrics = (detail?: Partial<ViewportMetricsDetail>) => {
-      const offset = Math.max(0, Number(detail?.keyboardOffset ?? 0));
-      const overlayOffset = Math.max(0, Number(detail?.keyboardOverlayOffset ?? offset));
-      const open = offset > 0 || !!detail?.keyboardOpen;
+      const measuredOffset = Math.max(0, Number(detail?.keyboardOffset ?? 0));
+      const measuredOverlayOffset = Math.max(0, Number(detail?.keyboardOverlayOffset ?? measuredOffset));
+      const measuredOpen = measuredOffset > 0 || !!detail?.keyboardOpen;
+      const offset = enableViewportKeyboardDocking && measuredOpen ? measuredOffset : 0;
+      const overlayOffset = enableViewportKeyboardDocking && measuredOpen ? measuredOverlayOffset : 0;
+      const open = enableViewportKeyboardDocking && measuredOpen;
       const detailBaselineLayout = Number(detail?.baselineLayoutHeight ?? 0);
       const detailBaselineVisualBottom = Number(detail?.baselineVisualBottom ?? 0);
       const detailVisualBottom = Number(detail?.visualBottom ?? 0);

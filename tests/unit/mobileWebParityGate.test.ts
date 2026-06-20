@@ -105,9 +105,21 @@ test('mobile env defaults and app config keep store builds on web parity source 
   assert.match(appSource, /if \(mobileEnv\.webParityFallbackEnabled\) \{\s*setRootMode\('native'\);/s);
 });
 
+test('mobile splash uses non-black backgrounds in light and dark launch modes', () => {
+  const appConfig = read('apps/mobile/app.config.ts');
+
+  assert.match(appConfig, /const LIGHT_SPLASH_BACKGROUND = '#F5F8FE'/);
+  assert.match(appConfig, /const DARK_SPLASH_BACKGROUND = '#EEF4FF'/);
+  assert.doesNotMatch(appConfig, /const DARK_SPLASH_BACKGROUND = '#000000'/);
+  assert.match(appConfig, /backgroundColor: DARK_SPLASH_BACKGROUND/);
+});
+
 test('authoritative viewport metrics cancel a stale keyboard fallback frame', () => {
   const keyboardHookSource = read('apps/web/src/hooks/useIOSKeyboardFix.ts');
 
+  assert.match(keyboardHookSource, /function shouldUseViewportKeyboardDocking/);
+  assert.match(keyboardHookSource, /iPad\|iPhone\|iPod/);
+  assert.match(keyboardHookSource, /enableViewportKeyboardDocking && measuredOpen/);
   assert.match(
     keyboardHookSource,
     /const onMetrics = \(e: Event\) => \{\s*if \(rafId !== null\) \{\s*window\.cancelAnimationFrame\(rafId\);\s*rafId = null;\s*\}\s*const ce = e as CustomEvent<ViewportMetricsDetail>;\s*applyMetrics\(ce\.detail\);/s,

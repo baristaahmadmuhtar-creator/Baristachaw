@@ -1145,7 +1145,9 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
       setActiveSessionId(sessionId);
     }
 
-    const userMessageText = text || `[Attachment] ${draftAttachment?.fileName || 'file'}`;
+    const userMessageText = text || (draftAttachment?.kind === 'audio'
+      ? webT.chatVoiceNoteLabel
+      : `[Attachment] ${draftAttachment?.fileName || 'file'}`);
     const nextConversationMessages = [...messages, { role: 'user' as const, text: userMessageText }];
     const profilePatch = extractDurablePreferenceUpdates(text, agentProfile);
     const effectiveAgentProfile = Object.keys(profilePatch).length
@@ -1172,7 +1174,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
           inlineBase64: draftAttachment.base64,
         }]
         : undefined,
-      transcriptText: draftAttachment?.textContent,
+      transcriptText: draftAttachment?.kind === 'txt' ? draftAttachment.textContent : undefined,
     }, {
       preferredLanguage,
     });
@@ -1777,7 +1779,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
             </View>
           ) : null}
 
-          {item.transcriptText ? (
+          {item.transcriptText && !hasVoiceAttachment ? (
             <Text style={[styles.messageNote, assistantMessage ? styles.assistantNote : styles.userNote]}>
               {chatCopy.helpers.transcriptAttached}
             </Text>

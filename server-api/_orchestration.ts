@@ -582,8 +582,8 @@ function isQuestionIntent(text: string): boolean {
 
 function isBeverageRecipeIntent(text: string): boolean {
   return hasAny(text, [
-    /\b(?:buat|buatkan|bikin|racik|susun|create|make|design)\b.{0,72}\b(?:kopi susu|gula aren|latte|cappuccino|flat white|americano|mocha|macchiato|signature drink|signature menu|minuman kopi|drink menu)\b/i,
-    /\b(?:recipe|resep|formula)\b.{0,48}\b(?:kopi susu|gula aren|latte|cappuccino|flat white|americano|mocha|macchiato|signature drink|minuman kopi)\b/i,
+    /\b(?:buat|buatkan|bikin|racik|susun|create|make|design)\b.{0,72}\b(?:kopi susu|gula aren|latte|cappuccino|flat white|americano|mocha|macchiato|signature drink|signature menu|minuman kopi|drink menu|mocktail|moktail|minuman|monin|sirup|syrup|soda)\b/i,
+    /\b(?:recipe|resep|formula)\b.{0,48}\b(?:kopi susu|gula aren|latte|cappuccino|flat white|americano|mocha|macchiato|signature drink|minuman kopi|mocktail|moktail|minuman|monin|sirup|syrup|soda)\b/i,
   ]);
 }
 
@@ -613,6 +613,8 @@ const MENU_DRINK_SIGNALS: RequestSignalSpec[] = [
   { label: 'americano', patterns: [/\bamericano\b/i] },
   { label: 'mocha', patterns: [/\bmocha\b/i] },
   { label: 'macchiato', patterns: [/\bmacchiato\b/i] },
+  { label: 'mocktail', patterns: [/\b(?:mocktail|moktail)\b/i] },
+  { label: 'Monin syrup', patterns: [/\bmonin\b/i, /\b(?:sirup|syrup)\b/i] },
 ];
 
 function detectMatchedSignals(text: string, signals: RequestSignalSpec[]): string[] {
@@ -632,8 +634,8 @@ function hasManualBrewResponseTerms(text: string): boolean {
 
 function hasMenuDrinkResponseTerms(text: string): boolean {
   return hasAny(text, [
-    /\b(kopi\s+susu|gula\s+aren|latte|cappuccino|flat\s+white|americano|mocha|macchiato)\b/i,
-    /\b(susu|milk|sirup|syrup|brown sugar|steam(?:ed|ing)? milk|espresso shot)\b/i,
+    /\b(kopi\s+susu|gula\s+aren|latte|cappuccino|flat\s+white|americano|mocha|macchiato|mocktail|moktail|monin)\b/i,
+    /\b(susu|milk|sirup|syrup|brown sugar|steam(?:ed|ing)? milk|espresso shot|soda|juice|jus)\b/i,
   ]);
 }
 
@@ -1075,7 +1077,7 @@ function formatAiChatFlowForPrompt(
   } else if (intent === 'command') {
     lines.push('- Command template: execute the requested writing, analysis, calculation, or planning task in the response without unnecessary preamble or document-style formatting.');
   } else {
-    lines.push('- Open-ended template: infer the likely coffee workflow, give a useful starting point, keep it compact, and ask at most one clarifying question if needed.');
+    lines.push('- Open-ended template: answer the latest request directly. Use a coffee workflow only when the user actually asks about coffee, drinks, cafe work, or Baristachaw.');
   }
 
   if (intent === 'recipe_request') {

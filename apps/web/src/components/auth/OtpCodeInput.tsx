@@ -94,7 +94,7 @@ export const OtpCodeInput: React.FC<OtpCodeInputProps> = ({
 
   return (
     <div
-      className="my-4 grid w-full max-w-full grid-cols-8 justify-center gap-1 sm:gap-1.5 [grid-template-columns:repeat(8,minmax(0,clamp(1.75rem,9vw,2.75rem)))]"
+      className="my-4 mx-auto grid w-full max-w-[21rem] grid-cols-8 gap-1 sm:gap-1.5"
       dir="ltr"
     >
       {code.map((value, index) => (
@@ -112,7 +112,7 @@ export const OtpCodeInput: React.FC<OtpCodeInputProps> = ({
           onChange={(e) => handleChange(e, index)}
           onKeyDown={(e) => handleKeyDown(e, index)}
           onPaste={handlePaste}
-          className="h-11 w-full min-w-0 rounded-lg border bg-white text-center text-base font-semibold outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:opacity-50 dark:bg-gray-800 dark:focus:ring-blue-900 sm:h-14 sm:text-xl"
+          className="h-10 w-full min-w-0 rounded-lg border bg-white text-center text-base font-semibold outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:opacity-50 dark:bg-gray-800 dark:focus:ring-blue-900 sm:h-12 sm:text-xl"
         />
       ))}
     </div>

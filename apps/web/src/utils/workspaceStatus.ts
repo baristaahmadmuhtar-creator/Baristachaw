@@ -39,6 +39,14 @@ function daysUntil(value: string | undefined): number | null {
 }
 
 function isManualReview(snapshot: AccountStatusSnapshot): boolean {
+  if (
+    snapshot.user.planCode !== 'free'
+    && snapshot.billing.status === 'active'
+    && snapshot.appAccess.status !== 'blocked'
+  ) {
+    return false;
+  }
+
   const message = snapshot.billing.message || '';
   return snapshot.billing.paymentActionRequired
     && (snapshot.billing.provider === 'manual'

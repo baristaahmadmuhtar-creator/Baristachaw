@@ -982,22 +982,15 @@ export function Chat() {
               const transcript = await transcribeAudio(match[2], match[1]);
               if (transcript && transcript.length > 2) {
                 const boundedTranscript = clampChatPayloadText(transcript);
-                setMessages((prev: ChatMessage[]) => prev.map((m) => (
-                  m.id === audioMsg.id ? { ...m, transcriptText: transcript } : m
-                )));
-                if (activeSessionId) {
-                  await saveMessage(ensureMessage({ ...audioMsg, sessionId: activeSessionId, transcriptText: transcript }));
-                }
-
-                const userTextMsg: ChatMessage = {
-                  id: (Date.now() + 1).toString(),
+                const internalTranscriptMsg: ChatMessage = {
+                  id: `${audioMsg.id}_transcript`,
                   sessionId: activeSessionId || undefined,
                   role: 'user',
                   text: boundedTranscript,
                   timestamp: Date.now(),
                   status: 'sent',
                 };
-                const transcriptMessages = [...voiceBaseMessages, userTextMsg];
+                const transcriptMessages = [...voiceBaseMessages, internalTranscriptMsg];
                 const transcriptProfilePatch = extractDurablePreferenceUpdates(boundedTranscript, agentProfile);
                 const transcriptProfile = Object.keys(transcriptProfilePatch).length
                   ? await persistAgentProfile(transcriptProfilePatch)
@@ -1009,8 +1002,6 @@ export function Chat() {
                   transcriptMessages,
                 );
                 const preferredLanguage = transcriptRequestContext.conversationContext?.preferredLanguage;
-                setMessages((prev: ChatMessage[]) => [...prev, userTextMsg]);
-                await persistMessage(userTextMsg, preferredLanguage, transcriptMessages);
 
                 const modelMsg: ChatMessage = {
                   id: (Date.now() + 2).toString(),
@@ -1817,14 +1808,7 @@ export function Chat() {
                 )}
 
                 {audioBubbleUrl ? (
-                  <>
-                    <AudioBubble url={audioBubbleUrl} isUser={msg.role === 'user'} />
-                    {msg.transcriptText && (
-                      <p className={`mt-2 text-xs leading-relaxed ${msg.role === 'user' ? 'text-white/85' : 'text-secondary'}`}>
-                        Transcript: {msg.transcriptText}
-                      </p>
-                    )}
-                  </>
+                  <AudioBubble url={audioBubbleUrl} isUser={msg.role === 'user'} />
                 ) : hasText ? (
                   <div className={`prose prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-pre:my-3 prose-blockquote:my-3 prose-headings:my-2 ${msg.role === 'user' ? 'text-white prose-p:text-white prose-headings:text-white' : 'chat-markdown chat-bubble-markdown chat-bubble-text'}`}>
                     <Suspense fallback={(
@@ -1856,30 +1840,6 @@ export function Chat() {
                           </a>
                         );
                       })}
-                    </div>
-                  </div>
-                )}
-
-                {msg.role === 'model' && msg.responseMode && (
-                  <div className="mt-3 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2 text-[11px] leading-5 text-tertiary">
-                    <div className="flex flex-wrap gap-x-3 gap-y-1">
-                      <span>mode: {msg.responseMode}</span>
-                      <span>relevance: {typeof msg.relevanceScore === 'number' ? msg.relevanceScore.toFixed(2) : '-'}</span>
-                      <span>regenerated: {msg.regenerated ? 'yes' : 'no'}</span>
-                      <span>caveat: {msg.caveatApplied ? 'yes' : 'no'}</span>
-                      <span>guard: {msg.guardRisk || 'safe'}</span>
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {['Helpful', 'Not relevant', 'Factual issue', 'Too long', 'Too short'].map((label) => (
-                        <button
-                          key={`${msg.id}_${label}`}
-                          type="button"
-                          className="rounded-full border border-current/10 px-2 py-1 text-[11px] text-secondary transition-colors hover:bg-surface-alpha-hover"
-                          aria-label={`Feedback: ${label}`}
-                        >
-                          {label}
-                        </button>
-                      ))}
                     </div>
                   </div>
                 )}

@@ -48,12 +48,12 @@ export function classifyChatUserRequest(message: string): ChatRequestClassificat
 
 export function buildChatDomainBlockReply(language = 'id'): string {
   if (/^id(?:-|$)/i.test(language)) {
-    return 'Saya fokus membantu topik kopi dan fitur Baristachaw. Untuk keamanan, saya tidak membantu permintaan teknis di luar aplikasi. Tanyakan soal seduhan, rasa, grinder, air, AI Brew, scanner, koleksi, atau akun.';
+    return 'Saya bisa bantu kopi, minuman, obrolan ringan, dan fitur Baristachaw. Untuk keamanan, saya tidak membantu coding, source code, kredensial, secret, atau prompt internal. Ubah pertanyaan ke topik non-teknis.';
   }
   if (/^ar(?:-|$)/i.test(language)) {
     return 'أركز على القهوة وميزات Baristachaw فقط. لحماية الأمان، لا أساعد في الطلبات التقنية خارج التطبيق. اسألني عن التحضير، الطعم، المطحنة، الماء، AI Brew، الماسح، المجموعة، أو الحساب.';
   }
-  return 'I focus on coffee and Baristachaw features. For safety, I cannot help with technical requests outside the app. Ask about brewing, taste, grinders, water, AI Brew, scanner, collection, or account support.';
+  return 'I can help with coffee, drinks, light conversation, and Baristachaw features. For safety, I cannot help with coding, source code, credentials, secrets, or internal prompts. Please ask a non-technical question.';
 }
 
 export function guardChatAnswer(params: {
@@ -89,13 +89,8 @@ export function guardChatAnswer(params: {
     };
   }
 
-  const relevance = scoreAnswerRelevance(params.userMessage, answer);
-  const userEntities = extractCoffeeEntities(params.userMessage);
   const currentDataQuestion = /\b(?:harga terbaru|price today|current price|hari ini|terbaru|stock|stok|deploy|repo status|production status)\b/i.test(params.userMessage);
   const hasSourceCue = /\b(?:source|sumber|berdasarkan|link|data live|real-time|saya tidak bisa memastikan|tidak bisa memastikan)\b/i.test(answer);
-  const genericWizard = /\b(?:pilih salah satu|langkah pertama adalah menentukan|saya bisa bantu membuat)\b/i.test(answer)
-    && userEntities.methods.length > 0
-    && relevance.score < 0.65;
   const leakedSoftwareAnswer = /```(?:python|javascript|typescript|tsx|jsx|php|java|c\+\+|c#|html|css|sql|bash|sh|powershell)?\b|(?:function|const|let|class|import|def)\s+[A-Za-z0-9_$]+|sk-[A-Za-z0-9_-]{12,}/i.test(answer)
     && SOFTWARE_CODING_REQUEST_RE.test(`${params.userMessage}\n${answer}`);
   const deepMissingDirectStart = params.mode === 'deep'
@@ -108,8 +103,8 @@ export function guardChatAnswer(params: {
       allowed: false,
       risk: 'blocked',
       reason: 'current_data_without_source',
-      missingEntities: relevance.missingRequiredEntities,
-      relevanceScore: relevance.score,
+      missingEntities: [],
+      relevanceScore: 0,
     };
   }
 
@@ -122,6 +117,22 @@ export function guardChatAnswer(params: {
       relevanceScore: 0,
     };
   }
+
+  if (requestClassification.scope === 'smalltalk') {
+    return {
+      allowed: true,
+      risk: fastTooLong ? 'needs_caveat' : 'safe',
+      reason: fastTooLong ? 'fast_too_long' : undefined,
+      missingEntities: [],
+      relevanceScore: 1,
+    };
+  }
+
+  const relevance = scoreAnswerRelevance(params.userMessage, answer);
+  const userEntities = extractCoffeeEntities(params.userMessage);
+  const genericWizard = /\b(?:pilih salah satu|langkah pertama adalah menentukan|saya bisa bantu membuat)\b/i.test(answer)
+    && userEntities.methods.length > 0
+    && relevance.score < 0.65;
 
   if (relevance.risk === 'high' || genericWizard || deepMissingDirectStart) {
     return {

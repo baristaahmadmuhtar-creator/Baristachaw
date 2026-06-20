@@ -44,6 +44,7 @@ const CHAT_TEXT_TIMEOUT_MS = 50_000;
 const AI_FAST_TIMEOUT_MS = 40_000;
 const AI_BALANCED_TIMEOUT_MS = 50_000;
 const AI_DEEP_TIMEOUT_MS = 55_000;
+const AI_COACH_TIMEOUT_MS = 18_000;
 const AI_SEARCH_TIMEOUT_MS = 55_000;
 const AI_TEXT_ATTACHMENT_TIMEOUT_MS = 50_000;
 const AI_MULTIMODAL_TIMEOUT_MS = 55_000;
@@ -56,6 +57,7 @@ export function resolveMobileAiActionTimeoutMs(action: AiAction, explicitTimeout
   if (action === 'fast') return AI_FAST_TIMEOUT_MS;
   if (action === 'balanced') return AI_BALANCED_TIMEOUT_MS;
   if (action === 'deep_think') return AI_DEEP_TIMEOUT_MS;
+  if (action === 'ai_coach') return AI_COACH_TIMEOUT_MS;
   if (action === 'search') return AI_SEARCH_TIMEOUT_MS;
   if (action === 'analyze_text') return AI_TEXT_ATTACHMENT_TIMEOUT_MS;
   if (MULTIMODAL_AI_ACTIONS.has(action)) return AI_MULTIMODAL_TIMEOUT_MS;

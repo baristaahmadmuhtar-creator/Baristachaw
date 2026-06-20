@@ -442,7 +442,7 @@ function AiAccessGateDialog({
                           <p className="text-xs text-secondary mt-1 leading-relaxed">
                             {p === 'starter'
                               ? 'Guided AI tools, log brew, scanner history'
-                              : 'AI Brew Coach, latte art, scan analysis, Deep mode'}
+                              : 'AI Coach, latte art, scan analysis, Deep mode'}
                           </p>
                         </div>
                         <div className="text-right flex flex-col items-end shrink-0 justify-center">

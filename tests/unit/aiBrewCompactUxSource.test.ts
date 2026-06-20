@@ -38,7 +38,21 @@ test('AI Brew mobile result has a compact action bar', () => {
   assert.match(SOURCE, /data-testid="ai-brew-result-action-guide"/);
   assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-action-edit"/);
   assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-action-check-taste"/);
-  assert.match(SOURCE, /setActiveTab\('flow'\)/);
+  assert.match(SOURCE, /onClick=\{onClose\}/);
+  assert.match(SOURCE, /id \? 'Edit input' : 'Edit inputs'/);
+});
+
+test('AI Brew Coach is short, chat-first, and avoids duplicate brew CTAs', () => {
+  assert.match(SOURCE, /aiCoach: 'AI Coach'/);
+  assert.doesNotMatch(SOURCE, /aiCoach: 'AI BREW COACH'/);
+  assert.match(SOURCE, /data-testid="ai-brew-result-coach-chat"/);
+  assert.match(SOURCE, /aiCoachResponseDetailed/);
+  assert.match(SOURCE, /handleCoachSend/);
+  assert.match(SOURCE, /coachInput\.trim\(\)/);
+  assert.doesNotMatch(
+    SOURCE,
+    /data-testid="ai-brew-result-coach-panel"[\s\S]*<button type="button" onClick=\{\(\) => setActiveTab\('flow'\)\}[\s\S]*\{id \? 'Seduh' : 'Brew'\}/,
+  );
 });
 
 test('AI Brew Pro mode uses visible bean detail and controlled accordions', () => {

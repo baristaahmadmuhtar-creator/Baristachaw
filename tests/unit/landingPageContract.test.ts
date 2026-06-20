@@ -63,7 +63,8 @@ test('landing and app pricing consume the shared plan catalog', () => {
   assert.match(appBillingConfig, /@baristachaw\/shared\/planCatalog/);
   assert.match(landingApp, /PLAN_CATALOG/);
   assert.doesNotMatch(sharedCatalog, /Limited daily AI Brew/);
-  assert.match(sharedCatalog, /AI BREW COACH/);
+  assert.match(sharedCatalog, /AI Coach/);
+  assert.doesNotMatch(sharedCatalog, /AI BREW COACH/);
 });
 
 test('support flow is explicit about its public issue fallback', () => {

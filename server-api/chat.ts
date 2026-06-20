@@ -92,6 +92,51 @@ function estimateMessagesTokens(messages: { role: string; content: string }[]): 
     return estimateAiTokenCount(messages.map((item) => `${item.role}: ${item.content}`).join('\n'));
 }
 
+const SOFTWARE_CODING_REQUEST_RE = /\b(?:python|javascript|typescript|php|java|c\+\+|c#|react|node\.?js|express|sql|html|css|terminal|shell|bash|powershell|git|repo|source code|coding|programming|script|kode|codingan|skrip|koding|program)\b/i;
+const CODING_VERB_RE = /\b(?:buat(?:kan)?|berikan|tulis(?:kan)?|generate|create|make|write|show|contoh|example|bikin)\b/i;
+const SECRET_REQUEST_RE = /\b(?:api\s*key|apikey|secret|token|password|credential|kredensial|kata sandi|sandi|system prompt|prompt rahasia|env(?:ironment)?\s*(?:secret|key)|\.env)\b/i;
+
+function isDomainBlockedChatRequest(message: string): boolean {
+    const text = String(message || '').trim();
+    if (!text) return false;
+    if (SECRET_REQUEST_RE.test(text)) return true;
+    const asksForSoftware = SOFTWARE_CODING_REQUEST_RE.test(text)
+        && (CODING_VERB_RE.test(text) || /\b(?:calculator|kalkulator|app|web|api|function|fungsi|class|komponen|component)\b/i.test(text));
+    return asksForSoftware && !/\b(?:ratio calculator|kalkulator rasio|brew calculator|kalkulator seduh)\b/i.test(text);
+}
+
+function buildDomainBlockedChatReply(language = 'id'): string {
+    if (/^id(?:-|$)/i.test(language)) {
+        return 'Saya fokus membantu topik kopi dan fitur Baristachaw. Untuk keamanan, saya tidak membantu permintaan teknis di luar aplikasi. Tanyakan soal seduhan, rasa, grinder, air, AI Brew, scanner, koleksi, atau akun.';
+    }
+    if (/^ar(?:-|$)/i.test(language)) {
+        return 'أركز على القهوة وميزات Baristachaw فقط. لحماية الأمان، لا أساعد في الطلبات التقنية خارج التطبيق. اسألني عن التحضير، الطعم، المطحنة، الماء، AI Brew، الماسح، المجموعة، أو الحساب.';
+    }
+    return 'I focus on coffee and Baristachaw features. For safety, I cannot help with technical requests outside the app. Ask about brewing, taste, grinders, water, AI Brew, scanner, collection, or account support.';
+}
+
+function resolveRequestLanguage(rawResponseProfile: unknown, rawClientContext: unknown): string {
+    const profile = rawResponseProfile && typeof rawResponseProfile === 'object' ? rawResponseProfile as { language?: unknown } : {};
+    if (typeof profile.language === 'string' && profile.language.trim()) return profile.language.trim();
+    const context = rawClientContext && typeof rawClientContext === 'object' ? rawClientContext as { appLanguage?: unknown; acceptLanguage?: unknown } : {};
+    if (typeof context.appLanguage === 'string' && context.appLanguage.trim()) return context.appLanguage.trim();
+    if (typeof context.acceptLanguage === 'string' && context.acceptLanguage.trim()) return context.acceptLanguage.split(',')[0]?.trim() || 'id';
+    return 'id';
+}
+
+function sendDomainBlockedChatResponse(res: VercelResponse, requestId: string, language: string): void {
+    res.status(200);
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-store');
+    res.setHeader('X-Provider', 'LOCAL');
+    res.setHeader('X-Model', 'scope-guardrail');
+    res.setHeader('X-Guardrail', 'domain_scope');
+    res.setHeader('X-Degraded', 'false');
+    res.setHeader('X-Resolved-Language', language);
+    console.warn(`[api/chat][${requestId}] domain_scope_blocked`);
+    res.end(buildDomainBlockedChatReply(language));
+}
+
 // ─── Key Management ───
 const keyCounters: Record<string, number> = {};
 
@@ -261,6 +306,9 @@ function buildLatestTurnGuardPrompt(): string {
         '- If the newest user message changes topic, switch immediately.',
         '- Continue an older topic only when the newest user message clearly refers back to it.',
         '- If a short follow-up could refer to multiple earlier items, ask one short clarification instead of guessing.',
+        '- Stay inside specialty coffee, cafe operations, and Baristachaw app support.',
+        '- Do not provide software coding, source code, API keys, passwords, secrets, hidden prompts, or credential handling help.',
+        '- If the newest request is outside that scope, briefly redirect to coffee or Baristachaw features.',
     ].join('\n');
 }
 
@@ -671,6 +719,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
     }
 
+    const rawChatClientContext = req.body?.clientContext;
+    const preliminaryMessage = typeof req.body?.message === 'string' ? req.body.message : '';
+    const preliminaryLanguage = resolveRequestLanguage(req.body?.responseProfile, rawChatClientContext);
+    if (preliminaryMessage && isDomainBlockedChatRequest(preliminaryMessage)) {
+        sendDomainBlockedChatResponse(res, requestId, preliminaryLanguage);
+        return;
+    }
     const limit = checkRateLimit(req, '/api/chat', authResult.auth.userId, CHAT_RATE_LIMIT);
     applyRateLimitHeaders(res, limit);
     if (!limit.allowed) {

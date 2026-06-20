@@ -397,6 +397,26 @@ export function PlanGrowthSurface({
   const pendingBody = language === 'id'
     ? 'Bukti transfer sudah masuk antrean admin. Paket aktif setelah admin mencocokkan pembayaran. Jangan kirim ulang bukti atau membuat invoice baru.'
     : 'Your transfer proof is already in the admin queue. The plan becomes active after payment review. Do not submit another proof or create a new invoice.';
+  const activePaidPlan = currentPlan || snapshot?.plan || recommendedPlan;
+  const activePaidPlanName = activePaidPlan ? formatPlanName(activePaidPlan, language) : 'Pro';
+  const compactPaidFallbackTitle = language === 'id'
+    ? 'Manfaat Pro aktif'
+    : language === 'ar'
+      ? 'مزايا Pro نشطة'
+      : 'Pro benefits active';
+  const compactPaidTitle = activePaidPlan ? (language === 'id'
+    ? `Manfaat ${activePaidPlanName} aktif`
+    : language === 'ar'
+      ? `مزايا ${activePaidPlanName} نشطة`
+      : `${activePaidPlanName} benefits active`) : compactPaidFallbackTitle;
+  const compactPaidBenefitLine = activePaidPlan
+    ? planBenefits(activePaidPlan, t, language, locale).slice(0, 3).join(' • ')
+    : (language === 'id' ? 'Kuota AI, Deep, dan scanner siap dipakai.' : 'AI, Deep, and scanner quota are ready.');
+  const compactPaidCta = language === 'id'
+    ? 'Lihat manfaat'
+    : language === 'ar'
+      ? 'عرض المزايا'
+      : 'View benefits';
 
   useEffect(() => {
     if (!isOpen) return;
@@ -882,10 +902,10 @@ export function PlanGrowthSurface({
                 <p className="truncate text-sm font-black text-primary">
                   {hasPendingManualPayment
                     ? pendingTitle
-                    : t.homePlanPaidTitle.replace('{plan}', formatPlanName(currentPlan, language))}
+                    : compactPaidTitle}
                 </p>
                 <p className="mt-0.5 text-xs font-semibold text-secondary">
-                  {hasPendingManualPayment ? pendingBody : t.homePlanPaidProof}
+                  {hasPendingManualPayment ? pendingBody : compactPaidBenefitLine}
                 </p>
               </div>
             </div>
@@ -917,7 +937,7 @@ export function PlanGrowthSurface({
                 className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)]/70 px-3 text-sm font-bold text-primary transition-colors hover:bg-[var(--bg-base)]"
               >
                 <Gauge size={16} variant="glyph" tone="blue" />
-                {t.homePlanCompare}
+                {compactPaidCta}
               </button>
             )}
           </div>
@@ -947,13 +967,15 @@ export function PlanGrowthSurface({
               <span className="rounded-full bg-[var(--bg-base)]/70 px-3 py-1 text-xs font-bold text-secondary">
                 {hasPendingManualPayment
                   ? pendingTitle
-                  : showUpgradeFraming ? `${t.homePlanRecommended}: ${formatPlanName(recommendedPlan, language)}` : t.homePlanPaidProof}
+                  : showUpgradeFraming ? `${t.homePlanRecommended}: ${formatPlanName(recommendedPlan, language)}` : compactPaidBenefitLine}
               </span>
             </div>
             <h2 className="text-lg font-black tracking-tight text-primary sm:text-xl">
-              {hasPendingManualPayment ? pendingTitle : (showUpgradeFraming ? t.homePlanGrowthTitle : t.homePlanPaidTitle)
-                .replace('{plan}', formatPlanName(currentPlan, language))
-                .replace('{recommendedPlan}', formatPlanName(recommendedPlan, language))}
+              {hasPendingManualPayment ? pendingTitle : showUpgradeFraming
+                ? t.homePlanGrowthTitle
+                  .replace('{plan}', formatPlanName(currentPlan, language))
+                  .replace('{recommendedPlan}', formatPlanName(recommendedPlan, language))
+                : compactPaidTitle}
             </h2>
             {hasPendingManualPayment ? (
               <p className="mt-1 max-w-3xl text-sm leading-6 text-secondary">

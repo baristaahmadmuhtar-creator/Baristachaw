@@ -37,7 +37,7 @@ import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useRuntimeDisplayMode } from '../../hooks/useRuntimeDisplayMode';
 import { modalSpringTransition, modalExitTransition } from '../../utils/motionPresets';
 import { reportClientError } from '../../services/errorReporting';
-import { brewSequenceResponseDetailed, brewOptimizeResponseDetailed, raceChatResponse, deepThinkingResponseDetailed, fastResponseDetailed } from '../../services/gemini';
+import { aiCoachResponseDetailed, brewSequenceResponseDetailed, brewOptimizeResponseDetailed, raceChatResponse, deepThinkingResponseDetailed, fastResponseDetailed } from '../../services/gemini';
 import { createRecipeCollectionItem, saveCollectionItem, saveRecipe } from '../../services/storageService';
 import {
   applyEquipmentPreferencesToForm,
@@ -519,7 +519,7 @@ const COPY = {
     saved: 'Saved',
     favorite: 'Favorite',
     unfavorite: 'Unfavorite',
-    aiCoach: 'AI BREW COACH',
+    aiCoach: 'AI Coach',
     aiFinisher: 'Extraction Finisher',
     explain: 'Explain with AI',
     troubleshoot: 'Fix Taste',
@@ -1145,7 +1145,7 @@ const COPY = {
     saved: 'Tersimpan',
     favorite: 'Favorit',
     unfavorite: 'Hapus Favorit',
-    aiCoach: 'AI BREW COACH',
+    aiCoach: 'AI Coach',
     aiFinisher: 'Finalisasi Ekstraksi',
     explain: 'Jelaskan dengan AI',
     troubleshoot: 'Perbaiki Rasa',
@@ -6479,6 +6479,7 @@ function PlanResultDialog({
   const [realBrewStatus, setRealBrewStatus] = useState<string | null>(null);
   const [coachInput, setCoachInput] = useState('');
   const [coachLocalMessages, setCoachLocalMessages] = useState<Array<{ role: 'user' | 'assistant'; text: string }>>([]);
+  const [coachChatBusy, setCoachChatBusy] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -6512,6 +6513,7 @@ function PlanResultDialog({
     setRealBrewStatus(null);
     setCoachInput('');
     setCoachLocalMessages([]);
+    setCoachChatBusy(false);
   }, [plan?.id]);
 
   useEffect(() => {
@@ -7081,17 +7083,52 @@ function PlanResultDialog({
   const coachCurrentCupTitle = `${plan.dripper.name} - ${coachBeanLabel}`;
   const coachCurrentCupMeta = `${formatRoundedGrams(plan.doseG)} ${id ? 'kopi' : 'coffee'} - ${formatRoundedMl(plan.totalWaterMl)} ${id ? 'air' : 'water'} - ${formatRoundedTemperature(plan.waterTempC)}`;
   const coachInfoNote = id
-    ? 'Saran memakai context cup dan feedback rasa saat ini. AI online hanya berjalan saat quick action dipilih.'
-    : 'Suggestions are based on your current cup and taste feedback. Online AI only runs when a quick action is selected.';
+    ? 'AI Coach hanya memakai context cup ini. Jawaban dibuat singkat, angka resep tetap dikunci, dan request di luar kopi ditolak.'
+    : 'AI Coach only uses this cup context. Replies stay short, recipe numbers stay locked, and non-coffee requests are refused.';
   const coachConfidenceNotes = [
     predictionPrecisionLabel,
     ...plan.confidenceNotes.slice(0, 2).map((note) => localizeAiBrewDynamicText(note, language)),
     ...localizedWarnings.slice(0, 2),
   ].filter(Boolean);
   const coachIntroMessage = id
-    ? 'Saya membaca context cup saat ini dan menjaga angka recipe tetap dari planner deterministik. Tanyakan koreksi kecil, risiko rasa, atau cara seduh berikutnya.'
-    : 'I am reading the current cup context and keeping recipe numbers locked to the deterministic planner. Ask for small corrections, taste risks, or next-brew guidance.';
+    ? 'Saya fokus pada cup ini. Tanya koreksi rasa, risiko, atau langkah seduh berikutnya.'
+    : 'I am focused on this cup. Ask for taste fixes, risk checks, or next brew steps.';
+  const isCoachQuestionOutOfScope = (question: string) => (
+    /\b(?:api\s*key|apikey|secret|token|password|credential|kata sandi|sandi|system prompt|\.env)\b/i.test(question)
+    || (
+      /\b(?:python|javascript|typescript|react|node\.?js|sql|html|css|source code|coding|script|kode|codingan|skrip|program)\b/i.test(question)
+      && /\b(?:buat(?:kan)?|berikan|tulis(?:kan)?|generate|create|make|write|show|contoh|example|bikin|calculator|kalkulator)\b/i.test(question)
+    )
+  );
+  const buildCoachScopeReply = () => (
+    id
+      ? 'Saya hanya bisa bantu cup ini: rasa, gilingan, air, alat, langkah seduh, dan koreksi kecil berikutnya.'
+      : 'I can only help with this cup: taste, grind, water, brewer workflow, and the next small correction.'
+  );
+  const buildCoachChatPrompt = (question: string) => {
+    const feedbackLine = feedback
+      ? `${activeFeedbackLabel}${feedbackNoteDraft.trim() ? `: ${feedbackNoteDraft.trim().slice(0, 180)}` : ''}`
+      : (id ? 'Belum ada feedback nyata.' : 'No real brew feedback yet.');
+    return [
+      `User question: ${question.slice(0, 280)}`,
+      '',
+      'Current AI Brew context:',
+      `- Method: ${plan.dripper.name}`,
+      `- Bean: ${coachBeanLabel}`,
+      `- Target taste: ${localizedTargetProfileLabel}`,
+      `- Dose: ${formatRoundedGrams(plan.doseG)}`,
+      `- Water: ${formatRoundedMl(plan.totalWaterMl)}; ${plan.waterBrandLabel || localizedWaterStyle}`,
+      `- Temperature: ${formatRoundedTemperature(plan.waterTempC)}`,
+      `- Grind: ${localizedGrindHeadline}`,
+      `- Brew time: ${extractionTimeLabel} ${formatGuideTime(extractionSeconds)}`,
+      `- Real feedback: ${feedbackLine}`,
+      `- Confidence: ${coachConfidenceNotes.slice(0, 3).join(' | ') || predictionPrecisionLabel}`,
+      '',
+      'Reply with practical cup coaching only. Keep protected recipe numbers unchanged unless you say to test one small next-cup correction after tasting.',
+    ].join('\n');
+  };
   const buildLocalCoachReply = (question: string) => {
+    if (isCoachQuestionOutOfScope(question)) return buildCoachScopeReply();
     const feedbackLine = feedback
       ? `${activeFeedbackLabel}${feedbackNoteDraft.trim() ? `: ${feedbackNoteDraft.trim()}` : ''}`
       : (id ? 'Belum ada feedback seduh nyata; validasi cup pertama dulu sebelum koreksi besar.' : 'No real brew feedback yet; validate the first cup before making large corrections.');
@@ -7099,23 +7136,61 @@ function PlanResultDialog({
       ? activeFeedbackCorrection
       : (id ? 'Koreksi aman: ubah satu variabel kecil saja setelah mencicipi, biasanya gilingan 1 klik/angka atau suhu 1C.' : 'Safe correction: change one small variable after tasting, usually 1 grind click/number or 1C.');
     return [
-      id ? 'Jawaban lokal AI BREW COACH:' : 'Local AI BREW COACH reply:',
-      `- ${id ? 'Pertanyaan' : 'Question'}: ${question}`,
-      `- ${id ? 'Context terkunci' : 'Locked context'}: ${plan.dripper.name}, ${formatRoundedGrams(plan.doseG)}, ${formatRoundedMl(plan.totalWaterMl)}, ${formatRoundedTemperature(plan.waterTempC)}, ${localizedGrindHeadline}.`,
+      `- ${id ? 'Context' : 'Context'}: ${plan.dripper.name}, ${formatRoundedGrams(plan.doseG)}, ${formatRoundedMl(plan.totalWaterMl)}, ${formatRoundedTemperature(plan.waterTempC)}, ${localizedGrindHeadline}.`,
       `- ${id ? 'Feedback' : 'Feedback'}: ${feedbackLine}`,
-      `- ${id ? 'Koreksi' : 'Correction'}: ${correctionLine}`,
-      `- ${id ? 'Catatan' : 'Note'}: ${id ? 'Angka recipe tidak saya ubah di chat lokal ini; gunakan tombol online AI hanya bila ingin penjelasan tambahan.' : 'Recipe numbers are not changed in this local chat; use an online AI action only if you want extra explanation.'}`,
+      `- ${id ? 'Aksi kecil' : 'Small move'}: ${correctionLine}`,
     ].join('\n');
   };
-  const handleCoachSend = () => {
+  const handleCoachSend = async () => {
     const question = coachInput.trim();
-    if (!question) return;
+    if (!question || coachChatBusy) return;
     setCoachLocalMessages((current) => [
       ...current,
       { role: 'user' as const, text: question },
-      { role: 'assistant' as const, text: buildLocalCoachReply(question) },
     ].slice(-8));
     setCoachInput('');
+    if (isCoachQuestionOutOfScope(question) || aiCoachDisabled || !isAuthenticated || isOffline) {
+      setCoachLocalMessages((current) => [
+        ...current,
+        { role: 'assistant' as const, text: buildLocalCoachReply(question) },
+      ].slice(-8));
+      return;
+    }
+    setCoachChatBusy(true);
+    try {
+      const requestContext = {
+        responseProfile: {
+          language,
+          verbosity: 'short' as const,
+          format: 'bullets' as const,
+          tone: 'friendly' as const,
+        },
+        clientContext: {
+          platform: 'web' as const,
+          surface: 'tools' as const,
+          feature: 'ai_brew' as const,
+          appLanguage: language,
+        },
+      };
+      const result = await aiCoachResponseDetailed(buildCoachChatPrompt(question), requestContext, {
+        timeoutMs: AI_BREW_COACH_FAST_TIMEOUT_MS,
+      });
+      const guarded = sanitizeAiCoachMarkdown({ action: 'explain', markdown: result.text, plan, language });
+      const answer = guarded.risk === 'high' || hasAiBrewLanguageLeak(guarded.markdown, language)
+        ? buildLocalCoachReply(question)
+        : guarded.markdown;
+      setCoachLocalMessages((current) => [
+        ...current,
+        { role: 'assistant' as const, text: answer },
+      ].slice(-8));
+    } catch {
+      setCoachLocalMessages((current) => [
+        ...current,
+        { role: 'assistant' as const, text: buildLocalCoachReply(question) },
+      ].slice(-8));
+    } finally {
+      setCoachChatBusy(false);
+    }
   };
   const expectedCupItems = expectedCup ? [
     { label: copy.cupAcidity, value: expectedCup.acidity },
@@ -8831,10 +8906,10 @@ function PlanResultDialog({
                     </span>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-base font-extrabold uppercase tracking-[0.22em] text-primary">{copy.aiCoach}</h4>
+                        <h4 className="text-base font-extrabold text-primary">{copy.aiCoach}</h4>
                       </div>
                       <p className="mt-1 text-sm text-secondary">
-                        {id ? 'Panduan rasa untuk cup saat ini.' : 'Taste guidance for your current cup.'}
+                        {id ? 'Mini chat untuk cup saat ini.' : 'Mini chat for your current cup.'}
                       </p>
                     </div>
                   </div>
@@ -8916,7 +8991,10 @@ function PlanResultDialog({
                   </details>
                 )}
 
-                <div className="mt-4 space-y-3 rounded-[1.35rem] border panel-divider-subtle bg-[var(--bg-base)]/82 p-3">
+                <div
+                  className="mt-4 space-y-3 rounded-[1.35rem] border panel-divider-subtle bg-[var(--bg-base)]/82 p-3"
+                  data-testid="ai-brew-result-coach-chat"
+                >
                   <div className="flex items-start gap-2">
                     <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
                       <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
@@ -8965,7 +9043,7 @@ function PlanResultDialog({
                       </div>
                     </div>
                   ))}
-                  {aiBusy && (
+                  {(aiBusy || coachChatBusy) && (
                     <div className="flex items-start gap-2">
                       <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
                         <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
@@ -8973,7 +9051,7 @@ function PlanResultDialog({
                       <div className="mr-auto max-w-[82%] rounded-2xl rounded-tl-md border panel-divider-subtle bg-surface-alpha px-3 py-3 text-sm text-secondary" role="status" aria-live="polite" aria-atomic="true">
                         <div className="flex items-center gap-2">
                           <Loader2 size={15} className="animate-spin" />
-                          <span>{copy.aiBusy}</span>
+                          <span>{coachChatBusy ? (id ? 'AI Coach menjawab...' : 'AI Coach is replying...') : copy.aiBusy}</span>
                         </div>
                       </div>
                     </div>
@@ -9014,30 +9092,28 @@ function PlanResultDialog({
                   className="mt-3 flex min-w-0 items-center gap-2 rounded-2xl border panel-divider-subtle bg-[var(--bg-base)] px-2 py-2 focus-within:border-blue-500/50"
                   onSubmit={(event) => {
                     event.preventDefault();
-                    handleCoachSend();
+                    void handleCoachSend();
                   }}
                 >
                   <input
                     value={coachInput}
                     onChange={(event) => setCoachInput(event.target.value)}
                     className="min-h-[42px] min-w-0 flex-1 bg-transparent px-2 text-sm text-primary outline-none placeholder:text-tertiary"
-                    placeholder={id ? 'Tanya Brew Coach tentang cup ini...' : 'Ask Brew Coach about this cup...'}
+                    placeholder={id ? 'Tanya AI Coach tentang cup ini...' : 'Ask AI Coach about this cup...'}
                     maxLength={240}
+                    disabled={coachChatBusy}
                   />
-                  <button type="submit" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-[0_8px_20px_rgba(37,99,235,0.24)] hover:bg-blue-700" aria-label={id ? 'Kirim pesan Brew Coach' : 'Send Brew Coach message'}>
-                    <ArrowRight size={18} className="-rotate-90" />
+                  <button type="submit" disabled={coachChatBusy} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-[0_8px_20px_rgba(37,99,235,0.24)] hover:bg-blue-700 disabled:opacity-50" aria-label={id ? 'Kirim pesan AI Coach' : 'Send AI Coach message'}>
+                    {coachChatBusy ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} className="-rotate-90" />}
                   </button>
                 </form>
                 <div className="mt-3 flex items-start gap-3 rounded-2xl border panel-divider-subtle bg-surface-alpha px-3 py-3 text-sm text-secondary">
                   <Info size={18} className="mt-0.5 shrink-0 text-blue-500" />
                   <p className="min-w-0 leading-5">{coachInfoNote}</p>
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <button type="button" onClick={onSaveRecipe} disabled={saving} className="min-h-[54px] rounded-2xl bg-blue-600 px-4 text-sm font-extrabold text-white shadow-[0_12px_30px_rgba(37,99,235,0.22)] hover:bg-blue-700 disabled:opacity-50">
+                <div className="mt-4">
+                  <button type="button" onClick={onSaveRecipe} disabled={saving} className="min-h-[54px] w-full rounded-2xl bg-blue-600 px-4 text-sm font-extrabold text-white shadow-[0_12px_30px_rgba(37,99,235,0.22)] hover:bg-blue-700 disabled:opacity-50">
                     {saveButtonLabel}
-                  </button>
-                  <button type="button" onClick={() => setActiveTab('flow')} className="min-h-[54px] rounded-2xl border panel-divider-subtle bg-[var(--bg-base)] px-4 text-sm font-extrabold text-primary hover:bg-surface-alpha">
-                    {id ? 'Seduh' : 'Brew'}
                   </button>
                 </div>
               </div>
@@ -9175,11 +9251,11 @@ function PlanResultDialog({
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab('flow')}
+              onClick={onClose}
               className="inline-flex min-h-[44px] min-w-0 items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary"
               data-testid="ai-brew-result-action-guide"
             >
-              {id ? 'Seduh' : copy.flowTab}
+              {id ? 'Edit input' : 'Edit inputs'}
             </button>
           </div>
         </div>

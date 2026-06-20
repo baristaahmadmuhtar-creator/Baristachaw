@@ -79,7 +79,11 @@ import {
   Paperclip as AppPaperclipIcon,
 } from '../components/icons';
 import { useAiAccessGate } from '../components/billing/AiAccessGate';
-import { guardChatAnswer } from '../features/chat/antiHallucination';
+import {
+  buildChatDomainBlockReply,
+  classifyChatUserRequest,
+  guardChatAnswer,
+} from '../features/chat/antiHallucination';
 import { scoreAnswerRelevance } from '../features/chat/relevance';
 import { buildStrictRegenerationPrompt, formatDirectFallbackAnswer } from '../features/chat/responseModeContracts';
 
@@ -1110,13 +1114,6 @@ export function Chat() {
       setIsDeepThinkMode(false);
       return;
     }
-    if (!ensureAiAccess('chat_send')) {
-      return;
-    }
-    if (!isOnline) {
-      setAuthError(t.chatOfflineSendUnavailable);
-      return;
-    }
     if (trimmedInput.length > CHAT_INPUT_MAX_CHARS) {
       setInputLimitNotice(t.chatInputTooLong);
       return;
@@ -1154,6 +1151,39 @@ export function Chat() {
       nextConversationMessages,
     );
     const preferredLanguage = requestContext.conversationContext?.preferredLanguage;
+
+    const requestClassification = classifyChatUserRequest(userMessageText);
+    if (!draftToSend && !requestClassification.allowed) {
+      const blockMsg: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        sessionId: activeSessionId || undefined,
+        role: 'model',
+        text: buildChatDomainBlockReply(preferredLanguage || language),
+        timestamp: Date.now(),
+        status: 'sent',
+        responseMode: requestMode,
+        relevanceScore: 0,
+        guardRisk: 'blocked',
+        guardReason: requestClassification.reason,
+      };
+      const blockedConversationMessages = [...messages, userMsg, blockMsg];
+      setMessages((prev: ChatMessage[]) => [...prev, userMsg, blockMsg]);
+      setInput('');
+      setInputLimitNotice(null);
+      setIsComposerMenuOpen(false);
+      clearDraftAttachment();
+      await persistMessage(userMsg, preferredLanguage, [...messages, userMsg]);
+      await persistMessage(blockMsg, preferredLanguage, blockedConversationMessages);
+      return;
+    }
+
+    if (!ensureAiAccess('chat_send')) {
+      return;
+    }
+    if (!isOnline) {
+      setAuthError(t.chatOfflineSendUnavailable);
+      return;
+    }
 
     setMessages((prev: ChatMessage[]) => [...prev, userMsg]);
     setInput('');

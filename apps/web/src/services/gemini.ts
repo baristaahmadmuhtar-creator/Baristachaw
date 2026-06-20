@@ -29,6 +29,7 @@ const SERVER_AI_DEFAULT_TIMEOUT_MS = 30_000;
 const SERVER_AI_FAST_TIMEOUT_MS = 40_000;
 const SERVER_AI_BALANCED_TIMEOUT_MS = 50_000;
 const SERVER_AI_DEEP_TIMEOUT_MS = 55_000;
+const SERVER_AI_COACH_TIMEOUT_MS = 18_000;
 const SERVER_AI_SEARCH_TIMEOUT_MS = 55_000;
 const SERVER_AI_TEXT_ATTACHMENT_TIMEOUT_MS = 50_000;
 const SERVER_AI_MULTIMODAL_TIMEOUT_MS = 55_000;
@@ -42,6 +43,7 @@ export function resolveServerAiTimeoutMs(action: string, explicitTimeoutMs?: num
   if (action === "fast") return SERVER_AI_FAST_TIMEOUT_MS;
   if (action === "balanced") return SERVER_AI_BALANCED_TIMEOUT_MS;
   if (action === "deep_think") return SERVER_AI_DEEP_TIMEOUT_MS;
+  if (action === "ai_coach") return SERVER_AI_COACH_TIMEOUT_MS;
   if (action === "search") return SERVER_AI_SEARCH_TIMEOUT_MS;
   if (action === "analyze_text") return SERVER_AI_TEXT_ATTACHMENT_TIMEOUT_MS;
   if (MULTIMODAL_AI_ACTIONS.has(action)) return SERVER_AI_MULTIMODAL_TIMEOUT_MS;
@@ -1121,6 +1123,32 @@ export async function brewOptimizeResponseDetailed(
   const text = String(result.text || '').trim();
   if (!text) {
     throw new StructuredTextModeError("brew_optimize response was empty.", {
+      requestId: result.requestId,
+      provider: result.provider,
+      degraded: result.degraded,
+      details: result.details,
+    });
+  }
+  return {
+    text,
+    provider: result.provider,
+    degraded: result.degraded,
+    details: result.details,
+    requestId: result.requestId,
+  };
+}
+
+export async function aiCoachResponseDetailed(
+  prompt: string,
+  requestContext?: ChatRequestContextPayload,
+  options?: Pick<AiTextRequestOptions, 'timeoutMs'>,
+): Promise<StructuredTextDetailedPayload> {
+  const result = await serverAi("ai_coach", prompt, undefined, requestContext, {
+    timeoutMs: options?.timeoutMs,
+  });
+  const text = String(result.text || '').trim();
+  if (!text) {
+    throw new StructuredTextModeError("ai_coach response was empty.", {
       requestId: result.requestId,
       provider: result.provider,
       degraded: result.degraded,

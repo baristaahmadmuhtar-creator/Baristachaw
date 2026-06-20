@@ -77,13 +77,6 @@ export const OtpCodeInput: React.FC<OtpCodeInputProps> = ({
     const cleanPasted = rawPasted.replace(/\D/g, '');
     if (!cleanPasted) return;
 
-    if (cleanPasted.length === 8 && length === 6) {
-      if (onPasteError) {
-        onPasteError(`This code has 8 digits, but Baristachaw currently expects ${length}. Please request a new code.`);
-      }
-      return;
-    }
-
     const pastedData = cleanPasted.slice(0, length);
     const newCode = [...code];
     for (let i = 0; i < length; i++) {
@@ -100,7 +93,10 @@ export const OtpCodeInput: React.FC<OtpCodeInputProps> = ({
   };
 
   return (
-    <div className="flex gap-2 justify-center my-4" dir="ltr">
+    <div
+      className="my-4 grid w-full max-w-full grid-cols-8 justify-center gap-1 sm:gap-1.5 [grid-template-columns:repeat(8,minmax(0,clamp(1.75rem,9vw,2.75rem)))]"
+      dir="ltr"
+    >
       {code.map((value, index) => (
         <input
           key={index}
@@ -116,7 +112,7 @@ export const OtpCodeInput: React.FC<OtpCodeInputProps> = ({
           onChange={(e) => handleChange(e, index)}
           onKeyDown={(e) => handleKeyDown(e, index)}
           onPaste={handlePaste}
-          className="w-12 h-14 text-center text-xl font-semibold border rounded-md bg-white dark:bg-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 disabled:opacity-50 outline-none transition-all"
+          className="h-11 w-full min-w-0 rounded-lg border bg-white text-center text-base font-semibold outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:opacity-50 dark:bg-gray-800 dark:focus:ring-blue-900 sm:h-14 sm:text-xl"
         />
       ))}
     </div>

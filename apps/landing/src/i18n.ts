@@ -123,9 +123,9 @@ export const translations: Record<string, TranslationSet> = {
     bn: 'Upgrade bila sudah ready'
   },
   'value.card4.body': {
-    id: 'Upgrade untuk membuka AI Brew Coach, analisis visual, mode Deep, dan kuota lebih lega.',
-    en: 'Upgrade for AI Brew Coach, visual analysis, Deep mode, and higher member limits.',
-    bn: 'Buka AI Brew Coach, analisis visual, Deep mode, dan limit member yang lebih luas.'
+    id: 'Upgrade untuk membuka AI Coach, analisis visual, mode Deep, dan kuota lebih lega.',
+    en: 'Upgrade for AI Coach, visual analysis, Deep mode, and higher member limits.',
+    bn: 'Buka AI Coach, analisis visual, Deep mode, dan limit member yang lebih luas.'
   },
   'value.ctaPrimary': {
     id: 'Mulai gratis',
@@ -184,7 +184,7 @@ export const translations: Record<string, TranslationSet> = {
   'plan.pro.badge': { id: 'Barista Pro', en: 'Barista Pro', bn: 'Barista Pro' },
   'plan.pro.name': { id: 'Professional Barista', en: 'Professional Barista', bn: 'Professional Barista' },
   'plan.pro.f1': { id: 'All Barista Starter features', en: 'All Barista Starter features', bn: 'All Barista Starter features' },
-  'plan.pro.f2': { id: 'AI BREW COACH', en: 'AI BREW COACH', bn: 'AI BREW COACH' },
+  'plan.pro.f2': { id: 'AI Coach', en: 'AI Coach', bn: 'AI Coach' },
   'plan.pro.f3': { id: 'AI Scan & Coffee Analysis', en: 'AI Scan & Coffee Analysis', bn: 'AI Scan & Coffee Analysis' },
   'plan.pro.f4': { id: 'AI Latte Art Generator', en: 'AI Latte Art Generator', bn: 'AI Latte Art Generator' },
   'plan.pro.f5': { id: 'Deep mode with higher credit use', en: 'Deep mode with higher credit use', bn: 'Deep mode with higher credit use' },

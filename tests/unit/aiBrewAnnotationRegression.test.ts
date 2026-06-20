@@ -25,8 +25,6 @@ test('AI Brew removes annotated filler copy and keeps professional tools subtitl
     'Siap mulai seduh',
     'AI opsional. Pakai hanya untuk penjelasan atau koreksi rasa singkat.',
     'metode otomatis dari profil alat.',
-    'Edit input',
-    'Edit inputs',
   ];
 
   for (const copy of removedCopy) {
@@ -37,6 +35,7 @@ test('AI Brew removes annotated filler copy and keeps professional tools subtitl
     constants,
     /toolsSubtitle:\s*'Rancang resep, ikuti panduan seduh, gunakan timer, dan evaluasi hasil dalam satu ruang kerja\.'/,
   );
+  assert.match(panel, /id \? 'Edit input' : 'Edit inputs'/);
 });
 
 test('AI Brew annotated result cleanup and preset guard are wired', async () => {

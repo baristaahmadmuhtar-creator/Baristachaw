@@ -1,9 +1,9 @@
 import { ArrowRight, Loader2, X, Check, UploadCloud, AlertCircle, ArrowLeft, MessageCircle, Instagram } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { OTP_CODE_LENGTH } from '@baristachaw/shared/domain';
 import type { Language } from '../i18n';
 import { t } from '../i18n';
 import { APP_ORIGIN, type BillingDuration, formatCurrencyByLang, getCurrencyForLanguage, PRICING } from '../config';
-import { OTP_CODE_LENGTH } from '../planCatalog';
 
 type RegisterModalProps = {
   language: Language;
@@ -701,7 +701,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                       <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.4' }}>
                         {p === 'starter'
                           ? 'Panduan AI, log brew lanjutan, riwayat scan' 
-                          : 'AI Brew Coach, latte art, analisis scan, mode Deep'}
+                          : 'AI Coach, latte art, analisis scan, mode Deep'}
                       </span>
                     </div>
                     <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '2px', marginLeft: '12px' }}>

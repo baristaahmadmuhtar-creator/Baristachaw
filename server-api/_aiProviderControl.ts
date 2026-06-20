@@ -206,6 +206,7 @@ const DEFAULT_COST_RATES_USD_PER_1M: Record<string, { input: number; output: num
   'DEEPSEEK:deepseek-chat': { input: 0.27, output: 1.1 },
   'MISTRAL:mistral-large-latest': { input: 2, output: 6 },
   'OPENAI:gpt-4o-mini': { input: 0.15, output: 0.6 },
+  'OPENAI:gpt-5.4-mini': { input: 0.75, output: 4.5 },
   'OPENROUTER:meta-llama/llama-3.2-3b-instruct:free': { input: 0, output: 0 },
 };
 

@@ -1,4 +1,4 @@
-import type { Region } from './planCatalog';
+import type { Region } from '@baristachaw/shared/planCatalog';
 import type { Language } from './i18n';
 
 type LocaleSignal = {

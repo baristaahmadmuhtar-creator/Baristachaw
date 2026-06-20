@@ -2292,12 +2292,12 @@ test('authenticated users can request ai coaching manually from the result panel
 
   await page.getByTestId('ai-brew-result-tab-coach').click();
   const coachPanel = page.getByTestId('ai-brew-result-coach-panel');
-  await expect(coachPanel).toContainText('AI BREW COACH');
+  await expect(coachPanel).toContainText('AI Coach');
   await expect(coachPanel).toContainText(/Current cup|Cup saat ini/i);
   await expect(coachPanel.getByTestId('ai-brew-ai-assist-explain')).toContainText(/Explain cup|Jelaskan cup/i);
   await expect(coachPanel.getByTestId('ai-brew-ai-assist-troubleshoot')).toContainText(/Fix taste|Perbaiki rasa/i);
   await expect(coachPanel.getByTestId('ai-brew-ai-assist-adjust')).toContainText(/Adjust next cup|Atur cup berikutnya/i);
-  await expect(coachPanel.getByPlaceholder(/Ask Brew Coach about this cup|Tanya Brew Coach tentang cup ini/i)).toBeVisible();
+  await expect(coachPanel.getByPlaceholder(/Ask AI Coach about this cup|Tanya AI Coach tentang cup ini/i)).toBeVisible();
   await page.getByTestId('ai-brew-ai-assist-explain').click();
   await expect(page.getByText(/Mocked Response/i).first()).toBeVisible();
   await expect(page.getByText(/qa_e2e mocked response for UI flow validation/i).first()).toBeVisible();
@@ -2321,7 +2321,7 @@ test('ai brew coach guard blocks unsafe AI claims and keeps deterministic values
   });
 
   await page.getByTestId('ai-brew-result-tab-coach').click();
-  await expect(page.getByText(/Coach follows the deterministic planner|Coach mengikuti planner deterministic/i)).toBeVisible();
+  await expect(page.getByText(/recipe numbers stay locked|angka resep tetap dikunci/i)).toBeVisible();
   await page.getByTestId('ai-brew-ai-assist-explain').click();
   const coachPanel = page.locator('.chat-markdown').last();
   await expect(coachPanel).toBeVisible({ timeout: 30_000 });

@@ -138,7 +138,9 @@
         "brace-expansion": "2.0.3",
         "shell-quote": "1.8.4",
         "@grpc/grpc-js": "1.14.4",
-        "undici": "6.24.0",
+        "form-data": "4.0.6",
+        "undici": "6.27.0",
+        "ws": "8.21.0",
         "postcss": "8.5.10"
     },
     "devDependencies": {
@@ -158,6 +160,6 @@
         "pngjs": "^3.4.0",
         "tsx": "^4.21.0",
         "typescript": "~5.8.2",
-        "vite": "6.4.2"
+        "vite": "6.4.3"
     }
 }

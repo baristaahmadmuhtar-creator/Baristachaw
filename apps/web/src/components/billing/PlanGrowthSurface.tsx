@@ -46,6 +46,20 @@ function readPendingManualPaymentMarker(): boolean {
   }
 }
 
+function writePendingManualPaymentMarker(paymentRequestId: string, planCode: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY, JSON.stringify({
+      paymentRequestId,
+      planCode,
+      status: 'pending_admin_review',
+      updatedAt: Date.now(),
+    }));
+  } catch {
+    // Non-critical; server account status is the cross-device source of truth.
+  }
+}
+
 function catalogFeatures(planCode: 'free' | 'starter' | 'pro' | 'team'): string[] {
   return PLAN_CATALOG.find((plan) => plan.code === planCode)?.features || [];
 }
@@ -473,7 +487,14 @@ export function PlanGrowthSurface({
 
   if (!snapshot || !recommendedPlan || !currentPlan) return null;
 
+  const busyRef = useRef(false);
+
   const handleChoosePlan = async (planCode: string) => {
+    if (busyRef.current) return;
+    if (snapshot?.billing.status === 'past_due') {
+      setActionError(language === 'id' ? 'Selesaikan tagihan Anda yang tertunda sebelum melakukan upgrade plan.' : 'Please resolve your past due invoice before upgrading your plan.');
+      return;
+    }
     setActionError('');
     if (hasPendingManualPayment) {
       setCheckoutStep('success');
@@ -490,6 +511,7 @@ export function PlanGrowthSurface({
     }
 
     setBusyPlanCode(planCode);
+    busyRef.current = true;
     try {
       const currency = getCurrencyForRegion(region);
       const response = await startBillingCheckout(planCode as Exclude<PlanCode, 'free'>, {
@@ -504,26 +526,31 @@ export function PlanGrowthSurface({
       if (response.mode === 'manual_invoice') {
         setManualInvoice(response);
         setCheckoutStep('checkout');
+        busyRef.current = false;
         return;
       }
       setActionError(t.homePlanCheckoutFailed || 'Checkout failed');
+      busyRef.current = false;
     } catch (error) {
       setActionError(t.homePlanCheckoutFailed || 'Checkout failed');
+      busyRef.current = false;
     } finally {
       setBusyPlanCode(null);
     }
   };
 
   const handleProofSubmit = async () => {
-    if (!manualInvoice || !manualProofFile) return;
+    if (!manualInvoice || !manualProofFile || busyRef.current) return;
     setActionError('');
     setManualProofStatus('submitting');
+    busyRef.current = true;
     try {
       const proofResponse = await submitManualPaymentProof({
         requestId: manualInvoice.paymentRequestId,
         mimeType: manualProofFile.type,
         sizeBytes: manualProofFile.size,
       });
+      writePendingManualPaymentMarker(manualInvoice.paymentRequestId, manualInvoice.planCode);
       if (proofResponse.uploadUrl) {
         const uploadResponse = await fetch(proofResponse.uploadUrl, {
           method: 'PUT',
@@ -537,6 +564,7 @@ export function PlanGrowthSurface({
           setManualProofDelivery('manual_support');
           setManualProofStatus('submitted');
           setCheckoutStep('success');
+          busyRef.current = false;
           return;
         }
       } else {
@@ -546,12 +574,14 @@ export function PlanGrowthSurface({
       setManualProofDelivery(proofResponse.deliveryMode);
       setManualProofStatus('submitted');
       setCheckoutStep('success');
+      busyRef.current = false;
     } catch (error) {
       const message = error instanceof BillingApiError
         ? `${error.message}${error.details ? `: ${error.details}` : ''}`
         : (t.homePlanCheckoutFailed || 'Checkout failed');
       setActionError(message);
       setManualProofStatus('idle');
+      busyRef.current = false;
     }
   };
 

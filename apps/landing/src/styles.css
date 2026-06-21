@@ -101,7 +101,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .button-primary { color: white; background: var(--blue); box-shadow: 0 16px 40px rgba(23,105,255,.3); }
 .button-primary:hover { background: #0d5bea; }
 .button-light { color: var(--ink); background: white; box-shadow: 0 16px 40px rgba(0,0,0,.16); }
-.button-ghost { color: white; border-color: rgba(255,255,255,.32); background: rgba(255,255,255,.08); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.button-ghost { color: #ffffff !important; border-color: rgba(255,255,255,.32); background: rgba(255,255,255,.08); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); transform: translateZ(0); }
 .button-outline { border-color: var(--line); background: white; color: var(--ink); }
 
 .hero { position: relative; min-height: 100svh; height: max(780px, 100svh); color: white; background: #07152f; isolation: isolate; }

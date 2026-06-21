@@ -204,6 +204,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
 
+      if (statusSnapshot.billing.status === 'past_due') {
+        return res.status(403).json({
+          ok: false,
+          requestId,
+          error: 'Tagihan Anda sebelumnya tertunda.',
+          errorCode: 'past_due',
+          details: 'Harap selesaikan pembayaran tagihan yang tertunda sebelum memesan paket baru.',
+        });
+      }
+
       if (hasActivePaidPlan) {
         currentPlanCode = statusSnapshot.user.planCode;
         const currentTier = PLAN_TIERS[currentPlanCode] ?? 0;

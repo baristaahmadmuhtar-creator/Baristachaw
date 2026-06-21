@@ -261,6 +261,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setError('');
     setLoading(true);
 
@@ -334,6 +335,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
   const handleVerifySignupOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setError('');
     const normalizedOtp = otpCode.replace(/\D/g, '');
     if (normalizedOtp.length !== OTP_CODE_LENGTH) {
@@ -379,6 +381,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   };
 
   const handleResendSignupOtp = async () => {
+    if (loading) return;
     setError('');
     setLoading(true);
     try {
@@ -402,6 +405,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
   const handleStartForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setError('');
     setLoading(true);
     try {
@@ -425,6 +429,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
   const handleVerifyAndResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setError('');
     const normalizedOtp = otpCode.replace(/\D/g, '');
     if (normalizedOtp.length !== OTP_CODE_LENGTH) {
@@ -488,6 +493,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   };
 
   const handleGoogleSignIn = async () => {
+    if (loading) return;
     setLoading(true);
     setError('');
     try {
@@ -561,7 +567,10 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     }
   };
 
+  const busyCheckoutRef = useRef(false);
+
   const handleCheckoutSubmit = async () => {
+    if (busyCheckoutRef.current) return;
     if (proofUploadReady && !turnstileVerified) {
       setError('Silakan centang verifikasi bahwa Anda adalah manusia.');
       return;
@@ -584,6 +593,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
       return;
     }
 
+    busyCheckoutRef.current = true;
     setPaymentLoading(true);
     setError('');
 
@@ -633,6 +643,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat memproses pembayaran.');
     } finally {
+      busyCheckoutRef.current = false;
       setPaymentLoading(false);
     }
   };

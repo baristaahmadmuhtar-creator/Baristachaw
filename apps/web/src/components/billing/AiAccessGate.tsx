@@ -969,13 +969,23 @@ export function useAiAccessGate(feature: AiPaidFeature): {
     }
   }, [refreshAccountStatus]);
 
+  const upgradeBusyRef = useRef(false);
+
   const handleUpgrade = useCallback(async (planCode: 'starter' | 'pro', duration: BillingDuration, promoCode?: string) => {
+    if (upgradeBusyRef.current) return;
+    if (snapshot?.billing.status === 'past_due') {
+      setCheckoutError(t.aiGatePastDueError || 'Harap selesaikan tagihan tertunda Anda terlebih dahulu sebelum mengaktifkan plan baru.');
+      return;
+    }
+
     setCheckoutBusy(true);
     setCheckoutError('');
+    upgradeBusyRef.current = true;
     try {
       const response = await startBillingCheckout(planCode, { duration, currency, promoCode });
       if (response.mode === 'redirect' && response.url) {
         window.location.assign(response.url);
+        // Do not reset busy ref so user can't click again while redirecting
         return;
       }
       if (response.mode === 'manual_invoice') {
@@ -984,24 +994,30 @@ export function useAiAccessGate(feature: AiPaidFeature): {
         setManualProofStatus('idle');
         setManualProofDelivery(null);
         setStep('checkout');
+        upgradeBusyRef.current = false;
         return;
       }
       setCheckoutError(t.aiGateCheckoutUnavailable);
+      upgradeBusyRef.current = false;
     } catch (error) {
       if (error instanceof BillingApiError && error.errorCode === 'billing_not_configured') {
         setCheckoutError(t.aiGateCheckoutUnavailable);
       } else {
         setCheckoutError(t.aiGateCheckoutFailed);
       }
+      upgradeBusyRef.current = false;
     } finally {
       setCheckoutBusy(false);
     }
-  }, [currency, t.aiGateCheckoutFailed, t.aiGateCheckoutUnavailable]);
+  }, [currency, snapshot, t.aiGateCheckoutFailed, t.aiGateCheckoutUnavailable, t.aiGatePastDueError]);
+
+  const busyProofRef = useRef(false);
 
   const handleManualProofSubmit = useCallback(async () => {
-    if (!manualInvoice || !manualProofFile) return;
+    if (!manualInvoice || !manualProofFile || busyProofRef.current) return;
     setCheckoutError('');
     setManualProofStatus('submitting');
+    busyProofRef.current = true;
     try {
       const proofResponse = await submitManualPaymentProof({
         requestId: manualInvoice.paymentRequestId,
@@ -1022,6 +1038,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
           setManualProofDelivery('manual_support');
           setManualProofStatus('submitted');
           void refreshAccountStatus();
+          busyProofRef.current = false;
           return;
         }
       } else {
@@ -1031,11 +1048,13 @@ export function useAiAccessGate(feature: AiPaidFeature): {
       setManualProofDelivery(proofResponse.deliveryMode);
       setManualProofStatus('submitted');
       void refreshAccountStatus();
+      busyProofRef.current = false;
     } catch (error) {
       setCheckoutError(error instanceof BillingApiError
         ? `${error.message}${error.details ? `: ${error.details}` : ''}`
         : t.aiGateCheckoutFailed);
       setManualProofStatus('idle');
+      busyProofRef.current = false;
       throw error; // Re-throw to prevent step progression in UI if submit failed
     }
   }, [manualInvoice, manualProofFile, refreshAccountStatus, selectedPlan, t.aiGateCheckoutFailed]);

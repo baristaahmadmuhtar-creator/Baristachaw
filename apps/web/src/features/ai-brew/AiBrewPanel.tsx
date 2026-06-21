@@ -6452,6 +6452,17 @@ function PlanResultDialog({
   const [flowRunning, setFlowRunning] = useState(false);
   const [flowStartedAtMs, setFlowStartedAtMs] = useState<number | null>(null);
   const resultScrollRef = useRef<HTMLDivElement | null>(null);
+  const coachChatScrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = coachChatScrollRef.current;
+    if (el) {
+      requestAnimationFrame(() => {
+        el.scrollTop = el.scrollHeight;
+      });
+    }
+  }, [coachLocalMessages, aiResponse, aiBusy, coachChatBusy, aiCoachReason, aiError]);
+
   const flowGuideRef = useRef<HTMLDivElement | null>(null);
   const resultTabRefs = useRef<Record<ResultTab, HTMLButtonElement | null>>({
     plan: null,
@@ -9001,35 +9012,38 @@ function PlanResultDialog({
                 )}
 
                 <div
-                  className="mt-4 space-y-3 rounded-[1.35rem] border panel-divider-subtle bg-[var(--bg-base)]/82 p-3"
+                  ref={coachChatScrollRef}
+                  className="mt-4 h-[340px] overflow-y-auto overscroll-contain rounded-[1.35rem] border panel-divider-subtle bg-[var(--bg-base)]/40 p-4 space-y-4 scroll-smooth"
                   data-testid="ai-brew-result-coach-chat"
                 >
-                  <div className="flex min-w-0 items-start gap-2">
-                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
-                      <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
+                  <div className="flex min-w-0 items-start gap-2.5">
+                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-blue-500/20 bg-blue-600/10 p-[1.5px] shadow-[0_2px_8px_rgba(37,99,235,0.12)]">
+                      <img src="/icons/icon-192.png" alt="AI Coach" className="h-6 w-6 rounded-full object-cover" />
                     </span>
-                    <div className="mr-auto min-w-0 max-w-[82%] rounded-2xl rounded-tl-md bg-surface-alpha px-3 py-2 text-sm leading-6 text-primary [overflow-wrap:anywhere]">
-                      {coachIntroMessage}
+                    <div className="mr-auto min-w-0 max-w-[85%] rounded-2xl rounded-tl-md border border-blue-500/[0.08] bg-surface px-3.5 py-2.5 shadow-sm">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-blue-500 mb-1">AI Coach</p>
+                      <p className="text-sm leading-relaxed text-primary [overflow-wrap:anywhere]">{coachIntroMessage}</p>
                     </div>
                   </div>
                   {aiCoachReason && !aiBusy && (
-                    <div className="flex min-w-0 items-start gap-2">
-                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
-                        <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
+                    <div className="flex min-w-0 items-start gap-2.5">
+                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-blue-500/20 bg-blue-600/10 p-[1.5px] shadow-[0_2px_8px_rgba(37,99,235,0.12)]">
+                        <img src="/icons/icon-192.png" alt="AI Coach" className="h-6 w-6 rounded-full object-cover" />
                       </span>
-                      <div className="mr-auto min-w-0 max-w-[82%] rounded-2xl rounded-tl-md border border-blue-500/15 bg-blue-500/10 px-3 py-2 text-sm text-blue-700 [overflow-wrap:anywhere] dark:text-blue-300" role="status" aria-live="polite" aria-atomic="true">
-                        {aiCoachReason}
+                      <div className="mr-auto min-w-0 max-w-[85%] rounded-2xl rounded-tl-md border border-blue-500/15 bg-blue-500/10 px-3.5 py-2.5 shadow-sm" role="status" aria-live="polite" aria-atomic="true">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1">Thinking</p>
+                        <p className="text-sm leading-relaxed text-blue-700 dark:text-blue-300 [overflow-wrap:anywhere]">{aiCoachReason}</p>
                       </div>
                     </div>
                   )}
                   {aiResponse && !aiBusy && (
-                    <div className="flex min-w-0 items-start gap-2">
-                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
-                        <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
+                    <div className="flex min-w-0 items-start gap-2.5">
+                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-blue-500/20 bg-blue-600/10 p-[1.5px] shadow-[0_2px_8px_rgba(37,99,235,0.12)]">
+                        <img src="/icons/icon-192.png" alt="AI Coach" className="h-6 w-6 rounded-full object-cover" />
                       </span>
-                      <div className="mr-auto min-w-0 max-w-[82%] overflow-hidden rounded-2xl rounded-tl-md border panel-divider-subtle bg-surface-alpha px-3 py-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{aiResponse.title}</p>
-                        <div className="chat-markdown prose prose-sm mt-2 max-w-none break-words text-primary prose-headings:text-primary prose-strong:text-primary [overflow-wrap:anywhere]">
+                      <div className="mr-auto min-w-0 max-w-[85%] overflow-hidden rounded-2xl rounded-tl-md border panel-divider-subtle bg-surface px-3.5 py-3 shadow-sm">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-blue-500 mb-1">AI Coach • {aiResponse.title}</p>
+                        <div className="chat-markdown prose prose-sm max-w-none break-words text-primary prose-headings:text-primary prose-strong:text-primary [overflow-wrap:anywhere]">
                           <Suspense fallback={<p className="text-sm text-secondary" role="status" aria-live="polite" aria-busy="true">{copy.aiBusy}</p>}>
                             <Markdown>{aiResponse.markdown}</Markdown>
                           </Suspense>
@@ -9040,47 +9054,61 @@ function PlanResultDialog({
                   {coachLocalMessages.map((message, index) => (
                     <div
                       key={`${message.role}-${index}-${message.text.slice(0, 16)}`}
-                      className={`flex min-w-0 items-start gap-2 ${message.role === 'user' ? 'justify-end' : ''}`}
+                      className={`flex min-w-0 items-start gap-2.5 ${message.role === 'user' ? 'justify-end' : ''}`}
                     >
                       {message.role === 'assistant' && (
-                        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
-                          <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
+                        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-blue-500/20 bg-blue-600/10 p-[1.5px] shadow-[0_2px_8px_rgba(37,99,235,0.12)]">
+                          <img src="/icons/icon-192.png" alt="AI Coach" className="h-6 w-6 rounded-full object-cover" />
                         </span>
                       )}
-                      <div className={`${message.role === 'user' ? 'ml-auto max-w-[82%] rounded-tr-md bg-blue-600 text-white' : 'mr-auto max-w-[82%] rounded-tl-md bg-surface-alpha text-primary'} min-w-0 whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm leading-6 [overflow-wrap:anywhere]`}>
+                      <div className={`${
+                        message.role === 'user' 
+                          ? 'ml-auto max-w-[85%] rounded-tr-md bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.12)] px-3.5 py-2.5' 
+                          : 'mr-auto max-w-[85%] rounded-tl-md border border-blue-500/[0.08] bg-surface px-3.5 py-2.5 shadow-sm text-primary'
+                      } min-w-0 whitespace-pre-wrap rounded-2xl text-sm leading-relaxed [overflow-wrap:anywhere]`}>
+                        {message.role === 'assistant' && (
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-blue-500 mb-1">AI Coach</p>
+                        )}
                         {message.text}
                       </div>
                     </div>
                   ))}
                   {(aiBusy || coachChatBusy) && (
-                    <div className="flex min-w-0 items-start gap-2">
-                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
-                        <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
+                    <div className="flex min-w-0 items-start gap-2.5">
+                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-blue-500/20 bg-blue-600/10 p-[1.5px] shadow-[0_2px_8px_rgba(37,99,235,0.12)]">
+                        <img src="/icons/icon-192.png" alt="AI Coach" className="h-6 w-6 rounded-full object-cover" />
                       </span>
-                      <div className="mr-auto min-w-0 max-w-[82%] rounded-2xl rounded-tl-md border panel-divider-subtle bg-surface-alpha px-3 py-3 text-sm text-secondary [overflow-wrap:anywhere]" role="status" aria-live="polite" aria-atomic="true">
-                        <div className="flex items-center gap-2">
-                          <Loader2 size={15} className="animate-spin" />
-                          <span>{coachChatBusy ? (id ? 'AI Coach menjawab...' : 'AI Coach is replying...') : copy.aiBusy}</span>
+                      <div className="mr-auto min-w-0 max-w-[85%] rounded-2xl rounded-tl-md border panel-divider-subtle bg-surface px-3.5 py-2.5 shadow-sm text-secondary [overflow-wrap:anywhere]" role="status" aria-live="polite" aria-atomic="true">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-blue-500 mb-1">AI Coach</p>
+                        <div className="flex items-center gap-2 text-sm text-secondary">
+                          <div className="flex items-center gap-1 py-1">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                          </div>
+                          <span>{coachChatBusy ? (id ? 'Menulis pesan...' : 'Replying...') : copy.aiBusy}</span>
                         </div>
                       </div>
                     </div>
                   )}
                   {aiError && !aiBusy && (
-                    <div className="flex min-w-0 items-start gap-2">
-                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
-                        <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
+                    <div className="flex min-w-0 items-start gap-2.5">
+                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-blue-500/20 bg-blue-600/10 p-[1.5px] shadow-[0_2px_8px_rgba(37,99,235,0.12)]">
+                        <img src="/icons/icon-192.png" alt="AI Coach" className="h-6 w-6 rounded-full object-cover" />
                       </span>
-                      <div className="mr-auto min-w-0 max-w-[82%] rounded-2xl rounded-tl-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 [overflow-wrap:anywhere] dark:text-amber-300" role="alert">
+                      <div className="mr-auto min-w-0 max-w-[85%] rounded-2xl rounded-tl-md border border-amber-500/20 bg-amber-500/10 px-3.5 py-2.5 text-sm text-amber-700 [overflow-wrap:anywhere] dark:text-amber-300 shadow-sm" role="alert">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500 mb-1">Error</p>
                         {aiError}
                       </div>
                     </div>
                   )}
                   {!aiResponse && !aiError && !aiBusy && !aiCoachReason && coachLocalMessages.length === 0 && (
-                    <div className="flex min-w-0 items-start gap-2">
-                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-blue-500/25 bg-blue-600/10">
-                        <img src="/icons/icon-192.png" alt="" className="h-6 w-6 rounded-full object-cover" />
+                    <div className="flex min-w-0 items-start gap-2.5">
+                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-blue-500/20 bg-blue-600/10 p-[1.5px] shadow-[0_2px_8px_rgba(37,99,235,0.12)]">
+                        <img src="/icons/icon-192.png" alt="AI Coach" className="h-6 w-6 rounded-full object-cover" />
                       </span>
-                      <div className="mr-auto min-w-0 max-w-[82%] rounded-2xl rounded-tl-md bg-surface-alpha px-3 py-2 text-sm text-secondary [overflow-wrap:anywhere]">
+                      <div className="mr-auto min-w-0 max-w-[85%] rounded-2xl rounded-tl-md border border-blue-500/[0.08] bg-surface px-3.5 py-2.5 text-sm text-secondary shadow-sm [overflow-wrap:anywhere]">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-blue-500 mb-1">AI Coach</p>
                         {copy.coachEmpty}
                       </div>
                     </div>
@@ -9091,14 +9119,14 @@ function PlanResultDialog({
                   <button
                     type="button"
                     onClick={onOpenAuth}
-                    className="mt-3 rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(37,99,235,0.2)]"
+                    className="mt-3 w-full rounded-2xl bg-blue-600 px-4 py-3.5 text-sm font-extrabold text-white shadow-[0_8px_24px_rgba(37,99,235,0.22)] hover:bg-blue-700 transition-colors"
                   >
                     {copy.aiSignIn}
                   </button>
                 )}
 
                 <form
-                  className="mt-3 flex min-w-0 items-center gap-2 rounded-2xl border panel-divider-subtle bg-[var(--bg-base)] px-2 py-2 focus-within:border-blue-500/50"
+                  className="mt-3 flex min-w-0 items-center gap-2 rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/60 backdrop-blur-sm p-1.5 focus-within:border-blue-500/50 focus-within:ring-1 focus-within:ring-blue-500/50 shadow-inner"
                   onSubmit={(event) => {
                     event.preventDefault();
                     void handleCoachSend();
@@ -9107,12 +9135,12 @@ function PlanResultDialog({
                   <input
                     value={coachInput}
                     onChange={(event) => setCoachInput(event.target.value)}
-                    className="min-h-[42px] min-w-0 flex-1 bg-transparent px-2 text-sm text-primary outline-none placeholder:text-tertiary"
+                    className="min-h-[44px] min-w-0 flex-1 bg-transparent px-3 text-sm text-primary outline-none placeholder:text-tertiary"
                     placeholder={id ? 'Tanya AI Coach tentang cup ini...' : 'Ask AI Coach about this cup...'}
                     maxLength={240}
                     disabled={coachChatBusy}
                   />
-                  <button type="submit" disabled={coachChatBusy} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-[0_8px_20px_rgba(37,99,235,0.24)] hover:bg-blue-700 disabled:opacity-50" aria-label={id ? 'Kirim pesan AI Coach' : 'Send AI Coach message'}>
+                  <button type="submit" disabled={coachChatBusy} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.24)] hover:brightness-110 active:scale-95 transition-all disabled:opacity-50" aria-label={id ? 'Kirim pesan AI Coach' : 'Send AI Coach message'}>
                     {coachChatBusy ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} className="-rotate-90" />}
                   </button>
                 </form>

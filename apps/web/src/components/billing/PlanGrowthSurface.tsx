@@ -811,7 +811,7 @@ export function PlanGrowthSurface({
               ) : null}
 
               {checkoutStep === 'choose' ? (
-                hasActivePaidPlan ? (
+                hasActivePaidPlan && upgradeOptions[0] === currentPlanCode ? (
                   <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-blue-500/25 bg-blue-500/10 p-5 text-center text-primary shadow-sm">
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-blue-500 bg-blue-500/10 text-blue-600">
                       <ShieldCheck size={28} />
@@ -830,23 +830,46 @@ export function PlanGrowthSurface({
                   </div>
                 ) : (
                 <>
+              {hasActivePaidPlan && upgradeOptions[0] !== currentPlanCode && (
+                <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-blue-500/25 bg-blue-500/10 p-4 text-center text-primary shadow-sm">
+                  <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400">Upgrade Plan Anda</h3>
+                  <p className="mt-1 text-sm text-secondary">
+                    Anda sedang berlangganan {planDisplayName(currentPlanCode)}. Harga di bawah adalah <strong className="text-primary">selisih</strong> yang perlu dibayar untuk upgrade.
+                  </p>
+                </div>
+              )}
               <div className={`grid gap-6 ${gridColsClass}`}>
-                {upgradeOptions.map((code) => (
-                  <PlanCard
-                    key={code}
-                    planCode={code}
-                    duration={duration}
-                    region={region}
-                    currentPlanCode={currentPlanCode}
-                    recommended={code === recommendedPlan.code && code !== currentPlanCode}
-                    busy={busyPlanCode === code}
-                    dynamicPrice={code === 'starter' || code === 'pro' ? getPrice(code, duration, getCurrencyForRegion(region)) : undefined}
-                    onChoose={handleChoosePlan}
-                    t={t}
-                    language={language}
-                    locale={locale}
-                  />
-                ))}
+                {upgradeOptions.map((code) => {
+                  let finalDynamicPrice = undefined;
+                  if (code === 'starter' || code === 'pro') {
+                    const basePrice = getPrice(code, duration, getCurrencyForRegion(region));
+                    if (hasActivePaidPlan && upgradeOptions[0] !== currentPlanCode) {
+                      const currentPrice = currentPlanCode === 'starter' || currentPlanCode === 'pro' 
+                        ? getPrice(currentPlanCode as 'starter'|'pro', duration, getCurrencyForRegion(region))
+                        : 0;
+                      finalDynamicPrice = Math.max(0, basePrice - currentPrice);
+                    } else {
+                      finalDynamicPrice = basePrice;
+                    }
+                  }
+                  
+                  return (
+                    <PlanCard
+                      key={code}
+                      planCode={code}
+                      duration={duration}
+                      region={region}
+                      currentPlanCode={currentPlanCode}
+                      recommended={code === recommendedPlan.code && code !== currentPlanCode}
+                      busy={busyPlanCode === code}
+                      dynamicPrice={finalDynamicPrice}
+                      onChoose={handleChoosePlan}
+                      t={t}
+                      language={language}
+                      locale={locale}
+                    />
+                  );
+                })}
               </div>
 
               {/* Promo Code Section */}

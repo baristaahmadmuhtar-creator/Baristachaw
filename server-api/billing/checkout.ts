@@ -15,6 +15,7 @@ import {
 } from './manualPayments.js';
 import { buildAccountStatus } from '../account/status.js';
 import { getSupabaseAdminConfig, supabaseAdminRest } from '../_supabaseAdmin.js';
+import { PLAN_TIERS } from '../../packages/shared/src/planCatalog.js';
 
 type PlanCode = 'starter' | 'pro' | 'team' | 'enterprise';
 
@@ -179,20 +180,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const url = checkoutUrlForPlan(planCode, duration, promoCode);
   if (!url) {
     const statusSnapshot = await buildAccountStatus(requestId, authResult.auth, 'web').catch(() => null);
+    let isUpgrade = false;
+    let currentPlanCode = 'free';
+
     if (statusSnapshot) {
       const hasActivePaidPlan = statusSnapshot.user.planCode !== 'free' && statusSnapshot.billing.status === 'active';
-      const hasPendingManual = statusSnapshot.manualInvoice?.status === 'pending_proof' || statusSnapshot.manualInvoice?.status === 'under_review';
+      const hasPendingManual = (statusSnapshot as any).manualInvoice?.status === 'pending_proof' || (statusSnapshot as any).manualInvoice?.status === 'under_review';
       
-      if (hasActivePaidPlan) {
-        return res.status(403).json({
-          ok: false,
-          requestId,
-          error: 'Anda sudah berlangganan paket berbayar.',
-          errorCode: 'active_plan_exists',
-          details: 'Silakan tunggu hingga siklus tagihan Anda berakhir jika ingin mengganti, memperbarui, atau beralih ke paket lain.',
-        });
-      }
-
       if (hasPendingManual) {
         return res.status(403).json({
           ok: false,
@@ -201,6 +195,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           errorCode: 'pending_invoice_exists',
           details: 'Harap selesaikan pembayaran dan unggah bukti transfer, atau tunggu review admin selesai sebelum memesan paket baru.',
         });
+      }
+
+      if (hasActivePaidPlan) {
+        currentPlanCode = statusSnapshot.user.planCode;
+        const currentTier = PLAN_TIERS[currentPlanCode] ?? 0;
+        const requestedTier = PLAN_TIERS[planCode] ?? 0;
+
+        if (requestedTier <= currentTier) {
+          return res.status(403).json({
+            ok: false,
+            requestId,
+            error: 'Anda sudah berlangganan paket ini atau yang lebih tinggi.',
+            errorCode: 'active_plan_exists',
+            details: 'Silakan tunggu hingga siklus tagihan Anda berakhir jika ingin mengganti, memperbarui, atau beralih ke paket lain.',
+          });
+        } else {
+          isUpgrade = true;
+        }
       }
     }
 
@@ -215,23 +227,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       let priceData: any = null;
       let priceError = false;
       try {
-        const prices = await supabaseAdminRest<any[]>(config, 'rest/v1/plan_prices', {
-          query: {
-            plan_code: `eq.${planCode}`,
-            duration: `eq.${duration}`,
-            currency: `eq.${currency}`,
-            is_active: 'is.true',
-            select: '*',
-            limit: '1',
-          },
-        });
+        const prices = await supabaseAdminRest<any[]>(config, `plan_prices?plan_code=eq.${planCode}&duration=eq.${duration}&currency=eq.${currency}&is_active=is.true&select=*&limit=1`);
         priceData = prices?.[0];
       } catch (e) {
         priceError = true;
       }
         
       if (priceData && !priceError) {
-        overrideAmount = Number(priceData.discount_price ?? priceData.original_price);
+        const amt = Number(priceData.discount_price ?? priceData.original_price);
+        if (!isNaN(amt)) {
+          overrideAmount = amt;
+        }
       }
 
       // Apply promo code if provided
@@ -239,14 +245,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         let promoData: any = null;
         let promoError = false;
         try {
-          const promos = await supabaseAdminRest<any[]>(config, 'rest/v1/promo_codes', {
-            query: {
-              code: `eq.${promoCode}`,
-              is_active: 'is.true',
-              select: '*',
-              limit: '1',
-            },
-          });
+          const promos = await supabaseAdminRest<any[]>(config, `promo_codes?code=eq.${promoCode}&is_active=is.true&select=*&limit=1`);
           promoData = promos?.[0];
         } catch (e) {
           promoError = true;
@@ -279,6 +278,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
              error: 'Promo code not found or inactive.',
              errorCode: 'invalid_promo_code',
            });
+        }
+      }
+      if (isUpgrade && overrideAmount !== undefined) {
+        try {
+          const currentPrices = await supabaseAdminRest<any[]>(config, `plan_prices?plan_code=eq.${currentPlanCode}&duration=eq.${duration}&currency=eq.${currency}&is_active=is.true&select=*&limit=1`);
+          const currentPriceData = currentPrices?.[0];
+          if (currentPriceData) {
+            const currentPlanPrice = Number(currentPriceData.discount_price ?? currentPriceData.original_price);
+            if (!isNaN(currentPlanPrice)) {
+              overrideAmount = Math.max(0, overrideAmount - currentPlanPrice);
+            }
+          }
+        } catch (e) {
+          console.error('Failed to fetch current plan price for upgrade calculation:', e);
         }
       }
     }

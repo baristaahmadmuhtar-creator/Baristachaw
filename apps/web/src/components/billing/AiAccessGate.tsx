@@ -146,7 +146,8 @@ function AiAccessGateDialog({
   refreshBusy: boolean;
   onClose: () => void;
   onSignin: () => void;
-  onUpgrade: (planCode: 'starter' | 'pro', duration: BillingDuration) => void;
+  onUpgrade: (planCode: 'starter' | 'pro', duration: BillingDuration, promoCode?: string) => void;
+  effectivePlanCode: PlanCode | null;
   onRefresh: () => void | Promise<void>;
   onManualProofFileChange: (file: File | null) => void;
   onManualProofSubmit: () => void | Promise<void>;
@@ -171,14 +172,48 @@ function AiAccessGateDialog({
   const [copiedBankIndex, setCopiedBankIndex] = useState<number | null>(null);
   const [turnstileVerified, setTurnstileVerified] = useState(false);
 
+  const [promoCode, setPromoCode] = useState('');
+  const [promoApplied, setPromoApplied] = useState(false);
+
+  const PLAN_TIERS: Record<string, number> = {
+    free: 0,
+    starter: 1,
+    pro: 2,
+    team: 3,
+    enterprise: 4,
+  };
+
+  const currentTier = useMemo(() => {
+    return PLAN_TIERS[effectivePlanCode as string] ?? 0;
+  }, [effectivePlanCode]);
+
+  const availablePlans = useMemo(() => {
+    const options = (['starter', 'pro'] as const).filter(p => (PLAN_TIERS[p] ?? 0) > currentTier);
+    return options.length > 0 ? options : (['starter', 'pro'] as const);
+  }, [currentTier]);
+
+  useEffect(() => {
+    if (!availablePlans.includes(selectedPlan as any)) {
+      setSelectedPlan(availablePlans[0] as 'starter' | 'pro');
+    }
+  }, [availablePlans, selectedPlan, setSelectedPlan]);
+
   const planDisplayNames = {
     starter: 'Barista Starter',
     pro: 'Barista Pro',
   };
 
   const getPriceDisplay = (p = selectedPlan, d = selectedDuration): string => {
-    const price = getPrice(p, d, currency);
-    return formatCurrency(price, currency);
+    const basePrice = getPrice(p, d, currency);
+    let finalPrice = basePrice;
+    
+    if (effectivePlanCode && effectivePlanCode !== 'free' && availablePlans[0] !== effectivePlanCode) {
+      const currentPrice = effectivePlanCode === 'starter' || effectivePlanCode === 'pro'
+        ? getPrice(effectivePlanCode as 'starter'|'pro', d, currency)
+        : 0;
+      finalPrice = Math.max(0, basePrice - currentPrice);
+    }
+    return formatCurrency(finalPrice, currency);
   };
 
   const durationLabels: Record<BillingDuration, string> = {
@@ -427,7 +462,7 @@ function AiAccessGateDialog({
 
                 {/* Plan Selection list */}
                 <div className="mt-4 grid gap-3">
-                  {(['starter', 'pro'] as const).map((p) => {
+                  {availablePlans.map((p) => {
                     const isSelected = selectedPlan === p;
                     return (
                       <button
@@ -460,6 +495,33 @@ function AiAccessGateDialog({
                   })}
                 </div>
 
+                <div className="mt-4 flex flex-col items-center gap-3 border-t border-glass pt-4">
+                  <p className="text-xs font-semibold text-secondary">Have a promo code?</p>
+                  <div className="flex w-full overflow-hidden rounded-xl border border-glass transition-colors focus-within:border-blue-500">
+                    <input
+                      type="text"
+                      placeholder="Enter code"
+                      value={promoCode}
+                      onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoApplied(false); }}
+                      className="flex-1 bg-surface-alpha px-3 py-2 text-sm font-bold tracking-widest text-primary outline-none"
+                      maxLength={20}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { if (promoCode.trim().length >= 4) setPromoApplied(true); }}
+                      disabled={promoCode.trim().length < 4}
+                      className="bg-blue-600 px-4 text-xs font-extrabold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700"
+                    >
+                      {promoApplied ? 'Applied' : 'Apply'}
+                    </button>
+                  </div>
+                  {promoApplied && (
+                    <p className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      <Check size={12} /> Code accepted
+                    </p>
+                  )}
+                </div>
+
                 {checkoutError ? (
                   <div className="mt-4 rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
                     {checkoutError}
@@ -469,7 +531,7 @@ function AiAccessGateDialog({
                 <div className="mt-5 grid gap-2 sm:grid-cols-[1fr_auto]">
                   <button
                     type="button"
-                    onClick={() => onUpgrade(selectedPlan, selectedDuration)}
+                    onClick={() => onUpgrade(selectedPlan, selectedDuration, promoApplied && promoCode.trim().length >= 4 ? promoCode.toUpperCase() : undefined)}
                     disabled={checkoutBusy}
                     className="motion-pressable inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-600 disabled:opacity-60"
                   >
@@ -906,11 +968,11 @@ export function useAiAccessGate(feature: AiPaidFeature): {
     }
   }, [refreshAccountStatus]);
 
-  const handleUpgrade = useCallback(async (planCode: 'starter' | 'pro', duration: BillingDuration) => {
+  const handleUpgrade = useCallback(async (planCode: 'starter' | 'pro', duration: BillingDuration, promoCode?: string) => {
     setCheckoutBusy(true);
     setCheckoutError('');
     try {
-      const response = await startBillingCheckout(planCode, { duration, currency });
+      const response = await startBillingCheckout(planCode, { duration, currency, promoCode });
       if (response.mode === 'redirect' && response.url) {
         window.location.assign(response.url);
         return;
@@ -1017,6 +1079,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
             setSelectedPlan={setSelectedPlan}
             selectedDuration={selectedDuration}
             setSelectedDuration={setSelectedDuration}
+            effectivePlanCode={effectivePlanCode}
           />
         </AnimatePresence>,
         document.body,

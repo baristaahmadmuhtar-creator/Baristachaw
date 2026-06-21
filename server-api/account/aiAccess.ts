@@ -3,7 +3,7 @@ import { getSupabaseAdminConfig, supabaseAdminRest } from '../_supabaseAdmin.js'
 import type { FeatureSurface } from '../admin/_featureFlags.js';
 import { buildAccountStatus, type AccountStatusResponse, type PlanCode } from './status.js';
 
-export type PaidAiFeature = 'chat' | 'scanner' | 'search' | 'brew';
+export type PaidAiFeature = 'chat' | 'scanner' | 'search' | 'brew' | 'coach' | 'latte_art';
 export type PaidAiQuotaKind = 'ai' | 'deep' | 'scanner';
 
 export type PaidAiQuotaReservation = {
@@ -87,7 +87,23 @@ function nextPlanAfterCurrent(snapshot: AccountStatusResponse): MinimumPaidPlan 
 }
 
 function quotaKindForFeature(feature: PaidAiFeature): PaidAiQuotaKind {
-  return feature === 'scanner' ? 'scanner' : 'ai';
+  return feature === 'scanner' || feature === 'latte_art' ? 'scanner' : 'ai';
+}
+
+function featureLabelForAccess(feature: PaidAiFeature, action?: string): string {
+  if (action === 'ai_coach' || feature === 'coach') return 'AI Coach';
+  if (action === 'edit_latte_art' || feature === 'latte_art') return 'AI Latte Art';
+  if (feature === 'search') return 'AI Search';
+  if (feature === 'scanner') return 'AI Scan';
+  if (feature === 'brew') return 'AI Brew';
+  return 'AI Chat';
+}
+
+function minimumPlanForAccess(feature: PaidAiFeature, action: string | undefined, quotaKind: PaidAiQuotaKind): PlanCode {
+  if (action === 'ai_coach' || action === 'edit_latte_art' || feature === 'coach' || feature === 'latte_art' || quotaKind === 'deep') {
+    return 'pro';
+  }
+  return 'starter';
 }
 
 function planMeetsMinimum(planCode: PlanCode, minimumPlanCode: PlanCode): boolean {
@@ -271,21 +287,20 @@ export async function requirePaidAiAccess(params: {
     };
   }
 
+  const quotaKind = params.quotaKind || quotaKindForFeature(params.feature);
+  const minimumPlanCode = minimumPlanForAccess(params.feature, params.action, quotaKind);
+  const featureLabel = featureLabelForAccess(params.feature, params.action);
+
   if (!isPaidPlan(snapshot.user.planCode)) {
-    const featureLabel = params.feature === 'search'
-      ? 'AI Search'
-      : params.feature === 'scanner'
-        ? 'AI Scan'
-        : params.feature === 'brew'
-          ? 'AI Brew'
-          : 'AI Chat';
     return {
       ok: false,
       statusCode: 402,
-      error: `${featureLabel} requires the minimum paid plan.`,
+      error: minimumPlanCode === 'pro'
+        ? `${featureLabel} requires Barista Pro or higher.`
+        : `${featureLabel} requires the minimum paid plan.`,
       errorCode: 'paid_plan_required',
       retryable: false,
-      minimumPlan: minimumPaidPlan(snapshot),
+      minimumPlan: minimumPlanByCode(snapshot, minimumPlanCode),
     };
   }
 
@@ -296,18 +311,18 @@ export async function requirePaidAiAccess(params: {
       error: snapshot.billing.message || 'Billing needs attention before paid AI can continue.',
       errorCode: 'billing_attention_required',
       retryable: false,
-      minimumPlan: minimumPaidPlan(snapshot),
+      minimumPlan: minimumPlanByCode(snapshot, minimumPlanCode),
     };
   }
 
-  if ((params.quotaKind || quotaKindForFeature(params.feature)) === 'deep' && !planMeetsMinimum(snapshot.user.planCode, 'pro')) {
+  if (!planMeetsMinimum(snapshot.user.planCode, minimumPlanCode)) {
     return {
       ok: false,
       statusCode: 402,
-      error: 'Deep Think requires Barista Pro or higher.',
+      error: `${featureLabel} requires Barista Pro or higher.`,
       errorCode: 'paid_plan_required',
       retryable: false,
-      minimumPlan: minimumPlanByCode(snapshot, 'pro'),
+      minimumPlan: minimumPlanByCode(snapshot, minimumPlanCode),
     };
   }
 
@@ -319,11 +334,10 @@ export async function requirePaidAiAccess(params: {
         error: 'Plan quota enforcement requires Supabase account status. Please retry after account sync finishes.',
         errorCode: 'account_status_unavailable',
         retryable: true,
-        minimumPlan: minimumPaidPlan(snapshot),
+        minimumPlan: minimumPlanByCode(snapshot, minimumPlanCode),
       };
     }
 
-    const quotaKind = params.quotaKind || quotaKindForFeature(params.feature);
     try {
       const quota = await reserveDailyQuota({
         requestId: params.requestId,
@@ -372,7 +386,7 @@ export async function requirePaidAiAccess(params: {
           error: 'Plan quota status is unavailable. Please retry after account sync finishes.',
           errorCode: 'account_status_unavailable',
           retryable: true,
-          minimumPlan: minimumPaidPlan(snapshot),
+          minimumPlan: minimumPlanByCode(snapshot, minimumPlanCode),
         };
       }
 

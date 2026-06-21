@@ -94,7 +94,7 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
       'Grind Size Calculator',
       'Coffee Ratio Calculator',
       'Recipe Collection & Notes',
-      'Basic scanner preview',
+      'Basic Scanner Preview',
     ],
     aiAccess: 'basic',
     expensiveModes: ['fast'],
@@ -113,9 +113,9 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
     priceMonthlyUsd: PLAN_PRICING.starter.monthly.discounted.usd,
     features: [
       'Everything in Free',
-      'AI recipe guidance',
-      'Advanced brew logging',
-      'Scanner history',
+      'Limited AI Chat',
+      'Basic Brew + Advanced Brew',
+      'Lite & Pro Brew Guide',
       'Priority manual payment review',
     ],
     aiAccess: 'guided',
@@ -137,7 +137,7 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
       'Everything in Barista Starter',
       'AI Coach',
       'AI Scan & Coffee Analysis',
-      'AI Latte Art Generator',
+      'AI Latte Art',
       'Deep mode with higher credit use',
     ],
     aiAccess: 'coach',
@@ -220,7 +220,7 @@ export function formatCurrency(amount: number, currency: CurrencyCode): string {
     case 'bnd': return `B$ ${amount.toFixed(2)}`;
     case 'myr': return `RM ${amount.toFixed(2)}`;
     case 'sgd': return `S$ ${amount.toFixed(2)}`;
-    case 'eur': return `\u20ac${amount.toFixed(2)}`;
+    case 'eur': return `€${amount.toFixed(2)}`;
     case 'aud': return `A$ ${amount.toFixed(2)}`;
     case 'usd': return `$${amount.toFixed(2)}`;
     default: return `$${amount.toFixed(2)}`;

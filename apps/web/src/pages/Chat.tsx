@@ -525,6 +525,21 @@ export function Chat() {
       label: t.chatQuickBuildRecipe || 'Build recipe',
       prompt: t.chatQuickBuildRecipePrompt || 'Create a practical V60 recipe for 15 g coffee with a balanced cup, including grind, water temperature, ratio, pours, timing, and why each step matters.',
     },
+    {
+      id: 'iced_coffee',
+      label: t.chatQuickIcedCoffee || 'Iced Coffee',
+      prompt: t.chatQuickIcedCoffeePrompt || 'Formulate a professional iced coffee or flash-brew recipe. Include the exact coffee-to-water ratio, ice ratio, grind size, brewing method, and tips to preserve aroma and prevent dilution.',
+    },
+    {
+      id: 'matcha_recipe',
+      label: t.chatQuickMatcha || 'Matcha Recipe',
+      prompt: t.chatQuickMatchaPrompt || 'Create a premium cafe-style matcha latte recipe. Detail the matcha powder grade, water temperature for whisking, ratio of matcha to liquid, sweetening options, and techniques for a smooth, clump-free texture.',
+    },
+    {
+      id: 'menu_costing',
+      label: t.chatQuickCosting || 'Menu Costing',
+      prompt: t.chatQuickCostingPrompt || 'Act as a cafe consultant and help me calculate the Cost of Goods Sold (COGS) for a menu item. Guide me on how to measure material costs, packaging, wastage, and determine a profitable selling price.',
+    },
   ]), [t]);
 
   const applyQuickPrompt = useCallback((prompt: string) => {

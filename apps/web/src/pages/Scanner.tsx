@@ -336,7 +336,7 @@ export function Scanner() {
     clearAuthError,
     openAuthModal,
   } = useAuthModal();
-  const { ensureAiAccess, aiAccessGateModal, openGate } = useAiAccessGate("scanner");
+  const { ensureAiAccess, aiAccessGateModal, openGate, effectivePlanCode } = useAiAccessGate("scanner");
   const { isOffline } = useNetworkStatus();
   const { isIosStandalone } = useRuntimeDisplayMode();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -646,6 +646,10 @@ export function Scanner() {
   };
 
   const setModeAndReset = (nextMode: ScannerMode) => {
+    if (nextMode === "latte" && effectivePlanCode === "starter") {
+      openGate("upgrade", "scanner-latte");
+      return;
+    }
     setMode(nextMode);
     clearMediaState();
   };

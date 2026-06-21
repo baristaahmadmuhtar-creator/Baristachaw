@@ -6414,6 +6414,8 @@ function PlanResultDialog({
   onSaveFeedback,
   onRunAiCoach,
   onOpenAuth,
+  effectivePlanCode,
+  onOpenGate,
 }: {
   open: boolean;
   language: string;
@@ -6444,6 +6446,8 @@ function PlanResultDialog({
   onSaveFeedback: (rating: BrewTasteFeedbackRating) => void;
   onRunAiCoach: (mode: AiCoachMode) => void;
   onOpenAuth: () => void;
+  effectivePlanCode?: string | null;
+  onOpenGate?: (gate: any, feature: string) => void;
 }) {
   const descriptionId = useId();
   const [activeTab, setActiveTab] = useState<ResultTab>('plan');
@@ -6682,7 +6686,14 @@ function PlanResultDialog({
         : key === 'ArrowLeft' || key === 'ArrowUp'
           ? (currentIndex - 1 + orderedTabs.length) % orderedTabs.length
           : (currentIndex + 1) % orderedTabs.length;
-    focusResultTab(orderedTabs[nextIndex]);
+    const nextTab = orderedTabs[nextIndex];
+    if (nextTab) {
+      if (nextTab === 'coach' && effectivePlanCode === 'starter') {
+        onOpenGate?.('upgrade', 'ai-coach');
+        return;
+      }
+      focusResultTab(nextTab);
+    }
   };
   const resultSwitchValveStates = Array.from(new Set(workflowGuideSteps
     .map((step) => step.valveState)
@@ -7681,7 +7692,13 @@ function PlanResultDialog({
                       aria-selected={activeTab === tab.id}
                       aria-controls={`ai-brew-result-panel-${tab.id}`}
                       tabIndex={activeTab === tab.id ? 0 : -1}
-                      onClick={() => setActiveTab(tab.id)}
+                      onClick={() => {
+                        if (tab.id === 'coach' && effectivePlanCode === 'starter') {
+                          onOpenGate?.('upgrade', 'ai-coach');
+                        } else {
+                          setActiveTab(tab.id);
+                        }
+                      }}
                       onKeyDown={(event) => handleResultTabKeyDown(event, tab.id)}
                       className={`min-w-0 overflow-hidden rounded-[0.8rem] px-2 py-2 text-xs font-medium leading-4 transition-all sm:px-2.5 sm:text-sm ${
                         activeTab === tab.id
@@ -9889,7 +9906,7 @@ function normalizeBeanProfileFieldMerge(next: AiBrewFormState, key: keyof AiBrew
 export function AiBrewPanel() {
   const { language, t } = useGlobalState();
   const { isAuthenticated, openAuthModal } = useAuthModal();
-  const { ensureAiAccess, hasPaidAiAccess, aiAccessGateModal } = useAiAccessGate('brew');
+  const { ensureAiAccess, hasPaidAiAccess, aiAccessGateModal, effectivePlanCode, openGate } = useAiAccessGate('brew');
   const { hideNav, showNav } = useNavbar();
   const { isOffline } = useNetworkStatus();
   const { isPwa } = useRuntimeDisplayMode();
@@ -15237,6 +15254,8 @@ export function AiBrewPanel() {
         showProvenance={showProvenance}
         isAuthenticated={isAuthenticated}
         isOffline={isOffline}
+        effectivePlanCode={effectivePlanCode}
+        onOpenGate={openGate}
         onClose={() => {
           clearSaveFeedback();
           setResultOpen(false);

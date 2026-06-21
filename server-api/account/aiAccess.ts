@@ -311,6 +311,28 @@ export async function requirePaidAiAccess(params: {
     };
   }
 
+  if (params.action === 'ai_coach' && !planMeetsMinimum(snapshot.user.planCode, 'pro')) {
+    return {
+      ok: false,
+      statusCode: 402,
+      error: 'AI Coach requires Barista Pro or higher.',
+      errorCode: 'paid_plan_required',
+      retryable: false,
+      minimumPlan: minimumPlanByCode(snapshot, 'pro'),
+    };
+  }
+
+  if (params.action === 'edit_latte_art' && !planMeetsMinimum(snapshot.user.planCode, 'pro')) {
+    return {
+      ok: false,
+      statusCode: 402,
+      error: 'AI Latte Art requires Barista Pro or higher.',
+      errorCode: 'paid_plan_required',
+      retryable: false,
+      minimumPlan: minimumPlanByCode(snapshot, 'pro'),
+    };
+  }
+
   if (isEnvFlagEnabled('PLAN_ENFORCEMENT_ENABLED', false)) {
     if (snapshot.dataMode !== 'supabase') {
       return {

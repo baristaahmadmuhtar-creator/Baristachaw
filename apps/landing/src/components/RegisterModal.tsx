@@ -700,8 +700,8 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                       </strong>
                       <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.4' }}>
                         {p === 'starter'
-                          ? 'Panduan AI, log brew lanjutan, riwayat scan' 
-                          : 'AI Coach, latte art, analisis scan, mode Deep'}
+                          ? 'Limited AI Chat, basic & advanced brew, Lite & Pro guide brew' 
+                          : 'Seluruh fitur premium terbuka, AI Coach, AI Latte Art'}
                       </span>
                     </div>
                     <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '2px', marginLeft: '12px' }}>

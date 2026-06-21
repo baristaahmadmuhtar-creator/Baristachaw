@@ -87,7 +87,12 @@ function nextPlanAfterCurrent(snapshot: AccountStatusResponse): MinimumPaidPlan 
 }
 
 function quotaKindForFeature(feature: PaidAiFeature): PaidAiQuotaKind {
-  return feature === 'scanner' ? 'scanner' : 'ai';
+  if (feature === 'scanner') return 'read_label';
+  if (feature === 'chat') return 'chat_normal';
+  if (feature === 'search') return 'ai_search';
+  if (feature === 'brew') return 'ai_brew';
+  if (feature === 'coach') return 'ai_coach';
+  return feature;
 }
 
 function planMeetsMinimum(planCode: PlanCode, minimumPlanCode: PlanCode): boolean {

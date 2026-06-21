@@ -30,6 +30,7 @@ export type PlanCatalogEntry = {
   aiLimit: number;
   scannerLimit: number;
   deepLimit: number;
+  featureLimits?: Record<string, { daily: number; monthly: number }>;
 };
 
 export type ManualPaymentStatus =
@@ -103,6 +104,13 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
     aiLimit: 12,
     scannerLimit: 2,
     deepLimit: 0,
+    featureLimits: {
+      "chat_normal": { daily: 12, monthly: 360 },
+      "coffee_analysis": { daily: 2, monthly: 60 },
+      "read_label": { daily: 2, monthly: 60 },
+      "ai_search": { daily: 2, monthly: 60 },
+      "ai_brew": { daily: 2, monthly: 60 }
+    },
   },
   {
     code: 'starter',
@@ -125,6 +133,14 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
     aiLimit: 60,
     scannerLimit: 12,
     deepLimit: 0,
+    featureLimits: {
+      "chat_normal": { daily: 60, monthly: 1800 },
+      "chat_fast": { daily: 60, monthly: 1800 },
+      "coffee_analysis": { daily: 12, monthly: 360 },
+      "read_label": { daily: 12, monthly: 360 },
+      "ai_search": { daily: 12, monthly: 360 },
+      "ai_brew": { daily: 12, monthly: 360 }
+    },
   },
   {
     code: 'pro',
@@ -147,6 +163,17 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
     aiLimit: 180,
     scannerLimit: 60,
     deepLimit: 40,
+    featureLimits: {
+      "chat_normal": { daily: 180, monthly: 5400 },
+      "chat_fast": { daily: 180, monthly: 5400 },
+      "deep_think": { daily: 40, monthly: 1200 },
+      "coffee_analysis": { daily: 60, monthly: 1800 },
+      "read_label": { daily: 60, monthly: 1800 },
+      "ai_latte_art": { daily: 60, monthly: 1800 },
+      "ai_coach": { daily: 60, monthly: 1800 },
+      "ai_search": { daily: 60, monthly: 1800 },
+      "ai_brew": { daily: 60, monthly: 1800 }
+    },
   },
   {
     code: 'team',
@@ -168,6 +195,17 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
     aiLimit: 800,
     scannerLimit: 240,
     deepLimit: 160,
+    featureLimits: {
+      "chat_normal": { daily: 800, monthly: 24000 },
+      "chat_fast": { daily: 800, monthly: 24000 },
+      "deep_think": { daily: 160, monthly: 4800 },
+      "coffee_analysis": { daily: 240, monthly: 7200 },
+      "read_label": { daily: 240, monthly: 7200 },
+      "ai_latte_art": { daily: 240, monthly: 7200 },
+      "ai_coach": { daily: 240, monthly: 7200 },
+      "ai_search": { daily: 240, monthly: 7200 },
+      "ai_brew": { daily: 240, monthly: 7200 }
+    },
   },
   {
     code: 'enterprise',
@@ -188,6 +226,17 @@ export const PLAN_CATALOG: PlanCatalogEntry[] = [
     aiLimit: 5000,
     scannerLimit: 1000,
     deepLimit: 1000,
+    featureLimits: {
+      "chat_normal": { daily: 5000, monthly: 150000 },
+      "chat_fast": { daily: 5000, monthly: 150000 },
+      "deep_think": { daily: 1000, monthly: 30000 },
+      "coffee_analysis": { daily: 1000, monthly: 30000 },
+      "read_label": { daily: 1000, monthly: 30000 },
+      "ai_latte_art": { daily: 1000, monthly: 30000 },
+      "ai_coach": { daily: 1000, monthly: 30000 },
+      "ai_search": { daily: 1000, monthly: 30000 },
+      "ai_brew": { daily: 1000, monthly: 30000 }
+    },
   },
 ] as const;
 

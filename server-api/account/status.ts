@@ -378,7 +378,7 @@ function billingFromRow(row: any, user: AccountUser): AccountBilling {
     && rawStatus !== 'refunded';
   const status = unverifiedPaidPlan ? 'trialing' : rawStatus;
   const paymentActionRequired = Boolean(row?.payment_action_required ?? metadata.paymentActionRequired ?? (status === 'past_due')) || unverifiedPaidPlan;
-  const manualReviewPending = provider === 'manual' && paymentActionRequired && status === 'trialing';
+  const manualReviewPending = provider === 'manual' && paymentActionRequired;
   const manageUrl = readPublicUrl('BILLING_PORTAL_URL', 'STRIPE_CUSTOMER_PORTAL_URL', 'REVENUECAT_CUSTOMER_CENTER_URL');
   const checkoutUrl = readPublicUrl(`BILLING_CHECKOUT_URL_${user.planCode.toUpperCase()}`, `STRIPE_CHECKOUT_URL_${user.planCode.toUpperCase()}`, `REVENUECAT_CHECKOUT_URL_${user.planCode.toUpperCase()}`, 'BILLING_CHECKOUT_URL');
   const paymentAction: AccountBilling['paymentAction'] = paymentActionRequired || status === 'past_due'
@@ -452,16 +452,18 @@ function userWithEntitlement(row: any, user: AccountUser): AccountUser {
 
 function billingFromEntitlement(row: any, appUserRow: any, user: AccountUser): AccountBilling {
   const metadata = row?.metadata && typeof row.metadata === 'object' ? row.metadata : {};
+  const isPendingManualUpgrade = appUserRow?.payment_action_required === true && appUserRow?.billing_provider === 'manual';
+  
   return billingFromRow({
     ...(appUserRow || {}),
     billing_status: row?.status,
-    billing_provider: row?.source,
+    billing_provider: isPendingManualUpgrade ? 'manual' : row?.source,
     billing_market: metadata.market || appUserRow?.billing_market,
     billing_customer_id: row?.external_customer_id,
     billing_subscription_id: row?.external_subscription_id,
     billing_period_start: row?.current_period_start,
     billing_period_end: row?.current_period_end,
-    payment_action_required: row?.status === 'past_due' || appUserRow?.payment_action_required,
+    payment_action_required: isPendingManualUpgrade || row?.status === 'past_due' || appUserRow?.payment_action_required,
     metadata: {
       ...(appUserRow?.metadata && typeof appUserRow.metadata === 'object' ? appUserRow.metadata : {}),
       billingStatus: row?.status,

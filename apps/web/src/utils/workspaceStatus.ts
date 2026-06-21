@@ -39,6 +39,11 @@ function daysUntil(value: string | undefined): number | null {
 }
 
 function isManualReview(snapshot: AccountStatusSnapshot): boolean {
+  const message = snapshot.billing.message || '';
+  if (/waiting for admin|verification|review/i.test(message)) {
+    return true;
+  }
+
   if (
     snapshot.user.planCode !== 'free'
     && snapshot.billing.status === 'active'
@@ -47,11 +52,9 @@ function isManualReview(snapshot: AccountStatusSnapshot): boolean {
     return false;
   }
 
-  const message = snapshot.billing.message || '';
   return snapshot.billing.paymentActionRequired
     && (snapshot.billing.provider === 'manual'
-      || snapshot.billing.status === 'trialing'
-      || /waiting for admin|verification|review/i.test(message));
+      || snapshot.billing.status === 'trialing');
 }
 
 export function resolveWorkspaceStatus(
@@ -135,7 +138,7 @@ export function resolveWorkspaceStatus(
   if (isManualReview(snapshot)) {
     return {
       kind: 'pending_review',
-      severity: 'warning',
+      severity: 'info',
       title: id ? 'Pembayaran menunggu review' : 'Payment pending review',
       label: id ? 'Menunggu admin' : 'Admin review',
       badge: id ? 'Bukti diterima' : 'Proof received',

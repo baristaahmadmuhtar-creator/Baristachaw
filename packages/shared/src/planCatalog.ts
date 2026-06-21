@@ -33,6 +33,29 @@ export type PlanCatalogEntry = {
   featureLimits?: Record<string, { daily: number; monthly: number }>;
 };
 
+export type DynamicPlanPrice = {
+  id: string;
+  planCode: string;
+  duration: BillingDuration | 'lifetime';
+  currency: string;
+  originalPrice: number;
+  discountPrice: number | null;
+  isActive: boolean;
+};
+
+export type PromoCode = {
+  code: string;
+  discountType: 'percentage' | 'fixed_amount';
+  discountValue: number;
+  validFrom: string | null;
+  validUntil: string | null;
+  maxUses: number | null;
+  currentUses: number;
+  validPlanCodes: string[];
+  validDurations: string[];
+  isActive: boolean;
+};
+
 export type ManualPaymentStatus =
   | 'pending_review'
   | 'receipt_received'

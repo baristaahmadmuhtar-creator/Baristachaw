@@ -9,6 +9,7 @@ import { getCurrencyForRegion, PLAN_CATALOG, PRICING, formatCurrency } from '../
 import { useGlobalState } from '../../context/GlobalState';
 import { modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
 import { CustomSelect } from '../ui/CustomSelect';
+import { useDynamicPricing } from '../../hooks/useDynamicPricing';
 
 type PlanGrowthSurfaceProps = {
   snapshot: AccountStatusSnapshot | null;
@@ -168,6 +169,7 @@ function PlanCard({
   currentPlanCode,
   recommended,
   busy,
+  dynamicPrice,
   onChoose,
   t,
   language,
@@ -179,6 +181,7 @@ function PlanCard({
   currentPlanCode: PlanCode;
   recommended: boolean;
   busy: boolean;
+  dynamicPrice?: number;
   onChoose: (planCode: string) => void;
   t: Record<string, string>;
   language: string;
@@ -205,7 +208,7 @@ function PlanCard({
           name: t.homePlanNameStarter || 'Starter',
           badge: t.homePlanBadgeStarter || 'Popular',
           priceOriginal: formatCurrency(tier.original[currency], currency),
-          priceMain: formatCurrency(tier.discounted[currency], currency),
+          priceMain: formatCurrency(dynamicPrice ?? tier.discounted[currency], currency),
           discountPct: tier.discountPct,
           saveLabel: tier.saveLabel[language as keyof typeof tier.saveLabel] || tier.saveLabel.en,
           features: catalogFeatures('starter'),
@@ -219,7 +222,7 @@ function PlanCard({
           name: t.homePlanNamePro || 'Barista Pro',
           badge: t.homePlanBadgePro || 'Premium',
           priceOriginal: formatCurrency(tier.original[currency], currency),
-          priceMain: formatCurrency(tier.discounted[currency], currency),
+          priceMain: formatCurrency(dynamicPrice ?? tier.discounted[currency], currency),
           discountPct: tier.discountPct,
           saveLabel: tier.saveLabel[language as keyof typeof tier.saveLabel] || tier.saveLabel.en,
           features: catalogFeatures('pro'),
@@ -380,6 +383,7 @@ export function PlanGrowthSurface({
   const isRtl = direction === 'rtl';
 
   const { region, setRegion } = useGlobalState();
+  const { getPrice } = useDynamicPricing();
 
   const displayPlans = useMemo(() => snapshot ? resolveDisplayPlans(snapshot) : [], [snapshot]);
   const recommendedPlan = useMemo(() => snapshot ? resolveRecommendedPlan(snapshot) : null, [snapshot]);
@@ -821,6 +825,7 @@ export function PlanGrowthSurface({
                     currentPlanCode={currentPlanCode}
                     recommended={code === recommendedPlan.code && code !== currentPlanCode}
                     busy={busyPlanCode === code}
+                    dynamicPrice={code === 'starter' || code === 'pro' ? getPrice(code, duration, getCurrencyForRegion(region)) : undefined}
                     onChoose={handleChoosePlan}
                     t={t}
                     language={language}

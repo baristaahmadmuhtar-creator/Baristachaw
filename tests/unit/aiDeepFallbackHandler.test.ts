@@ -161,7 +161,7 @@ test('deep_think falls back to internal chat proxy when compat providers are una
       assert.equal(forwardedHeaders['x-e2e-mock'], 'trace-only');
 
       const forwardedBody = JSON.parse(String(call.init?.body || '{}'));
-      assert.equal(forwardedBody.mode, 'race');
+      assert.equal(forwardedBody.mode, 'auto');
       assert.match(forwardedBody.message, /## TL;DR/);
     }
   } finally {

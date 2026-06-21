@@ -45,6 +45,7 @@ import { useGlobalState } from '../context/GlobalState';
 import { isDisplayableAvatarUrl } from '../utils/avatarUrl';
 import { subscribeMediaQueryChange } from '../utils/mediaQuery';
 import { createAdminCopy, type AdminCopy } from './adminLocalization';
+import { AdminPricingPanel } from './AdminPricingPanel';
 import {
   AdminApiError,
   createCatalogRequest,
@@ -4820,6 +4821,7 @@ export function AdminManagement() {
                     onPatch={(planCode, patch) => void commitPlanPatch(planCode, patch)}
                     onDirtyChange={trackPlanDraftDirty}
                   />
+                  <AdminPricingPanel />
                 </motion.section>
               ) : null}
 

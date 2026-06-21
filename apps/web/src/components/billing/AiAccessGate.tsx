@@ -16,8 +16,9 @@ import {
   type BillingDuration,
 } from '../../services/billing';
 import type { AccountPlan, PlanCode } from '../../services/accountStatus';
-import { getCurrencyForRegion, PRICING, formatCurrency } from '../../services/billingConfig';
+import { getCurrencyForRegion, formatCurrency } from '../../services/billingConfig';
 import { modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
+import { useDynamicPricing } from '../../hooks/useDynamicPricing';
 
 export type AiPaidFeature = 'chat' | 'scanner' | 'search' | 'brew';
 type ManualInvoiceBank = NonNullable<BillingManualInvoiceResponse['manualInvoice']['instructions']['banks']>[number];
@@ -162,6 +163,7 @@ function AiAccessGateDialog({
   
   const { region } = useGlobalState();
   const currency = getCurrencyForRegion(region);
+  const { getPrice, isLoading: isPriceLoading } = useDynamicPricing();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
@@ -175,8 +177,8 @@ function AiAccessGateDialog({
   };
 
   const getPriceDisplay = (p = selectedPlan, d = selectedDuration): string => {
-    const tier = PRICING[p][d];
-    return formatCurrency(tier.discounted[currency], currency);
+    const price = getPrice(p, d, currency);
+    return formatCurrency(price, currency);
   };
 
   const durationLabels: Record<BillingDuration, string> = {

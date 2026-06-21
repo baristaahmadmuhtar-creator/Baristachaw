@@ -47,7 +47,7 @@ test('analyze_image succeeds using OpenAI explicitly', async () => {
   process.env.GEMINI_API_KEY = 'mock-gemini-key';
 
   const authToken = jwt.sign(
-    { user: { id: 'qa-user', email: 'qa@example.com', name: 'QA User', planCode: 'starter' } },
+    { user: { id: 'qa-user', email: 'qa@example.com', name: 'QA User', planCode: 'pro' } },
     process.env.JWT_SECRET,
     { expiresIn: '1h' },
   );
@@ -133,7 +133,7 @@ test('analyze_image fails gracefully and does not call Gemini when OpenAI fails'
   process.env.GEMINI_API_KEY = 'mock-gemini-key';
 
   const authToken = jwt.sign(
-    { user: { id: 'qa-user', email: 'qa@example.com', name: 'QA User', planCode: 'starter' } },
+    { user: { id: 'qa-user', email: 'qa@example.com', name: 'QA User', planCode: 'pro' } },
     process.env.JWT_SECRET,
     { expiresIn: '1h' },
   );
@@ -217,7 +217,7 @@ test('edit_latte_art succeeds using OpenAI only without input_fidelity for gpt-i
   process.env.GEMINI_API_KEY = 'mock-gemini-key';
 
   const authToken = jwt.sign(
-    { user: { id: 'qa-user', email: 'qa@example.com', name: 'QA User', planCode: 'starter' } },
+    { user: { id: 'qa-user', email: 'qa@example.com', name: 'QA User', planCode: 'pro' } },
     process.env.JWT_SECRET,
     { expiresIn: '1h' },
   );
@@ -309,7 +309,7 @@ test('edit_latte_art fails gracefully and does not call Gemini when OpenAI fails
   process.env.GEMINI_API_KEY = 'mock-gemini-key';
 
   const authToken = jwt.sign(
-    { user: { id: 'qa-user', email: 'qa@example.com', name: 'QA User', planCode: 'starter' } },
+    { user: { id: 'qa-user', email: 'qa@example.com', name: 'QA User', planCode: 'pro' } },
     process.env.JWT_SECRET,
     { expiresIn: '1h' },
   );

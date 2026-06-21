@@ -101,9 +101,9 @@ test('evaluateDeepQualityGate marks explicit short requests as degraded but qual
 
 test('buildDeepTemplatePrompt includes mandatory section headings', () => {
   const prompt = buildDeepTemplatePrompt('analyze espresso extraction', { grounded: true });
-  assert.match(prompt, /## TL;DR/);
-  assert.match(prompt, /## Core Analysis/);
-  assert.match(prompt, /## Options & Tradeoffs/);
-  assert.match(prompt, /## Recommended Action Plan/);
-  assert.match(prompt, /## Risks & Validation/);
+  assert.match(prompt, /## Ringkasan/);
+  assert.match(prompt, /## Temuan Utama/);
+  assert.match(prompt, /## Perbandingan/);
+  assert.match(prompt, /## Rekomendasi/);
+  assert.match(prompt, /## Sources/);
 });

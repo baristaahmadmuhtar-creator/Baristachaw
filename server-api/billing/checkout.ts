@@ -14,6 +14,7 @@ import {
   persistManualPaymentRequest,
 } from './manualPayments.js';
 import { buildAccountStatus } from '../account/status.js';
+import { getSupabaseAdminConfig, supabaseAdminRest } from '../_supabaseAdmin.js';
 
 type PlanCode = 'starter' | 'pro' | 'team' | 'enterprise';
 
@@ -207,6 +208,81 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.error('Failed to load manual payment QR config:', error);
     });
 
+    let overrideAmount: number | undefined = undefined;
+    const config = getSupabaseAdminConfig();
+    if (config.configured) {
+      // Fetch dynamic price if available
+      let priceData: any = null;
+      let priceError = false;
+      try {
+        const prices = await supabaseAdminRest<any[]>(config, 'rest/v1/plan_prices', {
+          query: {
+            plan_code: `eq.${planCode}`,
+            duration: `eq.${duration}`,
+            currency: `eq.${currency}`,
+            is_active: 'is.true',
+            select: '*',
+            limit: '1',
+          },
+        });
+        priceData = prices?.[0];
+      } catch (e) {
+        priceError = true;
+      }
+        
+      if (priceData && !priceError) {
+        overrideAmount = Number(priceData.discount_price ?? priceData.original_price);
+      }
+
+      // Apply promo code if provided
+      if (promoCode && overrideAmount !== undefined) {
+        let promoData: any = null;
+        let promoError = false;
+        try {
+          const promos = await supabaseAdminRest<any[]>(config, 'rest/v1/promo_codes', {
+            query: {
+              code: `eq.${promoCode}`,
+              is_active: 'is.true',
+              select: '*',
+              limit: '1',
+            },
+          });
+          promoData = promos?.[0];
+        } catch (e) {
+          promoError = true;
+        }
+
+        if (promoData && !promoError) {
+          const validPlan = promoData.valid_plan_codes == null || promoData.valid_plan_codes.length === 0 || promoData.valid_plan_codes.includes(planCode);
+          const validDuration = promoData.valid_durations == null || promoData.valid_durations.length === 0 || promoData.valid_durations.includes(duration);
+          const notExpired = !promoData.valid_until || new Date(promoData.valid_until).getTime() > Date.now();
+          const notMaxed = !promoData.max_uses || promoData.current_uses < promoData.max_uses;
+
+          if (validPlan && validDuration && notExpired && notMaxed) {
+            if (promoData.discount_type === 'percentage') {
+              overrideAmount = Math.max(0, overrideAmount - (overrideAmount * Number(promoData.discount_value) / 100));
+            } else if (promoData.discount_type === 'fixed_amount') {
+              overrideAmount = Math.max(0, overrideAmount - Number(promoData.discount_value));
+            }
+          } else {
+             return res.status(400).json({
+               ok: false,
+               requestId,
+               error: 'Promo code is invalid, expired, or not applicable to this plan.',
+               errorCode: 'invalid_promo_code',
+             });
+          }
+        } else {
+           return res.status(400).json({
+             ok: false,
+             requestId,
+             error: 'Promo code not found or inactive.',
+             errorCode: 'invalid_promo_code',
+           });
+        }
+      }
+    }
+
     const manualRequest = createManualPaymentRequest({
       userId: authResult.auth.userId,
       email: authEmail(authResult.auth.user),
@@ -214,6 +290,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       duration,
       currency,
       promoCode: promoCode || undefined,
+      overrideAmount,
       allowFallbackInstructions: true,
     });
     if (manualRequest) {

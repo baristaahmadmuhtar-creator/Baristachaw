@@ -56,9 +56,9 @@ test('admin management schema includes reservation commit refund quota RPCs', ()
   assert.match(sql, /create or replace function public\.consume_app_quota/i);
   assert.match(sql, /security definer\s+set search_path = ''/i);
   assert.match(sql, /for update/i);
-  assert.match(sql, /ai_requests = ai_requests \+ v_amount/i);
-  assert.match(sql, /deep_requests = deep_requests \+ v_amount/i);
-  assert.match(sql, /scanner_runs = scanner_runs \+ v_amount/i);
+  assert.match(sql, /ai_requests = case when/i);
+  assert.match(sql, /deep_requests = case when/i);
+  assert.match(sql, /scanner_runs = case when/i);
   assert.match(sql, /insert into public\.ai_quota_ledger/i);
   assert.match(sql, /update public\.ai_quota_ledger/i);
   assert.match(sql, /reservation_status = 'committed'/i);

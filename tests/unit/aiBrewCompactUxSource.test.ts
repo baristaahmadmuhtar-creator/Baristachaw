@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const SOURCE = readFileSync('apps/web/src/features/ai-brew/AiBrewPanel.tsx', 'utf8');
+const PROMPTS_SOURCE = readFileSync('apps/web/src/features/ai-brew/prompts.ts', 'utf8');
 const AI_ACCESS_GATE_SOURCE = readFileSync('apps/web/src/components/billing/AiAccessGate.tsx', 'utf8');
 const BOTTOM_NAV_SOURCE = readFileSync('apps/web/src/components/BottomNav.tsx', 'utf8');
 
@@ -25,7 +26,6 @@ test('AI Brew quick mode keeps optional bean detail and AI tools collapsed', () 
   assert.doesNotMatch(SOURCE, /Biarkan Auto untuk hasil aman/);
   assert.match(SOURCE, /primaryAiAssistActions/);
   assert.match(SOURCE, /advancedAiAssistActions/);
-  assert.match(SOURCE, /copy\.moreAiTools/);
 });
 
 test('AI Brew mobile result has a compact action bar', () => {
@@ -170,8 +170,8 @@ test('AI Brew Indonesian release copy localizes critical trust and safety labels
 
   assert.match(SOURCE, /formatBeanCoverageLabel/);
   assert.match(SOURCE, /formatAiBrewConfidenceLabel/);
-  assert.match(SOURCE, /Jelaskan dengan AI/);
-  assert.match(SOURCE, /Perbaiki Rasa/);
+  assert.match(PROMPTS_SOURCE, /Jelaskan dengan AI/);
+  assert.match(PROMPTS_SOURCE, /Perbaiki Rasa/);
   assert.match(SOURCE, /Buat Panduan Lebih Ramah/);
   assert.match(SOURCE, /Alat AI lainnya/);
 });

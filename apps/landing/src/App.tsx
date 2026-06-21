@@ -65,6 +65,7 @@ type RegisterState = {
   open: boolean;
   plan: 'free' | 'starter' | 'plus' | 'pro' | 'team';
   duration: BillingDuration;
+  isLogin?: boolean;
 };
 
 const MARKETING_LANGUAGE_KEY = 'baristachaw-marketing-language';
@@ -340,38 +341,17 @@ function RegionDropdown({ region, onRegionChange, language }: { region: Region; 
   );
 }
 
-function LandingHome({ language, region, onRegionChange, user, onLoginSuccess, initialRegisterState }: { language: Language; region: Region; onRegionChange: (r: Region) => void; user: any; onLoginSuccess: () => void; initialRegisterState?: RegisterState }) {
-  const [registerState, setRegisterState] = useState<RegisterState>(initialRegisterState || { open: false, plan: 'free', duration: 'quarterly' });
-
-  useEffect(() => {
-    if (initialRegisterState?.open) {
-      setRegisterState(initialRegisterState);
-    }
-  }, [initialRegisterState]);
-
-  const openRegister = (plan: 'free' | 'starter' | 'plus' | 'pro' | 'team', duration: BillingDuration = 'quarterly') => {
-    const normalizedPlan = plan === 'plus' ? 'starter' : plan;
-    if (normalizedPlan === 'team') {
-      window.location.href = '/support?topic=general';
-      return;
-    }
-    if (normalizedPlan === 'free' && user) {
-      window.location.href = APP_ORIGIN;
-      return;
-    }
-    setRegisterState({ open: true, plan: normalizedPlan, duration });
-  };
-
+function LandingHome({ language, region, onRegionChange, user, onLoginSuccess, onRegister }: { language: Language; region: Region; onRegionChange: (r: Region) => void; user: any; onLoginSuccess: () => void; onRegister: (plan: 'free' | 'starter' | 'plus' | 'pro' | 'team', duration?: BillingDuration, isLogin?: boolean) => void }) {
   return (
     <main>
-      <HeroSection language={language} onRegister={() => openRegister('free')} user={user} />
+      <HeroSection language={language} onRegister={() => onRegister('free')} user={user} />
       <MethodSections language={language} />
       <DataShowcase language={language} />
       <BrewerGrid language={language} />
       <ToolsShowcase language={language} />
       <FeatureGraphics language={language} />
       <ConversionProofSection language={language} />
-      <PricingSection language={language} region={region} onRegionChange={onRegionChange} onRegister={openRegister} />
+      <PricingSection language={language} region={region} onRegionChange={onRegionChange} onRegister={onRegister} />
       <DownloadSection language={language} />
       <ScrollReveal variant="blur">
         <section className="final-cta">
@@ -386,7 +366,7 @@ function LandingHome({ language, region, onRegionChange, user, onLoginSuccess, i
             ) : (
               <>
                 <a className="button button-light" href={APP_LINKS.aiBrew}>{t('final.tryAiBrew', language)} <ArrowRight /></a>
-                <button className="button button-ghost" type="button" onClick={() => openRegister('free')}>{t('final.registerFree', language)}</button>
+                <button className="button button-ghost" type="button" onClick={() => onRegister('free')}>{t('final.registerFree', language)}</button>
               </>
             )}
             <a className="button button-ghost" href={APK_AVAILABLE ? APK_URL : '/support?topic=download'}>
@@ -395,17 +375,6 @@ function LandingHome({ language, region, onRegionChange, user, onLoginSuccess, i
           </div>
         </section>
       </ScrollReveal>
-
-      {registerState.open && (
-        <RegisterModal
-          language={language}
-          plan={registerState.plan}
-          duration={registerState.duration}
-          user={user}
-          onLoginSuccess={onLoginSuccess}
-          onClose={() => setRegisterState({ ...registerState, open: false })}
-        />
-      )}
     </main>
   );
 }
@@ -450,7 +419,20 @@ export function App() {
 
   const [user, setUser] = useState<any>(null);
   const [userLoading, setUserLoading] = useState(true);
-  const [initialRegister, setInitialRegister] = useState<RegisterState | undefined>();
+  const [registerState, setRegisterState] = useState<RegisterState>({ open: false, plan: 'free', duration: 'quarterly' });
+
+  const openRegister = (plan: 'free' | 'starter' | 'plus' | 'pro' | 'team', duration: BillingDuration = 'quarterly', isLogin = false) => {
+    const normalizedPlan = plan === 'plus' ? 'starter' : plan;
+    if (normalizedPlan === 'team') {
+      window.location.href = '/support?topic=general';
+      return;
+    }
+    if (normalizedPlan === 'free' && user) {
+      window.location.href = APP_ORIGIN;
+      return;
+    }
+    setRegisterState({ open: true, plan: normalizedPlan, duration, isLogin });
+  };
 
   const checkAuth = async () => {
     try {
@@ -494,7 +476,7 @@ export function App() {
       const duration = searchParams.get('duration') as BillingDuration | null;
       
       if (plan && duration) {
-        setInitialRegister({ open: true, plan, duration });
+        setRegisterState({ open: true, plan, duration, isLogin: false });
       }
 
       const nextUrl = window.location.pathname + window.location.hash;
@@ -559,14 +541,16 @@ export function App() {
         onRegionChange={handleRegionChange} 
         user={user}
         onLogout={handleLogout}
+        onLoginClick={() => openRegister('free', 'quarterly', true)}
+        onRegisterClick={() => openRegister('free', 'quarterly', false)}
       />
       <Routes>
-        <Route path="/" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} user={user} onLoginSuccess={checkAuth} initialRegisterState={initialRegister} />} />
+        <Route path="/" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} user={user} onLoginSuccess={checkAuth} onRegister={openRegister} />} />
         <Route path="/support" element={<SupportPage language={language} />} />
         <Route path="/privacy" element={<PrivacyPage language={language} />} />
         <Route path="/terms" element={<TermsPage language={language} />} />
         <Route path="/download/*" element={<DownloadPage language={language} />} />
-        <Route path="*" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} user={user} onLoginSuccess={checkAuth} initialRegisterState={initialRegister} />} />
+        <Route path="*" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} user={user} onLoginSuccess={checkAuth} onRegister={openRegister} />} />
       </Routes>
       <SiteFooter language={language} />
       <SupportChatWidget language={language} />
@@ -578,6 +562,18 @@ export function App() {
           </a>
         </div>
       ) : null}
+
+      {registerState.open && (
+        <RegisterModal
+          language={language}
+          plan={registerState.plan}
+          duration={registerState.duration}
+          initialIsLogin={registerState.isLogin}
+          user={user}
+          onLoginSuccess={checkAuth}
+          onClose={() => setRegisterState({ ...registerState, open: false })}
+        />
+      )}
     </div>
   );
 }

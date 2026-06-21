@@ -1328,3 +1328,104 @@ exception
   when undefined_object then null;
 end;
 $$;
+
+-- dynamic pricing and durations
+create table if not exists public.plan_prices (
+  id uuid primary key default gen_random_uuid(),
+  plan_code text not null references public.app_plans(code) on delete cascade,
+  duration text not null check (duration in ('monthly', 'quarterly', 'yearly', 'lifetime')),
+  currency text not null default 'usd',
+  original_price numeric not null,
+  discount_price numeric,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique(plan_code, duration, currency)
+);
+
+create trigger plan_prices_updated_at
+before update on public.plan_prices
+for each row execute function public.handle_updated_at();
+
+alter table public.plan_prices enable row level security;
+alter table public.plan_prices force row level security;
+
+revoke all on public.plan_prices from anon, authenticated;
+grant select on public.plan_prices to anon, authenticated;
+grant all on public.plan_prices to service_role;
+
+drop policy if exists "service role manages plan prices" on public.plan_prices;
+create policy "service role manages plan prices" on public.plan_prices
+  for all to service_role using (true) with check (true);
+
+drop policy if exists "public reads active plan prices" on public.plan_prices;
+create policy "public reads active plan prices" on public.plan_prices
+  for select to anon, authenticated
+  using (is_active = true);
+
+
+-- promo codes / vouchers
+create table if not exists public.promo_codes (
+  code text primary key,
+  discount_type text not null check (discount_type in ('percentage', 'fixed_amount')),
+  discount_value numeric not null check (discount_value > 0),
+  valid_from timestamptz,
+  valid_until timestamptz,
+  max_uses integer,
+  current_uses integer not null default 0,
+  valid_plan_codes text[] not null default '{}',
+  valid_durations text[] not null default '{}',
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create trigger promo_codes_updated_at
+before update on public.promo_codes
+for each row execute function public.handle_updated_at();
+
+alter table public.promo_codes enable row level security;
+alter table public.promo_codes force row level security;
+
+revoke all on public.promo_codes from anon, authenticated;
+grant select on public.promo_codes to anon, authenticated;
+grant all on public.promo_codes to service_role;
+
+drop policy if exists "service role manages promo codes" on public.promo_codes;
+create policy "service role manages promo codes" on public.promo_codes
+  for all to service_role using (true) with check (true);
+
+drop policy if exists "public reads active promo codes" on public.promo_codes;
+create policy "public reads active promo codes" on public.promo_codes
+  for select to anon, authenticated
+  using (is_active = true);
+
+do $$
+begin
+  alter publication supabase_realtime add table public.plan_prices;
+exception
+  when duplicate_object then null;
+  when undefined_table then null;
+  when undefined_object then null;
+end;
+$$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.promo_codes;
+exception
+  when duplicate_object then null;
+  when undefined_table then null;
+  when undefined_object then null;
+end;
+$$;
+
+create or replace function public.increment_promo_code_uses(p_code text)
+returns void as $$
+begin
+  update public.promo_codes
+  set current_uses = current_uses + 1,
+      updated_at = now()
+  where code = p_code;
+end;
+$$ language plpgsql security definer;

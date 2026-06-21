@@ -13,9 +13,11 @@ type LandingHeaderProps = {
   onRegionChange: (region: Region) => void;
   user?: any;
   onLogout?: () => void;
+  onLoginClick?: () => void;
+  onRegisterClick?: () => void;
 };
 
-export function LandingHeader({ language, onLanguageChange, region, onRegionChange, user, onLogout }: LandingHeaderProps) {
+export function LandingHeader({ language, onLanguageChange, region, onRegionChange, user, onLogout, onLoginClick, onRegisterClick }: LandingHeaderProps) {
   const [open, setOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -70,8 +72,8 @@ export function LandingHeader({ language, onLanguageChange, region, onRegionChan
         ) : (
           <>
             <a className="header-login" href="/#pricing" style={{ marginRight: '16px' }}>{t('pricing.index', language)}</a>
-            <a className="header-login" href={APP_LINKS.login}>{t('nav.login', language)}</a>
-            <a className="button button-small button-light" href={APP_LINKS.aiBrew}>{t('nav.tryAiBrew', language)}</a>
+            <button className="header-login" onClick={onLoginClick} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0, marginRight: '16px' }}>{t('nav.login', language)}</button>
+            <button className="button button-small button-light" onClick={onRegisterClick}>{t('nav.tryAiBrew', language)}</button>
           </>
         )}
         <button
@@ -102,8 +104,8 @@ export function LandingHeader({ language, onLanguageChange, region, onRegionChan
             </>
           ) : (
             <>
-              <a href={APP_LINKS.login}>{t('nav.login', language)}</a>
-              <a href={APP_LINKS.register}>{t('nav.register', language)}</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); setOpen(false); onLoginClick?.(); }}>{t('nav.login', language)}</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); setOpen(false); onRegisterClick?.(); }}>{t('nav.register', language)}</a>
             </>
           )}
         </nav>

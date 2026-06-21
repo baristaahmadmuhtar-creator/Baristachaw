@@ -463,11 +463,12 @@ export function createManualPaymentRequest(input: {
   duration: BillingDuration;
   currency?: CurrencyCode;
   promoCode?: string;
+  overrideAmount?: number;
   allowFallbackInstructions?: boolean;
 }): ManualPaymentRequest | null {
   if (!VALID_MANUAL_PLANS.has(input.planCode)) return null;
   const currency = input.currency || 'usd';
-  let amount = resolveManualAmount(input.planCode, input.duration, currency);
+  let amount = input.overrideAmount ?? resolveManualAmount(input.planCode, input.duration, currency);
   
   let uniqueSuffix: number | undefined = undefined;
   if (currency === 'idr') {

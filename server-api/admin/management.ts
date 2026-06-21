@@ -8,6 +8,7 @@ import {
   sanitizeErrorDetails,
 } from '../_shared.js';
 import { requireAdmin, type AdminAccess } from './_access.js';
+import { supabaseAdminRest } from '../_supabaseAdmin.js';
 import {
   buildRuntimeFeatureFlags,
   FEATURE_FLAG_STATUSES,
@@ -1581,7 +1582,7 @@ async function loadSupabaseCatalogSummary(config: Extract<SupabaseConfig, { conf
 
   for (const [kind, table] of Object.entries(tableByKind) as Array<[CatalogKind, string]>) {
     try {
-      const rows = await supabaseRest<any[]>(config, `${table}?select=id,published&published=eq.true&limit=1000`);
+      const rows = await supabaseRest<any[]>(config, `${table}?select=id,published&published=eq.true&limit=5000`);
       publishedCounts[kind] = Array.isArray(rows) ? rows.length : 0;
     } catch (error) {
       gaps.push(`${table} belum siap atau belum dimigrasikan: ${sanitizeErrorDetails(error, 120)}`);
@@ -1590,7 +1591,7 @@ async function loadSupabaseCatalogSummary(config: Extract<SupabaseConfig, { conf
 
   let recentRequests: AdminCatalogRequest[] = [];
   try {
-    const rows = await supabaseRest<any[]>(config, 'catalog_review_queue?select=*&order=created_at.desc&limit=50');
+    const rows = await supabaseRest<any[]>(config, 'catalog_review_queue?select=*&order=created_at.desc&limit=5000');
     recentRequests = Array.isArray(rows) ? rows.map(catalogRequestFromSupabase) : [];
   } catch (error) {
     gaps.push(`catalog_review_queue belum siap: ${sanitizeErrorDetails(error, 120)}`);
@@ -1708,14 +1709,14 @@ async function loadSupabaseRecipeLibrarySummary(config: Extract<SupabaseConfig, 
   let collectionItems: AdminRecipeLibraryItem[] = [];
 
   try {
-    const rows = await supabaseRest<any[]>(config, 'ai_brew_journal?select=id,user_id,title,brew_mode,method_family,coffee_name,dripper_name,feedback_rating,created_at,updated_at&order=updated_at.desc&limit=60');
+    const rows = await supabaseRest<any[]>(config, 'ai_brew_journal?select=id,user_id,title,brew_mode,method_family,coffee_name,dripper_name,feedback_rating,created_at,updated_at&order=updated_at.desc&limit=5000');
     aiBrewItems = Array.isArray(rows) ? rows.map(aiBrewJournalItemFromSupabase) : [];
   } catch (error) {
     gaps.push(`ai_brew_journal belum siap: ${sanitizeErrorDetails(error, 140)}`);
   }
 
   try {
-    const rows = await supabaseRest<any[]>(config, 'recipe_library_items?select=id,user_id,title,source,item_type,content,metadata,deleted_at,created_at,updated_at&order=updated_at.desc&limit=60');
+    const rows = await supabaseRest<any[]>(config, 'recipe_library_items?select=id,user_id,title,source,item_type,content,metadata,deleted_at,created_at,updated_at&order=updated_at.desc&limit=5000');
     collectionItems = Array.isArray(rows) ? rows.map(collectionItemFromSupabase) : [];
   } catch (error) {
     gaps.push(`recipe_library_items belum siap: ${sanitizeErrorDetails(error, 140)}`);
@@ -1996,7 +1997,7 @@ function buildRecommendations(snapshot: {
 }
 
 async function loadSupabaseUsers(config: Extract<SupabaseConfig, { configured: true }>): Promise<AdminUserRecord[]> {
-  const rows = await supabaseRest<any[]>(config, 'app_users?select=*&order=updated_at.desc&limit=250');
+  const rows = await supabaseRest<any[]>(config, 'app_users?select=*&order=updated_at.desc&limit=5000');
   return Array.isArray(rows) ? rows.map(userFromSupabase) : [];
 }
 
@@ -2011,7 +2012,7 @@ async function loadSupabasePlans(
 }
 
 async function loadSupabaseAudit(config: Extract<SupabaseConfig, { configured: true }>): Promise<AdminAuditEvent[]> {
-  const rows = await supabaseRest<any[]>(config, 'admin_audit_events?select=*&order=created_at.desc&limit=60');
+  const rows = await supabaseRest<any[]>(config, 'admin_audit_events?select=*&order=created_at.desc&limit=5000');
   return Array.isArray(rows) ? rows.map(auditFromSupabase) : [];
 }
 
@@ -3404,6 +3405,28 @@ async function updateManualPayment(
       try {
         await patchSupabaseUser(config, admin, request.userId, patch);
         await upsertSupabaseManualEntitlement(config, request, 'active');
+        if (request.promoCode) {
+          try {
+            await supabaseAdminRest(config, 'rpc/increment_promo_code_uses', {
+              method: 'POST',
+              body: JSON.stringify({ p_code: request.promoCode }),
+            });
+          } catch (error) {
+            // Fallback if rpc is missing
+            try {
+              const res = await supabaseAdminRest<any[]>(config, `rest/v1/promo_codes?code=eq.${request.promoCode}&select=current_uses&limit=1`);
+              if (res && res.length > 0 && res[0].current_uses !== undefined) {
+                await supabaseAdminRest(config, `rest/v1/promo_codes?code=eq.${request.promoCode}`, {
+                  method: 'PATCH',
+                  headers: { Prefer: 'return=minimal' },
+                  body: JSON.stringify({ current_uses: res[0].current_uses + 1 }),
+                });
+              }
+            } catch (fallbackError) {
+              console.error('Failed to increment promo code uses:', fallbackError);
+            }
+          }
+        }
       } catch (error) {
         throw new AdminMutationError('Failed to grant manual payment entitlement', {
           statusCode: 503,

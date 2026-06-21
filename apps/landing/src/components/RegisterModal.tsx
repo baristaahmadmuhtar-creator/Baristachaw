@@ -12,6 +12,7 @@ type RegisterModalProps = {
   user?: any;
   onLoginSuccess?: () => void;
   onClose: () => void;
+  initialIsLogin?: boolean;
 };
 
 const MANUAL_PAYMENT_PENDING_STORAGE_KEY = 'BARISTACHAW_MANUAL_PAYMENT_PENDING_V1';
@@ -46,11 +47,11 @@ function writePendingManualPaymentMarker(paymentRequestId: string, planCode: str
   }
 }
 
-export function RegisterModal({ language, plan, duration, user, onLoginSuccess, onClose }: RegisterModalProps) {
+export function RegisterModal({ language, plan, duration, user, onLoginSuccess, onClose, initialIsLogin }: RegisterModalProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLogin, setIsLogin] = useState(false);
+  const [isLogin, setIsLogin] = useState(initialIsLogin || false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -643,16 +644,22 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
           <>
             <div className="register-header">
               <div>
-                <h2 id="register-title" style={{ fontSize: '20px', color: '#ffffff' }}>Pilih Plan Keanggotaan</h2>
-                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>Step 1 dari 3: Pilih paket terbaik Anda</p>
+                <h2 id="register-title" style={{ fontSize: '20px', color: '#ffffff' }}>
+                  {plan === 'free' ? (isLogin ? t('nav.login', language) : t('nav.register', language)) : 'Pilih Plan Keanggotaan'}
+                </h2>
+                {plan !== 'free' && (
+                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>Step 1 dari 3: Pilih paket terbaik Anda</p>
+                )}
               </div>
               <button className="register-close" onClick={onClose} aria-label={t('register.close', language)}>
                 <X size={20} />
               </button>
             </div>
 
-            {/* Plan Duration Toggle */}
-            <div className="duration-selector-tabs" style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', padding: '4px', borderRadius: '12px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            {plan !== 'free' && (
+              <>
+                {/* Plan Duration Toggle */}
+                <div className="duration-selector-tabs" style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', padding: '4px', borderRadius: '12px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.08)' }}>
               {(['monthly', 'quarterly', 'yearly'] as BillingDuration[]).map((d) => (
                 <button
                   key={d}
@@ -716,9 +723,11 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                 );
               })}
             </div>
+            </>
+            )}
 
             {/* Bottom Actions */}
-            <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ marginTop: plan === 'free' ? '8px' : '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {user ? (
                 <>
                   <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', textAlign: 'center', margin: 0 }}>

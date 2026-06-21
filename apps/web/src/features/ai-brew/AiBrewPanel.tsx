@@ -1147,8 +1147,9 @@ const COPY = {
     unfavorite: 'Hapus Favorit',
     aiCoach: 'AI Coach',
     aiFinisher: 'Finalisasi Ekstraksi',
-    explain: 'Jelaskan dengan AI',
-    troubleshoot: 'Perbaiki Rasa',
+    explain: 'Bedah Resep',
+    troubleshoot: 'Diagnosa Rasa',
+    coachExplainHint: 'AI menganalisa karakter cangkir ini dan membedah resepnya.',
     rewriteGuide: 'Buat Panduan Lebih Ramah',
     deepAnalysis: 'Analisis Dalam',
     adjust: 'Optimasi Aman AI',
@@ -6646,8 +6647,8 @@ function PlanResultDialog({
   ];
   const showLegacySourcesTab = false;
   const coachActions: Array<{ mode: AiCoachMode; label: string; hint: string }> = [
-    { mode: 'explain', label: id ? 'Jelaskan cup' : 'Explain cup', hint: copy.coachExplainHint },
-    { mode: 'troubleshoot', label: id ? 'Perbaiki rasa' : 'Fix taste', hint: copy.coachTroubleshootHint },
+    { mode: 'explain', label: id ? 'Bedah Resep' : 'Recipe Breakdown', hint: copy.coachExplainHint },
+    { mode: 'troubleshoot', label: id ? 'Diagnosa Rasa' : 'Taste Diagnosis', hint: copy.coachTroubleshootHint },
     { mode: 'adjust', label: id ? 'Atur cup berikutnya' : 'Adjust next cup', hint: copy.coachAdjustHint },
     { mode: 'rewrite', label: copy.rewriteGuide, hint: copy.aiNotesManualHint },
     { mode: 'deep_analysis', label: copy.deepAnalysis, hint: copy.coachAdjustHint },

@@ -2834,7 +2834,7 @@ function PlanEditorCard({
           </button>
           <button type="button" onClick={save} className="inline-flex min-h-8 items-center gap-1.5 rounded-2xl bg-blue-600 px-3 text-[11px] font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors" disabled={!canSave}>
             <Save size={12} />
-            {busy ? 'Saving...' : 'Save'}
+            {busy ? admin.text('saving') : admin.text('save')}
           </button>
         </div>
       </div>

@@ -2279,7 +2279,7 @@ test('browse-only users are asked to sign in before opening ai brew builders', a
 });
 
 test('authenticated users can request ai coaching manually from the result panel', async ({ page }) => {
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   await openAiBrewProMode(page);
@@ -2304,6 +2304,8 @@ test('authenticated users can request ai coaching manually from the result panel
 });
 
 test('ai brew coach guard blocks unsafe AI claims and keeps deterministic values', async ({ page }) => {
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
+  await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
   await openAiBrewProMode(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'Bolinda Caranavi Coach Guard');
   await switchAiBrewToManualWater(page, { tds: '9', hardness: '6.6', alkalinity: '5.5' });

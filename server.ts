@@ -29,6 +29,8 @@ import billingCheckoutHandler from "./server-api/billing/checkout";
 import billingPortalHandler from "./server-api/billing/portal";
 import billingProofHandler from "./server-api/billing/proof";
 import billingSyncHandler from "./server-api/billing/sync";
+import billingPricingHandler from "./server-api/billing/pricing";
+import adminPricingHandler from "./server-api/admin/pricing";
 import monitoringErrorHandler from "./server-api/monitoring/error";
 import paymentMayarHandler from "./server-api/payment/mayar";
 import { handleTestAuthLogin, handleTestAuthLogout } from "./lib/test-auth/handlers";
@@ -165,6 +167,11 @@ app.all("/api/billing/checkout", wrapVercelHandler(billingCheckoutHandler as unk
 app.all("/api/billing/portal", wrapVercelHandler(billingPortalHandler as unknown as LocalApiHandler));
 app.all("/api/billing/proof", wrapVercelHandler(billingProofHandler as unknown as LocalApiHandler));
 app.all("/api/billing/sync", wrapVercelHandler(billingSyncHandler as unknown as LocalApiHandler));
+app.all("/api/billing/pricing", wrapVercelHandler(billingPricingHandler as unknown as LocalApiHandler));
+app.all("/api/admin/pricing/*", (req, res, next) => {
+  // Pass the remaining path so the handler can read it
+  return wrapVercelHandler(adminPricingHandler as unknown as LocalApiHandler)(req, res, next);
+});
 app.all("/api/monitoring/error", wrapVercelHandler(monitoringErrorHandler as unknown as LocalApiHandler));
 app.all("/api/payment/create-checkout", wrapVercelHandler(paymentMayarHandler as unknown as LocalApiHandler));
 

@@ -6,7 +6,7 @@ import {
   createRequestId,
   enforceTrustedRequestOrigin,
 } from '../_shared.js';
-import { getSupabaseConfig, supabaseAdminRest } from '../_supabaseAdmin.js';
+import { getSupabaseAdminConfig, supabaseAdminRest } from '../_supabaseAdmin.js';
 
 const PUBLIC_PRICING_RATE_LIMIT = {
   maxRequests: 100,
@@ -38,7 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  const config = getSupabaseConfig();
+  const config = getSupabaseAdminConfig();
   if (!config.configured) {
     return res.status(503).json({
       ok: false,

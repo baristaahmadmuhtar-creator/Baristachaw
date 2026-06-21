@@ -45,6 +45,13 @@ function isManualReview(snapshot: AccountStatusSnapshot): boolean {
   }
 
   if (
+    snapshot.billing.paymentActionRequired &&
+    snapshot.billing.provider === 'manual'
+  ) {
+    return true;
+  }
+
+  if (
     snapshot.user.planCode !== 'free'
     && snapshot.billing.status === 'active'
     && snapshot.appAccess.status !== 'blocked'
@@ -53,8 +60,7 @@ function isManualReview(snapshot: AccountStatusSnapshot): boolean {
   }
 
   return snapshot.billing.paymentActionRequired
-    && (snapshot.billing.provider === 'manual'
-      || snapshot.billing.status === 'trialing');
+    && snapshot.billing.status === 'trialing';
 }
 
 export function resolveWorkspaceStatus(

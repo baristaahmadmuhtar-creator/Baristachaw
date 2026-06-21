@@ -159,6 +159,9 @@ function AiAccessGateDialog({
   setSelectedPlan: (p: 'starter' | 'pro') => void;
   selectedDuration: BillingDuration;
   setSelectedDuration: (d: BillingDuration) => void;
+  isPastDue?: boolean;
+  manageUrl?: string;
+  isRenewal?: boolean;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const isUpgrade = state.mode === 'upgrade';
@@ -530,15 +533,26 @@ function AiAccessGateDialog({
                 ) : null}
 
                 <div className="mt-5 grid gap-2 sm:grid-cols-[1fr_auto]">
-                  <button
-                    type="button"
-                    onClick={() => onUpgrade(selectedPlan, selectedDuration, promoApplied && promoCode.trim().length >= 4 ? promoCode.toUpperCase() : undefined)}
-                    disabled={checkoutBusy}
-                    className="motion-pressable inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-600 disabled:opacity-60"
-                  >
-                    {checkoutBusy ? <RefreshCcw size={16} className="animate-spin" /> : <CreditCard size={16} />}
-                    {checkoutBusy ? t.opening : `Upgrade to ${planDisplayNames[selectedPlan]}`}
-                  </button>
+                  {isPastDue ? (
+                    <a
+                      href={manageUrl || supportWhatsappUrl}
+                      target={manageUrl ? '_self' : '_blank'}
+                      rel="noopener noreferrer"
+                      className="motion-pressable inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-amber-600 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(217,119,6,0.25)] transition-colors hover:bg-amber-700"
+                    >
+                      Selesaikan Pembayaran
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => onUpgrade(selectedPlan, selectedDuration, promoApplied && promoCode.trim().length >= 4 ? promoCode.toUpperCase() : undefined)}
+                      disabled={checkoutBusy}
+                      className="motion-pressable inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-600 disabled:opacity-60"
+                    >
+                      {checkoutBusy ? <RefreshCcw size={16} className="animate-spin" /> : <CreditCard size={16} />}
+                      {checkoutBusy ? t.opening : isRenewal ? `Perpanjang ${planDisplayNames[selectedPlan]}` : `Upgrade to ${planDisplayNames[selectedPlan]}`}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={onClose}
@@ -866,7 +880,9 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   const isPendingReview = useMemo(() => {
     if (!snapshot) return false;
     const message = snapshot.billing.message || '';
-    return /waiting for admin|verification|review/i.test(message);
+    if (/waiting for admin|verification|review/i.test(message)) return true;
+    if (snapshot.billing.paymentActionRequired && snapshot.billing.provider === 'manual') return true;
+    return false;
   }, [snapshot]);
 
   const hasPendingManualPayment = isAuthenticated && !isGuest && (
@@ -925,23 +941,31 @@ export function useAiAccessGate(feature: AiPaidFeature): {
     return true;
   }, [effectivePlanCode, isAuthenticated, isGuest, loading, openAuthModal, openGate, snapshot, tokenPlanCode, feature]);
 
+  const isRenewal = snapshot?.billing.status === 'expired' || snapshot?.billing.status === 'cancelled';
+  const renewalRequired = isRenewal && (minimumPaidPlan?.code === tokenPlanCode || tokenPlanCode === 'pro' || tokenPlanCode === 'team');
+
   const title = state?.mode === 'login'
     ? formatText(t.aiGateLoginTitle, { feature: featureLabel })
     : state?.mode === 'checking'
       ? t.aiGateCheckingTitle
-      : formatText(t.aiGateUpgradeTitle, {
-          feature: featureLabel,
-          plan: minimumPaidPlan?.name || t.aiGatePlanFallbackName,
-        });
+      : renewalRequired
+        ? (language === 'id' ? `Perpanjang ${minimumPaidPlan?.name || t.aiGatePlanFallbackName} untuk ${featureLabel}` : `Renew ${minimumPaidPlan?.name || t.aiGatePlanFallbackName} for ${featureLabel}`)
+        : formatText(t.aiGateUpgradeTitle, {
+            feature: featureLabel,
+            plan: minimumPaidPlan?.name || t.aiGatePlanFallbackName,
+          });
+          
   const body = state?.mode === 'login'
     ? formatText(t.aiGateLoginBody, { feature: featureLabel })
     : state?.mode === 'checking'
       ? formatText(t.aiGateCheckingBody, { feature: featureLabel })
-      : formatText(t.aiGateUpgradeBody, {
-          feature: featureLabel,
-          plan: minimumPaidPlan?.name || t.aiGatePlanFallbackName,
-          price: minimumPaidPlan?.displayPrice || t.aiGatePriceFallback,
-        });
+      : renewalRequired
+        ? (language === 'id' ? `Paket Anda telah berakhir. Perpanjang akses untuk terus menggunakan ${featureLabel} dan fitur premium lainnya.` : `Your plan has expired. Renew your access to continue using ${featureLabel} and other premium features.`)
+        : formatText(t.aiGateUpgradeBody, {
+            feature: featureLabel,
+            plan: minimumPaidPlan?.name || t.aiGatePlanFallbackName,
+            price: minimumPaidPlan?.displayPrice || t.aiGatePriceFallback,
+          });
 
   const handleSignin = useCallback(() => {
     const source = state?.source || `${feature}_ai_gate`;
@@ -1107,11 +1131,21 @@ export function useAiAccessGate(feature: AiPaidFeature): {
             selectedDuration={selectedDuration}
             setSelectedDuration={setSelectedDuration}
             effectivePlanCode={effectivePlanCode}
+            isPastDue={snapshot?.billing.status === 'past_due'}
+            manageUrl={snapshot?.billing.manageUrl}
+            isRenewal={isRenewal}
           />
         </AnimatePresence>,
         document.body,
       )
     : null;
 
-  return { ensureAiAccess, openGate, hasPaidAiAccess, minimumPaidPlan, effectivePlanCode, aiAccessGateModal };
+  return {
+    ensureAiAccess,
+    openGate,
+    hasPaidAiAccess,
+    minimumPaidPlan,
+    effectivePlanCode,
+    aiAccessGateModal,
+  };
 }

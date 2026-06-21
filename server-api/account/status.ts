@@ -368,8 +368,21 @@ function readPublicUrl(...names: string[]): string {
 
 function billingFromRow(row: any, user: AccountUser): AccountBilling {
   const metadata = row?.metadata && typeof row.metadata === 'object' ? row.metadata : {};
-  const rawStatus = normalizeBillingStatus(row?.billing_status ?? metadata.billingStatus, defaultBillingStatus(user.planCode, user.status));
+  let rawStatus = normalizeBillingStatus(row?.billing_status ?? metadata.billingStatus, defaultBillingStatus(user.planCode, user.status));
   const provider = normalizeBillingProvider(row?.billing_provider ?? metadata.billingProvider);
+  
+  const currentPeriodStart = normalizeText(row?.billing_period_start ?? row?.current_period_start ?? metadata.billingPeriodStart) || undefined;
+  const currentPeriodEnd = normalizeText(row?.billing_period_end ?? row?.current_period_end ?? metadata.billingPeriodEnd) || undefined;
+
+  // Dynamic Expiration Enforcement: If the period end is in the past, force status to expired
+  // to protect against delayed webhooks or forgotten manual state updates.
+  if (currentPeriodEnd && (rawStatus === 'active' || rawStatus === 'trialing')) {
+    const endDate = new Date(currentPeriodEnd).getTime();
+    if (!Number.isNaN(endDate) && endDate < Date.now()) {
+      rawStatus = 'expired';
+    }
+  }
+
   const unverifiedPaidPlan = user.planCode !== 'free'
     && (provider === 'none' || provider === 'admin')
     && rawStatus !== 'past_due'
@@ -407,8 +420,8 @@ function billingFromRow(row: any, user: AccountUser): AccountBilling {
     message,
     checkoutUrl: checkoutUrl || undefined,
     manageUrl: manageUrl || undefined,
-    currentPeriodStart: normalizeText(row?.billing_period_start ?? row?.current_period_start ?? metadata.billingPeriodStart) || undefined,
-    currentPeriodEnd: normalizeText(row?.billing_period_end ?? row?.current_period_end ?? metadata.billingPeriodEnd) || undefined,
+    currentPeriodStart,
+    currentPeriodEnd,
     lastEventAt: normalizeText(row?.billing_last_event_at ?? metadata.billingLastEventAt) || undefined,
   };
 }

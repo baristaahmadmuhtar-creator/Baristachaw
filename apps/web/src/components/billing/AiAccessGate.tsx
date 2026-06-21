@@ -131,6 +131,7 @@ function AiAccessGateDialog({
   setSelectedPlan,
   selectedDuration,
   setSelectedDuration,
+  effectivePlanCode,
 }: {
   state: GateState;
   title: string;

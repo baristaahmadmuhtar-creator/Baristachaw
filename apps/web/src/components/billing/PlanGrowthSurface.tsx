@@ -619,7 +619,7 @@ export function PlanGrowthSurface({
 
             <div className="overflow-y-auto px-5 py-6 sm:px-6" style={{ WebkitOverflowScrolling: 'touch' }}>
               
-              {checkoutStep === 'choose' && !hasActivePaidPlan ? (
+              {checkoutStep === 'choose' ? (
                 <div className="mx-auto mb-8 flex w-fit justify-center gap-1 rounded-full bg-surface-alpha p-1 border border-glass shadow-sm">
                   {(['monthly', 'quarterly', 'yearly'] as const).map((d) => (
                     <button

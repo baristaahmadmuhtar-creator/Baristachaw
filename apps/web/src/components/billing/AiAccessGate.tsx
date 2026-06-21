@@ -863,8 +863,15 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   const tokenPlanCode = normalizePlanCode(user?.planCode);
   const effectivePlanCode = normalizePlanCode(snapshot?.user.planCode || snapshot?.plan.code) || tokenPlanCode;
   const hasPaidAiAccess = isAuthenticated && !isGuest && isPaidPlanCode(effectivePlanCode);
-  const hasPendingManualPayment = isAuthenticated && !isGuest && !hasPaidAiAccess && (
+  const isPendingReview = useMemo(() => {
+    if (!snapshot) return false;
+    const message = snapshot.billing.message || '';
+    return /waiting for admin|verification|review/i.test(message);
+  }, [snapshot]);
+
+  const hasPendingManualPayment = isAuthenticated && !isGuest && (
     readPendingManualPaymentMarker()
+    || isPendingReview
     || (
       snapshot?.billing.provider === 'manual'
       && snapshot.billing.paymentActionRequired

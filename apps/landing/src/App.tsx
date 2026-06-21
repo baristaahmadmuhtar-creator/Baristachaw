@@ -66,6 +66,7 @@ type RegisterState = {
   plan: 'free' | 'starter' | 'plus' | 'pro' | 'team';
   duration: BillingDuration;
   isLogin?: boolean;
+  promoCode?: string;
 };
 
 const MARKETING_LANGUAGE_KEY = 'baristachaw-marketing-language';
@@ -113,7 +114,7 @@ function getRegionName(region: Region): string {
   }
 }
 
-function PricingSection({ language, region, onRegionChange, onRegister }: { language: Language; region: Region; onRegionChange: (r: Region) => void; onRegister: (plan: 'free' | 'starter' | 'plus' | 'pro' | 'team', duration: BillingDuration) => void }) {
+function PricingSection({ language, region, onRegionChange, onRegister }: { language: Language; region: Region; onRegionChange: (r: Region) => void; onRegister: (plan: 'free' | 'starter' | 'plus' | 'pro' | 'team', duration: BillingDuration, promoCode?: string) => void }) {
   const [duration, setDuration] = useState<BillingDuration>('quarterly');
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
@@ -191,7 +192,7 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
                 <li key={feature}><Check size={16} /> {feature}</li>
               ))}
             </ul>
-            <button className="plan-cta" type="button" onClick={() => onRegister('free', duration)}>
+            <button className="plan-cta" type="button" onClick={() => onRegister('free', duration, promoApplied ? promoCode : undefined)}>
               {t('plan.free.cta', language)} <ArrowRight size={16} />
             </button>
           </article>
@@ -341,7 +342,7 @@ function RegionDropdown({ region, onRegionChange, language }: { region: Region; 
   );
 }
 
-function LandingHome({ language, region, onRegionChange, user, onLoginSuccess, onRegister }: { language: Language; region: Region; onRegionChange: (r: Region) => void; user: any; onLoginSuccess: () => void; onRegister: (plan: 'free' | 'starter' | 'plus' | 'pro' | 'team', duration?: BillingDuration, isLogin?: boolean) => void }) {
+function LandingHome({ language, region, onRegionChange, user, onLoginSuccess, onRegister }: { language: Language; region: Region; onRegionChange: (r: Region) => void; user: any; onLoginSuccess: () => void; onRegister: (plan: 'free' | 'starter' | 'plus' | 'pro' | 'team', duration?: BillingDuration, promoCode?: string, isLogin?: boolean) => void }) {
   return (
     <main>
       <HeroSection language={language} onRegister={() => onRegister('free')} user={user} />
@@ -421,7 +422,7 @@ export function App() {
   const [userLoading, setUserLoading] = useState(true);
   const [registerState, setRegisterState] = useState<RegisterState>({ open: false, plan: 'free', duration: 'quarterly' });
 
-  const openRegister = (plan: 'free' | 'starter' | 'plus' | 'pro' | 'team', duration: BillingDuration = 'quarterly', isLogin = false) => {
+  const openRegister = (plan: 'free' | 'starter' | 'plus' | 'pro' | 'team', duration: BillingDuration = 'quarterly', promoCode?: string, isLogin = false) => {
     const normalizedPlan = plan === 'plus' ? 'starter' : plan;
     if (normalizedPlan === 'team') {
       window.location.href = '/support?topic=general';
@@ -431,7 +432,7 @@ export function App() {
       window.location.href = APP_ORIGIN;
       return;
     }
-    setRegisterState({ open: true, plan: normalizedPlan, duration, isLogin });
+    setRegisterState({ open: true, plan: normalizedPlan, duration, isLogin, promoCode });
   };
 
   const checkAuth = async () => {
@@ -541,8 +542,8 @@ export function App() {
         onRegionChange={handleRegionChange} 
         user={user}
         onLogout={handleLogout}
-        onLoginClick={() => openRegister('free', 'quarterly', true)}
-        onRegisterClick={() => openRegister('free', 'quarterly', false)}
+        onLoginClick={() => openRegister('free', 'quarterly', undefined, true)}
+        onRegisterClick={() => openRegister('free', 'quarterly', undefined, false)}
       />
       <Routes>
         <Route path="/" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} user={user} onLoginSuccess={checkAuth} onRegister={openRegister} />} />
@@ -569,6 +570,7 @@ export function App() {
           plan={registerState.plan}
           duration={registerState.duration}
           initialIsLogin={registerState.isLogin}
+          promoCode={registerState.promoCode}
           user={user}
           onLoginSuccess={checkAuth}
           onClose={() => setRegisterState({ ...registerState, open: false })}

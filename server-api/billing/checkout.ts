@@ -179,11 +179,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const url = checkoutUrlForPlan(planCode, duration, promoCode);
   if (!url) {
-    const statusSnapshot = await buildAccountStatus(requestId, authResult.auth, 'web').catch(() => null);
+    const statusSnapshot = await buildAccountStatus(requestId, authResult.auth, 'web').catch((e) => {
+      console.error('[DEBUG] buildAccountStatus error:', e);
+      return null;
+    });
     let isUpgrade = false;
     let currentPlanCode = 'free';
 
     if (statusSnapshot) {
+      if (authResult.auth.userId === 'user_upgrade') {
+        console.error('[DEBUG] auth userId:', authResult.auth.userId);
+        console.error('[DEBUG] statusSnapshot user_upgrade:', JSON.stringify(statusSnapshot));
+      }
       const hasActivePaidPlan = statusSnapshot.user.planCode !== 'free' && statusSnapshot.billing.status === 'active';
       const hasPendingManual = (statusSnapshot as any).manualInvoice?.status === 'pending_proof' || (statusSnapshot as any).manualInvoice?.status === 'under_review';
       
@@ -240,7 +247,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
       }
 
-      // Apply promo code if provided
+      if (isUpgrade && overrideAmount !== undefined) {
+        try {
+          const currentPrices = await supabaseAdminRest<any[]>(config, `plan_prices?plan_code=eq.${currentPlanCode}&duration=eq.${duration}&currency=eq.${currency}&is_active=is.true&select=*&limit=1`);
+          const currentPriceData = currentPrices?.[0];
+          if (currentPriceData) {
+            const currentPlanPrice = Number(currentPriceData.discount_price ?? currentPriceData.original_price);
+            if (!isNaN(currentPlanPrice)) {
+              overrideAmount = Math.max(0, overrideAmount - currentPlanPrice);
+            }
+          }
+        } catch (e) {
+          console.error('Failed to fetch current plan price for upgrade calculation:', e);
+        }
+      }
+
+      // Apply promo code if provided (AFTER upgrade calculation, so discount applies to the difference)
       if (promoCode && overrideAmount !== undefined) {
         let promoData: any = null;
         let promoError = false;
@@ -278,20 +300,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
              error: 'Promo code not found or inactive.',
              errorCode: 'invalid_promo_code',
            });
-        }
-      }
-      if (isUpgrade && overrideAmount !== undefined) {
-        try {
-          const currentPrices = await supabaseAdminRest<any[]>(config, `plan_prices?plan_code=eq.${currentPlanCode}&duration=eq.${duration}&currency=eq.${currency}&is_active=is.true&select=*&limit=1`);
-          const currentPriceData = currentPrices?.[0];
-          if (currentPriceData) {
-            const currentPlanPrice = Number(currentPriceData.discount_price ?? currentPriceData.original_price);
-            if (!isNaN(currentPlanPrice)) {
-              overrideAmount = Math.max(0, overrideAmount - currentPlanPrice);
-            }
-          }
-        } catch (e) {
-          console.error('Failed to fetch current plan price for upgrade calculation:', e);
         }
       }
     }

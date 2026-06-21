@@ -13,6 +13,7 @@ type RegisterModalProps = {
   onLoginSuccess?: () => void;
   onClose: () => void;
   initialIsLogin?: boolean;
+  promoCode?: string;
 };
 
 const MANUAL_PAYMENT_PENDING_STORAGE_KEY = 'BARISTACHAW_MANUAL_PAYMENT_PENDING_V1';
@@ -47,7 +48,7 @@ function writePendingManualPaymentMarker(paymentRequestId: string, planCode: str
   }
 }
 
-export function RegisterModal({ language, plan, duration, user, onLoginSuccess, onClose, initialIsLogin }: RegisterModalProps) {
+export function RegisterModal({ language, plan, duration, user, onLoginSuccess, onClose, initialIsLogin, promoCode }: RegisterModalProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -224,6 +225,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
           planCode,
           duration: selectedDuration,
           currency,
+          ...(promoCode ? { promoCode } : {}),
         }),
       });
       const data = await res.json().catch(() => ({}));

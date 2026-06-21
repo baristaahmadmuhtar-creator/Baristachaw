@@ -144,6 +144,21 @@ const CATALOG_KIND_OPTIONS: AdminCatalogKind[] = ['grinder', 'water', 'dripper']
 const FEATURE_STATUS_OPTIONS: FeatureFlagStatus[] = ['available', 'maintenance', 'disabled'];
 const FEATURE_SURFACE_OPTIONS: FeatureSurface[] = ['global', 'web', 'pwa', 'mobile', 'admin'];
 const OPERATOR_REASON_MIN_LENGTH = 12;
+
+const FEATURE_LIMIT_KEYS: Array<{ key: string; label: string; group: string }> = [
+  { key: 'chat_normal', label: 'AI Chat Normal', group: 'Chat' },
+  { key: 'chat_fast', label: 'AI Chat Fast', group: 'Chat' },
+  { key: 'deep_think', label: 'Deep Think', group: 'Chat' },
+  { key: 'coffee_analysis', label: 'Coffee Analysis', group: 'Scanner' },
+  { key: 'read_label', label: 'Read Label', group: 'Scanner' },
+  { key: 'ai_latte_art', label: 'AI Latte Art', group: 'Scanner' },
+  { key: 'ai_coach', label: 'AI Coach', group: 'Advanced' },
+  { key: 'ai_search', label: 'AI Search', group: 'Advanced' },
+  { key: 'ai_brew', label: 'AI Brew', group: 'Advanced' },
+];
+
+type FeatureLimitEntry = { daily: string; monthly: string };
+type FeatureLimitsMap = Record<string, FeatureLimitEntry>;
 const ROLE_WEIGHT: Record<AdminRole, number> = {
   owner: 5,
   admin: 4,
@@ -213,8 +228,33 @@ type PlanEditorDraft = {
   checkoutMode: CheckoutMode;
   paymentMethodsText: string;
   featureLimitsText: string;
+  featureLimitsMap: FeatureLimitsMap;
   operatorNote: string;
 };
+
+function featureLimitsToMap(raw: Record<string, { daily: number; monthly: number }> | null | undefined): FeatureLimitsMap {
+  const map: FeatureLimitsMap = {};
+  for (const { key } of FEATURE_LIMIT_KEYS) {
+    const entry = raw?.[key];
+    map[key] = {
+      daily: entry ? String(entry.daily) : '0',
+      monthly: entry ? String(entry.monthly) : '0',
+    };
+  }
+  return map;
+}
+
+function featureLimitsMapToJson(map: FeatureLimitsMap): Record<string, { daily: number; monthly: number }> {
+  const result: Record<string, { daily: number; monthly: number }> = {};
+  for (const [key, entry] of Object.entries(map)) {
+    const daily = Math.max(0, Math.round(Number(entry.daily) || 0));
+    const monthly = Math.max(0, Math.round(Number(entry.monthly) || 0));
+    if (daily > 0 || monthly > 0) {
+      result[key] = { daily, monthly };
+    }
+  }
+  return result;
+}
 
 function planToDraft(plan: AdminPlan): PlanEditorDraft {
   return {
@@ -237,7 +277,8 @@ function planToDraft(plan: AdminPlan): PlanEditorDraft {
     displayPrice: plan.displayPrice,
     checkoutMode: plan.checkoutMode,
     paymentMethodsText: plan.paymentMethods.join('\n'),
-    featureLimitsText: plan.featureLimits ? JSON.stringify(plan.featureLimits, null, 2) : '{\n  "ai_chat": { "daily": 100, "monthly": 3000 },\n  "deep_think": { "daily": 10, "monthly": 300 }\n}',
+    featureLimitsText: plan.featureLimits ? JSON.stringify(plan.featureLimits, null, 2) : '{}',
+    featureLimitsMap: featureLimitsToMap(plan.featureLimits as Record<string, { daily: number; monthly: number }> | null),
     operatorNote: '',
   };
 }
@@ -302,14 +343,10 @@ function buildPlanEditorPatch(plan: AdminPlan, draft: PlanEditorDraft): AdminPla
   const paymentMethods = parseAdminList(draft.paymentMethodsText);
   if (!sameStringList(paymentMethods, plan.paymentMethods)) patch.paymentMethods = paymentMethods;
   
-  try {
-    const parsedFeatureLimits = JSON.parse(draft.featureLimitsText);
-    const existingFeatureLimits = JSON.stringify(plan.featureLimits || {});
-    if (JSON.stringify(parsedFeatureLimits) !== existingFeatureLimits) {
-      (patch as any).featureLimits = parsedFeatureLimits;
-    }
-  } catch (e) {
-    console.error("Failed to parse featureLimitsText:", e);
+  const computedLimits = featureLimitsMapToJson(draft.featureLimitsMap);
+  const existingFeatureLimits = JSON.stringify(plan.featureLimits || {});
+  if (JSON.stringify(computedLimits) !== existingFeatureLimits) {
+    (patch as any).featureLimits = computedLimits;
   }
   if (draft.recommended !== Boolean(plan.recommended)) patch.recommended = draft.recommended;
   if (draft.billingProvider !== plan.billingProvider) patch.billingProvider = draft.billingProvider;
@@ -1096,86 +1133,77 @@ function MobileAdminCommandBar({
   onRefresh: () => void;
 }) {
   const admin = useAdminCopy();
-  const activeTabLabel = admin.text(TABS.find((tab) => tab.id === activeTab)?.labelKey || 'tabOverview');
   const attentionCount = queues.riskUsers.length + queues.recoveryUsers.length + queues.billingUsers.length;
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const active = el.querySelector('[data-active="true"]') as HTMLElement | null;
+    if (active) {
+      active.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    }
+  }, [activeTab]);
 
   return (
     <section
-      className="sticky top-2 z-30 rounded-[1.2rem] border border-glass bg-[var(--bg-base)]/92 p-3 shadow-[var(--panel-elev-1)] backdrop-blur-xl lg:hidden"
+      className="sticky top-2 z-30 rounded-[1.2rem] border border-glass bg-[var(--bg-base)]/92 px-3 py-2.5 shadow-[var(--panel-elev-1)] backdrop-blur-xl lg:hidden"
       aria-label={admin.text('mobileAdminDock')}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-primary">{activeTabLabel}</p>
-          <p className="mt-0.5 truncate text-[11px] text-tertiary">
-            {admin.enumLabel(snapshot.dataMode)} / {attentionCount} {admin.text('attentionItems')}
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className={clsx('h-2 w-2 rounded-full shrink-0', attentionCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500')} />
+          <p className="truncate text-[11px] font-semibold text-secondary">
+            {admin.enumLabel(snapshot.dataMode)} · {attentionCount > 0 ? `${attentionCount} attention` : 'All clear'}
           </p>
         </div>
-        <div className="flex shrink-0 gap-2">
-          <button
-            type="button"
-            onClick={() => onOpenQueue('billing')}
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-glass bg-surface-alpha px-2.5 text-xs font-semibold text-secondary"
-          >
-            <WalletCards size={14} />
-            {queues.billingUsers.length}
-          </button>
+        <div className="flex shrink-0 gap-1.5">
+          {queues.billingUsers.length > 0 && (
+            <button
+              type="button"
+              onClick={() => onOpenQueue('billing')}
+              className="inline-flex h-8 items-center gap-1 rounded-lg border border-glass bg-surface-alpha px-2 text-[10px] font-bold text-amber-600 dark:text-amber-400"
+            >
+              <WalletCards size={12} />
+              {queues.billingUsers.length}
+            </button>
+          )}
           <button
             type="button"
             onClick={onRefresh}
             disabled={refreshing}
-            className="inline-flex min-h-9 items-center justify-center rounded-xl bg-blue-600 px-3 text-xs font-semibold text-white disabled:opacity-60"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white disabled:opacity-60"
             aria-label={admin.text('refresh')}
           >
-            <RefreshCcw size={14} className={refreshing ? 'animate-spin' : ''} />
+            <RefreshCcw size={13} className={refreshing ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
-      <div className="mt-3 grid grid-cols-4 gap-2">
-        <button
-          type="button"
-          onClick={() => onSelectTab('users')}
-          className={clsx(
-            'inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl text-xs font-semibold transition-colors',
-            activeTab === 'users' ? 'bg-blue-600 text-white' : 'border border-glass bg-surface-alpha text-secondary',
-          )}
-        >
-          <Users size={14} />
-          {admin.text('tabUsers')}
-        </button>
-        <button
-          type="button"
-          onClick={() => onSelectTab('plans')}
-          className={clsx(
-            'inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl text-xs font-semibold transition-colors',
-            activeTab === 'plans' ? 'bg-blue-600 text-white' : 'border border-glass bg-surface-alpha text-secondary',
-          )}
-        >
-          <WalletCards size={14} />
-          {admin.text('tabPlans')}
-        </button>
-        <button
-          type="button"
-          onClick={() => onSelectTab('recipes')}
-          className={clsx(
-            'inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl text-xs font-semibold transition-colors',
-            activeTab === 'recipes' ? 'bg-blue-600 text-white' : 'border border-glass bg-surface-alpha text-secondary',
-          )}
-        >
-          <Library size={14} />
-          {admin.text('tabRecipes')}
-        </button>
-        <button
-          type="button"
-          onClick={() => onSelectTab('launch')}
-          className={clsx(
-            'inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl text-xs font-semibold transition-colors',
-            activeTab === 'launch' ? 'bg-blue-600 text-white' : 'border border-glass bg-surface-alpha text-secondary',
-          )}
-        >
-          <ListChecks size={14} />
-          {admin.text('tabLaunch')}
-        </button>
+      <div ref={scrollRef} className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 hide-scrollbar">
+        {TABS.map(({ id, labelKey, icon: Icon }) => {
+          const isActive = activeTab === id;
+          const usersBadge = id === 'users' && (queues.riskUsers.length + queues.recoveryUsers.length) > 0;
+          const dbBadge = id === 'database' && queues.criticalChecks.length > 0;
+          return (
+            <button
+              key={id}
+              type="button"
+              data-active={isActive}
+              onClick={() => onSelectTab(id)}
+              className={clsx(
+                'inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-xl px-3 text-[11px] font-semibold transition-all whitespace-nowrap',
+                isActive
+                  ? 'bg-blue-600 text-white shadow-[0_2px_8px_rgba(37,99,235,0.25)]'
+                  : 'bg-surface-alpha text-secondary active:bg-[var(--bg-base)]',
+              )}
+            >
+              <Icon size={13} />
+              {admin.text(labelKey)}
+              {usersBadge && <span className="ml-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500/20 px-1 text-[8px] font-bold text-amber-500">{queues.riskUsers.length + queues.recoveryUsers.length}</span>}
+              {dbBadge && <span className="ml-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500/20 px-1 text-[8px] font-bold text-rose-500">{queues.criticalChecks.length}</span>}
+            </button>
+          );
+        })}
       </div>
     </section>
   );
@@ -2760,151 +2788,230 @@ function PlanEditorCard({
     onPatch(plan.code, patch);
   };
 
+  const updateLimitField = (featureKey: string, field: 'daily' | 'monthly', value: string) => {
+    setDraft((current) => ({
+      ...current,
+      featureLimitsMap: {
+        ...current.featureLimitsMap,
+        [featureKey]: {
+          ...current.featureLimitsMap[featureKey],
+          [field]: value,
+        },
+      },
+    }));
+  };
+
+  const [showBilling, setShowBilling] = useState(false);
+  const [showContent, setShowContent] = useState(false);
+
   return (
-    <article className="rounded-2xl border border-glass bg-surface-alpha p-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold text-primary">{plan.name}</p>
-            {plan.recommended ? <BadgeCheck size={17} className="text-blue-500" /> : null}
+    <article className="rounded-2xl border border-glass bg-surface-alpha overflow-hidden">
+      {/* ── Header ── */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-[var(--bg-base)]/50 px-4 py-3 border-b border-glass">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className={clsx(
+            'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold',
+            plan.code === 'free' ? 'bg-zinc-500/10 text-zinc-500' : plan.code === 'starter' ? 'bg-blue-500/10 text-blue-500' : plan.code === 'pro' ? 'bg-purple-500/10 text-purple-500' : plan.code === 'team' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500',
+          )}>
+            {plan.code.slice(0, 2).toUpperCase()}
+          </span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-bold text-primary truncate">{plan.name}</p>
+              {plan.recommended && <BadgeCheck size={15} className="text-blue-500 shrink-0" />}
+            </div>
+            <p className="text-[10px] text-tertiary truncate">{admin.currencyUsd(plan.priceMonthlyUsd)} · {admin.number(plan.activeUsers)} {admin.text('usersLabel')}</p>
           </div>
-          <p className="mt-1 text-xs text-tertiary">{admin.enumLabel(plan.code)} / {admin.currencyUsd(plan.priceMonthlyUsd)} / {admin.number(plan.activeUsers)} {admin.text('usersLabel')}</p>
         </div>
-        <div className="flex shrink-0 gap-2">
-          <button
-            type="button"
-            onClick={() => setDraft(planToDraft(plan))}
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-xs font-semibold text-secondary transition-colors hover:text-primary"
-            disabled={busy}
-            title={admin.text('reset')}
-          >
-            <RefreshCcw size={14} />
-            {admin.text('reset')}
+        <div className="flex shrink-0 gap-1.5">
+          <span className={clsx('inline-flex min-h-7 items-center rounded-full px-2 text-[10px] font-bold', changedKeys.length ? 'bg-blue-500/10 text-blue-600 dark:text-blue-300' : 'bg-surface-alpha text-tertiary')}>
+            {changedKeys.length ? `${changedKeys.length} changed` : 'No changes'}
+          </span>
+          <button type="button" onClick={() => setDraft(planToDraft(plan))} className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-glass bg-[var(--bg-base)] px-2.5 text-[11px] font-semibold text-secondary hover:text-primary transition-colors" disabled={busy}>
+            <RefreshCcw size={12} />
+            Reset
           </button>
-          <button
-            type="button"
-            onClick={save}
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-600 px-3 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={!canSave}
-            title={admin.text('save')}
-          >
-            <Save size={14} />
-            {busy ? admin.text('saving') : admin.text('save')}
+          <button type="button" onClick={save} className="inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-3 text-[11px] font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors" disabled={!canSave}>
+            <Save size={12} />
+            {busy ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
-        <label className="text-xs font-semibold text-secondary">
-          {admin.text('name')}
-          <input value={draft.name} onChange={(event) => setField('name', event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
-        </label>
-        <label className="text-xs font-semibold text-secondary">
-          {admin.text('displayPrice')}
-          <input value={draft.displayPrice} onChange={(event) => setField('displayPrice', event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
-        </label>
-      </div>
-
-      <label className="mt-3 block text-xs font-semibold text-secondary">
-        {admin.text('description')}
-        <textarea value={draft.description} onChange={(event) => setField('description', event.currentTarget.value)} className="glass-input mt-1 min-h-20 w-full rounded-xl px-3 py-2 text-sm" />
-      </label>
-
-      <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          [admin.text('priceUsd'), 'priceMonthlyUsd'],
-          [admin.text('aiDay'), 'aiDailyLimit'],
-          [admin.text('deepDay'), 'deepDailyLimit'],
-          [admin.text('scansDay'), 'scannerDailyLimit'],
-          [admin.text('storageMb'), 'storageMb'],
-          [admin.text('seats'), 'seats'],
-          [admin.text('slaHours'), 'supportSlaHours'],
-        ].map(([label, key]) => (
-          <label key={key} className="text-xs font-semibold text-secondary">
-            {label}
-            <input
-              type="number"
-              min={key === 'seats' || key === 'supportSlaHours' ? 1 : 0}
-              value={draft[key as keyof PlanEditorDraft] as string}
-              onChange={(event) => setField(key as keyof PlanEditorDraft, event.currentTarget.value as never)}
-              className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm"
-            />
+      <div className="p-4 space-y-4">
+        {/* ── Basic Info ── */}
+        <div className="grid gap-2.5 sm:grid-cols-2">
+          <label className="text-[11px] font-semibold text-secondary">
+            {admin.text('name')}
+            <input value={draft.name} onChange={(event) => setField('name', event.currentTarget.value)} className="glass-input mt-1 min-h-11 w-full rounded-xl px-3 text-sm" />
           </label>
-        ))}
+          <label className="text-[11px] font-semibold text-secondary">
+            {admin.text('displayPrice')}
+            <input value={draft.displayPrice} onChange={(event) => setField('displayPrice', event.currentTarget.value)} className="glass-input mt-1 min-h-11 w-full rounded-xl px-3 text-sm" />
+          </label>
+        </div>
+        <label className="block text-[11px] font-semibold text-secondary">
+          {admin.text('description')}
+          <textarea value={draft.description} onChange={(event) => setField('description', event.currentTarget.value)} className="glass-input mt-1 min-h-16 w-full rounded-xl px-3 py-2 text-sm" />
+        </label>
+
+        {/* ── Legacy Numeric Limits ── */}
+        <div className="grid gap-2 grid-cols-2 sm:grid-cols-4">
+          {[
+            [admin.text('priceUsd'), 'priceMonthlyUsd'],
+            [admin.text('aiDay'), 'aiDailyLimit'],
+            [admin.text('deepDay'), 'deepDailyLimit'],
+            [admin.text('scansDay'), 'scannerDailyLimit'],
+            [admin.text('storageMb'), 'storageMb'],
+            [admin.text('seats'), 'seats'],
+            [admin.text('slaHours'), 'supportSlaHours'],
+          ].map(([label, key]) => (
+            <label key={key} className="text-[10px] font-semibold text-secondary">
+              {label}
+              <input
+                type="number"
+                min={key === 'seats' || key === 'supportSlaHours' ? 1 : 0}
+                value={draft[key as keyof PlanEditorDraft] as string}
+                onChange={(event) => setField(key as keyof PlanEditorDraft, event.currentTarget.value as never)}
+                className="glass-input mt-1 min-h-11 w-full rounded-xl px-3 text-sm"
+              />
+            </label>
+          ))}
+        </div>
+
+        {/* ── Feature Limits Grid ── */}
+        <div className="rounded-xl border border-glass bg-[var(--bg-base)]/50 overflow-hidden">
+          <div className="grid grid-cols-[1fr_72px_72px] sm:grid-cols-[1fr_90px_90px] items-center gap-2 px-3 py-2 border-b border-glass bg-[var(--bg-base)]/60">
+            <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-tertiary">Feature</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-tertiary text-center">Daily</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-tertiary text-center">Monthly</span>
+          </div>
+          {(() => {
+            let lastGroup = '';
+            return FEATURE_LIMIT_KEYS.map(({ key, label, group }) => {
+              const showGroup = group !== lastGroup;
+              lastGroup = group;
+              const entry = draft.featureLimitsMap[key] || { daily: '0', monthly: '0' };
+              return (
+                <div key={key}>
+                  {showGroup && <div className="px-3 py-1.5 bg-[var(--bg-base)]/40 border-b border-glass"><span className="text-[9px] font-bold uppercase tracking-[0.12em] text-tertiary">{group}</span></div>}
+                  <div className="grid grid-cols-[1fr_72px_72px] sm:grid-cols-[1fr_90px_90px] items-center gap-2 px-3 py-1.5 border-b border-glass last:border-b-0 hover:bg-[var(--bg-base)]/30 transition-colors">
+                    <span className="text-[11px] font-semibold text-secondary truncate" title={key}>{label}</span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={entry.daily}
+                      onChange={(e) => updateLimitField(key, 'daily', e.currentTarget.value)}
+                      className="glass-input min-h-9 w-full rounded-lg px-2 text-center text-[11px] font-semibold"
+                    />
+                    <input
+                      type="number"
+                      min={0}
+                      value={entry.monthly}
+                      onChange={(e) => updateLimitField(key, 'monthly', e.currentTarget.value)}
+                      className="glass-input min-h-9 w-full rounded-lg px-2 text-center text-[11px] font-semibold"
+                    />
+                  </div>
+                </div>
+              );
+            });
+          })()}
+        </div>
+
+        {/* ── Billing Config (Collapsible) ── */}
+        <div className="rounded-xl border border-glass overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowBilling(!showBilling)}
+            className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left bg-[var(--bg-base)]/40 hover:bg-[var(--bg-base)]/60 transition-colors border-0"
+          >
+            <span className="text-[11px] font-bold text-secondary">Billing & Integrations</span>
+            <ChevronRight size={13} className={clsx('text-tertiary transition-transform', showBilling && 'rotate-90')} />
+          </button>
+          {showBilling && (
+            <div className="p-3 space-y-2.5 border-t border-glass">
+              <div className="grid gap-2 sm:grid-cols-3">
+                <label className="text-[10px] font-semibold text-secondary">
+                  {admin.text('provider')}
+                  <select value={draft.billingProvider} onChange={(event) => setField('billingProvider', event.currentTarget.value as BillingProvider)} className="mt-1 min-h-11 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+                    {BILLING_PROVIDER_OPTIONS.map((p) => <option key={p} value={p}>{admin.enumLabel(p)}</option>)}
+                  </select>
+                </label>
+                <label className="text-[10px] font-semibold text-secondary">
+                  {admin.text('market')}
+                  <select value={draft.market} onChange={(event) => setField('market', event.currentTarget.value as BillingMarket)} className="mt-1 min-h-11 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+                    {BILLING_MARKET_OPTIONS.map((m) => <option key={m} value={m}>{admin.enumLabel(m)}</option>)}
+                  </select>
+                </label>
+                <label className="text-[10px] font-semibold text-secondary">
+                  {admin.text('checkout')}
+                  <select value={draft.checkoutMode} onChange={(event) => setField('checkoutMode', event.currentTarget.value as CheckoutMode)} className="mt-1 min-h-11 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+                    {CHECKOUT_MODE_OPTIONS.map((cm) => <option key={cm} value={cm}>{admin.enumLabel(cm)}</option>)}
+                  </select>
+                </label>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-3">
+                <label className="text-[10px] font-semibold text-secondary">
+                  {admin.text('productId')}
+                  <input value={draft.billingProductId} onChange={(event) => setField('billingProductId', event.currentTarget.value)} className="glass-input mt-1 min-h-11 w-full rounded-xl px-3 text-sm" />
+                </label>
+                <label className="text-[10px] font-semibold text-secondary">
+                  {admin.text('priceId')}
+                  <input value={draft.billingPriceId} onChange={(event) => setField('billingPriceId', event.currentTarget.value)} className="glass-input mt-1 min-h-11 w-full rounded-xl px-3 text-sm" />
+                </label>
+                <label className="text-[10px] font-semibold text-secondary">
+                  {admin.text('entitlementId')}
+                  <input value={draft.revenuecatEntitlementId} onChange={(event) => setField('revenuecatEntitlementId', event.currentTarget.value)} className="glass-input mt-1 min-h-11 w-full rounded-xl px-3 text-sm" />
+                </label>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Content (Collapsible) ── */}
+        <div className="rounded-xl border border-glass overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowContent(!showContent)}
+            className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left bg-[var(--bg-base)]/40 hover:bg-[var(--bg-base)]/60 transition-colors border-0"
+          >
+            <span className="text-[11px] font-bold text-secondary">Features & Payment Methods</span>
+            <ChevronRight size={13} className={clsx('text-tertiary transition-transform', showContent && 'rotate-90')} />
+          </button>
+          {showContent && (
+            <div className="p-3 space-y-2.5 border-t border-glass">
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                <label className="text-[10px] font-semibold text-secondary">
+                  {admin.text('features')}
+                  <textarea value={draft.featuresText} onChange={(event) => setField('featuresText', event.currentTarget.value)} className="glass-input mt-1 min-h-20 w-full rounded-xl px-3 py-2 text-sm" />
+                </label>
+                <label className="text-[10px] font-semibold text-secondary">
+                  {admin.text('paymentMethods')}
+                  <textarea value={draft.paymentMethodsText} onChange={(event) => setField('paymentMethodsText', event.currentTarget.value)} className="glass-input mt-1 min-h-20 w-full rounded-xl px-3 py-2 text-sm" />
+                </label>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Footer ── */}
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+          <label className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-[11px] font-semibold text-secondary">
+            <input type="checkbox" checked={draft.recommended} onChange={(event) => setField('recommended', event.currentTarget.checked)} className="rounded" />
+            {admin.text('recommended')}
+          </label>
+        </div>
+        <label className="block text-[11px] font-semibold text-secondary">
+          {admin.text('operatorNote')}
+          <textarea
+            value={draft.operatorNote}
+            onChange={(event) => setField('operatorNote', event.currentTarget.value)}
+            placeholder={admin.text('operatorNotePlaceholder')}
+            className="glass-input mt-1 min-h-16 w-full rounded-xl px-3 py-2 text-sm"
+          />
+        </label>
+        {invalidNumber && <p className="text-[11px] font-semibold text-rose-600 dark:text-rose-300">{admin.text('numericFieldsInvalid')}</p>}
       </div>
-
-      <label className="mt-3 block text-xs font-semibold text-secondary">
-        Feature Limits (JSON)
-        <textarea value={draft.featureLimitsText} onChange={(event) => setField('featureLimitsText', event.currentTarget.value)} className="glass-input mt-1 min-h-32 w-full rounded-xl px-3 py-2 text-sm font-mono" placeholder={'{\n  "ai_chat": { "daily": 100, "monthly": 3000 },\n  "deep_think": { "daily": 10, "monthly": 300 }\n}'} />
-      </label>
-
-      <div className="mt-3 grid gap-3 md:grid-cols-3">
-        <label className="text-xs font-semibold text-secondary">
-          {admin.text('provider')}
-          <select value={draft.billingProvider} onChange={(event) => setField('billingProvider', event.currentTarget.value as BillingProvider)} className="mt-1 min-h-10 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-            {BILLING_PROVIDER_OPTIONS.map((provider) => <option key={provider} value={provider}>{admin.enumLabel(provider)}</option>)}
-          </select>
-        </label>
-        <label className="text-xs font-semibold text-secondary">
-          {admin.text('market')}
-          <select value={draft.market} onChange={(event) => setField('market', event.currentTarget.value as BillingMarket)} className="mt-1 min-h-10 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-            {BILLING_MARKET_OPTIONS.map((market) => <option key={market} value={market}>{admin.enumLabel(market)}</option>)}
-          </select>
-        </label>
-        <label className="text-xs font-semibold text-secondary">
-          {admin.text('checkout')}
-          <select value={draft.checkoutMode} onChange={(event) => setField('checkoutMode', event.currentTarget.value as CheckoutMode)} className="mt-1 min-h-10 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-            {CHECKOUT_MODE_OPTIONS.map((mode) => <option key={mode} value={mode}>{admin.enumLabel(mode)}</option>)}
-          </select>
-        </label>
-      </div>
-
-      <div className="mt-3 grid gap-3 md:grid-cols-3">
-        <label className="text-xs font-semibold text-secondary">
-          {admin.text('productId')}
-          <input value={draft.billingProductId} onChange={(event) => setField('billingProductId', event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
-        </label>
-        <label className="text-xs font-semibold text-secondary">
-          {admin.text('priceId')}
-          <input value={draft.billingPriceId} onChange={(event) => setField('billingPriceId', event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
-        </label>
-        <label className="text-xs font-semibold text-secondary">
-          {admin.text('entitlementId')}
-          <input value={draft.revenuecatEntitlementId} onChange={(event) => setField('revenuecatEntitlementId', event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
-        </label>
-      </div>
-
-      <div className="mt-3 grid gap-3 md:grid-cols-2">
-        <label className="text-xs font-semibold text-secondary">
-          {admin.text('features')}
-          <textarea value={draft.featuresText} onChange={(event) => setField('featuresText', event.currentTarget.value)} className="glass-input mt-1 min-h-24 w-full rounded-xl px-3 py-2 text-sm" />
-        </label>
-        <label className="text-xs font-semibold text-secondary">
-          {admin.text('paymentMethods')}
-          <textarea value={draft.paymentMethodsText} onChange={(event) => setField('paymentMethodsText', event.currentTarget.value)} className="glass-input mt-1 min-h-24 w-full rounded-xl px-3 py-2 text-sm" />
-        </label>
-      </div>
-
-      <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-xs font-semibold text-secondary">
-          <input type="checkbox" checked={draft.recommended} onChange={(event) => setField('recommended', event.currentTarget.checked)} />
-          {admin.text('recommended')}
-        </label>
-        <span className={clsx('text-xs font-semibold', changedKeys.length ? 'text-blue-600 dark:text-blue-300' : 'text-tertiary')}>
-          {changedKeys.length ? admin.format('pendingChanges', { count: changedKeys.length }) : admin.text('noPendingChanges')}
-        </span>
-      </div>
-
-      <label className="mt-3 block text-xs font-semibold text-secondary">
-        {admin.text('operatorNote')}
-        <textarea
-          value={draft.operatorNote}
-          onChange={(event) => setField('operatorNote', event.currentTarget.value)}
-          placeholder={admin.text('operatorNotePlaceholder')}
-          className="glass-input mt-1 min-h-20 w-full rounded-xl px-3 py-2 text-sm"
-        />
-      </label>
-      {invalidNumber ? <p className="mt-2 text-xs font-semibold text-rose-600 dark:text-rose-300">{admin.text('numericFieldsInvalid')}</p> : null}
     </article>
   );
 }

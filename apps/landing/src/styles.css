@@ -108,7 +108,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .hero-image { position: absolute; inset: 0; z-index: -4; background: url('/assets/hero-brew.jpg') center 42% / cover no-repeat; filter: saturate(.72) contrast(1.06); }
 .hero-wash { position: absolute; inset: 0; z-index: -3; background: linear-gradient(90deg, rgba(4,15,38,.98) 0%, rgba(4,18,45,.88) 42%, rgba(5,18,42,.36) 72%, rgba(5,17,39,.62) 100%), linear-gradient(0deg, rgba(3,13,32,.8), transparent 48%); }
 .hero::after { content: ""; position: absolute; inset: auto 0 0; height: 180px; z-index: -2; background: linear-gradient(transparent, rgba(4,14,34,.82)); }
-.hero-copy { position: absolute; z-index: 2; left: max(24px, calc((100vw - var(--max)) / 2)); top: 50%; width: min(620px, calc(100vw - 48px)); transform: translateY(-44%); }
+.hero-copy { position: absolute; z-index: 4; left: max(24px, calc((100vw - var(--max)) / 2)); top: 50%; width: min(620px, calc(100vw - 420px)); transform: translateY(-44%); }
 .hero-brand { margin: 0 0 22px; font-family: Manrope, sans-serif; font-size: clamp(18px, 2vw, 24px); font-weight: 800; letter-spacing: -.04em; }
 .hero h1 { margin: 0; max-width: 720px; font-family: Manrope, sans-serif; font-size: clamp(45px, 5.6vw, 82px); line-height: .98; letter-spacing: -.065em; text-wrap: balance; }
 .hero-title-mobile { display: none; }
@@ -614,20 +614,20 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media (max-width: 760px) {
   .site-header { height: 68px; padding-inline: 18px; }
   .brand-lockup img { width: 38px; height: 38px; }
-  .hero { height: auto; min-height: 880px; padding: 112px 20px 250px; }
+  .hero { height: auto; min-height: 100svh; padding: 112px 20px 60px; display: flex; flex-direction: column; gap: 40px; justify-content: flex-start; }
   .hero-image { background-position: 61% center; }
   .hero-wash { background: linear-gradient(180deg,rgba(3,13,34,.91),rgba(4,15,38,.74) 58%,rgba(3,12,30,.94)); }
-  .hero-copy { position: relative; left: auto; top: auto; width: auto; transform: none; }
+  .hero-copy { position: relative; left: auto; top: auto; width: auto; transform: none; z-index: 4; margin-bottom: auto; }
   .hero-brand { margin-bottom: 18px; font-size: 17px; }
   .hero h1 { max-width: 570px; font-size: clamp(43px,12vw,62px); line-height: .99; }
   .hero-title-desktop { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
   .hero-title-mobile { display: inline; font-size: clamp(35px,10.8vw,46px); line-height: 1.02; }
   .hero-body { font-size: 16px; }
   .hero-actions .button { flex: 1 1 180px; }
-  .hero-actions .button-ghost { display: none; }
+  .hero-actions .button-ghost { display: inline-flex; }
   .hero-microcopy { display: none; }
   .hero-register { display: none; }
-  .recipe-visual { left: 20px; right: 20px; top: auto; bottom: 28px; width: auto; padding: 17px; transform: none; }
+  .recipe-visual { position: relative; left: auto; right: auto; top: auto; bottom: auto; width: 100%; padding: 20px; transform: none; z-index: 3; }
   .recipe-numbers { margin: 13px 0; }
   .recipe-numbers div { padding-block: 10px; }
   .recipe-numbers strong { font-size: 16px; }

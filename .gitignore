@@ -57,3 +57,4 @@ __MACOSX/
 **/.git-backup*/
 
 .env*.local
+.vercel

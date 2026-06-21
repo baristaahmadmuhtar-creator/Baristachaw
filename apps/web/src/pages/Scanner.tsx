@@ -646,7 +646,7 @@ export function Scanner() {
   };
 
   const setModeAndReset = (nextMode: ScannerMode) => {
-    if (nextMode === "latte" && effectivePlanCode === "starter") {
+    if (nextMode === "latte" && effectivePlanCode !== "pro" && effectivePlanCode !== "team" && effectivePlanCode !== "enterprise") {
       openGate("upgrade", "scanner-latte");
       return;
     }

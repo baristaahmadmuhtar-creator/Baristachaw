@@ -6688,7 +6688,7 @@ function PlanResultDialog({
           : (currentIndex + 1) % orderedTabs.length;
     const nextTab = orderedTabs[nextIndex];
     if (nextTab) {
-      if (nextTab === 'coach' && effectivePlanCode === 'starter') {
+      if (nextTab === 'coach' && effectivePlanCode !== 'pro' && effectivePlanCode !== 'team' && effectivePlanCode !== 'enterprise') {
         onOpenGate?.('upgrade', 'ai-coach');
         return;
       }
@@ -7693,7 +7693,7 @@ function PlanResultDialog({
                       aria-controls={`ai-brew-result-panel-${tab.id}`}
                       tabIndex={activeTab === tab.id ? 0 : -1}
                       onClick={() => {
-                        if (tab.id === 'coach' && effectivePlanCode === 'starter') {
+                        if (tab.id === 'coach' && effectivePlanCode !== 'pro' && effectivePlanCode !== 'team' && effectivePlanCode !== 'enterprise') {
                           onOpenGate?.('upgrade', 'ai-coach');
                         } else {
                           setActiveTab(tab.id);

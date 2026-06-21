@@ -980,6 +980,12 @@
     --tw-prose-td-borders: var(--glass-border);
   }
 
+  .chat-markdown pre,
+  .chat-markdown code {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
   .chat-container :where(div, form, article, section, main, header, footer, p, ul, ol, li, span, a, pre, code, table, blockquote) {
     min-width: 0;
   }

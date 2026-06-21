@@ -1836,7 +1836,7 @@ export function Chat() {
                 {audioBubbleUrl ? (
                   <AudioBubble url={audioBubbleUrl} isUser={msg.role === 'user'} />
                 ) : hasText ? (
-                  <div className={`prose prose-sm min-w-0 max-w-none overflow-hidden break-words [overflow-wrap:anywhere] prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-pre:my-3 prose-blockquote:my-3 prose-headings:my-2 ${msg.role === 'user' ? 'text-white prose-p:text-white prose-headings:text-white' : 'chat-markdown chat-bubble-markdown chat-bubble-text'}`}>
+                  <div className={`prose prose-sm min-w-0 max-w-none overflow-hidden break-words [overflow-wrap:anywhere] prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-pre:my-3 prose-pre:max-w-full prose-pre:overflow-x-auto prose-blockquote:my-3 prose-headings:my-2 ${msg.role === 'user' ? 'text-white prose-p:text-white prose-headings:text-white' : 'chat-markdown chat-bubble-markdown chat-bubble-text'}`}>
                     <Suspense fallback={(
                       <p className={`whitespace-pre-wrap break-words ${msg.role === 'user' ? 'text-white' : 'chat-bubble-text'}`}>
                         {msg.text}
@@ -2038,13 +2038,13 @@ export function Chat() {
         </AnimatePresence>
 
         {showComposerQuickPrompts && (
-          <div className="chat-quick-prompt-strip mb-2 grid min-w-0 max-w-full grid-cols-3 gap-1.5" data-testid="chat-quick-prompts">
+          <div className="chat-quick-prompt-strip mb-2 flex min-w-0 max-w-full gap-2 overflow-x-auto hide-scrollbar pb-1 px-1" data-testid="chat-quick-prompts">
             {chatQuickPrompts.map((item) => (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => applyQuickPrompt(item.prompt)}
-                className="min-w-0 rounded-full border panel-divider-subtle bg-[var(--nav-bg)]/90 px-2.5 py-2 text-left text-[11px] font-semibold text-primary shadow-[0_8px_18px_rgba(15,23,42,0.08)] transition-colors hover:bg-surface-alpha-hover focus-soft sm:px-3 sm:text-xs"
+                className="shrink-0 whitespace-nowrap min-w-0 rounded-full border panel-divider-subtle bg-[var(--nav-bg)]/90 px-3 py-2 text-left text-[11px] font-semibold text-primary shadow-[0_8px_18px_rgba(15,23,42,0.08)] transition-colors hover:bg-surface-alpha-hover focus-soft sm:text-xs"
                 data-testid={`chat-quick-prompt-${item.id}`}
               >
                 <span className="flex min-w-0 items-center justify-center gap-1.5">

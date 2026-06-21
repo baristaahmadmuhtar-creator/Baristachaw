@@ -1,0 +1,40 @@
+name: One-shot modal copy patch
+
+on:
+  push:
+    branches:
+      - fix/pricing-plan-feature-gates
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: contains(github.event.head_commit.message, 'Run one-shot modal copy patch')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/pricing-plan-feature-gates
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Patch modal copy and remove one-shot workflow
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('apps/web/src/components/billing/AiAccessGate.tsx')
+          text = path.read_text(encoding='utf-8')
+          old = """? 'Guided AI tools, log brew, scanner history'
+                              : 'AI Coach, latte art, scan analysis, Deep mode'"""
+          new = """? 'Limited AI Chat, Basic + Advanced Brew, Lite & Pro Brew Guide'
+                              : 'AI Coach, AI Latte Art, scan analysis, Deep mode'"""
+          if old not in text:
+              raise SystemExit('target modal copy not found')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/one-shot-modal-copy-patch.yml
+          git add apps/web/src/components/billing/AiAccessGate.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m "Align upgrade modal plan copy"
+          git push origin HEAD:fix/pricing-plan-feature-gates

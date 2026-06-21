@@ -235,6 +235,7 @@ export function Chat() {
   const [savedMessageIds, setSavedMessageIds] = useState<Set<string>>(new Set());
   const [savingMessageIds, setSavingMessageIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
   const composerMenuRef = useRef<HTMLDivElement | null>(null);
@@ -414,7 +415,15 @@ export function Chat() {
   }, [activeSessionId, agentProfile.preferredLanguage, globalUiLanguage, refreshChatState]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const el = scrollContainerRef.current;
+    if (!el) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    if (distanceFromBottom < 160) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -446,7 +455,7 @@ export function Chat() {
     if (!textarea) return;
 
     const MIN_H = 24;
-    const MAX_H = 112;
+    const MAX_H = 132;
 
     textarea.style.height = `${MIN_H}px`;
     const nextHeight = Math.max(MIN_H, Math.min(textarea.scrollHeight, MAX_H));
@@ -1719,6 +1728,7 @@ export function Chat() {
 
       {/* ─── Messages ─── */}
       <div
+        ref={scrollContainerRef}
         className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-6 scroll-smooth"
         style={{
           paddingBottom: messageListBottomPadding,

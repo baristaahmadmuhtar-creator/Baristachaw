@@ -8956,14 +8956,14 @@ function PlanResultDialog({
                   </details>
                 )}
 
-                <div className="mt-4 grid min-w-0 grid-cols-3 gap-1.5 sm:gap-2">
+                <div className="mt-4 flex w-full items-center gap-2 overflow-x-auto pb-2 snap-x snap-mandatory hide-scrollbar sm:grid sm:min-w-0 sm:grid-cols-3 sm:overflow-visible sm:pb-0 sm:snap-none">
                   {primaryAiAssistActions.map((action) => (
                     <button
                       key={action.mode}
                       type="button"
                       onClick={() => onRunAiCoach(action.mode)}
                       disabled={aiCoachDisabled}
-                      className="flex min-h-[48px] min-w-0 flex-col items-center justify-center gap-1 rounded-xl border panel-divider-subtle bg-surface-alpha px-2 py-2 text-center transition-colors hover:border-blue-500/35 hover:bg-surface-alpha-hover disabled:cursor-not-allowed disabled:opacity-45 sm:min-h-[64px] sm:flex-row sm:items-center sm:justify-start sm:gap-3 sm:rounded-2xl sm:px-3 sm:py-3 sm:text-left"
+                      className="flex min-h-[48px] min-w-[120px] shrink-0 snap-start flex-col items-center justify-center gap-1 rounded-xl border panel-divider-subtle bg-surface-alpha px-2 py-2 text-center transition-colors hover:border-blue-500/35 hover:bg-surface-alpha-hover disabled:cursor-not-allowed disabled:opacity-45 sm:min-w-0 sm:min-h-[64px] sm:flex-row sm:items-center sm:justify-start sm:gap-3 sm:rounded-2xl sm:px-3 sm:py-3 sm:text-left"
                       data-testid={`ai-brew-ai-assist-${action.mode}`}
                     >
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-600/10 text-blue-500 sm:h-9 sm:w-9">

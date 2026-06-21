@@ -3,8 +3,8 @@ import { getSupabaseAdminConfig, supabaseAdminRest } from '../_supabaseAdmin.js'
 import type { FeatureSurface } from '../admin/_featureFlags.js';
 import { buildAccountStatus, type AccountStatusResponse, type PlanCode } from './status.js';
 
-export type PaidAiFeature = 'chat' | 'scanner' | 'search' | 'brew';
-export type PaidAiQuotaKind = 'ai' | 'deep' | 'scanner';
+export type PaidAiFeature = string;
+export type PaidAiQuotaKind = string;
 
 export type PaidAiQuotaReservation = {
   requestId: string;

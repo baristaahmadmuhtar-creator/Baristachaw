@@ -212,6 +212,7 @@ type PlanEditorDraft = {
   displayPrice: string;
   checkoutMode: CheckoutMode;
   paymentMethodsText: string;
+  featureLimitsText: string;
   operatorNote: string;
 };
 
@@ -236,6 +237,7 @@ function planToDraft(plan: AdminPlan): PlanEditorDraft {
     displayPrice: plan.displayPrice,
     checkoutMode: plan.checkoutMode,
     paymentMethodsText: plan.paymentMethods.join('\n'),
+    featureLimitsText: plan.featureLimits ? JSON.stringify(plan.featureLimits, null, 2) : '{\n  "ai_chat": { "daily": 100, "monthly": 3000 },\n  "deep_think": { "daily": 10, "monthly": 300 }\n}',
     operatorNote: '',
   };
 }
@@ -299,6 +301,16 @@ function buildPlanEditorPatch(plan: AdminPlan, draft: PlanEditorDraft): AdminPla
   if (!sameStringList(features, plan.features)) patch.features = features;
   const paymentMethods = parseAdminList(draft.paymentMethodsText);
   if (!sameStringList(paymentMethods, plan.paymentMethods)) patch.paymentMethods = paymentMethods;
+  
+  try {
+    const parsedFeatureLimits = JSON.parse(draft.featureLimitsText);
+    const existingFeatureLimits = JSON.stringify(plan.featureLimits || {});
+    if (JSON.stringify(parsedFeatureLimits) !== existingFeatureLimits) {
+      (patch as any).featureLimits = parsedFeatureLimits;
+    }
+  } catch (e) {
+    console.error("Failed to parse featureLimitsText:", e);
+  }
   if (draft.recommended !== Boolean(plan.recommended)) patch.recommended = draft.recommended;
   if (draft.billingProvider !== plan.billingProvider) patch.billingProvider = draft.billingProvider;
   if (draft.market !== plan.market) patch.market = draft.market;
@@ -2820,6 +2832,11 @@ function PlanEditorCard({
           </label>
         ))}
       </div>
+
+      <label className="mt-3 block text-xs font-semibold text-secondary">
+        Feature Limits (JSON)
+        <textarea value={draft.featureLimitsText} onChange={(event) => setField('featureLimitsText', event.currentTarget.value)} className="glass-input mt-1 min-h-32 w-full rounded-xl px-3 py-2 text-sm font-mono" placeholder={'{\n  "ai_chat": { "daily": 100, "monthly": 3000 },\n  "deep_think": { "daily": 10, "monthly": 300 }\n}'} />
+      </label>
 
       <div className="mt-3 grid gap-3 md:grid-cols-3">
         <label className="text-xs font-semibold text-secondary">

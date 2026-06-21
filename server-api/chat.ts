@@ -823,7 +823,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             auth: authResult.auth,
             rawClientContext,
             feature: paidFeature,
-            quotaKind: normalizedMode === 'deep' || normalizedMode === 'deep_think' ? 'deep' : 'ai',
+            quotaKind: normalizedMode === 'deep' || normalizedMode === 'deep_think' ? 'deep_think'
+                     : normalizedMode === 'fast' ? 'chat_fast'
+                     : 'chat_normal',
             route: '/api/chat',
             action: usageFeature,
             mode: normalizedMode || 'normal',

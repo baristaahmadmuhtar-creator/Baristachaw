@@ -2625,11 +2625,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       action,
       mode: action === 'deep_think' ? 'deep' : action,
       feature: paidFeature,
-      quotaKind: action === 'deep_think'
-        ? 'deep'
-        : paidFeature === 'scanner'
-          ? 'scanner'
-          : 'ai',
+      quotaKind: action === 'deep_think' ? 'deep_think'
+        : action === 'fast' ? 'chat_fast'
+        : action === 'balanced' ? 'chat_normal'
+        : action === 'analyze_image' || action === 'analyze_attachment' ? 'coffee_analysis'
+        : action === 'edit_latte_art' ? 'ai_latte_art'
+        : action === 'ai_coach' ? 'ai_coach'
+        : action === 'search' ? 'ai_search'
+        : action === 'brew_sequence' || action === 'brew_optimize' ? 'ai_brew'
+        : paidFeature === 'scanner' ? 'read_label'
+        : 'ai_chat',
     });
     if (aiAccess.ok === false) {
       return res.status(aiAccess.statusCode).json({

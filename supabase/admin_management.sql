@@ -22,6 +22,7 @@ create table if not exists public.app_plans (
   checkout_mode text not null default 'disabled' check (checkout_mode in ('disabled', 'external', 'stripe_checkout', 'play_billing', 'app_store', 'manual_invoice')),
   payment_methods text[] not null default '{}',
   display_order integer not null default 100,
+  feature_limits jsonb not null default '{}'::jsonb,
   metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -44,6 +45,7 @@ alter table public.app_plans
   add column if not exists support_sla_hours integer not null default 72,
   add column if not exists features text[] not null default '{}',
   add column if not exists recommended boolean not null default false,
+  add column if not exists feature_limits jsonb not null default '{}'::jsonb,
   add column if not exists display_order integer not null default 100;
 
 alter table public.app_plans
@@ -217,10 +219,24 @@ create table if not exists public.app_usage_daily (
   speech_seconds integer not null default 0,
   total_tokens integer not null default 0,
   cost_usd numeric not null default 0,
+  feature_usage jsonb not null default '{}'::jsonb,
   metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (user_id, usage_date)
+);
+
+create table if not exists public.app_usage_monthly (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null references public.app_users(id) on delete cascade,
+  usage_month text not null,
+  feature_usage jsonb not null default '{}'::jsonb,
+  total_tokens integer not null default 0,
+  cost_usd numeric not null default 0,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, usage_month)
 );
 
 alter table public.app_usage_daily
@@ -231,6 +247,7 @@ alter table public.app_usage_daily
   add column if not exists image_edits integer not null default 0,
   add column if not exists speech_seconds integer not null default 0,
   add column if not exists total_tokens integer not null default 0,
+  add column if not exists feature_usage jsonb not null default '{}'::jsonb,
   add column if not exists cost_usd numeric not null default 0;
 
 create table if not exists public.ai_quota_ledger (
@@ -239,7 +256,7 @@ create table if not exists public.ai_quota_ledger (
   route text not null default '',
   action text not null default '',
   mode text not null default '',
-  quota_kind text not null default 'ai' check (quota_kind in ('ai', 'deep', 'scanner')),
+  quota_kind text not null default 'ai',
   requested_units integer not null default 1 check (requested_units > 0),
   reservation_status text not null default 'reserved' check (reservation_status in ('reserved', 'committed', 'refunded', 'rejected')),
   charged_units integer not null default 0 check (charged_units >= 0),
@@ -337,6 +354,7 @@ set search_path = ''
 as $$
 declare
   v_today date := current_date;
+  v_month_str text := to_char(v_today, 'YYYY-MM');
   v_feature text := lower(coalesce(p_feature, 'ai'));
   v_amount integer := greatest(coalesce(p_amount, 1), 1);
   v_request_id text := nullif(trim(coalesce(p_request_id, '')), '');
@@ -344,19 +362,19 @@ declare
   v_ai_limit integer := 0;
   v_deep_limit integer := 0;
   v_scanner_limit integer := 0;
+  v_feature_limits jsonb;
   v_usage public.app_usage_daily%rowtype;
+  v_monthly_usage public.app_usage_monthly%rowtype;
   v_current integer := 0;
+  v_monthly_current integer := 0;
   v_limit integer := 0;
+  v_monthly_limit integer := 0;
   v_reserved integer := 0;
   v_reserved_ai integer := 0;
   v_existing public.ai_quota_ledger%rowtype;
 begin
   if v_request_id is null then
     raise exception 'request_id is required';
-  end if;
-
-  if v_feature not in ('ai', 'deep', 'scanner') then
-    v_feature := 'ai';
   end if;
 
   select *
@@ -375,8 +393,8 @@ begin
     return;
   end if;
 
-  select u.plan_code, p.ai_daily_limit, p.deep_daily_limit, p.scanner_daily_limit
-    into v_plan_code, v_ai_limit, v_deep_limit, v_scanner_limit
+  select u.plan_code, p.ai_daily_limit, p.deep_daily_limit, p.scanner_daily_limit, p.feature_limits
+    into v_plan_code, v_ai_limit, v_deep_limit, v_scanner_limit, v_feature_limits
   from public.app_users u
   join public.app_plans p on p.code = u.plan_code
   where u.id = p_user_id
@@ -398,6 +416,17 @@ begin
     and public.app_usage_daily.usage_date = v_today
   for update;
 
+  insert into public.app_usage_monthly (user_id, usage_month)
+  values (p_user_id, v_month_str)
+  on conflict (user_id, usage_month) do nothing;
+
+  select *
+    into v_monthly_usage
+  from public.app_usage_monthly
+  where public.app_usage_monthly.user_id = p_user_id
+    and public.app_usage_monthly.usage_month = v_month_str
+  for update;
+
   select coalesce(sum(requested_units), 0)
     into v_reserved
   from public.ai_quota_ledger
@@ -416,9 +445,26 @@ begin
     and public.ai_quota_ledger.created_at >= v_today::timestamptz
     and public.ai_quota_ledger.created_at < (v_today + 1)::timestamptz;
 
-  if v_feature = 'deep' then
-    v_current := coalesce(v_usage.deep_requests, 0);
+  v_limit := coalesce((v_feature_limits->v_feature->>'daily')::integer, 0);
+  v_monthly_limit := coalesce((v_feature_limits->v_feature->>'monthly')::integer, 0);
+
+  if v_feature = 'deep' and (v_feature_limits ? v_feature) = false then
     v_limit := v_deep_limit;
+  elsif v_feature = 'scanner' and (v_feature_limits ? v_feature) = false then
+    v_limit := v_scanner_limit;
+  elsif v_feature = 'ai' and (v_feature_limits ? v_feature) = false then
+    v_limit := v_ai_limit;
+  end if;
+
+  if v_monthly_limit = 0 then
+    v_monthly_limit := 9999999;
+  end if;
+
+  v_current := coalesce((v_usage.feature_usage->>v_feature)::integer, 0);
+  v_monthly_current := coalesce((v_monthly_usage.feature_usage->>v_feature)::integer, 0);
+
+  if v_feature = 'deep' then
+    v_current := v_current + coalesce(v_usage.deep_requests, 0);
     if v_current + v_reserved + v_amount > v_limit or coalesce(v_usage.ai_requests, 0) + v_reserved_ai + v_amount > v_ai_limit then
       insert into public.ai_quota_ledger (
         request_id, user_id, route, action, mode, quota_kind, requested_units, reservation_status, reason, outcome
@@ -426,13 +472,11 @@ begin
         v_request_id, p_user_id, coalesce(p_route, ''), coalesce(p_action, ''), coalesce(p_mode, ''), v_feature, v_amount, 'rejected', 'quota_exceeded', 'rejected'
       )
       on conflict (request_id) do nothing;
-
       return query select false, v_today, v_current + v_reserved, v_limit, v_plan_code, 'quota_exceeded'::text, v_request_id;
       return;
     end if;
   elsif v_feature = 'scanner' then
-    v_current := coalesce(v_usage.scanner_runs, 0);
-    v_limit := v_scanner_limit;
+    v_current := v_current + coalesce(v_usage.scanner_runs, 0);
     if v_current + v_reserved + v_amount > v_limit then
       insert into public.ai_quota_ledger (
         request_id, user_id, route, action, mode, quota_kind, requested_units, reservation_status, reason, outcome
@@ -440,13 +484,11 @@ begin
         v_request_id, p_user_id, coalesce(p_route, ''), coalesce(p_action, ''), coalesce(p_mode, ''), v_feature, v_amount, 'rejected', 'quota_exceeded', 'rejected'
       )
       on conflict (request_id) do nothing;
-
       return query select false, v_today, v_current + v_reserved, v_limit, v_plan_code, 'quota_exceeded'::text, v_request_id;
       return;
     end if;
-  else
-    v_current := coalesce(v_usage.ai_requests, 0);
-    v_limit := v_ai_limit;
+  elsif v_feature = 'ai' then
+    v_current := v_current + coalesce(v_usage.ai_requests, 0);
     if v_current + v_reserved_ai + v_amount > v_limit then
       insert into public.ai_quota_ledger (
         request_id, user_id, route, action, mode, quota_kind, requested_units, reservation_status, reason, outcome
@@ -454,37 +496,39 @@ begin
         v_request_id, p_user_id, coalesce(p_route, ''), coalesce(p_action, ''), coalesce(p_mode, ''), v_feature, v_amount, 'rejected', 'quota_exceeded', 'rejected'
       )
       on conflict (request_id) do nothing;
-
       return query select false, v_today, v_current + v_reserved_ai, v_limit, v_plan_code, 'quota_exceeded'::text, v_request_id;
+      return;
+    end if;
+  else
+    if v_current + v_reserved + v_amount > v_limit then
+      insert into public.ai_quota_ledger (
+        request_id, user_id, route, action, mode, quota_kind, requested_units, reservation_status, reason, outcome
+      ) values (
+        v_request_id, p_user_id, coalesce(p_route, ''), coalesce(p_action, ''), coalesce(p_mode, ''), v_feature, v_amount, 'rejected', 'quota_exceeded', 'rejected'
+      )
+      on conflict (request_id) do nothing;
+      return query select false, v_today, v_current + v_reserved, v_limit, v_plan_code, 'quota_exceeded'::text, v_request_id;
+      return;
+    end if;
+    if v_monthly_current + v_reserved + v_amount > v_monthly_limit then
+      insert into public.ai_quota_ledger (
+        request_id, user_id, route, action, mode, quota_kind, requested_units, reservation_status, reason, outcome
+      ) values (
+        v_request_id, p_user_id, coalesce(p_route, ''), coalesce(p_action, ''), coalesce(p_mode, ''), v_feature, v_amount, 'rejected', 'monthly_quota_exceeded', 'rejected'
+      )
+      on conflict (request_id) do nothing;
+      return query select false, v_today, v_monthly_current + v_reserved, v_monthly_limit, v_plan_code, 'monthly_quota_exceeded'::text, v_request_id;
       return;
     end if;
   end if;
 
   insert into public.ai_quota_ledger (
-    request_id,
-    user_id,
-    route,
-    action,
-    mode,
-    quota_kind,
-    requested_units,
-    reservation_status,
-    reason,
-    outcome
+    request_id, user_id, route, action, mode, quota_kind, requested_units, reservation_status, reason, outcome
   ) values (
-    v_request_id,
-    p_user_id,
-    coalesce(p_route, ''),
-    coalesce(p_action, ''),
-    coalesce(p_mode, ''),
-    v_feature,
-    v_amount,
-    'reserved',
-    'reserved',
-    'reserved'
+    v_request_id, p_user_id, coalesce(p_route, ''), coalesce(p_action, ''), coalesce(p_mode, ''), v_feature, v_amount, 'reserved', 'reserved', 'pending'
   );
 
-  return query select true, v_today, v_current + v_reserved + v_amount, v_limit, v_plan_code, 'reserved'::text, v_request_id;
+  return query select true, v_today, v_current + v_amount, v_limit, v_plan_code, 'reserved'::text, v_request_id;
 end;
 $$;
 
@@ -509,6 +553,7 @@ set search_path = ''
 as $$
 declare
   v_today date := current_date;
+  v_month_str text := to_char(v_today, 'YYYY-MM');
   v_request_id text := nullif(trim(coalesce(p_request_id, '')), '');
   v_total_tokens integer := greatest(coalesce(p_total_tokens, 0), 0);
   v_input_tokens integer := greatest(coalesce(p_input_tokens, 0), 0);
@@ -516,7 +561,11 @@ declare
   v_cost_usd numeric := greatest(coalesce(p_cost_usd, 0), 0);
   v_ledger public.ai_quota_ledger%rowtype;
   v_usage public.app_usage_daily%rowtype;
+  v_monthly_usage public.app_usage_monthly%rowtype;
   v_amount integer := 1;
+  v_feature text;
+  v_current_feat integer;
+  v_monthly_current_feat integer;
 begin
   if v_request_id is null then
     return query select false, ''::text, 'request_id_required'::text;
@@ -545,6 +594,7 @@ begin
   end if;
 
   v_amount := greatest(coalesce(v_ledger.requested_units, 1), 1);
+  v_feature := v_ledger.quota_kind;
 
   insert into public.app_usage_daily (user_id, usage_date)
   values (v_ledger.user_id, v_today)
@@ -557,32 +607,37 @@ begin
     and public.app_usage_daily.usage_date = v_today
   for update;
 
-  if v_ledger.quota_kind = 'deep' then
-    update public.app_usage_daily
-      set deep_requests = deep_requests + v_amount,
-          ai_requests = ai_requests + v_amount,
-          total_tokens = total_tokens + v_total_tokens + v_input_tokens + v_output_tokens,
-          cost_usd = cost_usd + v_cost_usd,
-          updated_at = now()
-    where id = v_usage.id
-    returning * into v_usage;
-  elsif v_ledger.quota_kind = 'scanner' then
-    update public.app_usage_daily
-      set scanner_runs = scanner_runs + v_amount,
-          total_tokens = total_tokens + v_total_tokens + v_input_tokens + v_output_tokens,
-          cost_usd = cost_usd + v_cost_usd,
-          updated_at = now()
-    where id = v_usage.id
-    returning * into v_usage;
-  else
-    update public.app_usage_daily
-      set ai_requests = ai_requests + v_amount,
-          total_tokens = total_tokens + v_total_tokens + v_input_tokens + v_output_tokens,
-          cost_usd = cost_usd + v_cost_usd,
-          updated_at = now()
-    where id = v_usage.id
-    returning * into v_usage;
-  end if;
+  insert into public.app_usage_monthly (user_id, usage_month)
+  values (v_ledger.user_id, v_month_str)
+  on conflict (user_id, usage_month) do nothing;
+
+  select *
+    into v_monthly_usage
+  from public.app_usage_monthly
+  where public.app_usage_monthly.user_id = v_ledger.user_id
+    and public.app_usage_monthly.usage_month = v_month_str
+  for update;
+
+  v_current_feat := coalesce((v_usage.feature_usage->>v_feature)::integer, 0);
+  v_monthly_current_feat := coalesce((v_monthly_usage.feature_usage->>v_feature)::integer, 0);
+
+  update public.app_usage_daily
+    set feature_usage = jsonb_set(coalesce(feature_usage, '{}'::jsonb), array[v_feature], to_jsonb(v_current_feat + v_amount)),
+        ai_requests = case when v_feature in ('ai', 'deep') then ai_requests + v_amount else ai_requests end,
+        deep_requests = case when v_feature = 'deep' then deep_requests + v_amount else deep_requests end,
+        scanner_runs = case when v_feature = 'scanner' then scanner_runs + v_amount else scanner_runs end,
+        total_tokens = total_tokens + v_total_tokens + v_input_tokens + v_output_tokens,
+        cost_usd = cost_usd + v_cost_usd,
+        updated_at = now()
+  where id = v_usage.id
+  returning * into v_usage;
+
+  update public.app_usage_monthly
+    set feature_usage = jsonb_set(coalesce(feature_usage, '{}'::jsonb), array[v_feature], to_jsonb(v_monthly_current_feat + v_amount)),
+        total_tokens = total_tokens + v_total_tokens + v_input_tokens + v_output_tokens,
+        cost_usd = cost_usd + v_cost_usd,
+        updated_at = now()
+  where id = v_monthly_usage.id;
 
   update public.ai_quota_ledger
     set reservation_status = 'committed',
@@ -604,7 +659,8 @@ begin
           'deep_requests_today', v_usage.deep_requests,
           'scanner_runs_today', v_usage.scanner_runs,
           'collection_writes_today', v_usage.collection_writes,
-          'total_tokens_today', v_usage.total_tokens
+          'total_tokens_today', v_usage.total_tokens,
+          'feature_usage', v_usage.feature_usage
         ),
         last_seen_at = now(),
         updated_at = now()

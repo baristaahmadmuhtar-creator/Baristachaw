@@ -1149,7 +1149,7 @@ const COPY = {
     aiFinisher: 'Finalisasi Ekstraksi',
     explain: 'Bedah Resep',
     troubleshoot: 'Diagnosa Rasa',
-    coachExplainHint: 'AI menganalisa karakter cangkir ini dan membedah resepnya.',
+
     rewriteGuide: 'Buat Panduan Lebih Ramah',
     deepAnalysis: 'Analisis Dalam',
     adjust: 'Optimasi Aman AI',

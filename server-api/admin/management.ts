@@ -64,6 +64,7 @@ type AdminPlan = {
   aiDailyLimit: number;
   deepDailyLimit: number;
   scannerDailyLimit: number;
+  featureLimits?: Record<string, { daily: number, monthly: number }>;
   storageMb: number;
   seats: number;
   supportSlaHours: number;
@@ -335,6 +336,7 @@ type PlanPatch = Partial<{
   aiDailyLimit: number;
   deepDailyLimit: number;
   scannerDailyLimit: number;
+  featureLimits: Record<string, { daily: number, monthly: number }>;
   storageMb: number;
   seats: number;
   supportSlaHours: number;
@@ -1004,6 +1006,7 @@ function planFromSupabase(row: any, activeUsers: number): AdminPlan {
     aiDailyLimit: Number(row.ai_daily_limit ?? row.aiDailyLimit ?? 0) || 0,
     deepDailyLimit: Number(row.deep_daily_limit ?? row.deepDailyLimit ?? 0) || 0,
     scannerDailyLimit: Number(row.scanner_daily_limit ?? row.scannerDailyLimit ?? 0) || 0,
+    featureLimits: (row.feature_limits || row.featureLimits) as Record<string, { daily: number, monthly: number }> | undefined,
     storageMb: Number(row.storage_mb ?? row.storageMb ?? 0) || 0,
     seats: Number(row.seats ?? 1) || 1,
     supportSlaHours: Number(row.support_sla_hours ?? row.supportSlaHours ?? 72) || 72,
@@ -2337,6 +2340,19 @@ function validatePlanPatch(body: any): { ok: true; planCode: PlanCode; patch: Pl
     if (validated.ok === false) return validated;
     patch.scannerDailyLimit = validated.value;
   }
+  if ('featureLimits' in rawPatch) {
+    if (typeof rawPatch.featureLimits === 'object' && rawPatch.featureLimits !== null) {
+      patch.featureLimits = Object.fromEntries(
+        Object.entries(rawPatch.featureLimits).map(([key, val]: [string, any]) => [
+          key,
+          {
+            daily: Math.max(0, parseInt(val?.daily || 0, 10)),
+            monthly: Math.max(0, parseInt(val?.monthly || 0, 10))
+          }
+        ])
+      );
+    }
+  }
   if ('storageMb' in rawPatch) {
     const validated = validateNumberPatch(rawPatch.storageMb, 'storageMb', { min: 0, max: 1048576, integer: true });
     if (validated.ok === false) return validated;
@@ -2885,6 +2901,7 @@ function planToSupabaseRow(planCode: PlanCode, patch: PlanPatch): Record<string,
     ai_daily_limit: merged.aiDailyLimit,
     deep_daily_limit: merged.deepDailyLimit,
     scanner_daily_limit: merged.scannerDailyLimit,
+    feature_limits: merged.featureLimits,
     storage_mb: merged.storageMb,
     seats: merged.seats,
     support_sla_hours: merged.supportSlaHours,

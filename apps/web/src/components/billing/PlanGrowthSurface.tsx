@@ -5,7 +5,7 @@ import { Instagram, MessageCircle } from 'lucide-react';
 import { ArrowRight, Check, CreditCard, Gauge, RefreshCw, ShieldCheck, Sparkles, X } from '../icons';
 import type { AccountPlan, AccountStatusSnapshot, PlanCode } from '../../services/accountStatus';
 import { BillingApiError, planDisplayName, startBillingCheckout, submitManualPaymentProof, type BillingManualInvoiceResponse } from '../../services/billing';
-import { getCurrencyForRegion, PLAN_CATALOG, PRICING, formatCurrency } from '../../services/billingConfig';
+import { getCurrencyForRegion, PLAN_CATALOG, PRICING, formatCurrency, PLAN_TIERS } from '../../services/billingConfig';
 import { useGlobalState } from '../../context/GlobalState';
 import { modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
 import { CustomSelect } from '../ui/CustomSelect';
@@ -398,6 +398,21 @@ export function PlanGrowthSurface({
   const showCompactPaidSurface = !showUpgradeFraming;
   const hasActivePaidPlan = currentPlanCode !== 'free' && !hasPendingManualPayment;
   const pendingSupportWhatsappUrl = manualInvoice?.manualInvoice.instructions.whatsappUrl || 'https://wa.me/6738270092';
+
+  const upgradeOptions = useMemo(() => {
+    const currentTier = PLAN_TIERS[currentPlanCode as PlanCode] ?? 0;
+    const allOptions = ['free', 'starter', 'pro', 'team'] as const;
+    const upgrades = allOptions.filter(code => (PLAN_TIERS[code] ?? 0) > currentTier);
+    return upgrades.length > 0 ? upgrades : [currentPlanCode as 'free'|'starter'|'pro'|'team'];
+  }, [currentPlanCode]);
+
+  const gridColsClass = useMemo(() => {
+    if (upgradeOptions.length === 1) return 'max-w-sm mx-auto';
+    if (upgradeOptions.length === 2) return 'sm:grid-cols-2 lg:grid-cols-2 max-w-4xl mx-auto';
+    if (upgradeOptions.length === 3) return 'sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto';
+    return 'sm:grid-cols-2 lg:grid-cols-4';
+  }, [upgradeOptions.length]);
+
   const pendingSupportInstagramUrl = manualInvoice?.manualInvoice.instructions.instagramUrl || 'https://instagram.com/baristachaw';
   const pendingTitle = language === 'id' ? 'Pembayaran menunggu review' : 'Payment waiting for review';
   const pendingBody = language === 'id'
@@ -815,8 +830,8 @@ export function PlanGrowthSurface({
                   </div>
                 ) : (
                 <>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {(['free', 'starter', 'pro', 'team'] as const).map((code) => (
+              <div className={`grid gap-6 ${gridColsClass}`}>
+                {upgradeOptions.map((code) => (
                   <PlanCard
                     key={code}
                     planCode={code}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { DynamicPlanPrice } from '@baristachaw/shared/src/planCatalog';
-import { PLAN_PRICING, resolvePlanPrice } from '../services/billingConfig';
+import { PRICING, resolvePlanPrice } from '../services/billingConfig';
 
 export type DynamicPricingState = {
   prices: DynamicPlanPrice[];

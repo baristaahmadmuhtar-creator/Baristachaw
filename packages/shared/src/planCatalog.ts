@@ -106,6 +106,14 @@ export const PLAN_PRICING: Record<'starter' | 'pro', PlanPricing> = {
   },
 } as const;
 
+export const PLAN_TIERS: Record<PlanCode, number> = {
+  free: 0,
+  starter: 1,
+  pro: 2,
+  team: 3,
+  enterprise: 4,
+};
+
 export const PLAN_CATALOG: PlanCatalogEntry[] = [
   {
     code: 'free',

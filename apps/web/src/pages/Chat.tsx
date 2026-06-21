@@ -1446,7 +1446,7 @@ export function Chat() {
   const handleSaveToCollection = async (msg: ChatMessage) => {
     if (savedMessageIds.has(msg.id) || savingMessageIds.has(msg.id)) return;
     const kind = detectContentKind(msg.text);
-    const titleMatch = msg.text.match(/(?:^|\n)##\s*(?:[☕📋🔧📝]\s*)?(?:Recipe:|Brew Guide:|Troubleshooting:|SOP:)?\s*(.+)/i)
+    const titleMatch = msg.text.match(/(?:^|\n)##\s*(?:[]\s*)?(?:Recipe:|Brew Guide:|Troubleshooting:|SOP:)?\s*(.+)/i)
       || msg.text.match(/^(.{12,100})$/m);
     const generatedKindLabel = kind.replace('_', ' ');
     const generatedTitle = t.chatCollectionFallbackTitle

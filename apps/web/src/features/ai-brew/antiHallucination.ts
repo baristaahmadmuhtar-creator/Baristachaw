@@ -468,8 +468,8 @@ export function formatSafeBrewCaveat(plan: BrewPlan, language?: string): string 
 
   if (caveats.length === 0) {
     return id
-      ? '✓ Logika software/barista lulus. Bukti fisik seduhan (real brew validation) tetap disarankan.'
-      : '✓ Software/barista reasoning passed. Real brew validation is still required.';
+      ? ' Logika software/barista lulus. Bukti fisik seduhan (real brew validation) tetap disarankan.'
+      : ' Software/barista reasoning passed. Real brew validation is still required.';
   }
 
   return caveats.join('\n');

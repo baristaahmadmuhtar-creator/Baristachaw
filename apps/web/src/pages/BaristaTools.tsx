@@ -1242,7 +1242,7 @@ export function BaristaTools() {
                     className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${todo.done ? 'bg-blue-500 border-blue-500 text-white' : 'border-glass'
                       }`}
                   >
-                    {todo.done && <span className="text-sm">✓</span>}
+                    {todo.done && <span className="text-sm"></span>}
                   </button>
                   <span className={`flex-1 text-base ${todo.done ? 'line-through text-tertiary' : ''}`}>{todo.text}</span>
                   <button onClick={() => removeTodo(todo.id)} className="opacity-0 group-hover:opacity-100 p-1.5 text-tertiary hover:text-red-500 transition-all">

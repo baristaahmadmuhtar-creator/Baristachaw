@@ -246,27 +246,27 @@ function ScanningProgressTicker({ mode }: { mode: ScannerMode }) {
   const [stepIndex, setStepIndex] = useState(0);
 
   const autoSteps = [
-    "🔍 Reading visual image matrix...",
-    "☕ Detecting coffee extraction markers...",
-    "⚖️ Parsing bean quality & roast levels...",
-    "📜 Standardizing SCA quality records...",
-    "✍️ Drafting barista action plan...",
+    " Reading visual image matrix...",
+    " Detecting coffee extraction markers...",
+    "️ Parsing bean quality & roast levels...",
+    " Standardizing SCA quality records...",
+    "️ Drafting barista action plan...",
   ];
 
   const ocrSteps = [
-    "🔍 Reading label visual text...",
-    "📝 Running optical character recognition...",
-    "🏷️ Parsing roaster, origin & process...",
-    "🧪 Calculating starter brew ratio...",
-    "✍️ Formatting structured recipe...",
+    " Reading label visual text...",
+    " Running optical character recognition...",
+    "️ Parsing roaster, origin & process...",
+    " Calculating starter brew ratio...",
+    "️ Formatting structured recipe...",
   ];
 
   const latteSteps = [
-    "🖼️ Isolating cup and foam boundaries...",
-    "🥛 Simulating microfoam fluid dynamics...",
-    "🎨 Designing requested pattern layout...",
-    "🖌️ Rendering photorealistic crema contrast...",
-    "✨ Retouching lighting and textures...",
+    "️ Isolating cup and foam boundaries...",
+    " Simulating microfoam fluid dynamics...",
+    " Designing requested pattern layout...",
+    "️ Rendering photorealistic crema contrast...",
+    " Retouching lighting and textures...",
   ];
 
   const steps = mode === "latte" ? latteSteps : mode === "ocr" ? ocrSteps : autoSteps;
@@ -361,61 +361,61 @@ export function Scanner() {
     const isIndonesian = /^id(?:-|$)/i.test(language);
     return [
       {
-        label: isIndonesian ? "🌷 Tulip Premium" : "🌷 Premium Tulip",
+        label: isIndonesian ? " Tulip Premium" : " Premium Tulip",
         prompt: isIndonesian
           ? "Ubah latte art ini menjadi bentuk tulip premium yang rapi, simetris, realistis, dengan microfoam halus dan presentasi kafe specialty."
           : "Turn this into a premium symmetrical tulip with realistic microfoam and specialty cafe presentation.",
       },
       {
-        label: isIndonesian ? "🌿 Rosetta Tajam" : "🌿 Sharp Rosetta",
+        label: isIndonesian ? " Rosetta Tajam" : " Sharp Rosetta",
         prompt: isIndonesian
           ? "Buat rosetta yang tegas, realistis, tajam, dengan kontras crema natural dan tekstur susu halus."
           : "Create a sharp photorealistic rosetta with natural crema contrast and refined milk texture.",
       },
       {
-        label: isIndonesian ? "💖 Hati Bersih" : "💖 Clean Heart",
+        label: isIndonesian ? " Hati Bersih" : " Clean Heart",
         prompt: isIndonesian
           ? "Ubah latte art ini menjadi bentuk hati yang bersih, realistis, simetris, dan tampak seperti hasil tuangan barista profesional."
           : "Create a clean realistic heart that looks like a professional barista pour.",
       },
       {
-        label: isIndonesian ? "🦢 Angsa Elegan" : "🦢 Elegant Swan",
+        label: isIndonesian ? " Angsa Elegan" : " Elegant Swan",
         prompt: isIndonesian
           ? "Ubah latte art ini menjadi bentuk angsa (swan) yang elegan, artistik, realistis, dan bertekstur microfoam sangat halus."
           : "Edit this latte art to feature an elegant, artistic, photorealistic swan design with ultra-fine microfoam texture.",
       },
       {
-        label: isIndonesian ? "🌿 Slow Rosetta" : "🌿 Slow Rosetta",
+        label: isIndonesian ? " Slow Rosetta" : " Slow Rosetta",
         prompt: isIndonesian
           ? "Ubah latte art ini menjadi slow pour rosetta dengan daun yang lebih lebar, gelombang yang tebal, dan crema yang sangat pekat."
           : "Transform this latte art into a slow pour rosetta with wider leaves, thick waves, and deep rich crema.",
       },
       {
-        label: isIndonesian ? "🪽 Winged Tulip" : "🪽 Winged Tulip",
+        label: isIndonesian ? " Winged Tulip" : " Winged Tulip",
         prompt: isIndonesian
           ? "Ubah latte art ini menjadi winged tulip (tulip bersayap) yang sangat simetris, memukau, dengan lapisan dasar yang melingkar sempurna seperti sayap."
           : "Change this latte art into a stunning symmetrical winged tulip, with a perfectly wrapped base layer resembling wings.",
       },
       {
-        label: isIndonesian ? "🐾 3D Cat/Bear" : "🐾 3D Cat/Bear",
+        label: isIndonesian ? " 3D Cat/Bear" : " 3D Cat/Bear",
         prompt: isIndonesian
           ? "Ubah gambar ini menjadi 3D latte art berbentuk kucing atau beruang lucu yang menyembul dari busa susu secara hiper-realistis."
           : "Turn this image into a hyper-realistic 3D latte art featuring a cute cat or bear popping out of the milk foam.",
       },
       {
-        label: isIndonesian ? "🦄 Kuda Laut" : "🦄 Seahorse Art",
+        label: isIndonesian ? " Kuda Laut" : " Seahorse Art",
         prompt: isIndonesian
           ? "Ubah latte art ini menjadi bentuk kuda laut (seahorse) yang kreatif, realistis, artistik, dengan kontras crema yang natural."
           : "Change this latte art to a creative, photorealistic seahorse pattern with realistic crema contrast.",
       },
       {
-        label: isIndonesian ? "🥞 Tulip 10 Tumpuk" : "🥞 10-Stack Tulip",
+        label: isIndonesian ? " Tulip 10 Tumpuk" : " 10-Stack Tulip",
         prompt: isIndonesian
           ? "Ubah latte art ini menjadi tulip 10 tumpuk (10-stack tulip) yang simetris, realistis, presisi, dengan kontras crema yang tajam dan microfoam padat."
           : "Transform this latte art into a symmetrical, realistic 10-stack tulip with sharp crema contrast and dense microfoam.",
       },
       {
-        label: isIndonesian ? "🥴 Tuangan Gagal" : "🥴 Messy Pour",
+        label: isIndonesian ? " Tuangan Gagal" : " Messy Pour",
         prompt: isIndonesian
           ? "Ubah latte art ini menjadi bentuk tuangan susu yang gagal, berantakan, tidak beraturan, bergelembung besar, seperti buatan pemula yang baru belajar."
           : "Make this latte art look like a failed, messy, amateur pour with large bubbles and distorted shapes, like a beginner's first try.",
@@ -856,7 +856,7 @@ export function Scanner() {
                           : "text-secondary hover:text-primary"
                       }`}
                     >
-                      🔲 Side-by-Side
+                       Side-by-Side
                     </button>
                   </div>
                 </div>

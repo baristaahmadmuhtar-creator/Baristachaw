@@ -399,7 +399,7 @@ function statusTone(status: string): string {
   if (status === 'warn' || status === 'trialing' || status === 'past_due' || status === 'requested') return 'bg-amber-500/10 text-amber-800 dark:text-amber-300';
   if (status === 'fail' || status === 'suspended' || status === 'deleted' || status === 'rejected' || status === 'cancelled' || status === 'expired' || status === 'refunded') return 'bg-rose-500/10 text-rose-800 dark:text-rose-300';
   if (status === 'supabase') return 'bg-blue-500/10 text-blue-800 dark:text-blue-300';
-  return 'bg-surface-alpha text-secondary';
+  return 'bg-surface-alpha hover:bg-surface-alpha-hover transition-colors text-secondary';
 }
 
 function csvEscape(value: unknown): string {
@@ -797,7 +797,7 @@ function MetricTile({
   icon: typeof Gauge;
 }) {
   return (
-    <div className="rounded-xl border border-glass bg-surface-alpha px-3 py-2.5 shadow-sm">
+    <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-3 py-2.5 shadow-sm">
       <div className="flex items-center justify-between gap-2">
         <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary truncate">{label}</p>
         <Icon size={14} className="text-blue-500 shrink-0" />
@@ -821,7 +821,7 @@ function ProtectedGate({
   const admin = useAdminCopy();
   return (
     <div className="flex min-h-[var(--app-height)] items-center justify-center px-4 py-10">
-      <div className="w-full max-w-xl rounded-[1.6rem] border border-glass bg-[var(--bg-base)]/94 p-6 shadow-[var(--panel-elev-2)]">
+      <div className="w-full max-w-xl rounded-[1.6rem] border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/94 p-4 lg:p-5 shadow-[var(--panel-elev-2)]">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500">
           <Lock size={22} />
         </div>
@@ -858,7 +858,7 @@ function AdminInlineError({
     <section className="rounded-2xl border border-rose-500/25 bg-rose-500/10 px-4 py-3">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 gap-3">
-          <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-rose-500/10 text-rose-500">
+          <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500">
             <AlertTriangle size={16} />
           </span>
           <div className="min-w-0">
@@ -872,7 +872,7 @@ function AdminInlineError({
         <button
           type="button"
           onClick={onDismiss}
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
           aria-label={admin.text('dismissAdminError')}
         >
           <X size={16} />
@@ -884,11 +884,11 @@ function AdminInlineError({
 
 function ChecksPanel({ checks }: { checks: AdminSystemCheck[] }) {
   return (
-    <div className="rounded-2xl border border-glass bg-surface-alpha">
+    <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors">
       {checks.map((check, index) => (
         <div
           key={check.id}
-          className={clsx('grid gap-3 px-4 py-4 md:grid-cols-[1.2fr_0.9fr_1.5fr]', index > 0 && 'border-t border-glass')}
+          className={clsx('grid gap-3 px-4 py-4 md:grid-cols-[1.2fr_0.9fr_1.5fr]', index > 0 && 'border-t border-glass shadow-sm backdrop-blur-md')}
         >
           <div className="flex min-w-0 items-center gap-3">
             <CheckIcon status={check.status} />
@@ -941,7 +941,7 @@ function AdminCommandCenter({
 
   return (
     <section className="grid gap-3 xl:grid-cols-[1.35fr_0.85fr]">
-      <div className="rounded-2xl border border-glass bg-[var(--bg-base)]/76 p-3 shadow-sm">
+      <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-3 shadow-sm">
         <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <h2 className="text-sm font-semibold text-primary">{admin.text('commandCenterTitle')}</h2>
@@ -956,7 +956,7 @@ function AdminCommandCenter({
           <button
             type="button"
             onClick={() => onOpenQueue('risk')}
-            className="rounded-xl border border-glass bg-surface-alpha p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
+            className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
           >
             <AlertTriangle size={15} className="text-rose-500" />
             <p className="mt-1.5 text-lg font-bold text-primary">{queues.riskUsers.length}</p>
@@ -966,7 +966,7 @@ function AdminCommandCenter({
           <button
             type="button"
             onClick={() => onOpenQueue('recovery')}
-            className="rounded-xl border border-glass bg-surface-alpha p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
+            className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
           >
             <KeyRound size={15} className="text-amber-500" />
             <p className="mt-1.5 text-lg font-bold text-primary">{queues.recoveryUsers.length}</p>
@@ -976,7 +976,7 @@ function AdminCommandCenter({
           <button
             type="button"
             onClick={() => onOpenQueue('billing')}
-            className="rounded-xl border border-glass bg-surface-alpha p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
+            className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
           >
             <WalletCards size={15} className="text-blue-500" />
             <p className="mt-1.5 text-lg font-bold text-primary">{queues.billingUsers.length}</p>
@@ -986,7 +986,7 @@ function AdminCommandCenter({
           <button
             type="button"
             onClick={onOpenMaintenance}
-            className="rounded-xl border border-glass bg-surface-alpha p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
+            className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
           >
             <Wrench size={15} className="text-blue-500" />
             <p className="mt-1.5 text-lg font-bold text-primary">{queues.maintenanceFlags.length}</p>
@@ -996,7 +996,7 @@ function AdminCommandCenter({
           <button
             type="button"
             onClick={() => onOpenQueue('paid')}
-            className="rounded-xl border border-glass bg-surface-alpha p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
+            className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
           >
             <WalletCards size={15} className="text-emerald-500" />
             <p className="mt-1.5 text-lg font-bold text-primary">{queues.paidUsers.length}</p>
@@ -1006,7 +1006,7 @@ function AdminCommandCenter({
         </div>
       </div>
 
-      <aside className="rounded-2xl border border-glass bg-[var(--bg-base)]/76 p-3 shadow-sm">
+      <aside className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-3 shadow-sm">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-sm font-semibold text-primary">{admin.text('handoffTitle')}</h2>
@@ -1020,7 +1020,7 @@ function AdminCommandCenter({
               key={user.id}
               type="button"
               onClick={() => onOpenUser(user.id, isBillingAttentionUser(user) ? 'billing' : isRecoveryUser(user) ? 'recovery' : 'risk')}
-              className="flex w-full items-center justify-between gap-3 rounded-xl bg-surface-alpha px-3 py-2 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
+              className="flex w-full items-center justify-between gap-3 rounded-2xl bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-3 py-2 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
             >
               <span className="min-w-0">
                 <span className="block truncate text-xs font-semibold text-primary">{user.name}</span>
@@ -1032,7 +1032,7 @@ function AdminCommandCenter({
               </span>
             </button>
           )) : (
-            <div className="rounded-xl bg-surface-alpha px-3 py-4 text-center">
+            <div className="rounded-2xl bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-3 py-4 text-center">
               <p className="text-xs font-semibold text-primary">{admin.text('noUrgentHandoff')}</p>
               <p className="mt-0.5 text-[10px] text-secondary">{admin.text('queuesClear')}</p>
             </div>
@@ -1058,7 +1058,7 @@ function AdminOpsExportPanel({
 }) {
   const admin = useAdminCopy();
   return (
-    <section className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+    <section className="rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-3 lg:p-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <h2 className="text-base font-semibold text-primary">{admin.text('exportTitle')}</h2>
@@ -1070,7 +1070,7 @@ function AdminOpsExportPanel({
           <button
             type="button"
             onClick={onExportUsers}
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-glass bg-surface-alpha px-3 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary"
+            className="inline-flex min-h-8 items-center gap-2 rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-3 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary"
           >
             <Download size={15} />
             {admin.text('usersCsv')}
@@ -1078,7 +1078,7 @@ function AdminOpsExportPanel({
           <button
             type="button"
             onClick={onExportAudit}
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-glass bg-surface-alpha px-3 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary"
+            className="inline-flex min-h-8 items-center gap-2 rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-3 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary"
           >
             <Download size={15} />
             {admin.text('auditCsv')}
@@ -1086,7 +1086,7 @@ function AdminOpsExportPanel({
           <button
             type="button"
             onClick={onCopySummary}
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-700"
+            className="inline-flex min-h-8 items-center gap-2 rounded-2xl bg-blue-600 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-700"
           >
             <ClipboardCheck size={15} />
             {admin.text('copyHandoff')}
@@ -1094,19 +1094,19 @@ function AdminOpsExportPanel({
         </div>
       </div>
       <div className="mt-4 grid gap-3 text-xs text-secondary sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl bg-surface-alpha p-3">
+        <div className="rounded-2xl bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
           <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('snapshot')}</p>
           <p className="mt-2 truncate font-semibold text-primary">{formatShortId(snapshot.requestId)}</p>
         </div>
-        <div className="rounded-2xl bg-surface-alpha p-3">
+        <div className="rounded-2xl bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
           <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('freshness')}</p>
           <p className="mt-2 font-semibold text-primary">{admin.number(snapshot.dataFreshnessSec)}s / {admin.enumLabel(snapshot.dataMode)}</p>
         </div>
-        <div className="rounded-2xl bg-surface-alpha p-3">
+        <div className="rounded-2xl bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
           <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('queues')}</p>
           <p className="mt-2 font-semibold text-primary">{admin.number(queues.riskUsers.length)} {admin.text('risk').toLowerCase()} / {admin.number(queues.recoveryUsers.length)} {admin.text('recovery').toLowerCase()}</p>
         </div>
-        <div className="rounded-2xl bg-surface-alpha p-3">
+        <div className="rounded-2xl bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
           <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('flags')}</p>
           <p className="mt-2 font-semibold text-primary">{admin.number(queues.maintenanceFlags.length)} {admin.text('maintenanceControls').toLowerCase()} / {admin.number(snapshot.audit.length)} audit rows</p>
         </div>
@@ -1147,7 +1147,7 @@ function MobileAdminCommandBar({
 
   return (
     <section
-      className="sticky top-2 z-30 rounded-[1.2rem] border border-glass bg-[var(--bg-base)]/92 px-3 py-2.5 shadow-[var(--panel-elev-1)] backdrop-blur-xl lg:hidden"
+      className="sticky top-2 z-30 rounded-[1.2rem] border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/92 px-3 py-2.5 shadow-[var(--panel-elev-1)] backdrop-blur-xl lg:hidden"
       aria-label={admin.text('mobileAdminDock')}
     >
       <div className="flex items-center justify-between gap-2 mb-2">
@@ -1162,7 +1162,7 @@ function MobileAdminCommandBar({
             <button
               type="button"
               onClick={() => onOpenQueue('billing')}
-              className="inline-flex h-8 items-center gap-1 rounded-lg border border-glass bg-surface-alpha px-2 text-[10px] font-bold text-amber-600 dark:text-amber-400"
+              className="inline-flex h-8 items-center gap-1 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-2 text-[10px] font-bold text-amber-600 dark:text-amber-400"
             >
               <WalletCards size={12} />
               {queues.billingUsers.length}
@@ -1191,10 +1191,10 @@ function MobileAdminCommandBar({
               data-active={isActive}
               onClick={() => onSelectTab(id)}
               className={clsx(
-                'inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-xl px-3 text-[11px] font-semibold transition-all whitespace-nowrap',
+                'inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-2xl px-3 text-[11px] font-semibold transition-all whitespace-nowrap',
                 isActive
                   ? 'bg-blue-600 text-white shadow-[0_2px_8px_rgba(37,99,235,0.25)]'
-                  : 'bg-surface-alpha text-secondary active:bg-[var(--bg-base)]',
+                  : 'bg-surface-alpha hover:bg-surface-alpha-hover transition-colors text-secondary active:bg-[var(--bg-base)]',
               )}
             >
               <Icon size={13} />
@@ -1230,10 +1230,10 @@ function UserQueueChips({
             onClick={() => onChange(option.value)}
             aria-pressed={selected}
             className={clsx(
-              'inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3 text-xs font-semibold transition-colors',
+              'inline-flex min-h-8 shrink-0 items-center gap-2 rounded-2xl px-3 text-xs font-semibold transition-colors',
               selected
                 ? 'bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.18)]'
-                : 'border border-glass bg-surface-alpha text-secondary hover:bg-[var(--bg-base)] hover:text-primary',
+                : 'border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors text-secondary hover:bg-[var(--bg-base)] hover:text-primary',
             )}
           >
             <span>{admin.text(option.labelKey)}</span>
@@ -1296,7 +1296,7 @@ function ConfirmUserMutationDialog({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[95] flex items-end justify-center bg-black/45 px-3 py-3 backdrop-blur-sm sm:items-center sm:p-6"
+      className="fixed inset-0 z-[95] flex items-end justify-center bg-black/45 px-3 py-3 backdrop-blur-sm sm:items-center sm:p-4 lg:p-5"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !busy) onCancel();
@@ -1307,12 +1307,12 @@ function ConfirmUserMutationDialog({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 14, scale: 0.98 }}
         transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-        className="max-h-[calc(100dvh-1.5rem)] w-full max-w-xl overflow-y-auto overscroll-contain rounded-t-[1.4rem] border border-glass bg-[var(--bg-base)] p-4 shadow-[var(--panel-elev-2)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-[1.4rem]"
+        className="max-h-[calc(100dvh-1.5rem)] w-full max-w-xl overflow-y-auto overscroll-contain rounded-t-[1.4rem] border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] p-3 lg:p-4 shadow-[var(--panel-elev-2)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-user-mutation-title"
       >
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-3 lg:p-4">
           <div className="flex min-w-0 items-start gap-3">
             <span className={clsx(
               'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl',
@@ -1329,14 +1329,14 @@ function ConfirmUserMutationDialog({
             type="button"
             onClick={onCancel}
             disabled={busy}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-secondary hover:bg-surface-alpha hover:text-primary disabled:opacity-50"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl text-secondary hover:bg-surface-alpha hover:bg-surface-alpha-hover transition-colors hover:text-primary disabled:opacity-50"
             aria-label={admin.text('cancel')}
           >
             <X size={17} />
           </button>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-glass bg-surface-alpha p-3">
+        <div className="mt-4 rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
           <div className="flex items-center gap-3">
             <UserAvatar user={pending.user} />
             <div className="min-w-0">
@@ -1346,7 +1346,7 @@ function ConfirmUserMutationDialog({
           </div>
           <div className="mt-4 grid gap-2">
             {pending.changes.map((change) => (
-              <div key={change} className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-sm font-semibold text-secondary">
+              <div key={change} className="rounded-2xl bg-[var(--bg-base)] px-3 py-2 text-sm font-semibold text-secondary">
                 {change}
               </div>
             ))}
@@ -1377,7 +1377,7 @@ function ConfirmUserMutationDialog({
             maxLength={220}
             placeholder={pending.risk.requiresReason ? admin.text('operatorReasonRequiredPlaceholder') : admin.text('operatorReasonOptionalPlaceholder')}
             disabled={busy}
-            className="min-h-20 resize-none rounded-xl border border-glass bg-surface-alpha px-3 py-2 text-sm leading-6 text-primary outline-none transition-colors placeholder:text-tertiary focus:border-blue-400 disabled:opacity-50"
+            className="min-h-20 resize-none rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-3 py-2 text-sm leading-6 text-primary outline-none transition-colors placeholder:text-tertiary focus:border-blue-400 disabled:opacity-50"
           />
           <span className="text-xs text-tertiary">
             {admin.format('savedToSupportNote', { count: operatorReason.trim().length })}
@@ -1389,7 +1389,7 @@ function ConfirmUserMutationDialog({
             type="button"
             onClick={onCancel}
             disabled={busy}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-glass bg-surface-alpha px-4 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-4 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary disabled:opacity-50"
           >
             {admin.text('cancel')}
           </button>
@@ -1398,7 +1398,7 @@ function ConfirmUserMutationDialog({
             onClick={() => onConfirm(operatorReason)}
             disabled={busy || !reasonReady}
             className={clsx(
-              'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(15,23,42,0.22)] transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+              'inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(15,23,42,0.22)] transition-colors disabled:cursor-not-allowed disabled:opacity-50',
               isCritical ? 'bg-rose-500 hover:bg-rose-600' : 'bg-amber-500 hover:bg-amber-600',
             )}
           >
@@ -1437,7 +1437,7 @@ function ConfirmFeatureFlagMutationDialog({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[95] flex items-end justify-center bg-black/45 px-3 py-3 backdrop-blur-sm sm:items-center sm:p-6"
+      className="fixed inset-0 z-[95] flex items-end justify-center bg-black/45 px-3 py-3 backdrop-blur-sm sm:items-center sm:p-4 lg:p-5"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !busy) onCancel();
@@ -1448,12 +1448,12 @@ function ConfirmFeatureFlagMutationDialog({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 14, scale: 0.98 }}
         transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-        className="max-h-[calc(100dvh-1.5rem)] w-full max-w-xl overflow-y-auto overscroll-contain rounded-t-[1.4rem] border border-glass bg-[var(--bg-base)] p-4 shadow-[var(--panel-elev-2)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-[1.4rem]"
+        className="max-h-[calc(100dvh-1.5rem)] w-full max-w-xl overflow-y-auto overscroll-contain rounded-t-[1.4rem] border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] p-3 lg:p-4 shadow-[var(--panel-elev-2)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-feature-flag-title"
       >
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-3 lg:p-4">
           <div className="flex min-w-0 items-start gap-3">
             <span className={clsx(
               'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl',
@@ -1474,14 +1474,14 @@ function ConfirmFeatureFlagMutationDialog({
             type="button"
             onClick={onCancel}
             disabled={busy}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-secondary hover:bg-surface-alpha hover:text-primary disabled:opacity-50"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl text-secondary hover:bg-surface-alpha hover:bg-surface-alpha-hover transition-colors hover:text-primary disabled:opacity-50"
             aria-label={admin.text('cancelFeatureChange')}
           >
             <X size={17} />
           </button>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-glass bg-surface-alpha p-3">
+        <div className="mt-4 rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-primary">{pending.flag.label}</p>
@@ -1491,7 +1491,7 @@ function ConfirmFeatureFlagMutationDialog({
           </div>
           <div className="mt-4 grid gap-2">
             {pending.changes.map((change) => (
-              <div key={change} className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-sm font-semibold text-secondary">
+              <div key={change} className="rounded-2xl bg-[var(--bg-base)] px-3 py-2 text-sm font-semibold text-secondary">
                 {change}
               </div>
             ))}
@@ -1518,7 +1518,7 @@ function ConfirmFeatureFlagMutationDialog({
             maxLength={240}
             placeholder={admin.text('maintenanceMessagePlaceholder')}
             disabled={busy}
-            className="min-h-20 resize-none rounded-xl border border-glass bg-surface-alpha px-3 py-2 text-sm leading-6 text-primary outline-none transition-colors placeholder:text-tertiary focus:border-blue-400 disabled:opacity-50"
+            className="min-h-20 resize-none rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-3 py-2 text-sm leading-6 text-primary outline-none transition-colors placeholder:text-tertiary focus:border-blue-400 disabled:opacity-50"
           />
           <span className="text-xs text-tertiary">{admin.format('savedToMaintenanceMessage', { count: message.trim().length })}</span>
         </label>
@@ -1528,7 +1528,7 @@ function ConfirmFeatureFlagMutationDialog({
             type="button"
             onClick={onCancel}
             disabled={busy}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-glass bg-surface-alpha px-4 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-4 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary disabled:opacity-50"
           >
             {admin.text('cancel')}
           </button>
@@ -1537,7 +1537,7 @@ function ConfirmFeatureFlagMutationDialog({
             onClick={() => onConfirm(message)}
             disabled={busy || !messageReady}
             className={clsx(
-              'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(15,23,42,0.22)] transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+              'inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(15,23,42,0.22)] transition-colors disabled:cursor-not-allowed disabled:opacity-50',
               isDisabled ? 'bg-rose-500 hover:bg-rose-600' : 'bg-amber-500 hover:bg-amber-600',
             )}
           >
@@ -1572,7 +1572,7 @@ function UsersTable({
     <>
       <div className="grid gap-3 md:hidden">
         {users.map((user) => (
-          <article key={user.id} className={clsx('rounded-2xl border border-glass bg-surface-alpha p-4', selectedUserId === user.id && 'ring-2 ring-blue-500/30')}>
+          <article key={user.id} className={clsx('rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 lg:p-4', selectedUserId === user.id && 'ring-2 ring-blue-500/30')}>
             <div className="flex items-start gap-3">
               <UserAvatar user={user} />
               <div className="min-w-0 flex-1">
@@ -1604,7 +1604,7 @@ function UsersTable({
                     value={user.status}
                     disabled={busyUserId === user.id}
                     onChange={(event) => onPatch(user.id, { status: event.currentTarget.value as AccountStatus })}
-                    className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold normal-case tracking-normal text-primary"
+                    className="min-h-8 rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-3 text-sm font-semibold normal-case tracking-normal text-primary"
                     aria-label={`Change status for ${user.email}`}
                   >
                     {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
@@ -1620,7 +1620,7 @@ function UsersTable({
                       const nextPlan = plans.find((plan) => plan.code === nextPlanCode);
                       if (nextPlan) onPatch(user.id, buildPlanOverridePatch(user, nextPlan));
                     }}
-                    className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold normal-case tracking-normal text-primary"
+                    className="min-h-8 rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-3 text-sm font-semibold normal-case tracking-normal text-primary"
                     aria-label={`Change plan for ${user.email}`}
                   >
                     {plans.map((plan) => <option key={plan.code} value={plan.code}>{plan.name}</option>)}
@@ -1632,7 +1632,7 @@ function UsersTable({
                     value={user.role}
                     disabled={busyUserId === user.id}
                     onChange={(event) => onPatch(user.id, { role: event.currentTarget.value as AdminRole })}
-                    className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold normal-case tracking-normal text-primary"
+                    className="min-h-8 rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-3 text-sm font-semibold normal-case tracking-normal text-primary"
                     aria-label={`Change role for ${user.email}`}
                   >
                     {ROLE_OPTIONS.map((role) => <option key={role} value={role}>{admin.enumLabel(role)}</option>)}
@@ -1642,8 +1642,8 @@ function UsersTable({
                   type="button"
                   onClick={() => onSelect(user.id)}
                   className={clsx(
-                    'mt-auto inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors',
-                    selectedUserId === user.id ? 'bg-blue-600 text-white' : 'border border-glass bg-[var(--bg-base)] text-secondary hover:text-primary',
+                    'mt-auto inline-flex min-h-8 items-center justify-center gap-2 rounded-2xl px-3 text-sm font-semibold transition-colors',
+                    selectedUserId === user.id ? 'bg-blue-600 text-white' : 'border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] text-secondary hover:text-primary',
                   )}
                   aria-pressed={selectedUserId === user.id}
                 >
@@ -1651,7 +1651,7 @@ function UsersTable({
                   {admin.text('manage')}
                 </button>
               </div>
-              <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[var(--bg-base)] px-3 py-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-[var(--bg-base)] px-3 py-2">
                 <div className="flex items-center gap-2">
                   <StatusBadge value={user.passwordResetRequired ? 'requested' : (user.accountRecoveryStatus || 'none')} />
                   <StatusBadge value={user.billing.status} />
@@ -1665,11 +1665,11 @@ function UsersTable({
         ))}
       </div>
 
-      <div className="hidden overflow-hidden rounded-2xl border border-glass bg-[var(--bg-elevated)]/90 shadow-[var(--panel-elev-1)] md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-elevated)]/90 shadow-[var(--panel-elev-1)] md:block">
       <div className="overflow-x-auto">
         <table className={clsx(selectedUserId ? 'min-w-full' : 'min-w-[68rem]', 'w-full border-collapse text-left')}>
           <caption className="sr-only">{admin.text('usersTableCaption')}</caption>
-          <thead className="border-b border-glass bg-surface-alpha text-[10px] uppercase tracking-[0.12em] text-secondary">
+          <thead className="border-b border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors text-[10px] uppercase tracking-[0.12em] text-secondary">
             <tr>
               <th className="px-3 py-2 font-semibold">{admin.text('account')}</th>
               <th className="px-3 py-2 font-semibold">{admin.text('status')}</th>
@@ -1688,7 +1688,7 @@ function UsersTable({
           </thead>
           <tbody className="divide-y divide-glass/40">
             {users.map((user) => (
-              <tr key={user.id} className={clsx('transition-colors hover:bg-surface-alpha/40', selectedUserId === user.id && 'bg-blue-500/10')}>
+              <tr key={user.id} className={clsx('transition-colors hover:bg-surface-alpha hover:bg-surface-alpha-hover transition-colors/40', selectedUserId === user.id && 'bg-blue-500/10')}>
                 <td className="px-3 py-2 align-top">
                   <div className="flex min-w-0 items-center gap-2">
                     <UserAvatar user={user} className="h-7 w-7 shrink-0" />
@@ -1727,7 +1727,7 @@ function UsersTable({
                           'mt-1 inline-flex h-6 items-center gap-1 rounded-lg px-2 text-[10px] font-semibold transition-colors',
                           selectedUserId === user.id
                             ? 'bg-blue-600 text-white'
-                            : 'border border-glass bg-[var(--bg-base)] text-secondary hover:text-primary',
+                            : 'border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] text-secondary hover:text-primary',
                         )}
                       >
                         <PanelRightOpen size={11} />
@@ -1741,7 +1741,7 @@ function UsersTable({
                     value={user.status}
                     disabled={busyUserId === user.id}
                     onChange={(event) => onPatch(user.id, { status: event.currentTarget.value as AccountStatus })}
-                    className={clsx(selectedUserId ? 'w-24' : 'w-28', 'h-7 rounded-lg border border-glass bg-[var(--bg-base)] px-1.5 text-[11px] font-semibold text-primary')}
+                    className={clsx(selectedUserId ? 'w-24' : 'w-28', 'h-7 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-1.5 text-[11px] font-semibold text-primary')}
                     aria-label={`Change status for ${user.email}`}
                   >
                     {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
@@ -1756,7 +1756,7 @@ function UsersTable({
                       const nextPlan = plans.find((plan) => plan.code === nextPlanCode);
                       if (nextPlan) onPatch(user.id, buildPlanOverridePatch(user, nextPlan));
                     }}
-                    className={clsx(selectedUserId ? 'w-24' : 'w-28', 'h-7 rounded-lg border border-glass bg-[var(--bg-base)] px-1.5 text-[11px] font-semibold text-primary')}
+                    className={clsx(selectedUserId ? 'w-24' : 'w-28', 'h-7 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-1.5 text-[11px] font-semibold text-primary')}
                     aria-label={`Change plan for ${user.email}`}
                   >
                     {plans.map((plan) => <option key={plan.code} value={plan.code}>{plan.name}</option>)}
@@ -1774,7 +1774,7 @@ function UsersTable({
                     value={user.role}
                     disabled={busyUserId === user.id}
                     onChange={(event) => onPatch(user.id, { role: event.currentTarget.value as AdminRole })}
-                    className={clsx(selectedUserId ? 'w-24' : 'w-28', 'h-7 rounded-lg border border-glass bg-[var(--bg-base)] px-1.5 text-[11px] font-semibold text-primary')}
+                    className={clsx(selectedUserId ? 'w-24' : 'w-28', 'h-7 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-1.5 text-[11px] font-semibold text-primary')}
                     aria-label={`Change role for ${user.email}`}
                   >
                     {ROLE_OPTIONS.map((role) => <option key={role} value={role}>{admin.enumLabel(role)}</option>)}
@@ -1796,7 +1796,7 @@ function UsersTable({
                     </td>
                     <td className="px-3 py-2 align-top">
                       <div className="flex items-center gap-1.5">
-                        <div className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-alpha">
+                        <div className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-alpha hover:bg-surface-alpha-hover transition-colors">
                           <div
                             className={clsx('h-full rounded-full', user.riskScore >= 60 ? 'bg-rose-500' : user.riskScore >= 30 ? 'bg-amber-500' : 'bg-emerald-500')}
                             style={{ width: `${Math.min(100, Math.max(0, user.riskScore))}%` }}
@@ -1837,7 +1837,7 @@ function PlanQuickControl({
 }) {
   const admin = useAdminCopy();
   return (
-    <div className="rounded-lg border border-glass bg-surface-alpha/35 p-2 mt-2">
+    <div className="rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors/35 p-2 mt-2">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[11px] font-bold text-primary">{admin.text('planQuickControl')}</p>
@@ -1854,7 +1854,7 @@ function PlanQuickControl({
               key={plan.code}
               className={clsx(
                 'grid gap-1.5 rounded-lg border px-2 py-2 transition-colors',
-                selected ? 'border-blue-500/35 bg-blue-500/10' : 'border-glass bg-[var(--bg-base)]',
+                selected ? 'border-blue-500/35 bg-blue-500/10' : 'border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]',
               )}
             >
               <button
@@ -1888,7 +1888,7 @@ function PlanQuickControl({
                   'inline-flex h-7 items-center justify-center gap-1.5 rounded-lg px-2 text-[10px] font-semibold transition-colors disabled:opacity-50',
                   paidPlan
                     ? 'border border-blue-500/30 bg-blue-500/10 text-blue-800 hover:bg-blue-500/15 dark:text-blue-300'
-                    : 'border border-glass bg-surface-alpha text-secondary hover:bg-[var(--bg-base)] hover:text-primary',
+                    : 'border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors text-secondary hover:bg-[var(--bg-base)] hover:text-primary',
                 )}
               >
                 {paidPlan ? <ClipboardCheck size={12} /> : <CheckCircle2 size={12} />}
@@ -2127,13 +2127,13 @@ function AccountInspector({
     <aside
       role="dialog"
       aria-labelledby={titleId}
-      className="fixed inset-x-3 bottom-3 z-[70] max-h-[86dvh] overflow-y-auto overscroll-contain rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/94 p-3 shadow-[var(--panel-elev-2)] backdrop-blur-xl xl:sticky xl:inset-auto xl:top-4 xl:z-auto xl:max-h-[calc(100dvh-8rem)] xl:bg-[var(--bg-base)]/82 xl:shadow-[var(--panel-elev-1)]"
+      className="fixed inset-x-3 bottom-3 z-[70] max-h-[86dvh] overflow-y-auto overscroll-contain rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/94 p-3 shadow-[var(--panel-elev-2)] backdrop-blur-xl xl:sticky xl:inset-auto xl:top-3 lg:p-4 xl:z-auto xl:max-h-[calc(100dvh-8rem)] xl:bg-[var(--bg-base)]/82 xl:shadow-[var(--panel-elev-1)]"
     >
-      <div className="mx-auto mb-3 h-1 w-12 rounded-full bg-surface-alpha xl:hidden" aria-hidden="true" />
-      <div className="sticky top-0 z-10 -mx-3 -mt-3 flex items-start justify-between gap-3 rounded-t-[1.4rem] border-b border-glass bg-[var(--bg-base)]/94 px-3 py-2.5 backdrop-blur-xl xl:static xl:mx-0 xl:mt-0 xl:border-b-0 xl:bg-transparent xl:px-0 xl:py-0 xl:backdrop-blur-0">
+      <div className="mx-auto mb-3 h-1 w-12 rounded-full bg-surface-alpha hover:bg-surface-alpha-hover transition-colors xl:hidden" aria-hidden="true" />
+      <div className="sticky top-0 z-10 -mx-3 -mt-3 flex items-start justify-between gap-3 rounded-t-[1.4rem] border-b border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/94 px-3 py-2.5 backdrop-blur-xl xl:static xl:mx-0 xl:mt-0 xl:border-b-0 xl:bg-transparent xl:px-0 xl:py-0 xl:backdrop-blur-0">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500">
               <UserCog size={18} />
             </span>
             <div className="min-w-0">
@@ -2145,7 +2145,7 @@ function AccountInspector({
         <button
           type="button"
           onClick={onClose}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-secondary hover:bg-surface-alpha hover:text-primary"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-2xl text-secondary hover:bg-surface-alpha hover:bg-surface-alpha-hover transition-colors hover:text-primary"
           aria-label={admin.text('closeAccountPanel')}
         >
           <X size={17} />
@@ -2154,21 +2154,21 @@ function AccountInspector({
 
       <div className="mt-3 flex flex-col gap-3">
         {/* Card 1: General Info */}
-        <div className="rounded-xl border border-glass bg-surface-alpha/40 p-3">
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2 flex items-center gap-1.5 border-b border-glass pb-1.5">
+        <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors/40 p-3">
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2 flex items-center gap-1.5 border-b border-glass shadow-sm backdrop-blur-md pb-1.5">
             <UserCog size={13} className="text-blue-500" />
             {admin.text('generalInfo') || 'General Info'}
           </h3>
           <div className="grid gap-2 text-xs">
-            <button type="button" onClick={() => onCopy(user.id, 'User ID')} className="flex h-8 items-center justify-between gap-3 rounded-lg border border-glass bg-surface-alpha px-2.5 text-left text-secondary">
+            <button type="button" onClick={() => onCopy(user.id, 'User ID')} className="flex h-8 items-center justify-between gap-3 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-2.5 text-left text-secondary">
               <span className="inline-flex min-w-0 items-center gap-1.5"><Copy size={11} /> <span className="truncate">{formatShortId(user.id)}</span></span>
               <span className="font-semibold text-primary text-[10px]">ID</span>
             </button>
-            <button type="button" onClick={() => onCopy(user.email, 'Email')} className="flex h-8 items-center justify-between gap-3 rounded-lg border border-glass bg-surface-alpha px-2.5 text-left text-secondary">
+            <button type="button" onClick={() => onCopy(user.email, 'Email')} className="flex h-8 items-center justify-between gap-3 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-2.5 text-left text-secondary">
               <span className="inline-flex min-w-0 items-center gap-1.5"><Mail size={11} /> <span className="truncate">{user.email}</span></span>
               <span className="font-semibold text-primary text-[10px]">Email</span>
             </button>
-            <div className="flex h-8 items-center justify-between gap-3 rounded-lg border border-glass bg-surface-alpha px-2.5 text-secondary">
+            <div className="flex h-8 items-center justify-between gap-3 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-2.5 text-secondary">
               <span className="inline-flex min-w-0 items-center gap-1.5"><Clock3 size={11} /> <span className="truncate">{admin.date(user.createdAt)}</span></span>
               <span className="font-semibold text-primary text-[10px]">{admin.text('created')}</span>
             </div>
@@ -2189,8 +2189,8 @@ function AccountInspector({
         </div>
 
         {/* Card 2: Access & Credentials */}
-        <div className="rounded-xl border border-glass bg-surface-alpha/40 p-3">
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2 flex items-center gap-1.5 border-b border-glass pb-1.5">
+        <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors/40 p-3">
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2 flex items-center gap-1.5 border-b border-glass shadow-sm backdrop-blur-md pb-1.5">
             <ShieldCheck size={13} className="text-emerald-500" />
             {admin.text('accessSecurity') || 'Access & Security'}
           </h3>
@@ -2198,13 +2198,13 @@ function AccountInspector({
             <div className="grid grid-cols-2 gap-2">
               <label className="grid gap-1">
                 <span className="text-[10px] font-semibold text-tertiary">{admin.text('status')}</span>
-                <select value={status} onChange={(event) => setStatus(event.currentTarget.value as AccountStatus)} className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-xs text-primary">
+                <select value={status} onChange={(event) => setStatus(event.currentTarget.value as AccountStatus)} className="h-8 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2 text-xs text-primary">
                   {STATUS_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
                 </select>
               </label>
               <label className="grid gap-1">
                 <span className="text-[10px] font-semibold text-tertiary">{admin.text('role')}</span>
-                <select value={role} onChange={(event) => setRole(event.currentTarget.value as AdminRole)} className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-xs text-primary">
+                <select value={role} onChange={(event) => setRole(event.currentTarget.value as AdminRole)} className="h-8 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2 text-xs text-primary">
                   {ROLE_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
                 </select>
               </label>
@@ -2212,11 +2212,11 @@ function AccountInspector({
             <div className="grid grid-cols-2 gap-2">
               <label className="grid gap-1">
                 <span className="text-[10px] font-semibold text-tertiary">{admin.text('recovery')}</span>
-                <select value={recoveryStatus} onChange={(event) => setRecoveryStatus(event.currentTarget.value as AccountRecoveryStatus)} className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-xs text-primary">
+                <select value={recoveryStatus} onChange={(event) => setRecoveryStatus(event.currentTarget.value as AccountRecoveryStatus)} className="h-8 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2 text-xs text-primary">
                   {RECOVERY_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
                 </select>
               </label>
-              <label className="flex h-8 items-center justify-between gap-2 rounded-lg border border-glass bg-[var(--bg-base)] px-2.5 text-xs text-secondary mt-5">
+              <label className="flex h-8 items-center justify-between gap-2 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2.5 text-xs text-secondary mt-5">
                 <span className="text-[10px] font-semibold text-tertiary leading-none">{admin.text('requirePasswordReset')}</span>
                 <input
                   type="checkbox"
@@ -2240,22 +2240,22 @@ function AccountInspector({
         </div>
 
         {/* Card 3: Entitlement & Billing */}
-        <div className="rounded-xl border border-glass bg-surface-alpha/40 p-3">
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2 flex items-center gap-1.5 border-b border-glass pb-1.5">
+        <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors/40 p-3">
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.1em] text-secondary mb-2 flex items-center gap-1.5 border-b border-glass shadow-sm backdrop-blur-md pb-1.5">
             <WalletCards size={13} className="text-blue-500" />
             {admin.text('billingEntitlement')}
           </h3>
           <div className="grid gap-2">
             <div className="grid grid-cols-3 gap-2">
-              <div className="rounded-lg border border-glass bg-surface-alpha px-2 py-1 text-center">
+              <div className="rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-2 py-1 text-center">
                 <p className="text-[9px] font-bold uppercase tracking-wider text-tertiary">{admin.text('currentPlan')}</p>
                 <p className="mt-0.5 truncate text-[10px] font-semibold text-primary">{user.planName}</p>
               </div>
-              <div className="rounded-lg border border-glass bg-surface-alpha px-2 py-1 text-center">
+              <div className="rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-2 py-1 text-center">
                 <p className="text-[9px] font-bold uppercase tracking-wider text-tertiary">{admin.text('billing')}</p>
                 <p className="mt-0.5 truncate text-[10px] font-semibold text-primary">{admin.enumLabel(user.billing.status)}</p>
               </div>
-              <div className="rounded-lg border border-glass bg-surface-alpha px-2 py-1 text-center">
+              <div className="rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-2 py-1 text-center">
                 <p className="text-[9px] font-bold uppercase tracking-wider text-tertiary">{admin.text('risk')}</p>
                 <p className={clsx('mt-0.5 text-[10px] font-semibold', user.riskScore >= 60 ? 'text-rose-500' : user.riskScore >= 30 ? 'text-amber-500' : 'text-emerald-500')}>{user.riskScore}</p>
               </div>
@@ -2273,25 +2273,25 @@ function AccountInspector({
               <div className="grid grid-cols-3 gap-2">
                 <label className="grid gap-1">
                   <span className="text-[10px] font-semibold text-tertiary">{admin.text('billingStatus')}</span>
-                  <select value={billingStatus} onChange={(event) => setBillingStatus(event.currentTarget.value as BillingStatus)} className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-1.5 text-xs text-primary">
+                  <select value={billingStatus} onChange={(event) => setBillingStatus(event.currentTarget.value as BillingStatus)} className="h-8 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-1.5 text-xs text-primary">
                     {BILLING_STATUS_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
                   </select>
                 </label>
                 <label className="grid gap-1">
                   <span className="text-[10px] font-semibold text-tertiary">{admin.text('provider')}</span>
-                  <select value={billingProvider} onChange={(event) => setBillingProvider(event.currentTarget.value as BillingProvider)} className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-1.5 text-xs text-primary">
+                  <select value={billingProvider} onChange={(event) => setBillingProvider(event.currentTarget.value as BillingProvider)} className="h-8 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-1.5 text-xs text-primary">
                     {BILLING_PROVIDER_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
                   </select>
                 </label>
                 <label className="grid gap-1">
                   <span className="text-[10px] font-semibold text-tertiary">{admin.text('market')}</span>
-                  <select value={billingMarket} onChange={(event) => setBillingMarket(event.currentTarget.value as BillingMarket)} className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-1.5 text-xs text-primary">
+                  <select value={billingMarket} onChange={(event) => setBillingMarket(event.currentTarget.value as BillingMarket)} className="h-8 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-1.5 text-xs text-primary">
                     {BILLING_MARKET_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
                   </select>
                 </label>
               </div>
               
-              <label className="flex h-8 items-center justify-between gap-3 rounded-lg border border-glass bg-[var(--bg-base)] px-2.5 text-xs text-secondary">
+              <label className="flex h-8 items-center justify-between gap-3 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2.5 text-xs text-secondary">
                 <span className="text-[10px] font-semibold text-tertiary leading-none">{admin.text('paymentActionRequired')}</span>
                 <input
                   type="checkbox"
@@ -2317,7 +2317,7 @@ function AccountInspector({
               </button>
             </div>
 
-            <div className="mt-2 space-y-1 rounded-lg bg-surface-alpha p-2 text-[10px] text-tertiary leading-tight">
+            <div className="mt-2 space-y-1 rounded-lg bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-2 text-[10px] text-tertiary leading-tight">
               {user.billing.customerId ? <button type="button" onClick={() => onCopy(user.billing.customerId, 'Customer ID')} className="truncate text-left block w-full hover:text-primary">{admin.text('customer')}: {user.billing.customerId}</button> : null}
               {user.billing.subscriptionId ? <button type="button" onClick={() => onCopy(user.billing.subscriptionId, 'Subscription ID')} className="truncate text-left block w-full hover:text-primary">{admin.text('subscription')}: {user.billing.subscriptionId}</button> : null}
               {user.billing.currentPeriodEnd ? <span>{admin.format('renewsEnds', { date: admin.date(user.billing.currentPeriodEnd) })}</span> : null}
@@ -2326,19 +2326,19 @@ function AccountInspector({
         </div>
 
         {/* Card 4: Notes & Auditing */}
-        <div className="rounded-xl border border-glass bg-surface-alpha/40 p-3">
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-secondary mb-2 flex items-center gap-1.5 border-b border-glass pb-1.5">
+        <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors/40 p-3">
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-secondary mb-2 flex items-center gap-1.5 border-b border-glass shadow-sm backdrop-blur-md pb-1.5">
             <Clock3 size={13} className="text-blue-500" />
             {admin.text('internalNotes') || 'Notes & Auditing'}
           </h3>
           <div className="grid gap-3">
             <label className="grid gap-1">
               <span className="text-[10px] font-semibold text-tertiary">{admin.text('internalNotes')}</span>
-              <textarea value={notes} onChange={(event) => setNotes(event.currentTarget.value)} className="min-h-[3.5rem] resize-none rounded-lg border border-glass bg-[var(--bg-base)] px-2 py-1.5 text-xs leading-relaxed text-primary outline-none focus:border-blue-400" />
+              <textarea value={notes} onChange={(event) => setNotes(event.currentTarget.value)} className="min-h-[3.5rem] resize-none rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2 py-1.5 text-xs leading-relaxed text-primary outline-none focus:border-blue-400" />
             </label>
             <label className="grid gap-1">
               <span className="text-[10px] font-semibold text-tertiary">{admin.text('supportNote')}</span>
-              <textarea value={supportNote} onChange={(event) => setSupportNote(event.currentTarget.value)} className="min-h-[3.5rem] resize-none rounded-lg border border-glass bg-[var(--bg-base)] px-2 py-1.5 text-xs leading-relaxed text-primary outline-none focus:border-blue-400" />
+              <textarea value={supportNote} onChange={(event) => setSupportNote(event.currentTarget.value)} className="min-h-[3.5rem] resize-none rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2 py-1.5 text-xs leading-relaxed text-primary outline-none focus:border-blue-400" />
             </label>
           </div>
         </div>
@@ -2369,7 +2369,7 @@ function AccountInspector({
         </div>
       ) : null}
 
-      <div className="sticky bottom-0 z-10 -mx-3 -mb-3 mt-3 grid gap-2 border-t border-glass bg-[var(--bg-base)]/94 p-3 backdrop-blur-xl xl:static xl:mx-0 xl:mb-0 xl:border-t-0 xl:bg-transparent xl:p-0 xl:backdrop-blur-0">
+      <div className="sticky bottom-0 z-10 -mx-3 -mb-3 mt-3 grid gap-2 border-t border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/94 p-3 backdrop-blur-xl xl:static xl:mx-0 xl:mb-0 xl:border-t-0 xl:bg-transparent xl:p-0 xl:backdrop-blur-0">
         {saveBlockedByReason ? (
           <div className="rounded-lg border border-amber-500/25 bg-amber-500/10 px-2.5 py-1.5 text-[11px] leading-snug text-amber-800 dark:text-amber-200">
             {admin.text('entitlementNeedsNote')}
@@ -2389,7 +2389,7 @@ function AccountInspector({
             <KeyRound size={12} />
             {admin.text('requestReset')}
           </button>
-          <button type="button" onClick={clearRecovery} disabled={busy} className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-glass bg-surface-alpha px-2 text-[10px] font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary disabled:opacity-50">
+          <button type="button" onClick={clearRecovery} disabled={busy} className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-2 text-[10px] font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary disabled:opacity-50">
             <CheckCircle2 size={12} />
             {admin.text('resolveRecovery')}
           </button>
@@ -2410,7 +2410,7 @@ function ManualPaymentQueuePanel({
 }) {
   const visible = payments.slice(0, 8);
   return (
-    <div className="mb-4 rounded-2xl border border-glass bg-surface-alpha p-4">
+    <div className="mb-4 rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 lg:p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-primary">Manual payment queue</p>
@@ -2431,7 +2431,7 @@ function ManualPaymentQueuePanel({
               if (reason && reason.trim().length >= 3) onAction(payment.id, 'downgrade_free', reason.trim());
             };
             return (
-              <div key={payment.id} className="rounded-xl border border-glass bg-[var(--bg-base)] p-3">
+              <div key={payment.id} className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] p-3">
                 <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -2475,11 +2475,11 @@ function ManualPaymentQueuePanel({
                       </button>
                     ) : null}
                     {payment.instructions.whatsappUrl ? (
-                      <a className="inline-flex h-9 items-center rounded-lg border border-glass px-3 text-xs font-semibold text-primary hover:bg-surface-alpha" href={payment.instructions.whatsappUrl} target="_blank" rel="noopener noreferrer">
+                      <a className="inline-flex h-9 items-center rounded-lg border border-glass shadow-sm backdrop-blur-md px-3 text-xs font-semibold text-primary hover:bg-surface-alpha hover:bg-surface-alpha-hover transition-colors" href={payment.instructions.whatsappUrl} target="_blank" rel="noopener noreferrer">
                         WhatsApp
                       </a>
                     ) : null}
-                    <button type="button" disabled={busy} onClick={() => onAction(payment.id, 'receipt_received')} className="inline-flex h-9 items-center rounded-lg border border-glass px-3 text-xs font-semibold text-primary hover:bg-surface-alpha disabled:opacity-50">
+                    <button type="button" disabled={busy} onClick={() => onAction(payment.id, 'receipt_received')} className="inline-flex h-9 items-center rounded-lg border border-glass shadow-sm backdrop-blur-md px-3 text-xs font-semibold text-primary hover:bg-surface-alpha hover:bg-surface-alpha-hover transition-colors disabled:opacity-50">
                       Receipt received
                     </button>
                     <button type="button" disabled={busy} onClick={() => onAction(payment.id, 'verified_paid')} className="inline-flex h-9 items-center rounded-lg bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50">
@@ -2498,7 +2498,7 @@ function ManualPaymentQueuePanel({
           })}
         </div>
       ) : (
-        <p className="mt-4 rounded-xl bg-[var(--bg-base)] p-3 text-sm text-secondary">No manual payment requests are pending in this runtime.</p>
+        <p className="mt-4 rounded-2xl bg-[var(--bg-base)] p-3 text-sm text-secondary">No manual payment requests are pending in this runtime.</p>
       )}
     </div>
   );
@@ -2560,7 +2560,7 @@ function ManualPaymentQrPanel({
   const canSave = !busy && operatorNote.trim().length >= 3 && (qrisImageUrl === '' || /^data:image\/(?:png|jpeg|webp);base64,/i.test(qrisImageUrl));
 
   return (
-    <section className="mb-4 rounded-2xl border border-glass bg-surface-alpha p-4">
+    <section className="mb-4 rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 lg:p-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-sm font-semibold text-primary">Manual payment QR</p>
@@ -2580,7 +2580,7 @@ function ManualPaymentQrPanel({
           <select
             value={currency}
             onChange={(event) => setCurrency(event.currentTarget.value as ManualPaymentQrCurrency)}
-            className="mt-1 min-h-11 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold text-primary"
+            className="mt-1 min-h-11 w-full rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-3 text-sm font-semibold text-primary"
           >
             {MANUAL_QR_CURRENCIES.map((item) => (
               <option key={item} value={item}>{item.toUpperCase()}</option>
@@ -2592,7 +2592,7 @@ function ManualPaymentQrPanel({
           <input
             value={qrisLabel}
             onChange={(event) => setQrisLabel(event.currentTarget.value)}
-            className="mt-1 min-h-11 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold text-primary"
+            className="mt-1 min-h-11 w-full rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-3 text-sm font-semibold text-primary"
             placeholder="QRIS Baristachaw"
             maxLength={80}
           />
@@ -2602,7 +2602,7 @@ function ManualPaymentQrPanel({
           <input
             value={operatorNote}
             onChange={(event) => setOperatorNote(event.currentTarget.value)}
-            className="mt-1 min-h-11 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold text-primary"
+            className="mt-1 min-h-11 w-full rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-3 text-sm font-semibold text-primary"
             placeholder="Reason for QR change"
             maxLength={240}
           />
@@ -2623,7 +2623,7 @@ function ManualPaymentQrPanel({
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-glass bg-[var(--bg-base)] px-4 text-sm font-bold text-primary transition-colors hover:bg-surface-alpha"
+            className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-4 text-sm font-bold text-primary transition-colors hover:bg-surface-alpha hover:bg-surface-alpha-hover transition-colors"
           >
             Upload
           </button>
@@ -2633,7 +2633,7 @@ function ManualPaymentQrPanel({
               setQrisImageUrl('');
               if (!operatorNote) setOperatorNote(`Disable ${currency.toUpperCase()} manual payment QR`);
             }}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-glass bg-[var(--bg-base)] px-4 text-sm font-bold text-primary transition-colors hover:bg-surface-alpha"
+            className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-4 text-sm font-bold text-primary transition-colors hover:bg-surface-alpha hover:bg-surface-alpha-hover transition-colors"
           >
             Clear
           </button>
@@ -2641,15 +2641,15 @@ function ManualPaymentQrPanel({
             type="button"
             disabled={!canSave}
             onClick={() => onSave({ currency, qrisImageUrl, qrisLabel, operatorNote })}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-blue-600 px-4 text-sm font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {busy ? 'Saving...' : 'Save QR'}
           </button>
         </div>
       </div>
-      {error ? <p role="alert" className="mt-3 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-300">{error}</p> : null}
+      {error ? <p role="alert" className="mt-3 rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-300">{error}</p> : null}
       <div className="mt-4 grid gap-3 md:grid-cols-[auto_1fr] md:items-center">
-        <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-2xl border border-glass bg-white p-2">
+        <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-white p-2">
           {qrisImageUrl ? (
             <img src={qrisImageUrl} alt={qrisLabel || 'Manual payment QR preview'} className="h-full w-full object-contain" />
           ) : (
@@ -2683,7 +2683,7 @@ function BillingReadinessPanel({
   return (
     <>
     <div className="mb-4 grid gap-3 lg:grid-cols-[1fr_1fr_1fr]">
-      <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
+      <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 lg:p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-primary">{admin.text('paymentReadiness')}</p>
@@ -2692,21 +2692,21 @@ function BillingReadinessPanel({
           <StatusBadge value={snapshot.billing.ready ? 'pass' : 'warn'} />
         </div>
         <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-          <div className="rounded-xl bg-[var(--bg-base)] p-2">
+          <div className="rounded-2xl bg-[var(--bg-base)] p-2">
             <p className="text-lg font-semibold text-primary">{snapshot.billing.activeSubscriptions}</p>
             <p className="text-tertiary">{admin.text('active')}</p>
           </div>
-          <div className="rounded-xl bg-[var(--bg-base)] p-2">
+          <div className="rounded-2xl bg-[var(--bg-base)] p-2">
             <p className="text-lg font-semibold text-primary">{snapshot.billing.pastDueSubscriptions}</p>
             <p className="text-tertiary">{admin.text('pastDue')}</p>
           </div>
-          <div className="rounded-xl bg-[var(--bg-base)] p-2">
+          <div className="rounded-2xl bg-[var(--bg-base)] p-2">
             <p className="text-lg font-semibold text-primary">{admin.currencyUsd(snapshot.billing.revenueMonthlyUsd)}</p>
             <p className="text-tertiary">MRR</p>
           </div>
         </div>
       </div>
-      <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
+      <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 lg:p-4">
         <p className="text-sm font-semibold text-primary">{admin.text('connectedProviders')}</p>
         <div className="mt-3 flex flex-wrap gap-1.5">
           {snapshot.billing.connectedProviders.length ? snapshot.billing.connectedProviders.map((provider) => (
@@ -2715,7 +2715,7 @@ function BillingReadinessPanel({
         </div>
         <p className="mt-3 text-xs leading-5 text-secondary">{admin.format('marketsPrepared', { markets: snapshot.billing.supportedMarkets.map((market) => admin.enumLabel(market)).join(', ') })}</p>
       </div>
-      <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
+      <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 lg:p-4">
         <p className="text-sm font-semibold text-primary">{admin.text('realtimeContract')}</p>
         <div className="mt-2">
           <StatusBadge value={snapshot.billing.planParity.ok ? 'pass' : 'warn'} label={snapshot.billing.planParity.ok ? 'Plan parity pass' : 'Plan parity mismatch'} />
@@ -2805,12 +2805,12 @@ function PlanEditorCard({
   const [showContent, setShowContent] = useState(false);
 
   return (
-    <article className="rounded-2xl border border-glass bg-surface-alpha overflow-hidden">
+    <article className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors overflow-hidden">
       {/* ── Header ── */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-[var(--bg-base)]/50 px-4 py-3 border-b border-glass">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-[var(--bg-base)]/50 px-4 py-3 border-b border-glass shadow-sm backdrop-blur-md">
         <div className="flex items-center gap-2.5 min-w-0">
           <span className={clsx(
-            'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold',
+            'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl text-xs font-bold',
             plan.code === 'free' ? 'bg-zinc-500/10 text-zinc-500' : plan.code === 'starter' ? 'bg-blue-500/10 text-blue-500' : plan.code === 'pro' ? 'bg-purple-500/10 text-purple-500' : plan.code === 'team' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500',
           )}>
             {plan.code.slice(0, 2).toUpperCase()}
@@ -2824,35 +2824,35 @@ function PlanEditorCard({
           </div>
         </div>
         <div className="flex shrink-0 gap-1.5">
-          <span className={clsx('inline-flex min-h-7 items-center rounded-full px-2 text-[10px] font-bold', changedKeys.length ? 'bg-blue-500/10 text-blue-600 dark:text-blue-300' : 'bg-surface-alpha text-tertiary')}>
+          <span className={clsx('inline-flex min-h-7 items-center rounded-full px-2 text-[10px] font-bold', changedKeys.length ? 'bg-blue-500/10 text-blue-600 dark:text-blue-300' : 'bg-surface-alpha hover:bg-surface-alpha-hover transition-colors text-tertiary')}>
             {changedKeys.length ? `${changedKeys.length} changed` : 'No changes'}
           </span>
-          <button type="button" onClick={() => setDraft(planToDraft(plan))} className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-glass bg-[var(--bg-base)] px-2.5 text-[11px] font-semibold text-secondary hover:text-primary transition-colors" disabled={busy}>
+          <button type="button" onClick={() => setDraft(planToDraft(plan))} className="inline-flex min-h-8 items-center gap-1.5 rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2.5 text-[11px] font-semibold text-secondary hover:text-primary transition-colors" disabled={busy}>
             <RefreshCcw size={12} />
             Reset
           </button>
-          <button type="button" onClick={save} className="inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-blue-600 px-3 text-[11px] font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors" disabled={!canSave}>
+          <button type="button" onClick={save} className="inline-flex min-h-8 items-center gap-1.5 rounded-2xl bg-blue-600 px-3 text-[11px] font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors" disabled={!canSave}>
             <Save size={12} />
             {busy ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="p-3 lg:p-4 space-y-3">
         {/* ── Basic Info ── */}
         <div className="grid gap-2.5 sm:grid-cols-2">
           <label className="text-[11px] font-semibold text-secondary">
             {admin.text('name')}
-            <input value={draft.name} onChange={(event) => setField('name', event.currentTarget.value)} className="glass-input mt-1 min-h-11 w-full rounded-xl px-3 text-sm" />
+            <input value={draft.name} onChange={(event) => setField('name', event.currentTarget.value)} className="glass-input mt-1 min-h-11 w-full rounded-2xl px-3 text-sm" />
           </label>
           <label className="text-[11px] font-semibold text-secondary">
             {admin.text('displayPrice')}
-            <input value={draft.displayPrice} onChange={(event) => setField('displayPrice', event.currentTarget.value)} className="glass-input mt-1 min-h-11 w-full rounded-xl px-3 text-sm" />
+            <input value={draft.displayPrice} onChange={(event) => setField('displayPrice', event.currentTarget.value)} className="glass-input mt-1 min-h-11 w-full rounded-2xl px-3 text-sm" />
           </label>
         </div>
         <label className="block text-[11px] font-semibold text-secondary">
           {admin.text('description')}
-          <textarea value={draft.description} onChange={(event) => setField('description', event.currentTarget.value)} className="glass-input mt-1 min-h-16 w-full rounded-xl px-3 py-2 text-sm" />
+          <textarea value={draft.description} onChange={(event) => setField('description', event.currentTarget.value)} className="glass-input mt-1 min-h-16 w-full rounded-2xl px-3 py-2 text-sm" />
         </label>
 
         {/* ── Legacy Numeric Limits ── */}
@@ -2873,15 +2873,15 @@ function PlanEditorCard({
                 min={key === 'seats' || key === 'supportSlaHours' ? 1 : 0}
                 value={draft[key as keyof PlanEditorDraft] as string}
                 onChange={(event) => setField(key as keyof PlanEditorDraft, event.currentTarget.value as never)}
-                className="glass-input mt-1 min-h-11 w-full rounded-xl px-3 text-sm"
+                className="glass-input mt-1 min-h-11 w-full rounded-2xl px-3 text-sm"
               />
             </label>
           ))}
         </div>
 
         {/* ── Feature Limits Grid ── */}
-        <div className="rounded-xl border border-glass bg-[var(--bg-base)]/50 overflow-hidden">
-          <div className="grid grid-cols-[1fr_72px_72px] sm:grid-cols-[1fr_90px_90px] items-center gap-2 px-3 py-2 border-b border-glass bg-[var(--bg-base)]/60">
+        <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/50 overflow-hidden">
+          <div className="grid grid-cols-[1fr_72px_72px] sm:grid-cols-[1fr_90px_90px] items-center gap-2 px-3 py-2 border-b border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/60">
             <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-tertiary">Feature</span>
             <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-tertiary text-center">Daily</span>
             <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-tertiary text-center">Monthly</span>
@@ -2894,22 +2894,22 @@ function PlanEditorCard({
               const entry = draft.featureLimitsMap[key] || { daily: '0', monthly: '0' };
               return (
                 <div key={key}>
-                  {showGroup && <div className="px-3 py-1.5 bg-[var(--bg-base)]/40 border-b border-glass"><span className="text-[9px] font-bold uppercase tracking-[0.12em] text-tertiary">{group}</span></div>}
-                  <div className="grid grid-cols-[1fr_72px_72px] sm:grid-cols-[1fr_90px_90px] items-center gap-2 px-3 py-1.5 border-b border-glass last:border-b-0 hover:bg-[var(--bg-base)]/30 transition-colors">
+                  {showGroup && <div className="px-3 py-1.5 bg-[var(--bg-base)]/40 border-b border-glass shadow-sm backdrop-blur-md"><span className="text-[9px] font-bold uppercase tracking-[0.12em] text-tertiary">{group}</span></div>}
+                  <div className="grid grid-cols-[1fr_72px_72px] sm:grid-cols-[1fr_90px_90px] items-center gap-2 px-3 py-1.5 border-b border-glass shadow-sm backdrop-blur-md last:border-b-0 hover:bg-[var(--bg-base)]/30 transition-colors">
                     <span className="text-[11px] font-semibold text-secondary truncate" title={key}>{label}</span>
                     <input
                       type="number"
                       min={0}
                       value={entry.daily}
                       onChange={(e) => updateLimitField(key, 'daily', e.currentTarget.value)}
-                      className="glass-input min-h-9 w-full rounded-lg px-2 text-center text-[11px] font-semibold"
+                      className="glass-input min-h-8 w-full rounded-lg px-2 text-center text-[11px] font-semibold"
                     />
                     <input
                       type="number"
                       min={0}
                       value={entry.monthly}
                       onChange={(e) => updateLimitField(key, 'monthly', e.currentTarget.value)}
-                      className="glass-input min-h-9 w-full rounded-lg px-2 text-center text-[11px] font-semibold"
+                      className="glass-input min-h-8 w-full rounded-lg px-2 text-center text-[11px] font-semibold"
                     />
                   </div>
                 </div>
@@ -2919,7 +2919,7 @@ function PlanEditorCard({
         </div>
 
         {/* ── Billing Config (Collapsible) ── */}
-        <div className="rounded-xl border border-glass overflow-hidden">
+        <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md overflow-hidden">
           <button
             type="button"
             onClick={() => setShowBilling(!showBilling)}
@@ -2929,23 +2929,23 @@ function PlanEditorCard({
             <ChevronRight size={13} className={clsx('text-tertiary transition-transform', showBilling && 'rotate-90')} />
           </button>
           {showBilling && (
-            <div className="p-3 space-y-2.5 border-t border-glass">
+            <div className="p-3 space-y-2.5 border-t border-glass shadow-sm backdrop-blur-md">
               <div className="grid gap-2 sm:grid-cols-3">
                 <label className="text-[10px] font-semibold text-secondary">
                   {admin.text('provider')}
-                  <select value={draft.billingProvider} onChange={(event) => setField('billingProvider', event.currentTarget.value as BillingProvider)} className="mt-1 min-h-11 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+                  <select value={draft.billingProvider} onChange={(event) => setField('billingProvider', event.currentTarget.value as BillingProvider)} className="mt-1 min-h-11 w-full rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-3 text-sm text-primary">
                     {BILLING_PROVIDER_OPTIONS.map((p) => <option key={p} value={p}>{admin.enumLabel(p)}</option>)}
                   </select>
                 </label>
                 <label className="text-[10px] font-semibold text-secondary">
                   {admin.text('market')}
-                  <select value={draft.market} onChange={(event) => setField('market', event.currentTarget.value as BillingMarket)} className="mt-1 min-h-11 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+                  <select value={draft.market} onChange={(event) => setField('market', event.currentTarget.value as BillingMarket)} className="mt-1 min-h-11 w-full rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-3 text-sm text-primary">
                     {BILLING_MARKET_OPTIONS.map((m) => <option key={m} value={m}>{admin.enumLabel(m)}</option>)}
                   </select>
                 </label>
                 <label className="text-[10px] font-semibold text-secondary">
                   {admin.text('checkout')}
-                  <select value={draft.checkoutMode} onChange={(event) => setField('checkoutMode', event.currentTarget.value as CheckoutMode)} className="mt-1 min-h-11 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+                  <select value={draft.checkoutMode} onChange={(event) => setField('checkoutMode', event.currentTarget.value as CheckoutMode)} className="mt-1 min-h-11 w-full rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-3 text-sm text-primary">
                     {CHECKOUT_MODE_OPTIONS.map((cm) => <option key={cm} value={cm}>{admin.enumLabel(cm)}</option>)}
                   </select>
                 </label>
@@ -2953,15 +2953,15 @@ function PlanEditorCard({
               <div className="grid gap-2 sm:grid-cols-3">
                 <label className="text-[10px] font-semibold text-secondary">
                   {admin.text('productId')}
-                  <input value={draft.billingProductId} onChange={(event) => setField('billingProductId', event.currentTarget.value)} className="glass-input mt-1 min-h-11 w-full rounded-xl px-3 text-sm" />
+                  <input value={draft.billingProductId} onChange={(event) => setField('billingProductId', event.currentTarget.value)} className="glass-input mt-1 min-h-11 w-full rounded-2xl px-3 text-sm" />
                 </label>
                 <label className="text-[10px] font-semibold text-secondary">
                   {admin.text('priceId')}
-                  <input value={draft.billingPriceId} onChange={(event) => setField('billingPriceId', event.currentTarget.value)} className="glass-input mt-1 min-h-11 w-full rounded-xl px-3 text-sm" />
+                  <input value={draft.billingPriceId} onChange={(event) => setField('billingPriceId', event.currentTarget.value)} className="glass-input mt-1 min-h-11 w-full rounded-2xl px-3 text-sm" />
                 </label>
                 <label className="text-[10px] font-semibold text-secondary">
                   {admin.text('entitlementId')}
-                  <input value={draft.revenuecatEntitlementId} onChange={(event) => setField('revenuecatEntitlementId', event.currentTarget.value)} className="glass-input mt-1 min-h-11 w-full rounded-xl px-3 text-sm" />
+                  <input value={draft.revenuecatEntitlementId} onChange={(event) => setField('revenuecatEntitlementId', event.currentTarget.value)} className="glass-input mt-1 min-h-11 w-full rounded-2xl px-3 text-sm" />
                 </label>
               </div>
             </div>
@@ -2969,7 +2969,7 @@ function PlanEditorCard({
         </div>
 
         {/* ── Content (Collapsible) ── */}
-        <div className="rounded-xl border border-glass overflow-hidden">
+        <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md overflow-hidden">
           <button
             type="button"
             onClick={() => setShowContent(!showContent)}
@@ -2979,15 +2979,15 @@ function PlanEditorCard({
             <ChevronRight size={13} className={clsx('text-tertiary transition-transform', showContent && 'rotate-90')} />
           </button>
           {showContent && (
-            <div className="p-3 space-y-2.5 border-t border-glass">
+            <div className="p-3 space-y-2.5 border-t border-glass shadow-sm backdrop-blur-md">
               <div className="grid gap-2.5 sm:grid-cols-2">
                 <label className="text-[10px] font-semibold text-secondary">
                   {admin.text('features')}
-                  <textarea value={draft.featuresText} onChange={(event) => setField('featuresText', event.currentTarget.value)} className="glass-input mt-1 min-h-20 w-full rounded-xl px-3 py-2 text-sm" />
+                  <textarea value={draft.featuresText} onChange={(event) => setField('featuresText', event.currentTarget.value)} className="glass-input mt-1 min-h-20 w-full rounded-2xl px-3 py-2 text-sm" />
                 </label>
                 <label className="text-[10px] font-semibold text-secondary">
                   {admin.text('paymentMethods')}
-                  <textarea value={draft.paymentMethodsText} onChange={(event) => setField('paymentMethodsText', event.currentTarget.value)} className="glass-input mt-1 min-h-20 w-full rounded-xl px-3 py-2 text-sm" />
+                  <textarea value={draft.paymentMethodsText} onChange={(event) => setField('paymentMethodsText', event.currentTarget.value)} className="glass-input mt-1 min-h-20 w-full rounded-2xl px-3 py-2 text-sm" />
                 </label>
               </div>
             </div>
@@ -2996,7 +2996,7 @@ function PlanEditorCard({
 
         {/* ── Footer ── */}
         <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-          <label className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-[11px] font-semibold text-secondary">
+          <label className="inline-flex min-h-11 items-center gap-2 rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-3 text-[11px] font-semibold text-secondary">
             <input type="checkbox" checked={draft.recommended} onChange={(event) => setField('recommended', event.currentTarget.checked)} className="rounded" />
             {admin.text('recommended')}
           </label>
@@ -3007,7 +3007,7 @@ function PlanEditorCard({
             value={draft.operatorNote}
             onChange={(event) => setField('operatorNote', event.currentTarget.value)}
             placeholder={admin.text('operatorNotePlaceholder')}
-            className="glass-input mt-1 min-h-16 w-full rounded-xl px-3 py-2 text-sm"
+            className="glass-input mt-1 min-h-16 w-full rounded-2xl px-3 py-2 text-sm"
           />
         </label>
         {invalidNumber && <p className="text-[11px] font-semibold text-rose-600 dark:text-rose-300">{admin.text('numericFieldsInvalid')}</p>}
@@ -3091,8 +3091,8 @@ function CatalogDatabasePanel({
 
   return (
     <div className="mb-4 grid gap-3 xl:grid-cols-[1fr_1.1fr]">
-      <div className="rounded-xl border border-glass bg-surface-alpha p-3">
-        <div className="flex items-start justify-between gap-3 border-b border-glass pb-2">
+      <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
+        <div className="flex items-start justify-between gap-3 border-b border-glass shadow-sm backdrop-blur-md pb-2">
           <div>
             <p className="text-xs font-semibold text-primary">{admin.text('catalogOperations')}</p>
             <p className="mt-0.5 text-[10px] text-secondary">{admin.text('catalogOperationsSubtitle')}</p>
@@ -3129,8 +3129,8 @@ function CatalogDatabasePanel({
         </div>
       </div>
 
-      <div className="rounded-xl border border-glass bg-surface-alpha p-3">
-        <div className="flex items-center justify-between gap-3 border-b border-glass pb-2">
+      <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
+        <div className="flex items-center justify-between gap-3 border-b border-glass shadow-sm backdrop-blur-md pb-2">
           <p className="text-xs font-semibold text-primary">{admin.text('newCatalogRequest')}</p>
           <button
             type="button"
@@ -3145,7 +3145,7 @@ function CatalogDatabasePanel({
         <div className="mt-3 grid gap-2.5 md:grid-cols-3">
           <label className="text-[10px] font-semibold text-secondary">
             {admin.text('kind')}
-            <select value={kind} onChange={(event) => setKind(event.currentTarget.value as AdminCatalogKind)} className="mt-1 h-8 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-xs text-primary">
+            <select value={kind} onChange={(event) => setKind(event.currentTarget.value as AdminCatalogKind)} className="mt-1 h-8 w-full rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2 text-xs text-primary">
               {CATALOG_KIND_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
             </select>
           </label>
@@ -3219,7 +3219,7 @@ function MaintenancePanel({
       {flags.map((flag) => {
         const busy = busyFlagKey === flag.key;
         return (
-          <div key={flag.key} className="rounded-xl border border-glass bg-surface-alpha p-3">
+          <div key={flag.key} className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-primary">{flag.label}</p>
@@ -3229,7 +3229,7 @@ function MaintenancePanel({
                 value={flag.status}
                 disabled={busy}
                 onChange={(event) => onPatch(flag.key, { status: event.currentTarget.value as FeatureFlagStatus })}
-                className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-[11px] font-semibold text-primary"
+                className="h-8 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2 text-[11px] font-semibold text-primary"
                 aria-label={`Change status for ${flag.label}`}
               >
                 {FEATURE_STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
@@ -3242,12 +3242,12 @@ function MaintenancePanel({
               onChange={(event) => setDraftMessages((current) => ({ ...current, [flag.key]: event.currentTarget.value }))}
               onBlur={() => commitMessage(flag)}
               placeholder={admin.text('userFacingMaintenanceMessage')}
-              className="mt-3 min-h-[3.5rem] w-full resize-none rounded-lg border border-glass bg-[var(--bg-base)] px-2 py-1.5 text-xs leading-relaxed text-primary outline-none transition-colors focus:border-blue-400"
+              className="mt-3 min-h-[3.5rem] w-full resize-none rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2 py-1.5 text-xs leading-relaxed text-primary outline-none transition-colors focus:border-blue-400"
             />
 
             <div className="mt-3 flex flex-wrap gap-1.5">
               {FEATURE_SURFACE_OPTIONS.map((surface) => (
-                <label key={surface} className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-[10px] font-semibold text-secondary">
+                <label key={surface} className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2 text-[10px] font-semibold text-secondary">
                   <input
                     type="checkbox"
                     checked={flag.surfaces.includes(surface)}
@@ -3294,7 +3294,7 @@ function formatAiSuccessRate(usage: AdminAiUsageAggregate): string {
 function AiUsageMetricCard({ title, usage }: { title: string; usage: AdminAiUsageAggregate }) {
   const admin = useAdminCopy();
   return (
-    <div className="rounded-xl border border-glass bg-surface-alpha p-3">
+    <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{title}</p>
@@ -3369,7 +3369,7 @@ function AiProviderPanel({
 
   return (
     <div className="space-y-3">
-      <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-3">
+      <div className="rounded-2xl border border-blue-500/20 bg-blue-500/10 p-3">
         <div className="flex flex-col gap-2.5 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-xs font-semibold text-primary">{admin.text('aiNoSecretLeak')}</p>
@@ -3381,7 +3381,7 @@ function AiProviderPanel({
       </div>
 
       {snapshot.ai.warnings.length ? (
-        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2">
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-3 py-2">
           {snapshot.ai.warnings.map((warning) => (
             <p key={warning} className="text-xs leading-relaxed text-amber-800 dark:text-amber-200">{warning}</p>
           ))}
@@ -3390,14 +3390,14 @@ function AiProviderPanel({
 
       <div className="grid gap-3 sm:grid-cols-3">
         {stats.map((item) => (
-          <div key={item.label} className="rounded-xl border border-glass bg-surface-alpha p-3">
+          <div key={item.label} className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
             <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{item.label}</p>
             <p className="mt-1 text-lg font-semibold text-primary">{admin.number(item.value)}</p>
           </div>
         ))}
       </div>
 
-      <div className="rounded-xl border border-glass bg-[var(--bg-base)]/70 p-3">
+      <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/70 p-3">
         <div className="flex flex-col gap-2.5 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-xs font-semibold text-primary">{admin.text('aiBrewFallbackTitle')}</p>
@@ -3419,14 +3419,14 @@ function AiProviderPanel({
             { label: admin.text('aiBrewFallbackSequence'), value: snapshot.aiBrewFallbacks.sequenceFallback },
             { label: admin.text('aiBrewFallbackRecent'), value: snapshot.aiBrewFallbacks.totalEvents },
           ].map((item) => (
-            <div key={item.label} className="rounded-lg bg-surface-alpha p-2">
+            <div key={item.label} className="rounded-lg bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-2">
               <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{item.label}</p>
               <p className="mt-0.5 text-base font-semibold text-primary">{admin.number(item.value)}</p>
             </div>
           ))}
         </div>
         {snapshot.aiBrewFallbacks.trend?.length ? (
-          <div className="mt-3 rounded-lg bg-surface-alpha p-2.5">
+          <div className="mt-3 rounded-lg bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-2.5">
             <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('aiBrewFallbackTrend')}</p>
               <span className="text-[11px] font-semibold text-secondary">
@@ -3451,16 +3451,16 @@ function AiProviderPanel({
         ) : null}
         <div className="mt-3 space-y-1.5">
           {snapshot.aiBrewFallbacks.recentEvents.length ? snapshot.aiBrewFallbacks.recentEvents.slice(0, 5).map((event) => (
-            <div key={event.id} className="grid gap-1 rounded-lg bg-surface-alpha px-2.5 py-1.5 text-[11px] text-secondary sm:grid-cols-[auto_1fr_auto] sm:items-center">
+            <div key={event.id} className="grid gap-1 rounded-lg bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-2.5 py-1.5 text-[11px] text-secondary sm:grid-cols-[auto_1fr_auto] sm:items-center">
               <span className="font-semibold text-primary">{event.kind.replace(/_/g, ' ')}</span>
               <span className="min-w-0 truncate">{event.detail}</span>
               <span className="text-[10px] text-tertiary sm:text-right">{admin.date(event.createdAt)}</span>
             </div>
-          )) : <p className="rounded-lg bg-surface-alpha px-3 py-3 text-center text-xs text-secondary">{admin.text('aiBrewFallbackNoEvents')}</p>}
+          )) : <p className="rounded-lg bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-3 py-3 text-center text-xs text-secondary">{admin.text('aiBrewFallbackNoEvents')}</p>}
         </div>
       </div>
 
-      <div className="rounded-xl border border-glass bg-[var(--bg-base)]/70 p-3">
+      <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/70 p-3">
         <div className="flex flex-col gap-2.5 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-xs font-semibold text-primary">{admin.text('aiBrewUsageTitle')}</p>
@@ -3473,14 +3473,14 @@ function AiProviderPanel({
           <AiUsageMetricCard title={admin.text('aiUsageMonth')} usage={snapshot.ai.usage.month} />
           <AiUsageMetricCard title={admin.text('aiUsageCustom')} usage={snapshot.ai.usage.custom} />
         </div>
-        <div className="mt-3 grid gap-2.5 rounded-xl border border-glass bg-surface-alpha p-2.5 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
+        <div className="mt-3 grid gap-2.5 rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-2.5 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
           <label className="grid gap-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">
             {admin.text('aiUsageFrom')}
             <input
               type="date"
               value={usageFromDraft}
               onChange={(event) => setUsageFromDraft(event.currentTarget.value)}
-              className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-xs normal-case tracking-normal text-primary"
+              className="h-8 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2 text-xs normal-case tracking-normal text-primary"
             />
           </label>
           <label className="grid gap-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">
@@ -3489,7 +3489,7 @@ function AiProviderPanel({
               type="date"
               value={usageToDraft}
               onChange={(event) => setUsageToDraft(event.currentTarget.value)}
-              className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-xs normal-case tracking-normal text-primary"
+              className="h-8 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2 text-xs normal-case tracking-normal text-primary"
             />
           </label>
           <button
@@ -3501,7 +3501,7 @@ function AiProviderPanel({
           </button>
         </div>
         <div className="mt-3 grid gap-3 xl:grid-cols-2">
-          <div className="rounded-xl border border-glass bg-surface-alpha p-2.5">
+          <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-2.5">
             <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('aiUsageProviderBreakdown')}</p>
             <div className="mt-2 space-y-1.5">
               {snapshot.ai.usage.month.providerBreakdown.length ? snapshot.ai.usage.month.providerBreakdown.slice(0, 6).map((item) => (
@@ -3515,7 +3515,7 @@ function AiProviderPanel({
               )) : <p className="py-3 text-center text-xs text-secondary">{admin.text('aiUsageNoEvents')}</p>}
             </div>
           </div>
-          <div className="rounded-xl border border-glass bg-surface-alpha p-2.5">
+          <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-2.5">
             <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('aiUsageRecentEvents')}</p>
             <div className="mt-2 space-y-1.5">
               {snapshot.ai.usage.recentEvents.length ? snapshot.ai.usage.recentEvents.slice(0, 6).map((event) => (
@@ -3546,7 +3546,7 @@ function AiProviderPanel({
             ? 'belum ada request'
             : `${admin.date(provider.health.lastCheckedAt)}${provider.health.lastLatencyMs ? ` / ${admin.number(provider.health.lastLatencyMs)}ms` : ''}`;
           return (
-            <article key={provider.provider} className="rounded-xl border border-glass bg-surface-alpha p-3">
+            <article key={provider.provider} className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
               <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-1.5">
@@ -3560,7 +3560,7 @@ function AiProviderPanel({
                   value={provider.status}
                   disabled={busy}
                   onChange={(event) => onPatch(provider.featureFlagKey, { status: event.currentTarget.value as FeatureFlagStatus })}
-                  className="h-8 rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-[11px] font-semibold text-primary shrink-0 self-start"
+                  className="h-8 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2 text-[11px] font-semibold text-primary shrink-0 self-start"
                   aria-label={`Change AI provider status for ${provider.label}`}
                 >
                   {FEATURE_STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
@@ -3597,7 +3597,7 @@ function AiProviderPanel({
                 onChange={(event) => setDraftMessages((current) => ({ ...current, [provider.featureFlagKey]: event.currentTarget.value }))}
                 onBlur={() => commitMessage(provider)}
                 placeholder={admin.text('maintenanceMessagePlaceholder')}
-                className="mt-3 min-h-[3rem] w-full resize-none rounded-lg border border-glass bg-[var(--bg-base)] px-2.5 py-1.5 text-xs leading-relaxed text-primary outline-none transition-colors focus:border-blue-400"
+                className="mt-3 min-h-[3rem] w-full resize-none rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2.5 py-1.5 text-xs leading-relaxed text-primary outline-none transition-colors focus:border-blue-400"
               />
               {busy ? <p className="mt-2 text-[10px] font-semibold text-blue-500">{admin.text('savingMaintenanceControl')}</p> : null}
             </article>
@@ -3622,14 +3622,14 @@ function RecipeLibraryPanel({ snapshot }: { snapshot: AdminSnapshot }) {
     <div className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((item) => (
-          <div key={item.label} className="rounded-xl border border-glass bg-surface-alpha p-3">
+          <div key={item.label} className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
             <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{item.label}</p>
             <p className="mt-1 text-lg font-semibold text-primary">{admin.number(item.value)}</p>
           </div>
         ))}
       </div>
 
-      <div className="rounded-xl border border-glass bg-surface-alpha p-3">
+      <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
         <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-xs font-semibold text-primary">{admin.text('recipeLibraryReady')}</p>
@@ -3647,8 +3647,8 @@ function RecipeLibraryPanel({ snapshot }: { snapshot: AdminSnapshot }) {
         ) : null}
       </div>
 
-      <div className="rounded-xl border border-glass bg-surface-alpha">
-        <div className="flex items-center justify-between gap-3 border-b border-glass px-3 py-2.5">
+      <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors">
+        <div className="flex items-center justify-between gap-3 border-b border-glass shadow-sm backdrop-blur-md px-3 py-2.5">
           <div>
             <p className="text-xs font-semibold text-primary">{admin.text('recipeLibraryRecent')}</p>
             <p className="mt-0.5 text-[10px] text-tertiary">{admin.text('recipeLibrarySubtitle')}</p>
@@ -3696,23 +3696,23 @@ function RecipeLibraryPanel({ snapshot }: { snapshot: AdminSnapshot }) {
 function AuditPanel({ audit, onExport }: { audit: AdminSnapshot['audit']; onExport?: () => void }) {
   const admin = useAdminCopy();
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {onExport && (
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-sm font-semibold text-secondary">{admin.text('auditLogs') || 'Audit Logs'}</h3>
           <button
             type="button"
             onClick={onExport}
-            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-glass bg-surface-alpha px-3 text-xs font-semibold text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-3 text-xs font-semibold text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
           >
             <Download size={13} />
             {admin.text('auditCsv')}
           </button>
         </div>
       )}
-      <div className="rounded-2xl border border-glass bg-surface-alpha">
+      <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors">
         {audit.map((event, index) => (
-          <div key={event.id} className={clsx('grid gap-3 px-4 py-4 md:grid-cols-[11rem_1fr_8rem]', index > 0 && 'border-t border-glass')}>
+          <div key={event.id} className={clsx('grid gap-3 px-4 py-4 md:grid-cols-[11rem_1fr_8rem]', index > 0 && 'border-t border-glass shadow-sm backdrop-blur-md')}>
             <div className="text-xs text-tertiary">{admin.date(event.createdAt)}</div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-primary">{event.action.replace(/_/g, ' ')}</p>
@@ -3732,7 +3732,7 @@ function AuditPanel({ audit, onExport }: { audit: AdminSnapshot['audit']; onExpo
 function LaunchPanel({ checklist, onCopySummary }: { checklist: LaunchChecklistItem[]; onCopySummary?: () => void }) {
   const admin = useAdminCopy();
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {onCopySummary && (
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-sm font-semibold text-secondary">{admin.text('launchChecklist') || 'Launch Checklist'}</h3>
@@ -3748,7 +3748,7 @@ function LaunchPanel({ checklist, onCopySummary }: { checklist: LaunchChecklistI
       )}
       <div className="grid gap-3 lg:grid-cols-2">
         {checklist.map((item) => (
-          <div key={item.id} className="rounded-2xl border border-glass bg-surface-alpha p-4">
+          <div key={item.id} className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 lg:p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-start gap-3">
                 <CheckIcon status={item.status} />
@@ -3770,7 +3770,7 @@ function LaunchPanel({ checklist, onCopySummary }: { checklist: LaunchChecklistI
 function EmptyState() {
   const admin = useAdminCopy();
   return (
-    <div className="rounded-2xl border border-dashed border-glass bg-surface-alpha px-4 py-10 text-center">
+    <div className="rounded-2xl border border-dashed border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-4 py-10 text-center">
       <p className="text-sm font-semibold text-primary">{admin.text('noMatchingUsers')}</p>
       <p className="mt-1 text-sm text-secondary">{admin.text('noMatchingUsersSubtitle')}</p>
     </div>
@@ -4330,15 +4330,15 @@ export function AdminManagement() {
     >
       <a
         href="#admin-main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[90] focus:rounded-xl focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 lg:p-4 focus:z-[90] focus:rounded-2xl focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
       >
         {admin.text('skipToAdminContent')}
       </a>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:border-r lg:border-glass lg:bg-[var(--bg-elevated)]/60 lg:backdrop-blur-xl z-20">
-        <div className="flex h-14 items-center px-4 border-b border-glass gap-2 shrink-0">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 shrink-0">
+      <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:border-r lg:border-glass shadow-sm backdrop-blur-md lg:bg-[var(--bg-elevated)]/60 lg:backdrop-blur-xl z-20">
+        <div className="flex h-14 items-center px-4 border-b border-glass shadow-sm backdrop-blur-md gap-2 shrink-0">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500 shrink-0">
             <ShieldCheck size={18} />
           </span>
           <div className="min-w-0">
@@ -4362,10 +4362,10 @@ export function AdminManagement() {
               aria-selected={activeTab === id}
               aria-controls={`admin-panel-${id}`}
               className={clsx(
-                'w-full flex items-center justify-between min-h-9 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all group border-0 text-left',
+                'w-full flex items-center justify-between min-h-8 px-3 py-1.5 rounded-2xl text-xs font-semibold transition-all group border-0 text-left',
                 activeTab === id
                   ? 'bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.18)]'
-                  : 'text-secondary hover:bg-surface-alpha hover:text-primary'
+                  : 'text-secondary hover:bg-surface-alpha hover:bg-surface-alpha-hover transition-colors hover:text-primary'
               )}
             >
               <div className="flex items-center gap-2.5 min-w-0">
@@ -4388,7 +4388,7 @@ export function AdminManagement() {
           ))}
         </div>
 
-        <div className="p-3 border-t border-glass space-y-2 bg-[var(--bg-elevated)]/40 shrink-0">
+        <div className="p-3 border-t border-glass shadow-sm backdrop-blur-md space-y-2 bg-[var(--bg-elevated)]/40 shrink-0">
           <div className="flex items-center justify-between gap-2 px-1">
             {snapshot ? (
               <span className={clsx(
@@ -4402,7 +4402,7 @@ export function AdminManagement() {
             <button
               type="button"
               onClick={toggleTheme}
-              className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-glass bg-surface-alpha text-secondary hover:text-primary transition-colors"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors text-secondary hover:text-primary transition-colors"
               title={isDark ? admin.text('switchToLight') : admin.text('switchToDark')}
             >
               {isDark ? <Sun size={13} /> : <Moon size={13} />}
@@ -4412,7 +4412,7 @@ export function AdminManagement() {
             <button
               type="button"
               onClick={() => navigate('/')}
-              className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-glass bg-surface-alpha px-2 text-[10px] font-semibold text-secondary hover:bg-[var(--bg-base)] hover:text-primary transition-all"
+              className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-2 text-[10px] font-semibold text-secondary hover:bg-[var(--bg-base)] hover:text-primary transition-all"
               title={admin.text('backToAppTitle')}
             >
               <ArrowLeft size={11} />
@@ -4447,9 +4447,9 @@ export function AdminManagement() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 z-[65] w-64 flex flex-col bg-[var(--bg-elevated)] border-r border-glass shadow-2xl lg:hidden"
+              className="fixed inset-y-0 left-0 z-[65] w-[280px] flex flex-col bg-[var(--bg-elevated)] border-r border-glass shadow-sm backdrop-blur-md shadow-2xl lg:hidden"
             >
-              <div className="flex h-14 items-center justify-between px-4 border-b border-glass shrink-0">
+              <div className="flex h-14 items-center justify-between px-4 border-b border-glass shadow-sm backdrop-blur-md shrink-0">
                 <div className="flex items-center gap-2">
                   <ShieldCheck size={18} className="text-blue-500" />
                   <span className="text-xs font-bold text-primary">Baristachaw Admin</span>
@@ -4457,7 +4457,7 @@ export function AdminManagement() {
                 <button
                   type="button"
                   onClick={() => setIsMobileDrawerOpen(false)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-secondary hover:bg-surface-alpha hover:text-primary"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-2xl text-secondary hover:bg-surface-alpha hover:bg-surface-alpha-hover transition-colors hover:text-primary"
                   aria-label="Close menu"
                 >
                   <X size={17} />
@@ -4473,10 +4473,10 @@ export function AdminManagement() {
                       setIsMobileDrawerOpen(false);
                     }}
                     className={clsx(
-                      'w-full flex items-center justify-between min-h-9 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all group text-left border-0',
+                      'w-full flex items-center justify-between min-h-8 px-3 py-1.5 rounded-2xl text-xs font-semibold transition-all group text-left border-0',
                       activeTab === id
                         ? 'bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.18)]'
-                        : 'text-secondary hover:bg-surface-alpha hover:text-primary'
+                        : 'text-secondary hover:bg-surface-alpha hover:bg-surface-alpha-hover transition-colors hover:text-primary'
                     )}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -4498,7 +4498,7 @@ export function AdminManagement() {
                   </button>
                 ))}
               </div>
-              <div className="p-3 border-t border-glass space-y-2 bg-[var(--bg-elevated)]/40 shrink-0">
+              <div className="p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-glass shadow-sm backdrop-blur-md space-y-2 bg-[var(--bg-elevated)]/40 shrink-0">
                 <div className="flex items-center justify-between px-1">
                   <span className="text-[10px] text-tertiary">
                     Seq: #{snapshot?.realtime.sequence}
@@ -4506,7 +4506,7 @@ export function AdminManagement() {
                   <button
                     type="button"
                     onClick={toggleTheme}
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-glass bg-surface-alpha text-secondary"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors text-secondary"
                   >
                     {isDark ? <Sun size={13} /> : <Moon size={13} />}
                   </button>
@@ -4518,7 +4518,7 @@ export function AdminManagement() {
                       setIsMobileDrawerOpen(false);
                       navigate('/');
                     }}
-                    className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-glass bg-surface-alpha text-xs font-semibold text-secondary"
+                    className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors text-xs font-semibold text-secondary"
                     title={admin.text('backToAppTitle')}
                   >
                     <ArrowLeft size={12} />
@@ -4545,12 +4545,12 @@ export function AdminManagement() {
       {/* Main Content Pane */}
       <div className="flex-1 min-w-0 lg:pl-60 flex flex-col h-full overflow-y-auto">
         {/* Mobile sticky top bar */}
-        <header className="flex h-14 items-center justify-between px-4 border-b border-glass bg-[var(--bg-base)]/88 backdrop-blur-xl sticky top-0 z-30 lg:hidden shrink-0">
+        <header className="flex h-14 items-center justify-between px-4 border-b border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/88 backdrop-blur-xl sticky top-0 z-30 lg:hidden shrink-0">
           <div className="flex items-center gap-2 min-w-0">
             <button
               type="button"
               onClick={() => setIsMobileDrawerOpen(true)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-glass bg-surface-alpha text-secondary hover:text-primary shrink-0"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors text-secondary hover:text-primary shrink-0"
               aria-label="Open navigation menu"
             >
               <Menu size={18} />
@@ -4564,7 +4564,7 @@ export function AdminManagement() {
             <button
               type="button"
               onClick={() => void refresh()}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-blue-600 text-white"
               disabled={refreshing}
             >
               <RefreshCcw size={14} className={refreshing ? 'animate-spin' : ''} />
@@ -4573,9 +4573,9 @@ export function AdminManagement() {
         </header>
 
         {/* Content Body */}
-        <div className="flex-1 p-4 lg:p-6 space-y-4 max-w-7xl w-full mx-auto">
+        <div className="flex-1 p-3 lg:p-5 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-3 max-w-7xl w-full mx-auto">
           {/* Desktop Tab Header */}
-          <div className="hidden lg:flex items-center justify-between border-b border-glass pb-4 mb-2 shrink-0">
+          <div className="hidden lg:flex items-center justify-between border-b border-glass shadow-sm backdrop-blur-md pb-4 mb-2 shrink-0">
             <div>
               <h1 className="text-lg font-bold tracking-tight text-primary">
                 {admin.text(TABS.find((tab) => tab.id === activeTab)?.labelKey || 'tabOverview')}
@@ -4586,7 +4586,7 @@ export function AdminManagement() {
             </div>
             <div className="flex items-center gap-2">
               {snapshot ? (
-                <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full bg-surface-alpha px-2.5 text-[10px] font-semibold text-secondary">
+                <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-2.5 text-[10px] font-semibold text-secondary">
                   <Clock3 size={11} />
                   {admin.date(snapshot.generatedAt)}
                 </span>
@@ -4597,14 +4597,14 @@ export function AdminManagement() {
           {loading && !snapshot ? (
             <div className="grid gap-3 md:grid-cols-4">
               {Array.from({ length: 8 }).map((_, index) => (
-                <div key={index} className="h-28 rounded-2xl border border-glass bg-surface-alpha loading-shimmer" />
+                <div key={index} className="h-28 rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors loading-shimmer" />
               ))}
             </div>
           ) : null}
 
           {error && !snapshot && !blockingError ? (
-            <section className="rounded-[1.4rem] border border-rose-500/25 bg-rose-500/10 p-4">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <section className="rounded-3xl border border-rose-500/25 bg-rose-500/10 p-3 lg:p-4">
+              <div className="flex flex-col gap-3 lg:p-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <AlertTriangle size={18} className="text-rose-500" />
@@ -4618,7 +4618,7 @@ export function AdminManagement() {
                 <button
                   type="button"
                   onClick={() => void refresh()}
-                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.24)] transition-colors hover:bg-blue-700"
+                  className="inline-flex min-h-8 shrink-0 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.24)] transition-colors hover:bg-blue-700"
                 >
                   <RefreshCcw size={15} className={refreshing ? 'animate-spin' : ''} />
                   {admin.text('retry')}
@@ -4650,7 +4650,7 @@ export function AdminManagement() {
               <main id="admin-main-content" className="min-w-0" aria-label={admin.text('adminContent')} tabIndex={-1}>
             <AnimatePresence mode="wait">
               {activeTab === 'overview' ? (
-                <motion.section id="admin-panel-overview" aria-labelledby="admin-tab-overview" role="tabpanel" key="overview" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-4">
+                <motion.section id="admin-panel-overview" aria-labelledby="admin-tab-overview" role="tabpanel" key="overview" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-3">
                   <AdminCommandCenter
                     snapshot={snapshot}
                     queues={adminQueues}
@@ -4658,9 +4658,9 @@ export function AdminManagement() {
                     onOpenMaintenance={() => selectTab('maintenance')}
                     onOpenUser={openUserFromCommandCenter}
                   />
-                  <div className="grid gap-4 xl:grid-cols-[1.5fr_0.9fr]">
-                    <div className="space-y-4">
-                      <div className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                  <div className="grid gap-3 lg:p-4 xl:grid-cols-[1.5fr_0.9fr]">
+                    <div className="space-y-3">
+                      <div className="rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-3 lg:p-4">
                         <div className="mb-4 flex items-center justify-between gap-3">
                           <div>
                             <h2 className="text-base font-semibold text-primary">{admin.text('productionChecks')}</h2>
@@ -4670,11 +4670,11 @@ export function AdminManagement() {
                         </div>
                         <ChecksPanel checks={snapshot.checks.slice(0, 5)} />
                       </div>
-                      <div className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                      <div className="rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-3 lg:p-4">
                         <h2 className="text-base font-semibold text-primary">{admin.text('planMix')}</h2>
                         <div className="mt-4 grid gap-3 md:grid-cols-5">
                           {snapshot.plans.map((plan) => (
-                            <div key={plan.code} className="rounded-2xl bg-surface-alpha p-3">
+                            <div key={plan.code} className="rounded-2xl bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
                               <p className="text-xs font-semibold text-secondary">{plan.name}</p>
                               <p className="mt-2 text-2xl font-semibold text-primary">{plan.activeUsers}</p>
                             </div>
@@ -4682,11 +4682,11 @@ export function AdminManagement() {
                         </div>
                       </div>
                     </div>
-                    <aside className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                    <aside className="rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-3 lg:p-4">
                       <h2 className="text-base font-semibold text-primary">{admin.text('recommendations')}</h2>
                       <div className="mt-4 space-y-3">
                         {snapshot.recommendations.map((item) => (
-                          <div key={item} className="rounded-2xl bg-surface-alpha p-3">
+                          <div key={item} className="rounded-2xl bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3">
                             <p className="text-sm leading-6 text-secondary">{item}</p>
                           </div>
                         ))}
@@ -4697,8 +4697,8 @@ export function AdminManagement() {
               ) : null}
 
               {activeTab === 'users' ? (
-                <motion.section id="admin-panel-users" aria-labelledby="admin-tab-users" role="tabpanel" key="users" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-4">
-                  <div className="flex flex-col gap-3 rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4" role="search" aria-label={admin.text('userFilters')}>
+                <motion.section id="admin-panel-users" aria-labelledby="admin-tab-users" role="tabpanel" key="users" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-3">
+                  <div className="flex flex-col gap-3 rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-3 lg:p-4" role="search" aria-label={admin.text('userFilters')}>
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                     <label className="relative flex-1">
                       <span className="sr-only">{admin.text('usersSearchLabel')}</span>
@@ -4713,7 +4713,7 @@ export function AdminManagement() {
                         <button
                           type="button"
                           onClick={() => setQuery('')}
-                          className="absolute right-1 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded text-secondary hover:bg-surface-alpha hover:text-primary"
+                          className="absolute right-1 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded text-secondary hover:bg-surface-alpha hover:bg-surface-alpha-hover transition-colors hover:text-primary"
                           aria-label={admin.text('clearSearch')}
                         >
                           <X size={13} />
@@ -4721,18 +4721,18 @@ export function AdminManagement() {
                       ) : null}
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      <select value={userQueueFilter} onChange={(event) => setUserQueueFilter(event.currentTarget.value as UserQueueFilter)} className="h-9 rounded-lg border border-glass bg-[var(--bg-base)] px-2.5 text-xs font-semibold text-primary" aria-label={admin.text('queueFilterLabel')}>
+                      <select value={userQueueFilter} onChange={(event) => setUserQueueFilter(event.currentTarget.value as UserQueueFilter)} className="h-9 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2.5 text-xs font-semibold text-primary" aria-label={admin.text('queueFilterLabel')}>
                         {USER_QUEUE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{admin.text(option.labelKey)}</option>)}
                       </select>
-                      <select value={statusFilter} onChange={(event) => setStatusFilter(event.currentTarget.value as AccountStatus | 'all')} className="h-9 rounded-lg border border-glass bg-[var(--bg-base)] px-2.5 text-xs font-semibold text-primary" aria-label={admin.text('statusFilterLabel')}>
+                      <select value={statusFilter} onChange={(event) => setStatusFilter(event.currentTarget.value as AccountStatus | 'all')} className="h-9 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2.5 text-xs font-semibold text-primary" aria-label={admin.text('statusFilterLabel')}>
                         <option value="all">{admin.text('allStatus')}</option>
                         {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
                       </select>
-                      <select value={planFilter} onChange={(event) => setPlanFilter(event.currentTarget.value as PlanCode | 'all')} className="h-9 rounded-lg border border-glass bg-[var(--bg-base)] px-2.5 text-xs font-semibold text-primary" aria-label={admin.text('planFilterLabel')}>
+                      <select value={planFilter} onChange={(event) => setPlanFilter(event.currentTarget.value as PlanCode | 'all')} className="h-9 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2.5 text-xs font-semibold text-primary" aria-label={admin.text('planFilterLabel')}>
                         <option value="all">{admin.text('allPlans')}</option>
                         {PLAN_OPTIONS.map((plan) => <option key={plan} value={plan}>{admin.enumLabel(plan)}</option>)}
                       </select>
-                      <select value={recoveryFilter} onChange={(event) => setRecoveryFilter(event.currentTarget.value as AccountRecoveryStatus | 'all')} className="h-9 rounded-lg border border-glass bg-[var(--bg-base)] px-2.5 text-xs font-semibold text-primary" aria-label={admin.text('recoveryFilterLabel')}>
+                      <select value={recoveryFilter} onChange={(event) => setRecoveryFilter(event.currentTarget.value as AccountRecoveryStatus | 'all')} className="h-9 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2.5 text-xs font-semibold text-primary" aria-label={admin.text('recoveryFilterLabel')}>
                         <option value="all">{admin.text('allRecovery')}</option>
                         {RECOVERY_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
                       </select>
@@ -4740,7 +4740,7 @@ export function AdminManagement() {
                         <button
                           type="button"
                           onClick={resetUserFilters}
-                          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-glass bg-surface-alpha px-2.5 text-xs font-semibold text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
+                          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-2.5 text-xs font-semibold text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
                         >
                           <RefreshCcw size={13} />
                           {admin.text('clearFilters')}
@@ -4749,7 +4749,7 @@ export function AdminManagement() {
                       <button
                         type="button"
                         onClick={exportUsersCsv}
-                        className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-glass bg-surface-alpha px-2.5 text-xs font-semibold text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
+                        className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-2.5 text-xs font-semibold text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
                       >
                         <Download size={13} />
                         {admin.text('usersCsv')}
@@ -4757,7 +4757,7 @@ export function AdminManagement() {
                     </div>
                     </div>
                     <UserQueueChips value={userQueueFilter} counts={userQueueCounts} onChange={setUserQueueFilter} />
-                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-surface-alpha px-3 py-2 text-xs text-secondary" aria-live="polite" aria-atomic="true">
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-3 py-2 text-xs text-secondary" aria-live="polite" aria-atomic="true">
                       <span className="font-semibold text-primary">
                         {admin.format('userResultsSummary', { shown: admin.number(filteredUsers.length), total: admin.number(snapshot.users.length) })}
                       </span>
@@ -4765,7 +4765,7 @@ export function AdminManagement() {
                     </div>
                   </div>
                   {filteredUsers.length ? (
-                    <div className={clsx('grid gap-4', selectedUser ? 'xl:grid-cols-[minmax(0,1fr)_24rem]' : 'xl:grid-cols-1')}>
+                    <div className={clsx('grid gap-3 lg:p-4', selectedUser ? 'xl:grid-cols-[minmax(0,1fr)_24rem]' : 'xl:grid-cols-1')}>
                       <div className="min-w-0">
                         <UsersTable
                           users={filteredUsers}
@@ -4799,7 +4799,7 @@ export function AdminManagement() {
               ) : null}
 
               {activeTab === 'plans' ? (
-                <motion.section id="admin-panel-plans" aria-labelledby="admin-tab-plans" role="tabpanel" key="plans" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                <motion.section id="admin-panel-plans" aria-labelledby="admin-tab-plans" role="tabpanel" key="plans" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-3 lg:p-4">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div>
                       <h2 className="text-base font-semibold text-primary">{admin.text('planCatalog')}</h2>
@@ -4824,7 +4824,7 @@ export function AdminManagement() {
               ) : null}
 
               {activeTab === 'ai' ? (
-                <motion.section id="admin-panel-ai" aria-labelledby="admin-tab-ai" role="tabpanel" key="ai" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                <motion.section id="admin-panel-ai" aria-labelledby="admin-tab-ai" role="tabpanel" key="ai" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-3 lg:p-4">
                   <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h2 className="text-base font-semibold text-primary">{admin.text('aiProviderControls')}</h2>
@@ -4843,7 +4843,7 @@ export function AdminManagement() {
               ) : null}
 
               {activeTab === 'maintenance' ? (
-                <motion.section id="admin-panel-maintenance" aria-labelledby="admin-tab-maintenance" role="tabpanel" key="maintenance" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                <motion.section id="admin-panel-maintenance" aria-labelledby="admin-tab-maintenance" role="tabpanel" key="maintenance" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-3 lg:p-4">
                   <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h2 className="text-base font-semibold text-primary">{admin.text('maintenanceControls')}</h2>
@@ -4856,7 +4856,7 @@ export function AdminManagement() {
               ) : null}
 
               {activeTab === 'database' ? (
-                <motion.section id="admin-panel-database" aria-labelledby="admin-tab-database" role="tabpanel" key="database" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                <motion.section id="admin-panel-database" aria-labelledby="admin-tab-database" role="tabpanel" key="database" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-3 lg:p-4">
                   <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h2 className="text-base font-semibold text-primary">{admin.text('databaseReadiness')}</h2>
@@ -4870,7 +4870,7 @@ export function AdminManagement() {
               ) : null}
 
               {activeTab === 'recipes' ? (
-                <motion.section id="admin-panel-recipes" aria-labelledby="admin-tab-recipes" role="tabpanel" key="recipes" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                <motion.section id="admin-panel-recipes" aria-labelledby="admin-tab-recipes" role="tabpanel" key="recipes" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-3 lg:p-4">
                   <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h2 className="text-base font-semibold text-primary">{admin.text('recipeLibrary')}</h2>
@@ -4883,7 +4883,7 @@ export function AdminManagement() {
               ) : null}
 
               {activeTab === 'audit' ? (
-                <motion.section id="admin-panel-audit" aria-labelledby="admin-tab-audit" role="tabpanel" key="audit" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                <motion.section id="admin-panel-audit" aria-labelledby="admin-tab-audit" role="tabpanel" key="audit" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-3 lg:p-4">
                   <div className="mb-4">
                     <h2 className="text-base font-semibold text-primary">{admin.text('auditTrail')}</h2>
                     <p className="mt-1 text-sm text-secondary">{admin.text('auditTrailSubtitle')}</p>
@@ -4893,7 +4893,7 @@ export function AdminManagement() {
               ) : null}
 
               {activeTab === 'launch' ? (
-                <motion.section id="admin-panel-launch" aria-labelledby="admin-tab-launch" role="tabpanel" key="launch" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                <motion.section id="admin-panel-launch" aria-labelledby="admin-tab-launch" role="tabpanel" key="launch" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-3 lg:p-4">
                   <div className="mb-4">
                     <h2 className="text-base font-semibold text-primary">{admin.text('launchGate')}</h2>
                     <p className="mt-1 text-sm text-secondary">{admin.text('launchGateSubtitle')}</p>
@@ -4936,7 +4936,7 @@ export function AdminManagement() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="fixed bottom-5 left-1/2 z-[80] -translate-x-1/2 rounded-full border border-glass bg-[var(--bg-base)]/94 px-4 py-2 text-sm font-semibold text-primary shadow-[var(--panel-elev-2)]"
+            className="fixed bottom-5 left-1/2 z-[80] -translate-x-1/2 rounded-full border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/94 px-4 py-2 text-sm font-semibold text-primary shadow-[var(--panel-elev-2)]"
             role="status"
             aria-live="polite"
             aria-atomic="true"

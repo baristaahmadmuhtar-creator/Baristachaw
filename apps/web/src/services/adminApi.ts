@@ -38,6 +38,7 @@ export type AdminPlan = {
   displayPrice: string;
   checkoutMode: CheckoutMode;
   paymentMethods: string[];
+  featureLimits?: Record<string, { daily: number; monthly: number }>;
 };
 
 export type AdminCatalogRequest = {

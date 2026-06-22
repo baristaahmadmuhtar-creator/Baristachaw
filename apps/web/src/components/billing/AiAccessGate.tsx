@@ -34,7 +34,8 @@ type GateState = {
 const PAID_PLAN_PRIORITY: PlanCode[] = ['starter', 'pro', 'team', 'enterprise'];
 const MANUAL_PAYMENT_PENDING_STORAGE_KEY = 'BARISTACHAW_MANUAL_PAYMENT_PENDING_V1';
 
-function formatText(template: string, replacements: Record<string, string | number>) {
+function formatText(template: string | undefined | null, replacements: Record<string, string | number>) {
+  if (!template) return '';
   return Object.entries(replacements).reduce(
     (acc, [key, value]) => acc.replaceAll(`{${key}}`, String(value)),
     template,
@@ -206,8 +207,8 @@ function AiAccessGateDialog({
   }, [availablePlans, selectedPlan, setSelectedPlan]);
 
   const planDisplayNames = {
-    starter: 'Barista Starter',
-    pro: 'Barista Pro',
+    starter: t.billingPlanNameStarter || 'Barista Starter',
+    pro: t.billingPlanNamePro || 'Barista Pro',
   };
 
   const getPriceDisplay = (p = selectedPlan, d = selectedDuration): string => {
@@ -224,12 +225,12 @@ function AiAccessGateDialog({
   };
 
   const durationLabels: Record<BillingDuration, string> = {
-    monthly: region === 'id' ? '1 Bulan' : '1 Month',
-    quarterly: region === 'id' ? '3 Bulan' : '3 Months',
-    yearly: region === 'id' ? '1 Tahun' : '1 Year',
+    monthly: t.billingDurationMonthly || '1 Month',
+    quarterly: t.billingDurationQuarterly || '3 Months',
+    yearly: t.billingDurationYearly || '1 Year',
   };
 
-  const supportWhatsappUrl = manualInvoice?.manualInvoice?.instructions?.whatsappUrl || `https://wa.me/6738270092?text=${encodeURIComponent('Halo Baristachaw, saya ingin menanyakan tentang keanggotaan.')}`;
+  const supportWhatsappUrl = manualInvoice?.manualInvoice?.instructions?.whatsappUrl || `https://wa.me/6738270092?text=${encodeURIComponent(t.billingContactSupport || 'Halo Baristachaw, saya ingin menanyakan tentang keanggotaan.')}`;
   const supportWhatsappNumber = manualInvoice?.manualInvoice?.instructions?.whatsappNumber || "+6738270092";
   const supportInstagramUrl = manualInvoice?.manualInvoice?.instructions?.instagramUrl || "https://instagram.com/baristachaw";
   const supportInstagramHandle = manualInvoice?.manualInvoice?.instructions?.instagramHandle || "@baristachaw";
@@ -485,8 +486,8 @@ function AiAccessGateDialog({
                           </p>
                           <p className="text-xs text-secondary mt-1 leading-relaxed">
                             {p === 'starter'
-                              ? 'Guided AI tools, log brew, scanner history'
-                              : 'AI Coach, latte art, scan analysis, Deep mode'}
+                              ? t.billingPlanDescStarter || 'Guided AI tools, log brew, scanner history'
+                              : t.billingPlanDescPro || 'AI Coach, latte art, scan analysis, Deep mode'}
                           </p>
                         </div>
                         <div className="text-right flex flex-col items-end shrink-0 justify-center">
@@ -503,11 +504,11 @@ function AiAccessGateDialog({
                 </div>
 
                 <div className="mt-4 flex flex-col items-center gap-3 border-t border-glass pt-4">
-                  <p className="text-xs font-semibold text-secondary">Have a promo code?</p>
+                  <p className="text-xs font-semibold text-secondary">{t.billingHavePromoCode || 'Have a promo code?'}</p>
                   <div className="flex w-full overflow-hidden rounded-xl border border-glass transition-colors focus-within:border-blue-500">
                     <input
                       type="text"
-                      placeholder="Enter code"
+                      placeholder={t.billingEnterPromoCode || 'Enter code'}
                       value={promoCode}
                       onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoApplied(false); }}
                       className="flex-1 bg-surface-alpha px-3 py-2 text-sm font-bold tracking-widest text-primary outline-none"
@@ -519,12 +520,12 @@ function AiAccessGateDialog({
                       disabled={promoCode.trim().length < 4}
                       className="bg-blue-600 px-4 text-xs font-extrabold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700"
                     >
-                      {promoApplied ? 'Applied' : 'Apply'}
+                      {promoApplied ? (t.billingPromoApplied || 'Applied') : (t.billingApplyPromo || 'Apply')}
                     </button>
                   </div>
                   {promoApplied && (
                     <p className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                      <Check size={12} /> Code accepted
+                      <Check size={12} /> {t.billingPromoCodeAccepted || 'Code accepted'}
                     </p>
                   )}
                 </div>
@@ -553,7 +554,7 @@ function AiAccessGateDialog({
                       className="motion-pressable inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-600 disabled:opacity-60"
                     >
                       {checkoutBusy ? <RefreshCcw size={16} className="animate-spin" /> : <CreditCard size={16} />}
-                      {checkoutBusy ? t.opening : isRenewal ? `Perpanjang ${planDisplayNames[selectedPlan]}` : `Upgrade to ${planDisplayNames[selectedPlan]}`}
+                      {checkoutBusy ? t.opening : isRenewal ? formatText(t.billingRenewPlan || 'Renew {plan}', { plan: planDisplayNames[selectedPlan] }) : formatText(t.billingUpgradeToPlan || 'Upgrade to {plan}', { plan: planDisplayNames[selectedPlan] })}
                     </button>
                   )}
                   <button
@@ -583,8 +584,8 @@ function AiAccessGateDialog({
                   <ArrowLeft size={20} />
                 </button>
                 <div>
-                  <h2 id="register-title" className="text-xl font-bold leading-tight text-primary">Checkout</h2>
-                  <p className="text-xs text-secondary">Step 2 dari 3: Selesaikan pembayaran</p>
+                  <h2 id="register-title" className="text-xl font-bold leading-tight text-primary">{t.billingCheckout || 'Checkout'}</h2>
+                  <p className="text-xs text-secondary">{t.billingCheckoutStep || 'Step 2 dari 3: Selesaikan pembayaran'}</p>
                 </div>
               </div>
               <button
@@ -599,7 +600,7 @@ function AiAccessGateDialog({
 
             {/* Selected plan summary */}
             <div className="mt-4 rounded-xl border border-glass bg-surface-alpha p-3 flex justify-between items-center text-sm">
-              <span className="text-xs font-bold text-secondary uppercase tracking-wider">Plan Pilihan</span>
+              <span className="text-xs font-bold text-secondary uppercase tracking-wider">{t.billingSelectedPlan || 'Plan Pilihan'}</span>
               <div className="text-right">
                 <strong className="text-primary font-bold">{planDisplayNames[selectedPlan]}</strong>
                 <span className="block text-xs text-secondary mt-0.5">{getPriceDisplay()} / {durationLabels[selectedDuration].toLowerCase()}</span>
@@ -615,11 +616,10 @@ function AiAccessGateDialog({
             {/* Payment card content */}
             <div className="mt-4 flex flex-col gap-3 text-left">
               <div className="bg-surface-alpha border border-glass rounded-2xl p-4 flex flex-col items-center gap-1.5 text-center">
-                <span className="text-xs font-bold text-secondary uppercase tracking-widest">TOTAL TRANSFER</span>
+                <span className="text-xs font-bold text-secondary uppercase tracking-widest">{t.billingTotalTransfer || 'TOTAL TRANSFER'}</span>
                 <strong className="text-2xl font-black text-blue-600 dark:text-blue-300">{manualInvoice.manualInvoice.amountLabel}</strong>
                 <p className="text-xs text-secondary">
-                  *Pastikan transfer sesuai hingga 3 digit terakhir{' '}
-                  <strong>({manualInvoice.manualInvoice.uniqueSuffix || manualInvoice.manualInvoice.id.slice(-3).replace(/[^0-9]/g, '3')})</strong>
+                  {formatText(t.billingTransferInstruction || '*Pastikan transfer sesuai hingga 3 digit terakhir {suffix}', { suffix: manualInvoice.manualInvoice.uniqueSuffix || manualInvoice.manualInvoice.id.slice(-3).replace(/[^0-9]/g, '3') })}
                 </p>
               </div>
 
@@ -628,7 +628,7 @@ function AiAccessGateDialog({
                 <div className="bg-white p-2 rounded-xl w-36 h-36">
                   <svg viewBox="0 0 200 200" style={{ width: '100%', height: '100%' }}>
                     <rect x="0" y="0" width="200" height="28" fill="#E1251B" rx="4" />
-                    <text x="100" y="17" fill="#ffffff" fontSize="9" fontWeight="800" textAnchor="middle" fontFamily="system-ui, -apple-system, sans-serif">QRIS MANUAL</text>
+                    <text x="100" y="17" fill="#ffffff" fontSize="9" fontWeight="800" textAnchor="middle" fontFamily="system-ui, -apple-system, sans-serif">{t.billingQrisManual || 'QRIS MANUAL'}</text>
                     <rect x="25" y="42" width="150" height="150" fill="none" stroke="#E1251B" strokeWidth="2" rx="4" />
                     <rect x="35" y="52" width="30" height="30" fill="#000000" />
                     <rect x="40" y="57" width="20" height="20" fill="#ffffff" />
@@ -670,7 +670,7 @@ function AiAccessGateDialog({
                     <rect x="150" y="172" width="15" height="10" fill="#000000" />
                   </svg>
                 </div>
-                <span className="text-xs font-bold text-secondary tracking-wider">SCAN QRIS MANUAL</span>
+                <span className="text-xs font-bold text-secondary tracking-wider">{t.billingScanQrisManual || 'SCAN QRIS MANUAL'}</span>
               </div>
 
               {/* Dynamic banks cards */}
@@ -686,7 +686,7 @@ function AiAccessGateDialog({
                           onClick={() => handleCopyBankDetail(bank.accountNumber, idx)}
                           className={`text-xs font-bold px-3 py-2 rounded-lg transition-colors uppercase tracking-wider ${isCopied ? 'bg-emerald-600 text-white' : 'bg-surface-alpha text-primary hover:bg-surface-alpha-hover'}`}
                         >
-                          {isCopied ? 'Copied' : 'Copy'}
+                          {isCopied ? (t.billingCopiedBank || t.billingCopied || 'Copied') : (t.billingCopy || 'Copy')}
                         </button>
                       </div>
                       <span className="font-mono text-base font-extrabold text-blue-600 dark:text-blue-300">{bank.accountNumber}</span>
@@ -707,7 +707,7 @@ function AiAccessGateDialog({
                       }}
                       className={`text-xs font-bold px-3 py-2 rounded-lg transition-colors uppercase tracking-wider ${copiedBankIndex === 99 ? 'bg-emerald-600 text-white' : 'bg-surface-alpha text-primary hover:bg-surface-alpha-hover'}`}
                     >
-                      {copiedBankIndex === 99 ? 'Copied' : 'Copy'}
+                      {copiedBankIndex === 99 ? (t.billingCopiedBank || t.billingCopied || 'Copied') : (t.billingCopy || 'Copy')}
                     </button>
                   </div>
                   <span className="font-mono text-base font-extrabold text-blue-600 dark:text-blue-300">{manualInvoice.manualInvoice.instructions.accountNumber}</span>
@@ -732,7 +732,7 @@ function AiAccessGateDialog({
               >
                 <UploadCloud className={`w-7 h-7 ${manualProofFile ? 'text-emerald-500' : 'text-secondary'}`} />
                 <p className="text-xs font-semibold text-primary">
-                  {manualProofFile ? manualProofFile.name : 'Klik untuk upload screenshot'}
+                  {manualProofFile ? manualProofFile.name : (t.billingClickToUploadScreenshot || 'Klik untuk upload screenshot')}
                 </p>
                 <span className="text-xs text-secondary">Maksimal 5MB (JPG, PNG, WebP, PDF)</span>
                 <input
@@ -746,7 +746,7 @@ function AiAccessGateDialog({
                     setFileError(null);
                     if (file && !allowedTypes.includes(file.type)) {
                       onManualProofFileChange(null);
-                      setFileError('Format bukti transfer harus JPG, PNG, WebP, atau PDF.');
+                      setFileError(t.billingUploadFormatError || 'Format bukti transfer harus JPG, PNG, WebP, atau PDF.');
                       return;
                     }
                     if (file && file.size > 5 * 1024 * 1024) {
@@ -952,10 +952,10 @@ export function useAiAccessGate(feature: AiPaidFeature): {
     : state?.mode === 'checking'
       ? t.aiGateCheckingTitle
       : renewalRequired
-        ? (language === 'id' ? `Perpanjang ${minimumPaidPlan?.name || t.aiGatePlanFallbackName} untuk ${featureLabel}` : `Renew ${minimumPaidPlan?.name || t.aiGatePlanFallbackName} for ${featureLabel}`)
+        ? formatText(t.aiGateRenewTitle || 'Renew {plan} for {feature}', { feature: featureLabel, plan: minimumPaidPlan?.name || t.aiGatePlanFallbackName || '' })
         : formatText(t.aiGateUpgradeTitle, {
             feature: featureLabel,
-            plan: minimumPaidPlan?.name || t.aiGatePlanFallbackName,
+            plan: minimumPaidPlan?.name || t.aiGatePlanFallbackName || '',
           });
           
   const body = state?.mode === 'login'
@@ -963,11 +963,11 @@ export function useAiAccessGate(feature: AiPaidFeature): {
     : state?.mode === 'checking'
       ? formatText(t.aiGateCheckingBody, { feature: featureLabel })
       : renewalRequired
-        ? (language === 'id' ? `Paket Anda telah berakhir. Perpanjang akses untuk terus menggunakan ${featureLabel} dan fitur premium lainnya.` : `Your plan has expired. Renew your access to continue using ${featureLabel} and other premium features.`)
+        ? formatText(t.aiGateRenewBody || 'Your plan has expired. Renew your access to continue using {feature} and other premium features.', { feature: featureLabel })
         : formatText(t.aiGateUpgradeBody, {
             feature: featureLabel,
-            plan: minimumPaidPlan?.name || t.aiGatePlanFallbackName,
-            price: minimumPaidPlan?.displayPrice || t.aiGatePriceFallback,
+            plan: minimumPaidPlan?.name || t.aiGatePlanFallbackName || '',
+            price: minimumPaidPlan?.displayPrice || t.aiGatePriceFallback || '',
           });
 
   const handleSignin = useCallback(() => {
@@ -1068,7 +1068,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
         if (!uploadResponse.ok) {
           const supportUrl = proofResponse.supportLinks?.whatsappUrl || manualInvoice.manualInvoice.instructions.whatsappUrl;
           if (supportUrl) window.open(supportUrl, '_blank', 'noopener,noreferrer');
-          setCheckoutError('Upload otomatis belum berhasil. Invoice tetap masuk antrean admin; kirim file bukti lewat WhatsApp/Instagram dengan ID invoice.');
+          setCheckoutError(t.billingUploadFailedFallback || 'Automatic upload failed. Invoice is still queued; please send the proof file via WhatsApp/Instagram with the invoice ID.');
           setManualProofDelivery('manual_support');
           setManualProofStatus('submitted');
           void refreshAccountStatus();

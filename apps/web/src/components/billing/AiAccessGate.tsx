@@ -852,7 +852,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   effectivePlanCode: PlanCode | null;
   aiAccessGateModal: ReactNode;
 } {
-  const { t, region } = useGlobalState();
+  const { t, region, language } = useGlobalState();
   const currency = getCurrencyForRegion(region);
 
   const { user, isAuthenticated, isGuest, openAuthModal } = useAuthModal();

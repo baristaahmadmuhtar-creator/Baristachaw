@@ -875,7 +875,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   const featureLabel = t[`aiGateFeature${feature.slice(0, 1).toUpperCase()}${feature.slice(1)}`] || feature;
   const minimumPaidPlan = useMemo(() => findMinimumPaidPlan(snapshot?.plans), [snapshot?.plans]);
   const tokenPlanCode = normalizePlanCode(user?.planCode);
-  const effectivePlanCode = normalizePlanCode(snapshot?.user.planCode || snapshot?.plan.code) || tokenPlanCode;
+  const effectivePlanCode = normalizePlanCode(snapshot?.user?.planCode || snapshot?.plan?.code) || tokenPlanCode;
   const hasPaidAiAccess = isAuthenticated && !isGuest && isPaidPlanCode(effectivePlanCode);
   const isPendingReview = useMemo(() => {
     if (!snapshot) return false;
@@ -941,7 +941,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
     return true;
   }, [effectivePlanCode, isAuthenticated, isGuest, loading, openAuthModal, openGate, snapshot, tokenPlanCode, feature]);
 
-  const isRenewal = snapshot?.billing.status === 'expired' || snapshot?.billing.status === 'cancelled';
+  const isRenewal = snapshot?.billing?.status === 'expired' || snapshot?.billing?.status === 'cancelled';
   const renewalRequired = isRenewal && (minimumPaidPlan?.code === tokenPlanCode || tokenPlanCode === 'pro' || tokenPlanCode === 'team');
 
   const title = state?.mode === 'login'
@@ -1004,7 +1004,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
 
   const handleUpgrade = useCallback(async (planCode: 'starter' | 'pro', duration: BillingDuration, promoCode?: string) => {
     if (upgradeBusyRef.current) return;
-    if (snapshot?.billing.status === 'past_due') {
+    if (snapshot?.billing?.status === 'past_due') {
       setCheckoutError(t.aiGatePastDueError || 'Harap selesaikan tagihan tertunda Anda terlebih dahulu sebelum mengaktifkan plan baru.');
       return;
     }
@@ -1086,7 +1086,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
         : t.aiGateCheckoutFailed);
       setManualProofStatus('idle');
       busyProofRef.current = false;
-      throw error; // Re-throw to prevent step progression in UI if submit failed
+      // Note: we don't re-throw to avoid unhandled promise rejection, UI will stay on the form
     }
   }, [manualInvoice, manualProofFile, refreshAccountStatus, selectedPlan, t.aiGateCheckoutFailed]);
 

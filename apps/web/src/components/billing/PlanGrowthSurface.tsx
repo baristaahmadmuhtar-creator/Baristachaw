@@ -401,11 +401,11 @@ export function PlanGrowthSurface({
 
   const displayPlans = useMemo(() => snapshot ? resolveDisplayPlans(snapshot) : [], [snapshot]);
   const recommendedPlan = useMemo(() => snapshot ? resolveRecommendedPlan(snapshot) : null, [snapshot]);
-  const currentPlanCode = snapshot?.user.planCode || snapshot?.plan.code || 'free';
+  const currentPlanCode = snapshot?.user?.planCode || snapshot?.plan?.code || 'free';
   const currentPlan = displayPlans.find((plan) => plan.code === currentPlanCode) || snapshot?.plan || null;
   const hasPendingManualPayment = Boolean(
     (snapshot?.billing.provider === 'manual' && snapshot?.billing.paymentActionRequired)
-      || (snapshot?.billing.paymentAction === 'contact_support' && snapshot?.billing.paymentActionRequired)
+      || (snapshot?.billing?.paymentAction === 'contact_support' && snapshot?.billing?.paymentActionRequired)
       || readPendingManualPaymentMarker(),
   );
   const showUpgradeFraming = !hasPendingManualPayment && (currentPlanCode === 'free' || snapshot?.recommendedUpgrade.action === 'checkout');
@@ -491,7 +491,7 @@ export function PlanGrowthSurface({
 
   const handleChoosePlan = async (planCode: string) => {
     if (busyRef.current) return;
-    if (snapshot?.billing.status === 'past_due') {
+    if (snapshot?.billing?.status === 'past_due') {
       setActionError(language === 'id' ? 'Selesaikan tagihan Anda yang tertunda sebelum melakukan upgrade plan.' : 'Please resolve your past due invoice before upgrading your plan.');
       return;
     }

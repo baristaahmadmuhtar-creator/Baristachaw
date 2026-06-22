@@ -132,6 +132,9 @@ function AiAccessGateDialog({
   selectedDuration,
   setSelectedDuration,
   effectivePlanCode,
+  isPastDue,
+  manageUrl,
+  isRenewal,
 }: {
   state: GateState;
   title: string;
@@ -341,17 +344,17 @@ function AiAccessGateDialog({
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-500">
-                Menunggu review admin
+                {t.billingPendingAdminReview || 'Menunggu review admin'}
               </p>
               <h2 className="mt-1 text-xl font-black leading-tight text-primary">
-                Bukti pembayaran sedang diperiksa
+                {t.billingProofUnderReview || 'Bukti pembayaran sedang diperiksa'}
               </h2>
               <p className="mt-3 text-sm leading-6 text-secondary">
-                Bukti transfer Anda sudah masuk antrean review. Jangan kirim ulang bukti atau membuat invoice baru kecuali diminta oleh support.
+                {t.billingProofUnderReviewBody || 'Bukti transfer Anda sudah masuk antrean review. Jangan kirim ulang bukti atau membuat invoice baru kecuali diminta oleh support.'}
               </p>
             </div>
             <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-left text-xs leading-5 text-amber-700 dark:text-amber-200">
-              Plan akan aktif setelah admin memverifikasi pembayaran. Jika sudah transfer dan butuh bantuan cepat, hubungi customer service.
+              {t.billingPlanActiveAfterReview || 'Plan akan aktif setelah admin memverifikasi pembayaran. Jika sudah transfer dan butuh bantuan cepat, hubungi customer service.'}
             </div>
             {checkoutError ? (
               <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
@@ -367,7 +370,7 @@ function AiAccessGateDialog({
                 className="motion-pressable inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-600 disabled:opacity-70"
               >
                 <RefreshCcw size={16} className={refreshBusy ? 'animate-spin' : undefined} />
-                Sinkronkan status
+                {t.billingSyncStatus || 'Sinkronkan status'}
               </button>
               {renderSupportLinks()}
               <button
@@ -375,7 +378,7 @@ function AiAccessGateDialog({
                 onClick={onClose}
                 className="motion-pressable inline-flex min-h-12 items-center justify-center rounded-2xl border border-glass bg-surface-alpha px-4 text-sm font-semibold text-primary transition-colors hover:bg-surface-alpha-hover"
               >
-                Mengerti
+                {t.billingGotIt || 'Mengerti'}
               </button>
             </div>
           </div>
@@ -389,8 +392,8 @@ function AiAccessGateDialog({
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-500">
                   {isUpgrade ? t.aiGatePlanBadge : t.signInRequired}
                 </p>
-                <h2 className="mt-1 text-xl font-bold leading-tight text-primary">Pilih Plan Keanggotaan</h2>
-                <p className="text-xs text-secondary mt-1">Step 1 dari 3: Pilih paket terbaik Anda</p>
+                <h2 className="mt-1 text-xl font-bold leading-tight text-primary">{t.billingChoosePlan || 'Pilih Plan Keanggotaan'}</h2>
+                <p className="text-xs text-secondary mt-1">{t.billingStep1 || 'Step 1 dari 3: Pilih paket terbaik Anda'}</p>
               </div>
               <button
                 type="button"
@@ -540,7 +543,7 @@ function AiAccessGateDialog({
                       rel="noopener noreferrer"
                       className="motion-pressable inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-amber-600 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(217,119,6,0.25)] transition-colors hover:bg-amber-700"
                     >
-                      Selesaikan Pembayaran
+                      {t.billingCompletePayment || 'Selesaikan Pembayaran'}
                     </a>
                   ) : (
                     <button
@@ -748,7 +751,7 @@ function AiAccessGateDialog({
                     }
                     if (file && file.size > 5 * 1024 * 1024) {
                       onManualProofFileChange(null);
-                      setFileError('Ukuran bukti transfer maksimal adalah 5MB.');
+                      setFileError(t.billingMaxProofSize || 'Ukuran bukti transfer maksimal adalah 5MB.');
                       return;
                     }
                     onManualProofFileChange(file);
@@ -774,11 +777,11 @@ function AiAccessGateDialog({
                   <div className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-all ${turnstileVerified ? 'border-emerald-500 bg-emerald-500' : 'border-glass'}`}>
                     {turnstileVerified && <Check size={12} className="text-white" />}
                   </div>
-                  <span className="text-xs text-primary">Verifikasi bahwa Anda adalah manusia</span>
+                  <span className="text-xs text-primary">{t.billingHumanVerification || 'Verifikasi bahwa Anda adalah manusia'}</span>
                 </div>
                 <div className="text-right">
-                  <span className="block text-xs font-black uppercase tracking-widest text-primary">Manual check</span>
-                  <span className="block text-xs text-secondary">No auto charge</span>
+                  <span className="block text-xs font-black uppercase tracking-widest text-primary">{t.billingManualCheck || 'Manual check'}</span>
+                  <span className="block text-xs text-secondary">{t.billingNoAutoCharge || 'No auto charge'}</span>
                 </div>
               </button>
 
@@ -800,9 +803,9 @@ function AiAccessGateDialog({
                 className="w-full min-h-12 bg-[#3b82f6] text-[#ffffff] rounded-full font-black text-sm flex items-center justify-center gap-2 hover:bg-[#60a5fa] transition-all disabled:opacity-40 disabled:cursor-not-allowed mt-2 shadow-[0_8px_20px_rgba(255,210,51,0.2)]"
               >
                 {manualProofStatus === 'submitting' ? (
-                  <><RefreshCcw className="w-4 h-4 animate-spin" /> Memproses...</>
+                  <><RefreshCcw className="w-4 h-4 animate-spin" /> {t.billingProcess || 'Memproses...'}</>
                 ) : (
-                  <>Kirim Bukti & Tunggu Review <ArrowRight size={16} /></>
+                  <>{t.billingSubmitWaitReview || 'Kirim Bukti & Tunggu Review'} <ArrowRight size={16} /></>
                 )}
               </button>
             </div>
@@ -816,14 +819,14 @@ function AiAccessGateDialog({
               <Check size={32} strokeWidth={3} />
             </div>
             <div>
-              <h3 className="text-xl font-black text-primary">Bukti Diterima - Menunggu Review</h3>
+              <h3 className="text-xl font-black text-primary">{t.billingProofReceived || 'Bukti Diterima - Menunggu Review'}</h3>
               <p className="text-sm text-secondary mt-2.5 leading-relaxed">
                 {manualProofDelivery === 'manual_support'
-                  ? 'Invoice sudah masuk antrean admin. Kirim file bukti lewat WhatsApp atau Instagram dengan ID invoice agar review lebih cepat.'
-                  : 'Terima kasih. Bukti transfer Anda telah berhasil dikirim ke server Baristachaw.'}
+                  ? (t.billingProofReceivedManualSupport || 'Invoice sudah masuk antrean admin. Kirim file bukti lewat WhatsApp atau Instagram dengan ID invoice agar review lebih cepat.')
+                  : (t.billingProofReceivedSuccessBody || 'Terima kasih. Bukti transfer Anda telah berhasil dikirim ke server Baristachaw.')}
               </p>
               <p className="text-xs text-tertiary mt-2 leading-relaxed">
-                Admin akan memverifikasi transaksi Anda sebelum plan aktif. Jika perlu bantuan, hubungi customer service lewat WhatsApp atau Instagram di bawah.
+                {t.billingAdminVerifyWait || 'Admin akan memverifikasi transaksi Anda sebelum plan aktif. Jika perlu bantuan, hubungi customer service lewat WhatsApp atau Instagram di bawah.'}
               </p>
             </div>
 
@@ -835,7 +838,7 @@ function AiAccessGateDialog({
               onClick={onClose}
               className="w-full min-h-12 bg-[#3b82f6] text-[#ffffff] rounded-full font-black text-sm hover:bg-[#60a5fa] transition-all mt-2"
             >
-              Selesai
+              {t.billingDone || 'Selesai'}
             </button>
           </div>
         )}

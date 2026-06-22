@@ -39,7 +39,7 @@ import { getLanguageDirection, getLanguageLocale, LANGUAGE_OPTIONS } from "../co
 
 const genId = (prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 const SEARCH_CACHE_KEY = 'home_search';
-const SUPPORT_WHATSAPP_URL = `https://wa.me/6738270092?text=${encodeURIComponent('Halo Baristachaw, saya ingin menanyakan status pembayaran yang sedang menunggu review admin.')}`;
+const SUPPORT_WHATSAPP_BASE = 'https://wa.me/6738270092';
 
 type HomeSearchResult = SearchResultPayload & {
   query: string;
@@ -577,7 +577,7 @@ export function Home() {
 
   const handleWorkspaceStatusAction = async () => {
     if (workspaceStatus.kind === 'pending_review') {
-      window.open(SUPPORT_WHATSAPP_URL, '_blank', 'noopener,noreferrer');
+      window.open(`${SUPPORT_WHATSAPP_BASE}?text=${encodeURIComponent(t.billingContactSupportPending || 'Hello Baristachaw, I would like to ask about my payment status which is pending admin review.')}`, '_blank', 'noopener,noreferrer');
       return;
     }
     if (workspaceStatus.action === 'checkout') {

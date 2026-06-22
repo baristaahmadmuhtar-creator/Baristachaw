@@ -428,10 +428,10 @@ export function PlanGrowthSurface({
   }, [upgradeOptions.length]);
 
   const pendingSupportInstagramUrl = manualInvoice?.manualInvoice.instructions.instagramUrl || 'https://instagram.com/baristachaw';
-  const pendingTitle = language === 'id' ? 'Pembayaran menunggu review' : 'Payment waiting for review';
-  const pendingBody = language === 'id'
+  const pendingTitle = t.billingPaymentPending || (language === 'id' ? 'Pembayaran menunggu review' : 'Payment waiting for review');
+  const pendingBody = t.billingProofUnderReviewBody || (language === 'id'
     ? 'Bukti transfer sudah masuk antrean admin. Paket aktif setelah admin mencocokkan pembayaran. Jangan kirim ulang bukti atau membuat invoice baru.'
-    : 'Your transfer proof is already in the admin queue. The plan becomes active after payment review. Do not submit another proof or create a new invoice.';
+    : 'Your transfer proof is already in the admin queue. The plan becomes active after payment review. Do not submit another proof or create a new invoice.');
   const activePaidPlan = currentPlan || snapshot?.plan || recommendedPlan;
   const activePaidPlanName = activePaidPlan ? formatPlanName(activePaidPlan, language) : 'Pro';
   const compactPaidFallbackTitle = language === 'id'
@@ -631,10 +631,10 @@ export function PlanGrowthSurface({
             <div className={`flex items-start justify-between gap-4 border-b border-glass px-5 py-4 sm:px-6 ${isRtl ? 'flex-row-reverse text-right' : ''}`}>
               <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">
-                  {hasPendingManualPayment ? 'Review admin' : checkoutStep === 'choose' ? t.homePlanCatalogEyebrow : checkoutStep === 'success' ? 'Berhasil' : 'Checkout'}
+                  {hasPendingManualPayment ? (t.billingPendingAdminReview || 'Review admin') : checkoutStep === 'choose' ? t.homePlanCatalogEyebrow : checkoutStep === 'success' ? (t.success || 'Berhasil') : 'Checkout'}
                 </p>
                 <h2 className="mt-1 text-xl font-black tracking-tight text-primary sm:text-2xl">
-                  {hasPendingManualPayment ? pendingTitle : checkoutStep === 'choose' ? t.homePlanCatalogTitle : checkoutStep === 'success' ? 'Menunggu Peninjauan' : 'Selesaikan Pembayaran'}
+                  {hasPendingManualPayment ? pendingTitle : checkoutStep === 'choose' ? t.homePlanCatalogTitle : checkoutStep === 'success' ? (t.billingProofReceived || 'Menunggu Peninjauan') : (t.billingCompletePayment || 'Selesaikan Pembayaran')}
                 </h2>
               </div>
               <button
@@ -751,7 +751,7 @@ export function PlanGrowthSurface({
                             return;
                           }
                           if (file && file.size > 5 * 1024 * 1024) {
-                            setActionError('Ukuran bukti transfer maksimal adalah 5MB.');
+                            setActionError(t.billingMaxProofSize || 'Ukuran bukti transfer maksimal adalah 5MB.');
                             setManualProofFile(null);
                             setManualProofStatus('idle');
                             setManualProofDelivery(null);
@@ -791,7 +791,7 @@ export function PlanGrowthSurface({
                       disabled={!manualProofFile || manualProofStatus === 'submitting' || manualProofStatus === 'submitted'}
                       className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-600 px-4 font-extrabold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {manualProofStatus === 'submitting' ? 'Submitting...' : 'Kirim Bukti & Tunggu Review'}
+                      {manualProofStatus === 'submitting' ? (t.billingProcess || 'Submitting...') : (t.billingSubmitWaitReview || 'Kirim Bukti & Tunggu Review')}
                     </button>
                   </div>
                 </div>
@@ -802,13 +802,13 @@ export function PlanGrowthSurface({
                   <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-500 bg-emerald-500/10 text-emerald-600">
                     <Check size={28} />
                   </div>
-                  <h3 className="mt-4 text-xl font-black">{hasPendingManualPayment ? pendingTitle : 'Bukti Diterima - Menunggu Review'}</h3>
+                  <h3 className="mt-4 text-xl font-black">{hasPendingManualPayment ? pendingTitle : (t.billingProofReceived || 'Bukti Diterima - Menunggu Review')}</h3>
                   <p className="mt-2 text-sm leading-6 text-secondary">
                     {hasPendingManualPayment
                       ? pendingBody
                       : manualProofDelivery === 'manual_support'
-                      ? 'Invoice sudah masuk antrean admin. Kirim file bukti lewat WhatsApp atau Instagram dengan ID invoice agar review lebih cepat.'
-                      : 'Admin sedang memverifikasi transaksi Anda. Harap tunggu hingga proses review selesai sebelum plan aktif.'}
+                      ? (t.billingProofReceivedManualSupport || 'Invoice sudah masuk antrean admin. Kirim file bukti lewat WhatsApp atau Instagram dengan ID invoice agar review lebih cepat.')
+                      : (t.billingAdminVerifying || 'Admin sedang memverifikasi transaksi Anda. Harap tunggu hingga proses review selesai sebelum plan aktif.')}
                   </p>
                   <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
                     <a
@@ -835,7 +835,7 @@ export function PlanGrowthSurface({
                     onClick={onClose}
                     className="mt-3 inline-flex min-h-11 items-center justify-center rounded-xl border border-glass bg-[var(--bg-base)] px-5 font-extrabold text-primary transition-colors hover:bg-surface-alpha"
                   >
-                    Tutup
+                    {t.billingDone || 'Tutup'}
                   </button>
                 </div>
               ) : null}
@@ -846,25 +846,25 @@ export function PlanGrowthSurface({
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-blue-500 bg-blue-500/10 text-blue-600">
                       <ShieldCheck size={28} />
                     </div>
-                    <h3 className="mt-4 text-xl font-black">Paket Anda Sedang Aktif</h3>
+                    <h3 className="mt-4 text-xl font-black">{t.billingActivePlanTitle || 'Paket Anda Sedang Aktif'}</h3>
                     <p className="mt-2 text-sm leading-6 text-secondary">
-                      Anda saat ini berlangganan paket <strong className="text-primary">{planDisplayName(currentPlanCode)}</strong>. Silakan tunggu hingga siklus tagihan Anda berakhir jika ingin mengganti, memperbarui, atau beralih ke paket lain.
+                      {(t.billingActivePlanBody || 'Anda saat ini berlangganan paket {plan}. Silakan tunggu hingga siklus tagihan Anda berakhir jika ingin mengganti, memperbarui, atau beralih ke paket lain.').replace('{plan}', planDisplayName(currentPlanCode))}
                     </p>
                     <button
                       type="button"
                       onClick={onClose}
                       className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-600 px-6 font-extrabold text-white transition-colors hover:bg-blue-700 shadow-md"
                     >
-                      Kembali
+                      {t.billingBack || 'Kembali'}
                     </button>
                   </div>
                 ) : (
                 <>
               {hasActivePaidPlan && upgradeOptions[0] !== currentPlanCode && (
                 <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-blue-500/25 bg-blue-500/10 p-4 text-center text-primary shadow-sm">
-                  <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400">Upgrade Plan Anda</h3>
+                  <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400">{t.billingUpgradeTitle || 'Upgrade Plan Anda'}</h3>
                   <p className="mt-1 text-sm text-secondary">
-                    Anda sedang berlangganan {planDisplayName(currentPlanCode)}. Harga di bawah adalah <strong className="text-primary">selisih</strong> yang perlu dibayar untuk upgrade.
+                    {(t.billingUpgradeBody || 'Anda sedang berlangganan {plan}. Harga di bawah adalah selisih yang perlu dibayar untuk upgrade.').replace('{plan}', planDisplayName(currentPlanCode))}
                   </p>
                 </div>
               )}

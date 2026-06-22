@@ -7,11 +7,11 @@ import { useGlobalState } from '../../context/GlobalState';
 import { getLanguageLocale } from '../../constants';
 import { resolveWorkspaceStatus } from '../../utils/workspaceStatus';
 
-function localizeRuntimeMaintenanceMessage(message: string, language: string) {
-  if (!message || language !== 'id') return message;
+function localizeRuntimeMaintenanceMessage(message: string, language: string, t: Record<string, string>) {
+  if (!message) return message;
 
   if (/paid plan is waiting for admin billing verification/i.test(message)) {
-    return 'Paket berbayar Anda masih menunggu verifikasi billing admin. Hubungi support sebelum mengandalkan limit berbayar.';
+    return t.billingMaintenanceVerification || (language === 'id' ? 'Paket berbayar Anda masih menunggu verifikasi billing admin. Hubungi support sebelum mengandalkan limit berbayar.' : 'Your paid plan is still waiting for admin billing verification. Contact support before relying on paid limits.');
   }
 
   return message;
@@ -41,7 +41,7 @@ export function MaintenanceBanner() {
   ].join('|'), [maintenance, snapshot?.billing.currentPeriodEnd, status.kind, status.label, status.message]);
   const [minimizedKey, setMinimizedKey] = useState('');
   const minimized = Boolean(shouldShow && noticeKey && minimizedKey === noticeKey);
-  const message = localizeRuntimeMaintenanceMessage(status.message, language);
+  const message = localizeRuntimeMaintenanceMessage(status.message, language, t);
   const statusLabel = status.label;
   const StatusIcon = status.kind === 'maintenance'
     ? Wrench

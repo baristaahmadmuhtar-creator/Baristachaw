@@ -949,6 +949,8 @@ export async function editLatteArtImage(
   return result.imageDataUrl;
 }
 
+export function buildPrompt(prompt: string, isAdvanced: boolean) {
+  const contract = isAdvanced
       ? [
           'Mode contract: start with "Jawaban singkat", then "Analisis", then "Trade-off / Risiko", then "Rekomendasi".',
           'Do not show a generic wizard when the user already asked a clear question.',

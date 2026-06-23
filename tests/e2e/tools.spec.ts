@@ -2293,9 +2293,9 @@ test('authenticated users can request ai coaching manually from the result panel
   await page.getByTestId('ai-brew-result-tab-coach').click();
   const coachPanel = page.getByTestId('ai-brew-result-coach-panel');
   await expect(coachPanel).toContainText('AI Coach');
-  await expect(coachPanel).toContainText(/Current cup|Cup saat ini/i);
-  await expect(coachPanel.getByTestId('ai-brew-ai-assist-explain')).toContainText(/Explain cup|Jelaskan cup/i);
-  await expect(coachPanel.getByTestId('ai-brew-ai-assist-troubleshoot')).toContainText(/Fix taste|Perbaiki rasa/i);
+  await expect(coachPanel).toContainText(/I am focused on this cup/i);
+  await expect(coachPanel.getByTestId('ai-brew-ai-assist-explain')).toContainText(/Recipe Breakdown|Bedah Resep/i);
+  await expect(coachPanel.getByTestId('ai-brew-ai-assist-troubleshoot')).toContainText(/Taste Diagnosis|Diagnosa Rasa/i);
   await expect(coachPanel.getByTestId('ai-brew-ai-assist-adjust')).toContainText(/Adjust next cup|Atur cup berikutnya/i);
   await expect(coachPanel.getByPlaceholder(/Ask AI Coach about this cup|Tanya AI Coach tentang cup ini/i)).toBeVisible();
   await page.getByTestId('ai-brew-ai-assist-explain').click();

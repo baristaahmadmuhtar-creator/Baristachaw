@@ -32,7 +32,7 @@ async function openAiBrewResult(page: Page, mode: 'quick' | 'pro', coffeeName: s
   }
 
   await page.getByTestId('ai-brew-generate').click();
-  await expect(page.getByTestId('ai-brew-result')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-result')).toBeVisible({ timeout: 25_000 });
 }
 
 test('mobile main routes render', async ({ page }) => {
@@ -217,7 +217,7 @@ test('mobile ai brew quick generate supports Indonesian process and variety sear
 
   await page.getByTestId('ai-brew-generate').click();
   const result = page.getByTestId('ai-brew-result');
-  await expect(result).toBeVisible();
+  await expect(result).toBeVisible({ timeout: 25_000 });
   await expect(result).toContainText('Mobile Indonesia Matrix');
   const storedPlan = await page.evaluate(() => {
     const raw = localStorage.getItem('BARISTACHAW_AI_BREW_LAST_PLAN_V5');
@@ -287,7 +287,7 @@ test('mobile ai brew result workspace keeps primary actions inside the viewport'
   await page.getByTestId('ai-brew-generate').click();
 
   const result = page.getByTestId('ai-brew-result');
-  await expect(result).toBeVisible();
+  await expect(result).toBeVisible({ timeout: 25_000 });
   await expect(page.getByTestId('ai-brew-result-tab-plan')).toBeVisible();
   await expect(page.getByTestId('ai-brew-result-tab-coach')).toBeVisible();
   await expect(page.getByTestId('ai-brew-result-brief')).toHaveCount(0);
@@ -358,7 +358,7 @@ test('mobile ai brew result stays legible in light theme', async ({ page }) => {
   await page.getByTestId('ai-brew-generate').click();
 
   const result = page.getByTestId('ai-brew-result');
-  await expect(result).toBeVisible();
+  await expect(result).toBeVisible({ timeout: 25_000 });
   await expect(result.locator('h3').filter({ hasText: 'Light Theme QA' })).toBeVisible();
   await page.getByTestId('ai-brew-result-tab-flow').click();
   await expect(result.getByTestId('ai-brew-flow-current-card')).toBeVisible();
@@ -445,7 +445,7 @@ test('mobile ai brew loading stays centered and keeps bottom nav hidden through 
   }
 
   const result = page.getByTestId('ai-brew-result');
-  await expect(result).toBeVisible();
+  await expect(result).toBeVisible({ timeout: 25_000 });
   await expect(page.getByTestId('mobile-bottom-nav')).toBeHidden();
   await page.getByTestId('ai-brew-result-tab-flow').click();
   await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();

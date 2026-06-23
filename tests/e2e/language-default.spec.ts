@@ -34,7 +34,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await clearClientState(page);
   await qaLogout(page.request);
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await mockAiApis(page);
   await page.addInitScript(() => {
     localStorage.removeItem('BARISTA_LANGUAGE');

@@ -57,9 +57,33 @@ test('legal and download routes are direct, honest, and non-PWA', async ({ page 
   await page.goto('/terms');
   await expect(page.getByRole('heading', { name: 'Ketentuan penggunaan' })).toBeVisible();
   await page.goto('/download');
-  await expect(page.getByRole('heading', { name: /Minta akses Baristachaw untuk Android/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Download Baristachaw untuk iOS dan Android/ })).toBeVisible();
+  await expect(page.getByTestId('landing-download-page-ios')).toBeVisible();
+  await expect(page.getByTestId('landing-download-page-android')).toBeVisible();
   await expect(page.getByText(/Origin app\.baristachaw\.com tertanam/)).toBeVisible();
   expect(await page.locator('link[rel="manifest"]').count()).toBe(0);
+});
+
+test('download CTAs open platform modal with Android APK and iOS PWA paths', async ({ page }) => {
+  await page.getByTestId('landing-download-final').scrollIntoViewIfNeeded();
+  await page.getByTestId('landing-download-final').click();
+  const modal = page.getByTestId('landing-download-modal');
+
+  await expect(modal).toBeVisible();
+  await expect(modal.getByText(/App Store segera hadir/i)).toBeVisible();
+  await expect(modal.getByTestId('landing-download-ios')).toHaveAttribute('href', 'https://app.baristachaw.com');
+  await expect(modal.getByTestId('landing-download-android')).toHaveAttribute(
+    'href',
+    /releases\/download\/android-v1\.0\.4\/baristachaw-android\.apk/,
+  );
+  await expect(page.getByText(/Request access|Minta akses/i)).toHaveCount(0);
+
+  await page.keyboard.press('Escape');
+  await expect(modal).toHaveCount(0);
+
+  await page.getByTestId('landing-download-section').scrollIntoViewIfNeeded();
+  await page.getByTestId('landing-download-section').click();
+  await expect(page.getByTestId('landing-download-modal')).toBeVisible();
 });
 
 test('language toggle changes the public interface without mixed primary copy', async ({ page }) => {

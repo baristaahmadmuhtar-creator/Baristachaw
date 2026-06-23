@@ -72,7 +72,7 @@ export function ContactForm({ language, initialTopic = 'general' }: ContactFormP
           <option value="download">Download APK</option>
           <option value="brew">AI Brew recipe</option>
           <option value="bug">{isBn ? 'Laporan bug' : isId ? 'Laporan bug' : 'Bug report'}</option>
-          <option value="waitlist">Play Store / App Store waitlist</option>
+          <option value="store-status">Download app / store listing status</option>
         </select>
       </label>
       <label>

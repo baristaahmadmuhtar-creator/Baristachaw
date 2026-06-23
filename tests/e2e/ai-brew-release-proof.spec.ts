@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
     localStorage.setItem('BARISTA_LANGUAGE_ID_DEFAULT_MIGRATED', '1');
   });
   await qaLogout(page.request);
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await mockAiApis(page);
 });
 

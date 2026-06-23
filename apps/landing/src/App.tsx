@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Link, Route, Routes, useLocation } from 'react-router-dom';
 import { normalizeBillingPlanCode } from '@baristachaw/shared/billingFlow';
 import { BrewerGrid } from './components/BrewerGrid';
+import { DownloadModal } from './components/DownloadModal';
 import { DownloadSection } from './components/DownloadSection';
 import { FeatureGraphics } from './components/FeatureGraphics';
 import { HeroSection } from './components/HeroSection';
@@ -13,7 +14,7 @@ import { ScrollReveal } from './components/ScrollReveal';
 import { SupportChatWidget } from './components/SupportChatWidget';
 import { DataShowcase } from './components/DataShowcase';
 import { ToolsShowcase } from './components/ToolsShowcase';
-import { APK_AVAILABLE, APK_URL, APP_LINKS, APP_ORIGIN, PLAN_CATALOG, PRICING, RELEASE_VERSION, type BillingDuration, formatCurrency, getCurrencyForRegion, type Region } from './config';
+import { APP_LINKS, APP_ORIGIN, PLAN_CATALOG, PRICING, type BillingDuration, formatCurrency, getCurrencyForRegion, type Region } from './config';
 import type { Language } from './i18n';
 import { t } from './i18n';
 import { inferLandingLocale } from './localeDefaults';
@@ -359,7 +360,7 @@ function RegionDropdown({ region, onRegionChange, language }: { region: Region; 
   );
 }
 
-function LandingHome({ language, region, onRegionChange, user, onLoginSuccess, onRegister }: { language: Language; region: Region; onRegionChange: (r: Region) => void; user: any; onLoginSuccess: () => void; onRegister: (plan: 'free' | 'starter' | 'plus' | 'pro' | 'team', duration?: BillingDuration, promoCode?: string, isLogin?: boolean) => void }) {
+function LandingHome({ language, region, onRegionChange, user, onRegister, onDownloadClick }: { language: Language; region: Region; onRegionChange: (r: Region) => void; user: any; onLoginSuccess: () => void; onRegister: (plan: 'free' | 'starter' | 'plus' | 'pro' | 'team', duration?: BillingDuration, promoCode?: string, isLogin?: boolean) => void; onDownloadClick: () => void }) {
   return (
     <main>
       <HeroSection language={language} onRegister={() => onRegister('free')} user={user} />
@@ -370,7 +371,7 @@ function LandingHome({ language, region, onRegionChange, user, onLoginSuccess, o
       <FeatureGraphics language={language} />
       <ConversionProofSection language={language} />
       <PricingSection language={language} region={region} onRegionChange={onRegionChange} onRegister={onRegister} />
-      <DownloadSection language={language} />
+      <DownloadSection language={language} onDownloadClick={onDownloadClick} />
       <ScrollReveal variant="blur">
         <section className="final-cta">
           <div>
@@ -387,9 +388,9 @@ function LandingHome({ language, region, onRegionChange, user, onLoginSuccess, o
                 <button className="button button-ghost" type="button" onClick={() => onRegister('free')}>{t('final.registerFree', language)}</button>
               </>
             )}
-            <a className="button button-ghost" href={APK_AVAILABLE ? APK_URL : '/support?topic=download'}>
-              {APK_AVAILABLE ? 'Download APK' : 'Request access'}
-            </a>
+            <button className="button button-ghost" type="button" data-testid="landing-download-final" onClick={onDownloadClick}>
+              {t('mobileCta.download', language)}
+            </button>
           </div>
         </section>
       </ScrollReveal>
@@ -438,6 +439,7 @@ export function App() {
   const [user, setUser] = useState<any>(null);
   const [userLoading, setUserLoading] = useState(true);
   const [registerState, setRegisterState] = useState<RegisterState>({ open: false, plan: 'free', duration: 'quarterly' });
+  const [downloadModalOpen, setDownloadModalOpen] = useState(false);
 
   const openRegister = (plan: LandingRegisterPlan | 'plus', duration: BillingDuration = 'quarterly', promoCode?: string, isLogin = false) => {
     const normalizedPlan = toLandingRegisterPlan(plan);
@@ -545,6 +547,8 @@ export function App() {
     localStorage.setItem(MARKETING_REGION_KEY, next);
   };
 
+  const openDownloadModal = () => setDownloadModalOpen(true);
+
   useEffect(() => {
     document.documentElement.lang = language === 'bn' ? 'ms-BN' : language;
   }, [language]);
@@ -561,25 +565,26 @@ export function App() {
         onLogout={handleLogout}
         onLoginClick={() => openRegister('free', 'quarterly', undefined, true)}
         onRegisterClick={() => openRegister('free', 'quarterly', undefined, false)}
+        onDownloadClick={openDownloadModal}
       />
       <Routes>
-        <Route path="/" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} user={user} onLoginSuccess={checkAuth} onRegister={openRegister} />} />
+        <Route path="/" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} user={user} onLoginSuccess={checkAuth} onRegister={openRegister} onDownloadClick={openDownloadModal} />} />
         <Route path="/support" element={<SupportPage language={language} />} />
         <Route path="/privacy" element={<PrivacyPage language={language} />} />
         <Route path="/terms" element={<TermsPage language={language} />} />
-        <Route path="/download/*" element={<DownloadPage language={language} />} />
-        <Route path="*" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} user={user} onLoginSuccess={checkAuth} onRegister={openRegister} />} />
+        <Route path="/download/*" element={<DownloadPage language={language} onDownloadClick={openDownloadModal} />} />
+        <Route path="*" element={<LandingHome language={language} region={region} onRegionChange={handleRegionChange} user={user} onLoginSuccess={checkAuth} onRegister={openRegister} onDownloadClick={openDownloadModal} />} />
       </Routes>
       <SiteFooter language={language} />
-      <SupportChatWidget language={language} />
+      <SupportChatWidget language={language} onDownloadClick={openDownloadModal} />
       {location.pathname === '/' ? (
         <div className="mobile-sticky-cta" aria-label="Quick actions">
           <a href={user ? APP_ORIGIN : APP_LINKS.aiBrew}>{t('mobileCta.tryAiBrew', language)}</a>
-          <a href={APK_AVAILABLE ? APK_URL : '/support?topic=download'}>
-            {APK_AVAILABLE ? t('mobileCta.download', language) : 'Request access'}
-          </a>
+          <button type="button" data-testid="landing-download-sticky" onClick={openDownloadModal}>{t('mobileCta.download', language)}</button>
         </div>
       ) : null}
+
+      {downloadModalOpen ? <DownloadModal language={language} onClose={() => setDownloadModalOpen(false)} /> : null}
 
       {registerState.open && (
         <RegisterModal

@@ -1,6 +1,6 @@
-import { ArrowRight, Download, ShieldCheck } from 'lucide-react';
+import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { motion } from 'motion/react';
-import { APK_AVAILABLE, APP_LINKS, APK_URL } from '../config';
+import { APP_LINKS } from '../config';
 import type { Language } from '../i18n';
 import { t } from '../i18n';
 

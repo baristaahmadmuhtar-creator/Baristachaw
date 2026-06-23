@@ -1,38 +1,59 @@
-import { Download, ExternalLink, ShieldCheck, Smartphone } from 'lucide-react';
+import { Apple, Download, ExternalLink, Globe2, ShieldCheck, Smartphone } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { APK_AVAILABLE, APK_URL, APP_LINKS, RELEASE_URL, RELEASE_VERSION } from '../config';
+import { ANDROID_APK_FILE_NAME, APK_URL, APP_LINKS, RELEASE_URL, RELEASE_VERSION } from '../config';
 import type { Language } from '../i18n';
 
-export function DownloadPage({ language }: { language: Language }) {
-  const isId = language === 'id';
-  const isBn = language === 'bn';
-  const { pathname } = useLocation();
-  const store = pathname.includes('playstore') ? 'Google Play' : pathname.includes('appstore') ? 'App Store' : '';
+function label(language: Language, id: string, en: string, bn = id): string {
+  if (language === 'en') return en;
+  if (language === 'bn') return bn;
+  return id;
+}
 
-  if (store) {
+export function DownloadPage({ language, onDownloadClick }: { language: Language; onDownloadClick: () => void }) {
+  const { pathname } = useLocation();
+  const isPlayStore = pathname.includes('playstore');
+  const isAppStore = pathname.includes('appstore');
+  const platform = isPlayStore ? 'Google Play' : isAppStore ? 'App Store' : '';
+
+  if (platform) {
+    const isIos = platform === 'App Store';
     return (
-      <main className="utility-page waitlist-page">
+      <main className="utility-page">
         <div className="utility-hero">
-          <p>{store}</p>
+          <p>{platform}</p>
           <h1>
-            {isBn
-              ? 'Belum tersedia di store.'
-              : isId
-                ? 'Belum tersedia di store.'
-                : 'Not available in the store yet.'}
+            {isIos
+              ? label(language, 'iOS PWA sekarang. App Store segera hadir.', 'iOS PWA now. App Store coming soon.', 'iOS PWA sekarang. App Store akan datang.')
+              : label(language, 'Android APK tersedia. Google Play segera hadir.', 'Android APK is available. Google Play coming soon.', 'Android APK tersedia. Google Play akan datang.')}
           </h1>
           <p>
-            {isBn
-              ? 'Kami tidak menampilkan tombol store palsu. Gunakan web app atau minta notifikasi saat listing tersedia.'
-              : isId
-                ? 'Kami tidak menampilkan tombol store palsu. Gunakan web app atau minta notifikasi saat listing tersedia.'
-                : 'We do not show a fake store button. Use the web app or request a notification when the listing is ready.'}
+            {isIos
+              ? label(
+                  language,
+                  'Kami tidak menampilkan tombol App Store palsu. Gunakan PWA dari Safari sampai listing App Store siap.',
+                  'We do not show a fake App Store button. Use the Safari PWA until the App Store listing is ready.',
+                  'Kami tidak menampilkan tombol App Store palsu. Gunakan PWA dari Safari sampai listing App Store siap.',
+                )
+              : label(
+                  language,
+                  'Kami tidak menampilkan tombol Google Play palsu. APK signed release dapat diunduh sekarang.',
+                  'We do not show a fake Google Play button. The signed release APK is ready to download now.',
+                  'Kami tidak menampilkan tombol Google Play palsu. APK signed release dapat dimuat turun sekarang.',
+                )}
           </p>
           <div className="utility-actions">
-            <a className="button button-primary" href={APP_LINKS.aiBrew}>Try AI Brew</a>
-            <Link className="button button-outline" to="/support?topic=waitlist">
-              {isBn ? 'Minta notifikasi' : isId ? 'Minta notifikasi' : 'Request notification'}
-            </Link>
+            {isIos ? (
+              <a className="button button-primary" href={APP_LINKS.home}>
+                <Apple size={18} /> {label(language, 'Buka iOS PWA', 'Open iOS PWA', 'Buka iOS PWA')}
+              </a>
+            ) : (
+              <a className="button button-primary" href={APK_URL} download={ANDROID_APK_FILE_NAME}>
+                <Download size={18} /> {label(language, 'Download APK', 'Download APK', 'Muat Turun APK')}
+              </a>
+            )}
+            <button className="button button-outline" type="button" onClick={onDownloadClick}>
+              {label(language, 'Pilih platform lain', 'Choose another platform', 'Pilih platform lain')}
+            </button>
           </div>
         </div>
       </main>
@@ -42,23 +63,24 @@ export function DownloadPage({ language }: { language: Language }) {
   return (
     <main className="utility-page">
       <div className="utility-hero">
-        <p>Android release</p>
-        <h1>
-          {isBn
-            ? 'Minta akses Baristachaw untuk Android.'
-            : isId
-              ? 'Minta akses Baristachaw untuk Android.'
-              : 'Request Baristachaw for Android.'}
-        </h1>
+        <p>Download</p>
+        <h1>{label(language, 'Download Baristachaw untuk iOS dan Android.', 'Download Baristachaw for iOS and Android.', 'Muat Turun Baristachaw untuk iOS dan Android.')}</h1>
         <p>
-          {APK_AVAILABLE
-            ? (isBn || isId
-                ? `APK ${RELEASE_VERSION} tersedia setelah audit rilis.`
-                : `The ${RELEASE_VERSION} APK is available after release audit.`)
-            : (isBn || isId
-                ? `APK ${RELEASE_VERSION} sedang disiapkan. Minta akses jika perlu build Android lebih awal.`
-                : `The ${RELEASE_VERSION} APK is being prepared. Request access if you need an early Android build.`)}
+          {label(
+            language,
+            `Pakai iOS sebagai PWA dari Safari atau download Android APK ${RELEASE_VERSION} sebagai signed release.`,
+            `Use iOS as a Safari PWA or download Android APK ${RELEASE_VERSION} as a signed release.`,
+            `Pakai iOS sebagai PWA dari Safari atau muat turun Android APK ${RELEASE_VERSION} sebagai signed release.`,
+          )}
         </p>
+        <div className="utility-actions">
+          <button className="button button-primary" type="button" onClick={onDownloadClick}>
+            <Download size={18} /> {label(language, 'Pilih download', 'Choose download', 'Pilih muat turun')}
+          </button>
+          <a className="button button-outline" href={APP_LINKS.home}>
+            <Globe2 size={18} /> {label(language, 'Buka Web App', 'Open Web App', 'Buka Web App')}
+          </a>
+        </div>
       </div>
       <div className="utility-content">
         <div className="download-card">
@@ -66,29 +88,37 @@ export function DownloadPage({ language }: { language: Language }) {
             <img src="/assets/baristachaw-logo.png" alt="Baristachaw" />
             <div>
               <strong>Baristachaw {RELEASE_VERSION}</strong>
-              <span>Android - package com.baristachaw.mobile</span>
+              <span>{label(language, 'iOS PWA dan Android APK', 'iOS PWA and Android APK', 'iOS PWA dan Android APK')}</span>
             </div>
           </div>
           <div className="download-facts">
-            <span><ShieldCheck /> {APK_AVAILABLE ? 'Signed release' : 'Release artifact pending'}</span>
-            <span><Smartphone /> Android {RELEASE_VERSION} static release gates targeted</span>
-            <span><ShieldCheck /> CAMERA + RECORD_AUDIO {isBn ? 'sahaja' : isId ? 'saja' : 'only'}</span>
+            <span><Apple /> iOS PWA - {label(language, 'App Store segera hadir', 'App Store coming soon', 'App Store akan datang')}</span>
+            <span><Smartphone /> Android {RELEASE_VERSION} - signed release</span>
+            <span><ShieldCheck /> CAMERA + RECORD_AUDIO {label(language, 'saja', 'only', 'sahaja')}</span>
           </div>
           <div className="utility-actions" style={{ marginTop: 0 }}>
-            <a className="button button-primary" href={APK_AVAILABLE ? APK_URL : '/support?topic=download'}>
-              <Download size={18} /> {APK_AVAILABLE ? (isBn ? 'Muat Turun APK' : isId ? 'Download APK' : 'Download APK') : (isBn ? 'Minta akses' : isId ? 'Minta akses' : 'Request access')}
+            <a className="button button-primary" href={APK_URL} download={ANDROID_APK_FILE_NAME} data-testid="landing-download-page-android">
+              <Download size={18} /> {label(language, 'Download Android APK', 'Download Android APK', 'Muat Turun Android APK')}
+            </a>
+            <a className="button button-outline" href={APP_LINKS.home} data-testid="landing-download-page-ios">
+              <Apple size={18} /> {label(language, 'Buka iOS PWA', 'Open iOS PWA', 'Buka iOS PWA')}
             </a>
             <a className="button button-outline" href={RELEASE_URL}>
-              <ExternalLink size={18} /> {isBn ? 'Pelepasan GitHub' : isId ? 'GitHub release' : 'GitHub release'}
+              <ExternalLink size={18} /> {label(language, 'GitHub release', 'GitHub release', 'GitHub release')}
             </a>
           </div>
           <p className="download-migration-note" style={{ margin: 0 }}>
-            {isBn
-              ? 'Origin app.baristachaw.com tertanam pada native shell. Kualitas rasa akhir tetap perlu validasi seduh nyata.'
-              : isId
-                ? 'Origin app.baristachaw.com tertanam pada native shell. Kualitas rasa akhir tetap memerlukan validasi seduh nyata.'
-                : 'The app.baristachaw.com origin is baked into the native shell. Final cup quality still requires real brew validation.'}
+            {label(
+              language,
+              'Origin app.baristachaw.com tertanam pada native shell. Kualitas rasa akhir tetap memerlukan validasi seduh nyata.',
+              'The app.baristachaw.com origin is baked into the native shell. Final cup quality still requires real brew validation.',
+              'Origin app.baristachaw.com tertanam pada native shell. Kualiti rasa akhir tetap memerlukan validasi seduh nyata.',
+            )}
           </p>
+        </div>
+        <div className="utility-actions download-route-actions">
+          <Link className="button button-outline" to="/download/playstore">Google Play</Link>
+          <Link className="button button-outline" to="/download/appstore">App Store</Link>
         </div>
       </div>
     </main>

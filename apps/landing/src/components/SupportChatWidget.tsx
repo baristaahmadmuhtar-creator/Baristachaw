@@ -1,7 +1,7 @@
 import { Bot, Bug, Download, Instagram, LifeBuoy, LogIn, MessageCircle, UserPlus, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { APK_AVAILABLE, APK_URL, APP_LINKS } from '../config';
+import { APP_LINKS } from '../config';
 import type { Language } from '../i18n';
 
 function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -60,6 +60,11 @@ const local = {
     en: 'Contact support',
     bn: 'Hubungi sokongan',
   },
+  downloadApp: {
+    id: 'Download app',
+    en: 'Download app',
+    bn: 'Muat turun app',
+  },
   note: {
     id: 'Recipe adalah starting point. Kualitas cup akhir tetap memerlukan real brew.',
     en: 'Recipes are starting points. Final cup quality still requires real brewing.',
@@ -67,7 +72,14 @@ const local = {
   },
 } satisfies Record<string, Record<Language, string>>;
 
-export function SupportChatWidget({ language }: { language: Language }) {
+type SupportAction = {
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  label: string;
+  href?: string;
+  onClick?: () => void;
+};
+
+export function SupportChatWidget({ language, onDownloadClick }: { language: Language; onDownloadClick: () => void }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -101,12 +113,12 @@ export function SupportChatWidget({ language }: { language: Language }) {
     };
   }, [open]);
 
-  const actions = [
+  const actions: SupportAction[] = [
     { icon: WhatsAppIcon, label: 'WhatsApp', href: 'https://wa.me/6738270093' },
     { icon: Instagram, label: 'Instagram', href: 'https://instagram.com/baristachaw' },
     { icon: UserPlus, label: local.register[language], href: APP_LINKS.register },
     { icon: LogIn, label: local.loginIssue[language], href: APP_LINKS.login },
-    { icon: Download, label: APK_AVAILABLE ? 'Download APK' : 'Request APK access', href: APK_AVAILABLE ? APK_URL : '/support?topic=download' },
+    { icon: Download, label: local.downloadApp[language], onClick: () => { setOpen(false); onDownloadClick(); } },
     { icon: Bot, label: local.brewHelp[language], href: APP_LINKS.aiBrew },
     { icon: Bug, label: local.reportBug[language], href: '/support?topic=bug' },
     { icon: LifeBuoy, label: local.contactSupport[language], href: '/support' },
@@ -147,8 +159,10 @@ export function SupportChatWidget({ language }: { language: Language }) {
               {local.greeting[language]}
             </p>
             <div className="support-actions">
-              {actions.map(({ icon: Icon, label, href }) => (
-                href.startsWith('/') ? (
+              {actions.map(({ icon: Icon, label, href, onClick }) => (
+                onClick ? (
+                  <button key={label} type="button" onClick={onClick}><Icon /> <span>{label}</span></button>
+                ) : href?.startsWith('/') ? (
                   <Link key={label} to={href} onClick={() => setOpen(false)}><Icon /> <span>{label}</span></Link>
                 ) : (
                   <a key={label} href={href} target="_blank" rel="noopener noreferrer"><Icon /> <span>{label}</span></a>

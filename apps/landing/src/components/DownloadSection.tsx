@@ -1,6 +1,6 @@
 import { Apple, ArrowUpRight, Download, Globe2, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { APK_AVAILABLE, APK_URL, APP_LINKS, RELEASE_VERSION } from '../config';
+import { APP_LINKS, RELEASE_VERSION } from '../config';
 import type { Language } from '../i18n';
 import { ScrollReveal } from './ScrollReveal';
 
@@ -25,19 +25,29 @@ const local = {
     en: 'Open AI Brew on app.baristachaw.com',
     bn: 'Buka AI Brew di app.baristachaw.com',
   },
+  downloadAppLabel: {
+    id: 'Download app',
+    en: 'Download app',
+    bn: 'Muat turun app',
+  },
+  downloadAppDesc: {
+    id: `${RELEASE_VERSION} - iOS PWA dan Android APK`,
+    en: `${RELEASE_VERSION} - iOS PWA and Android APK`,
+    bn: `${RELEASE_VERSION} - iOS PWA dan Android APK`,
+  },
   playStoreDesc: {
-    id: 'Segera hadir - daftar notifikasi',
-    en: 'Coming soon - join waitlist',
-    bn: 'Akan datang - sertai senarai tunggu',
+    id: 'Android APK tersedia - Google Play segera hadir',
+    en: 'Android APK available - Google Play coming soon',
+    bn: 'Android APK tersedia - Google Play akan datang',
   },
   appStoreDesc: {
-    id: 'Daftar waitlist iOS',
-    en: 'Join iOS waitlist',
-    bn: 'Sertai senarai tunggu iOS',
+    id: 'iOS PWA tersedia - App Store segera hadir',
+    en: 'iOS PWA available - App Store coming soon',
+    bn: 'iOS PWA tersedia - App Store akan datang',
   },
 } satisfies Record<string, Record<Language, string>>;
 
-export function DownloadSection({ language }: { language: Language }) {
+export function DownloadSection({ language, onDownloadClick }: { language: Language; onDownloadClick: () => void }) {
   return (
     <section className="download-section section-shell" id="download" aria-labelledby="download-title">
       <ScrollReveal variant="slide-up">
@@ -51,14 +61,14 @@ export function DownloadSection({ language }: { language: Language }) {
       </ScrollReveal>
       <div className="download-list">
         <ScrollReveal variant="fade" delay={0}>
-          <a className="download-row download-row-primary" href={APK_AVAILABLE ? APK_URL : '/support?topic=download'}>
+          <button className="download-row download-row-primary" type="button" data-testid="landing-download-section" onClick={onDownloadClick}>
             <Download />
             <div>
-              <strong>{APK_AVAILABLE ? 'Download APK' : 'Request access'}</strong>
-              <span>{APK_AVAILABLE ? `${RELEASE_VERSION} - Android - signed release` : `${RELEASE_VERSION} - Android APK coming soon`}</span>
+              <strong>{local.downloadAppLabel[language]}</strong>
+              <span>{local.downloadAppDesc[language]}</span>
             </div>
             <ArrowUpRight />
-          </a>
+          </button>
         </ScrollReveal>
         <ScrollReveal variant="fade" delay={0.06}>
           <a className="download-row" href={APP_LINKS.aiBrew}>

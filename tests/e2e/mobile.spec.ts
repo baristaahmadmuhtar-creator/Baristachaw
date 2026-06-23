@@ -6,7 +6,7 @@ import { buildQaUser } from '../fixtures/test-data';
 test.beforeEach(async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await clearClientState(page);
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
 });
 
 test.afterEach(async ({ page }) => {
@@ -19,7 +19,7 @@ async function openAiBrewResult(page: Page, mode: 'quick' | 'pro', coffeeName: s
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   await page.getByTestId(mode === 'quick' ? 'ai-brew-open-quick' : 'ai-brew-open-pro').click();
@@ -157,7 +157,7 @@ test('collection create-folder close button keeps iOS-friendly touch target', as
 test('mobile ai brew picker keeps dialog semantics and returns focus on close', async ({ page }) => {
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   const aiTab = page.locator('#tools-tab-ai_brew');
@@ -182,7 +182,7 @@ test('mobile ai brew quick generate supports Indonesian process and variety sear
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   await page.getByTestId('ai-brew-open-quick').click();
@@ -233,7 +233,7 @@ test('mobile ai brew builder uses app fullscreen height in pwa profile', async (
 
   await page.goto('/');
   await clearClientState(page);
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.goto('/tools?tab=ai-brew&runtime=web_parity&ui_profile=pwa&host_safe_bottom=34', { waitUntil: 'domcontentloaded' });
   await page.getByTestId('ai-brew-open-quick').click();
   const builder = page.getByTestId('ai-brew-builder-quick');
@@ -263,7 +263,7 @@ test('mobile ai brew result workspace keeps primary actions inside the viewport'
   test.skip(!testInfo.project.name.includes('Mobile'), 'mobile-only viewport and action bar visibility checks');
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   await page.getByTestId('ai-brew-open-quick').click();
@@ -330,7 +330,7 @@ test('mobile ai brew result stays legible in light theme', async ({ page }) => {
 
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.evaluate(() => {
     localStorage.setItem('BARISTA_THEME', 'light');
   });
@@ -392,7 +392,7 @@ test('mobile ai brew loading stays centered and keeps bottom nav hidden through 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   await page.getByTestId('ai-brew-open-quick').click();
@@ -450,7 +450,7 @@ test('mobile ai brew builder keeps the action footer docked to the modal bottom'
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   await page.getByTestId('ai-brew-open-quick').click();
@@ -494,7 +494,7 @@ test('mobile ai brew advanced builder covers the viewport through its action foo
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   await page.getByTestId('ai-brew-open-pro').click();
@@ -525,7 +525,7 @@ test('mobile ai brew builder keeps focused inputs and footer above simulated iOS
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await clearClientState(page);
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.goto('/tools?tab=ai-brew&runtime=web_parity&ui_profile=pwa&host_safe_bottom=34', { waitUntil: 'domcontentloaded' });
   await page.getByTestId('ai-brew-open-quick').click();
 
@@ -607,7 +607,7 @@ test('mobile ai brew picker stays usable for overlay and adjustResize keyboards'
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await clearClientState(page);
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.goto('/tools?tab=ai-brew&runtime=web_parity&ui_profile=native_shell&host_safe_bottom=28', {
     waitUntil: 'domcontentloaded',
   });

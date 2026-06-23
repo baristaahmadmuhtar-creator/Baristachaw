@@ -10,7 +10,7 @@ test.describe.configure({ timeout: 180_000 });
 const LAST_PLAN_STORAGE_KEY = 'BARISTACHAW_AI_BREW_LAST_PLAN_V5';
 
 async function qaLogin(request: APIRequestContext) {
-  await qaLoginBase(request, buildQaUser({ planCode: 'starter' }));
+  await qaLoginBase(request, buildQaUser({ planCode: 'pro' }));
 }
 
 test.afterEach(async ({ page }) => {

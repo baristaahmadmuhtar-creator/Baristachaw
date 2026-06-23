@@ -27,6 +27,7 @@ test('landing routes product actions to the app domain', () => {
 test('landing includes required brewer coverage and honest evidence', () => {
   const brewerGrid = read('apps/landing/src/components/BrewerGrid.tsx');
   const app = read('apps/landing/src/App.tsx');
+  const downloadPage = read('apps/landing/src/pages/DownloadPage.tsx');
   const widget = read('apps/landing/src/components/SupportChatWidget.tsx');
   for (const brewer of [
     'V60',
@@ -48,7 +49,7 @@ test('landing includes required brewer coverage and honest evidence', () => {
   ]) {
     assert.match(brewerGrid, new RegExp(brewer.replace('/', '\\/')));
   }
-  assert.match(app, /RELEASE_VERSION/);
+  assert.match(downloadPage, /RELEASE_VERSION/);
   assert.match(widget, /final cup quality still requires real brewing/i);
   assert.doesNotMatch(app, /perfect coffee guaranteed|100% accurate cup/i);
 });

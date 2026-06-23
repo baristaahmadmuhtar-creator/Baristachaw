@@ -15,9 +15,10 @@ type LandingHeaderProps = {
   onLogout?: () => void;
   onLoginClick?: () => void;
   onRegisterClick?: () => void;
+  onDownloadClick?: () => void;
 };
 
-export function LandingHeader({ language, onLanguageChange, region, onRegionChange, user, onLogout, onLoginClick, onRegisterClick }: LandingHeaderProps) {
+export function LandingHeader({ language, onLanguageChange, region, onRegionChange, user, onLogout, onLoginClick, onRegisterClick, onDownloadClick }: LandingHeaderProps) {
   const [open, setOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -42,7 +43,7 @@ export function LandingHeader({ language, onLanguageChange, region, onRegionChan
       <nav className="desktop-nav" aria-label="Main navigation">
         <a href="/#engine">{t('nav.aiBrew', language)}</a>
         <a href="/#brewers">{t('nav.methods', language)}</a>
-        <Link to="/download">{t('nav.download', language)}</Link>
+        <button type="button" data-testid="landing-download-nav" onClick={onDownloadClick}>{t('nav.download', language)}</button>
         <Link to="/support">{t('nav.support', language)}</Link>
       </nav>
       <div className="header-actions">
@@ -91,7 +92,7 @@ export function LandingHeader({ language, onLanguageChange, region, onRegionChan
         <nav className="mobile-menu" aria-label="Mobile navigation">
           <a href="/#engine" onClick={() => setOpen(false)}>{t('nav.aiBrew', language)}</a>
           <a href="/#brewers" onClick={() => setOpen(false)}>{t('nav.brewMethods', language)}</a>
-          <Link to="/download" onClick={() => setOpen(false)}>{t('nav.downloadApp', language)}</Link>
+          <button type="button" onClick={() => { setOpen(false); onDownloadClick?.(); }}>{t('nav.downloadApp', language)}</button>
           <Link to="/support" onClick={() => setOpen(false)}>{t('nav.support', language)}</Link>
 
 

@@ -15,14 +15,14 @@ const copy = {
     bn: 'Pilih platform yang biskita mahu guna.',
   },
   iosTitle: {
-    id: 'iOS PWA',
-    en: 'iOS PWA',
-    bn: 'iOS PWA',
+    id: 'iOS',
+    en: 'iOS',
+    bn: 'iOS',
   },
   iosBody: {
-    id: 'PWA siap dipakai dari Safari. App Store segera hadir.',
-    en: 'The PWA is ready from Safari. App Store coming soon.',
-    bn: 'PWA siap digunakan dari Safari. App Store akan datang.',
+    id: 'Siap dipakai dari Safari. App Store segera hadir.',
+    en: 'Ready to use from Safari. App Store coming soon.',
+    bn: 'Sedia digunakan dari Safari. App Store akan datang.',
   },
   iosHint: {
     id: 'Buka web app, lalu pilih Share dan Add to Home Screen.',
@@ -30,14 +30,14 @@ const copy = {
     bn: 'Buka web app, kemudian pilih Share dan Add to Home Screen.',
   },
   iosButton: {
-    id: 'Install PWA',
-    en: 'Install PWA',
-    bn: 'Install PWA',
+    id: 'Install iOS',
+    en: 'Install iOS',
+    bn: 'Install iOS',
   },
   androidTitle: {
-    id: 'Android APK',
-    en: 'Android APK',
-    bn: 'Android APK',
+    id: 'Android',
+    en: 'Android',
+    bn: 'Android',
   },
   androidBody: {
     id: `APK ${RELEASE_VERSION} siap diunduh sebagai signed release.`,
@@ -50,9 +50,9 @@ const copy = {
     bn: 'Selepas siap, buka fail APK dari folder Downloads untuk install.',
   },
   androidButton: {
-    id: 'Unduh APK',
-    en: 'Download APK',
-    bn: 'Muat Turun APK',
+    id: 'Unduh Android',
+    en: 'Download Android',
+    bn: 'Muat Turun Android',
   },
   androidStarted: {
     id: 'Unduhan dimulai. Jika browser tidak membuka otomatis, buka file APK dari folder Downloads.',

@@ -31,19 +31,19 @@ const local = {
     bn: 'Muat Turun Aplikasi',
   },
   downloadAppDesc: {
-    id: `${RELEASE_VERSION} - iOS PWA dan Android APK`,
-    en: `${RELEASE_VERSION} - iOS PWA and Android APK`,
-    bn: `${RELEASE_VERSION} - iOS PWA dan Android APK`,
+    id: `${RELEASE_VERSION} - iOS dan Android`,
+    en: `${RELEASE_VERSION} - iOS and Android`,
+    bn: `${RELEASE_VERSION} - iOS dan Android`,
   },
   playStoreDesc: {
-    id: 'Android APK tersedia - Google Play segera hadir',
-    en: 'Android APK available - Google Play coming soon',
-    bn: 'Android APK tersedia - Google Play akan datang',
+    id: 'Android tersedia - Google Play segera hadir',
+    en: 'Android available - Google Play coming soon',
+    bn: 'Android tersedia - Google Play akan datang',
   },
   appStoreDesc: {
-    id: 'iOS PWA tersedia - App Store segera hadir',
-    en: 'iOS PWA available - App Store coming soon',
-    bn: 'iOS PWA tersedia - App Store akan datang',
+    id: 'iOS tersedia - App Store segera hadir',
+    en: 'iOS available - App Store coming soon',
+    bn: 'iOS tersedia - App Store akan datang',
   },
 } satisfies Record<string, Record<Language, string>>;
 

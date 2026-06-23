@@ -1,4 +1,4 @@
-import { Apple, ArrowUpRight, Download, Globe2, Play } from 'lucide-react';
+import { ArrowUpRight, Download, Globe2, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { APP_LINKS, RELEASE_VERSION } from '../config';
 import type { Language } from '../i18n';
@@ -86,7 +86,7 @@ export function DownloadSection({ language, onDownloadClick }: { language: Langu
         </ScrollReveal>
         <ScrollReveal variant="fade" delay={0.18}>
           <Link className="download-row" to="/download/appstore">
-            <Apple />
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="2" width="12" height="20" rx="3" /><line x1="12" y1="18" x2="12" y2="18.01" /></svg>
             <div><strong>App Store</strong><span>{local.appStoreDesc[language]}</span></div>
             <ArrowUpRight />
           </Link>

@@ -539,9 +539,11 @@ export function Scanner() {
       if (scanError instanceof ServerAiError) {
         console.error(`[Scanner] failed: requestId=${scanError.requestId || 'none'} provider=${scanError.provider || 'none'}`, scanError);
         if (scanError.errorCode === 'quota_exceeded' || scanError.errorCode === 'paid_plan_required') {
-          openGate('upgrade', 'scanner');
-          setLoading(false);
-          return;
+          if (effectivePlanCode !== 'pro' && effectivePlanCode !== 'team' && effectivePlanCode !== 'enterprise') {
+            openGate('upgrade', 'scanner');
+            setLoading(false);
+            return;
+          }
         }
       } else {
         console.error(scanError);

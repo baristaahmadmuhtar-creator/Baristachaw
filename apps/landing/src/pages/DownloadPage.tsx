@@ -1,4 +1,4 @@
-import { Apple, Download, ExternalLink, Globe2, ShieldCheck, Smartphone } from 'lucide-react';
+import { Download, ExternalLink, Globe2, ShieldCheck, Smartphone } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { ANDROID_APK_FILE_NAME, APK_URL, APP_LINKS, RELEASE_URL, RELEASE_VERSION } from '../config';
 import type { Language } from '../i18n';
@@ -44,7 +44,7 @@ export function DownloadPage({ language, onDownloadClick }: { language: Language
           <div className="utility-actions">
             {isIos ? (
               <a className="button button-primary" href={APP_LINKS.home}>
-                <Apple size={18} /> {label(language, 'Buka iOS PWA', 'Open iOS PWA', 'Buka iOS PWA')}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="2" width="12" height="20" rx="3" /><line x1="12" y1="18" x2="12" y2="18.01" /></svg> {label(language, 'Install iOS PWA', 'Install iOS PWA', 'Install iOS PWA')}
               </a>
             ) : (
               <a className="button button-primary" href={APK_URL} download={ANDROID_APK_FILE_NAME}>
@@ -92,7 +92,7 @@ export function DownloadPage({ language, onDownloadClick }: { language: Language
             </div>
           </div>
           <div className="download-facts">
-            <span><Apple /> iOS PWA - {label(language, 'App Store segera hadir', 'App Store coming soon', 'App Store akan datang')}</span>
+            <span><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{display:'inline',verticalAlign:'middle'}}><rect x="6" y="2" width="12" height="20" rx="3" /><line x1="12" y1="18" x2="12" y2="18.01" /></svg> iOS PWA - {label(language, 'App Store segera hadir', 'App Store coming soon', 'App Store akan datang')}</span>
             <span><Smartphone /> Android {RELEASE_VERSION} - signed release</span>
             <span><ShieldCheck /> CAMERA + RECORD_AUDIO {label(language, 'saja', 'only', 'sahaja')}</span>
           </div>
@@ -101,7 +101,7 @@ export function DownloadPage({ language, onDownloadClick }: { language: Language
               <Download size={18} /> {label(language, 'Download Android APK', 'Download Android APK', 'Muat Turun Android APK')}
             </a>
             <a className="button button-outline" href={APP_LINKS.home} data-testid="landing-download-page-ios">
-              <Apple size={18} /> {label(language, 'Buka iOS PWA', 'Open iOS PWA', 'Buka iOS PWA')}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="2" width="12" height="20" rx="3" /><line x1="12" y1="18" x2="12" y2="18.01" /></svg> {label(language, 'Install iOS PWA', 'Install iOS PWA', 'Install iOS PWA')}
             </a>
             <a className="button button-outline" href={RELEASE_URL}>
               <ExternalLink size={18} /> {label(language, 'GitHub release', 'GitHub release', 'GitHub release')}

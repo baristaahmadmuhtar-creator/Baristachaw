@@ -1,4 +1,4 @@
-import { Apple, Download, Globe2, ShieldCheck, Smartphone, X } from 'lucide-react';
+import { Download, Globe2, ShieldCheck, Smartphone, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { ANDROID_APK_FILE_NAME, APK_URL, APP_LINKS, RELEASE_VERSION } from '../config';
 import type { Language } from '../i18n';
@@ -131,7 +131,7 @@ export function DownloadModal({ language, onClose }: { language: Language; onClo
         <div className="download-platforms">
           <article className="download-platform-card">
             <div className="download-platform-icon">
-              <Apple />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="2" width="12" height="20" rx="3" /><line x1="12" y1="18" x2="12" y2="18.01" /></svg>
             </div>
             <div>
               <h3>{copy.iosTitle[language]}</h3>

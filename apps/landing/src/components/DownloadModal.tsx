@@ -30,9 +30,9 @@ const copy = {
     bn: 'Buka web app, kemudian pilih Share dan Add to Home Screen.',
   },
   iosButton: {
-    id: 'Buka PWA',
-    en: 'Open PWA',
-    bn: 'Buka PWA',
+    id: 'Install PWA',
+    en: 'Install PWA',
+    bn: 'Install PWA',
   },
   androidTitle: {
     id: 'Android APK',
@@ -138,7 +138,7 @@ export function DownloadModal({ language, onClose }: { language: Language; onClo
               <p>{copy.iosBody[language]}</p>
               <span>{copy.iosHint[language]}</span>
             </div>
-            <a className="button button-outline" href={APP_LINKS.home} data-testid="landing-download-ios">
+            <a className="button button-outline" href={`${APP_LINKS.home}?guided_install=ios`} data-testid="landing-download-ios">
               {copy.iosButton[language]}
             </a>
           </article>

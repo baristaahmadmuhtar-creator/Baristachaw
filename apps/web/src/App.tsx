@@ -5,6 +5,7 @@ import { DesktopSidebar } from './components/DesktopSidebar';
 import { AuthEntryModal } from './components/auth/AuthEntryModal';
 import { OfflineBanner } from './components/system/OfflineBanner';
 import { MaintenanceBanner } from './components/system/MaintenanceBanner';
+import { GuidedInstallOverlay } from './components/system/GuidedInstallOverlay';
 import { FirstRunOnboarding } from './components/onboarding/FirstRunOnboarding';
 import { GlobalProvider } from './context/GlobalState';
 import { NavbarProvider, useNavbar } from './context/NavbarContext';
@@ -336,6 +337,7 @@ export default function App() {
               <MotionConfig reducedMotion="user" transition={motionDefaultTransition}>
                 <AppContent />
                 <FirstRunOnboarding />
+                <GuidedInstallOverlay />
               </MotionConfig>
             </NavbarProvider>
           </AccountStatusProvider>

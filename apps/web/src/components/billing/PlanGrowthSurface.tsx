@@ -5,7 +5,15 @@ import { Instagram, MessageCircle } from 'lucide-react';
 import { ArrowRight, Check, CreditCard, Gauge, RefreshCw, ShieldCheck, Sparkles, X } from '../icons';
 import type { AccountPlan, AccountStatusSnapshot, PlanCode } from '../../services/accountStatus';
 import { BillingApiError, planDisplayName, startBillingCheckout, submitManualPaymentProof, type BillingManualInvoiceResponse } from '../../services/billing';
-import { getCurrencyForRegion, PLAN_CATALOG, PRICING, formatCurrency, PLAN_TIERS } from '../../services/billingConfig';
+import { getCurrencyForRegion, PLAN_CATALOG, PRICING, formatCurrency } from '../../services/billingConfig';
+import {
+  BILLING_PENDING_STORAGE_KEY,
+  buildPendingManualPaymentMarker,
+  getMvpUpgradeOptions,
+  parsePendingManualPaymentMarker,
+  shouldBlockDuplicateManualPayment,
+  type MvpPaidPlanCode,
+} from '@baristachaw/shared/billingFlow';
 import { useGlobalState } from '../../context/GlobalState';
 import { modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
 import { CustomSelect } from '../ui/CustomSelect';
@@ -26,21 +34,26 @@ type PlanGrowthSurfaceProps = {
 const currentColorIconStyle = { '--icon-glyph-color': 'currentColor' } as CSSProperties;
 
 const PLAN_ORDER: PlanCode[] = ['free', 'starter', 'pro', 'team'];
-const MANUAL_PAYMENT_PENDING_STORAGE_KEY = 'BARISTACHAW_MANUAL_PAYMENT_PENDING_V1';
+
+function readPendingManualPaymentMarkerRaw(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage.getItem(BILLING_PENDING_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
 
 function readPendingManualPaymentMarker(): boolean {
-  if (typeof window === 'undefined') return false;
+  const raw = readPendingManualPaymentMarkerRaw();
   try {
-    const raw = window.localStorage.getItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY);
     if (!raw) return false;
-    const parsed = JSON.parse(raw) as { status?: string; updatedAt?: number };
-    const updatedAt = Number(parsed.updatedAt || 0);
-    const maxAgeMs = 14 * 24 * 60 * 60 * 1000;
-    if (!updatedAt || Date.now() - updatedAt > maxAgeMs) {
-      window.localStorage.removeItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY);
+    const marker = parsePendingManualPaymentMarker(raw);
+    if (!marker) {
+      window.localStorage.removeItem(BILLING_PENDING_STORAGE_KEY);
       return false;
     }
-    return parsed.status === 'receipt_received' || parsed.status === 'pending_admin_review';
+    return true;
   } catch {
     return false;
   }
@@ -49,12 +62,8 @@ function readPendingManualPaymentMarker(): boolean {
 function writePendingManualPaymentMarker(paymentRequestId: string, planCode: string): void {
   if (typeof window === 'undefined') return;
   try {
-    window.localStorage.setItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY, JSON.stringify({
-      paymentRequestId,
-      planCode,
-      status: 'pending_admin_review',
-      updatedAt: Date.now(),
-    }));
+    const marker = buildPendingManualPaymentMarker(paymentRequestId, planCode);
+    if (marker) window.localStorage.setItem(BILLING_PENDING_STORAGE_KEY, JSON.stringify(marker));
   } catch {
     // Non-critical; server account status is the cross-device source of truth.
   }
@@ -310,6 +319,7 @@ function PlanCard({
         type="button"
         onClick={() => onChoose(planCode)}
         disabled={busy || active}
+        data-testid={`plan-card-${planCode}-choose`}
         className={`mt-auto inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border-1.5 px-5 text-sm font-extrabold transition-all disabled:cursor-not-allowed disabled:opacity-60 ${
           isDark 
             ? 'border-transparent bg-gradient-to-br from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/30 hover:from-purple-700 hover:to-purple-600' 
@@ -403,22 +413,16 @@ export function PlanGrowthSurface({
   const recommendedPlan = useMemo(() => snapshot ? resolveRecommendedPlan(snapshot) : null, [snapshot]);
   const currentPlanCode = snapshot?.user?.planCode || snapshot?.plan?.code || 'free';
   const currentPlan = displayPlans.find((plan) => plan.code === currentPlanCode) || snapshot?.plan || null;
-  const hasPendingManualPayment = Boolean(
-    (snapshot?.billing.provider === 'manual' && snapshot?.billing.paymentActionRequired)
-      || (snapshot?.billing?.paymentAction === 'contact_support' && snapshot?.billing?.paymentActionRequired)
-      || readPendingManualPaymentMarker(),
-  );
+  const hasPendingManualPayment = shouldBlockDuplicateManualPayment({
+    markerRaw: readPendingManualPaymentMarkerRaw(),
+    billing: snapshot?.billing,
+  }) || readPendingManualPaymentMarker();
   const showUpgradeFraming = !hasPendingManualPayment && (currentPlanCode === 'free' || snapshot?.recommendedUpgrade.action === 'checkout');
   const showCompactPaidSurface = !showUpgradeFraming;
   const hasActivePaidPlan = currentPlanCode !== 'free' && !hasPendingManualPayment;
   const pendingSupportWhatsappUrl = manualInvoice?.manualInvoice.instructions.whatsappUrl || 'https://wa.me/6738270092';
 
-  const upgradeOptions = useMemo(() => {
-    const currentTier = PLAN_TIERS[currentPlanCode as PlanCode] ?? 0;
-    const allOptions = ['free', 'starter', 'pro', 'team'] as const;
-    const upgrades = allOptions.filter(code => (PLAN_TIERS[code] ?? 0) > currentTier);
-    return upgrades.length > 0 ? upgrades : [currentPlanCode as 'free'|'starter'|'pro'|'team'];
-  }, [currentPlanCode]);
+  const upgradeOptions = useMemo<MvpPaidPlanCode[]>(() => getMvpUpgradeOptions(currentPlanCode), [currentPlanCode]);
 
   const gridColsClass = useMemo(() => {
     if (upgradeOptions.length === 1) return 'max-w-sm mx-auto';
@@ -485,9 +489,9 @@ export function PlanGrowthSurface({
     }
   }, [isOpen, manualProofStatus]);
 
-  if (!snapshot || !recommendedPlan || !currentPlan) return null;
-
   const busyRef = useRef(false);
+
+  if (!snapshot || !recommendedPlan || !currentPlan) return null;
 
   const handleChoosePlan = async (planCode: string) => {
     if (busyRef.current) return;
@@ -505,16 +509,11 @@ export function PlanGrowthSurface({
     setManualProofStatus('idle');
     setManualProofDelivery(null);
     setCheckoutStep('choose');
-    if (planCode === 'free') {
-      onClose();
-      return;
-    }
-
     setBusyPlanCode(planCode);
     busyRef.current = true;
     try {
       const currency = getCurrencyForRegion(region);
-      const response = await startBillingCheckout(planCode as Exclude<PlanCode, 'free'>, {
+      const response = await startBillingCheckout(planCode as MvpPaidPlanCode, {
         duration,
         currency,
         ...(promoApplied && promoCode.trim() ? { promoCode: promoCode.trim() } : {}),
@@ -619,6 +618,7 @@ export function PlanGrowthSurface({
             role="dialog"
             aria-modal="true"
             aria-label={t.homePlanCatalogTitle}
+            data-testid="home-plan-catalog-modal"
             tabIndex={-1}
             dir={direction}
             className="motion-safe-surface fixed z-[61] flex max-h-[calc(100dvh-1.5rem)] w-[min(72rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.35rem] border border-glass bg-[var(--bg-elevated)] shadow-[0_24px_80px_rgba(0,0,0,0.28)]"
@@ -841,8 +841,8 @@ export function PlanGrowthSurface({
               ) : null}
 
               {checkoutStep === 'choose' ? (
-                hasActivePaidPlan && upgradeOptions[0] === currentPlanCode ? (
-                  <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-blue-500/25 bg-blue-500/10 p-5 text-center text-primary shadow-sm">
+                hasActivePaidPlan && upgradeOptions.length === 0 ? (
+                  <div data-testid="billing-active-plan-state" className="mx-auto mb-6 max-w-xl rounded-2xl border border-blue-500/25 bg-blue-500/10 p-5 text-center text-primary shadow-sm">
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-blue-500 bg-blue-500/10 text-blue-600">
                       <ShieldCheck size={28} />
                     </div>
@@ -860,7 +860,7 @@ export function PlanGrowthSurface({
                   </div>
                 ) : (
                 <>
-              {hasActivePaidPlan && upgradeOptions[0] !== currentPlanCode && (
+              {hasActivePaidPlan && upgradeOptions.length > 0 && (
                 <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-blue-500/25 bg-blue-500/10 p-4 text-center text-primary shadow-sm">
                   <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400">{t.billingUpgradeTitle || 'Upgrade Plan Anda'}</h3>
                   <p className="mt-1 text-sm text-secondary">
@@ -873,7 +873,7 @@ export function PlanGrowthSurface({
                   let finalDynamicPrice = undefined;
                   if (code === 'starter' || code === 'pro') {
                     const basePrice = getPrice(code, duration, getCurrencyForRegion(region));
-                    if (hasActivePaidPlan && upgradeOptions[0] !== currentPlanCode) {
+                    if (hasActivePaidPlan && upgradeOptions.length > 0) {
                       const currentPrice = currentPlanCode === 'starter' || currentPlanCode === 'pro' 
                         ? getPrice(currentPlanCode as 'starter'|'pro', duration, getCurrencyForRegion(region))
                         : 0;

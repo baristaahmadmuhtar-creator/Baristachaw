@@ -5,6 +5,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 
 const ORIGINAL_ENV = {
   MAYAR_API_KEY: process.env.MAYAR_API_KEY,
+  MAYAR_PAYMENT_ENABLED: process.env.MAYAR_PAYMENT_ENABLED,
   APP_URL: process.env.APP_URL,
 };
 
@@ -68,6 +69,7 @@ let originalFetch: typeof fetch | undefined;
 
 test.beforeEach(() => {
   process.env.MAYAR_API_KEY = 'test-mayar-key';
+  process.env.MAYAR_PAYMENT_ENABLED = '1';
   process.env.APP_URL = 'http://127.0.0.1:3000';
 
   originalFetch = globalThis.fetch;
@@ -101,9 +103,27 @@ test.afterEach(() => {
   }
 });
 
+test('Mayar Payment - Disabled by default unless legacy flag is enabled', async () => {
+  delete process.env.MAYAR_PAYMENT_ENABLED;
+  const req = makeReq({
+    plan: 'starter',
+    duration: 'monthly',
+    email: 'test@example.com',
+    name: 'Test User',
+    currency: 'idr'
+  });
+  const res = makeRes();
+
+  await mayarHandler(req, res);
+
+  assert.equal(res.statusCode, 503);
+  const data = JSON.parse(res.body);
+  assert.equal(data.errorCode, 'payment_legacy_disabled');
+});
+
 test('Mayar Payment - Returns checkout URL for valid IDR request', async () => {
   const req = makeReq({
-    plan: 'plus',
+    plan: 'starter',
     duration: 'monthly',
     email: 'test@example.com',
     name: 'Test User',
@@ -173,7 +193,7 @@ test('Mayar Payment - Fails if duration is invalid', async () => {
 
 test('Mayar Payment - Handles Mayar API errors gracefully', async () => {
   const req = makeReq({
-    plan: 'plus',
+    plan: 'starter',
     duration: 'monthly',
     email: 'error@example.com',
     name: 'Error User',

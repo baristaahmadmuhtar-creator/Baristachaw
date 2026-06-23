@@ -39,11 +39,6 @@ function daysUntil(value: string | undefined): number | null {
 }
 
 function isManualReview(snapshot: AccountStatusSnapshot): boolean {
-  const message = snapshot.billing.message || '';
-  if (/waiting for admin|verification|review/i.test(message)) {
-    return true;
-  }
-
   if (
     snapshot.billing.paymentActionRequired &&
     snapshot.billing.provider === 'manual'
@@ -59,6 +54,11 @@ function isManualReview(snapshot: AccountStatusSnapshot): boolean {
     return false;
   }
 
+  const message = snapshot.billing.message || '';
+  if (snapshot.billing.paymentActionRequired && /waiting for admin|verification|review/i.test(message)) {
+    return true;
+  }
+
   return snapshot.billing.paymentActionRequired
     && snapshot.billing.status === 'trialing';
 }
@@ -71,9 +71,10 @@ export function resolveWorkspaceStatus(
     maintenance: AccountFeatureFlag[];
     language: string;
     locale: string;
+    pendingManualPayment?: boolean;
   },
 ): WorkspaceStatusModel {
-  const { snapshot, loading, error, maintenance, language, locale } = params;
+  const { snapshot, loading, error, maintenance, language, locale, pendingManualPayment = false } = params;
   const id = language === 'id';
 
   if (loading && !snapshot) {
@@ -141,7 +142,7 @@ export function resolveWorkspaceStatus(
     };
   }
 
-  if (isManualReview(snapshot)) {
+  if (pendingManualPayment || isManualReview(snapshot)) {
     return {
       kind: 'pending_review',
       severity: 'info',
@@ -155,7 +156,7 @@ export function resolveWorkspaceStatus(
         ? 'Tidak perlu kirim ulang bukti atau membuat invoice baru. Hubungi dukungan jika ingin menanyakan status.'
         : 'No need to resubmit proof or create another invoice. Contact support if you need a status update.',
       shouldFloat: true,
-      action: billing.paymentAction,
+      action: 'contact_support',
     };
   }
 

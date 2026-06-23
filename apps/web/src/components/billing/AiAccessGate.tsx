@@ -17,6 +17,14 @@ import {
 } from '../../services/billing';
 import type { AccountPlan, PlanCode } from '../../services/accountStatus';
 import { getCurrencyForRegion, formatCurrency } from '../../services/billingConfig';
+import {
+  BILLING_PENDING_STORAGE_KEY,
+  buildPendingManualPaymentMarker,
+  getMvpUpgradeOptions,
+  parsePendingManualPaymentMarker,
+  shouldBlockDuplicateManualPayment,
+  type MvpPaidPlanCode,
+} from '@baristachaw/shared/billingFlow';
 import { modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
 import { useDynamicPricing } from '../../hooks/useDynamicPricing';
 
@@ -32,7 +40,15 @@ type GateState = {
 };
 
 const PAID_PLAN_PRIORITY: PlanCode[] = ['starter', 'pro', 'team', 'enterprise'];
-const MANUAL_PAYMENT_PENDING_STORAGE_KEY = 'BARISTACHAW_MANUAL_PAYMENT_PENDING_V1';
+
+function readPendingManualPaymentMarkerRaw(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage.getItem(BILLING_PENDING_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
 
 function formatText(template: string | undefined | null, replacements: Record<string, string | number>) {
   if (!template) return '';
@@ -56,18 +72,15 @@ function isPaidPlanCode(value: PlanCode | null | undefined): value is Exclude<Pl
 }
 
 function readPendingManualPaymentMarker(): boolean {
-  if (typeof window === 'undefined') return false;
+  const raw = readPendingManualPaymentMarkerRaw();
   try {
-    const raw = window.localStorage.getItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY);
     if (!raw) return false;
-    const parsed = JSON.parse(raw) as { status?: string; updatedAt?: number };
-    const updatedAt = Number(parsed.updatedAt || 0);
-    const maxAgeMs = 14 * 24 * 60 * 60 * 1000;
-    if (!updatedAt || Date.now() - updatedAt > maxAgeMs) {
-      window.localStorage.removeItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY);
+    const marker = parsePendingManualPaymentMarker(raw);
+    if (!marker) {
+      window.localStorage.removeItem(BILLING_PENDING_STORAGE_KEY);
       return false;
     }
-    return parsed.status === 'receipt_received' || parsed.status === 'pending_admin_review';
+    return true;
   } catch {
     return false;
   }
@@ -76,12 +89,8 @@ function readPendingManualPaymentMarker(): boolean {
 function writePendingManualPaymentMarker(paymentRequestId: string, planCode: string): void {
   if (typeof window === 'undefined') return;
   try {
-    window.localStorage.setItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY, JSON.stringify({
-      paymentRequestId,
-      planCode,
-      status: 'pending_admin_review',
-      updatedAt: Date.now(),
-    }));
+    const marker = buildPendingManualPaymentMarker(paymentRequestId, planCode);
+    if (marker) window.localStorage.setItem(BILLING_PENDING_STORAGE_KEY, JSON.stringify(marker));
   } catch {
     // Non-critical; server account status is the cross-device source of truth.
   }
@@ -151,7 +160,7 @@ function AiAccessGateDialog({
   refreshBusy: boolean;
   onClose: () => void;
   onSignin: () => void;
-  onUpgrade: (planCode: 'starter' | 'pro', duration: BillingDuration, promoCode?: string) => void;
+  onUpgrade: (planCode: MvpPaidPlanCode, duration: BillingDuration, promoCode?: string) => void;
   effectivePlanCode: PlanCode | null;
   onRefresh: () => void | Promise<void>;
   onManualProofFileChange: (file: File | null) => void;
@@ -159,8 +168,8 @@ function AiAccessGateDialog({
   onCopyManualAccount: (accountNum?: string) => void | Promise<void>;
   step: CheckoutStep;
   setStep: (s: CheckoutStep) => void;
-  selectedPlan: 'starter' | 'pro';
-  setSelectedPlan: (p: 'starter' | 'pro') => void;
+  selectedPlan: MvpPaidPlanCode;
+  setSelectedPlan: (p: MvpPaidPlanCode) => void;
   selectedDuration: BillingDuration;
   setSelectedDuration: (d: BillingDuration) => void;
   isPastDue?: boolean;
@@ -183,26 +192,11 @@ function AiAccessGateDialog({
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
 
-  const PLAN_TIERS: Record<string, number> = {
-    free: 0,
-    starter: 1,
-    pro: 2,
-    team: 3,
-    enterprise: 4,
-  };
-
-  const currentTier = useMemo(() => {
-    return PLAN_TIERS[effectivePlanCode as string] ?? 0;
-  }, [effectivePlanCode]);
-
-  const availablePlans = useMemo(() => {
-    const options = (['starter', 'pro'] as const).filter(p => (PLAN_TIERS[p] ?? 0) > currentTier);
-    return options.length > 0 ? options : (['starter', 'pro'] as const);
-  }, [currentTier]);
+  const availablePlans = useMemo(() => getMvpUpgradeOptions(effectivePlanCode || 'free'), [effectivePlanCode]);
 
   useEffect(() => {
-    if (!availablePlans.includes(selectedPlan as any)) {
-      setSelectedPlan(availablePlans[0] as 'starter' | 'pro');
+    if (availablePlans.length > 0 && !availablePlans.includes(selectedPlan)) {
+      setSelectedPlan(availablePlans[0]);
     }
   }, [availablePlans, selectedPlan, setSelectedPlan]);
 
@@ -215,7 +209,7 @@ function AiAccessGateDialog({
     const basePrice = getPrice(p, d, currency);
     let finalPrice = basePrice;
     
-    if (effectivePlanCode && effectivePlanCode !== 'free' && availablePlans[0] !== effectivePlanCode) {
+    if (effectivePlanCode && effectivePlanCode === 'starter' && p === 'pro') {
       const currentPrice = effectivePlanCode === 'starter' || effectivePlanCode === 'pro'
         ? getPrice(effectivePlanCode as 'starter'|'pro', d, currency)
         : 0;
@@ -470,7 +464,7 @@ function AiAccessGateDialog({
 
                 {/* Plan Selection list */}
                 <div className="mt-4 grid gap-3">
-                  {availablePlans.map((p) => {
+                  {(availablePlans.length ? availablePlans : [selectedPlan]).map((p) => {
                     const isSelected = selectedPlan === p;
                     return (
                       <button
@@ -478,6 +472,7 @@ function AiAccessGateDialog({
                         type="button"
                         onClick={() => setSelectedPlan(p)}
                         aria-pressed={isSelected}
+                        data-testid={`ai-gate-plan-option-${p}`}
                         className={`flex w-full items-start justify-between rounded-2xl border p-4 text-left transition-all hover:bg-surface-alpha-hover ${isSelected ? 'border-blue-500 bg-blue-500/10' : 'border-glass bg-surface-alpha'}`}
                       >
                         <div className="text-left flex-1 min-w-0 pr-3">
@@ -550,7 +545,8 @@ function AiAccessGateDialog({
                     <button
                       type="button"
                       onClick={() => onUpgrade(selectedPlan, selectedDuration, promoApplied && promoCode.trim().length >= 4 ? promoCode.toUpperCase() : undefined)}
-                      disabled={checkoutBusy}
+                      disabled={checkoutBusy || availablePlans.length === 0}
+                      data-testid="ai-gate-start-checkout"
                       className="motion-pressable inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-600 disabled:opacity-60"
                     >
                       {checkoutBusy ? <RefreshCcw size={16} className="animate-spin" /> : <CreditCard size={16} />}
@@ -623,55 +619,21 @@ function AiAccessGateDialog({
                 </p>
               </div>
 
-              {/* QRIS vector box */}
-              <div className="flex flex-col items-center gap-1.5 mt-2">
-                <div className="bg-white p-2 rounded-xl w-36 h-36">
-                  <svg viewBox="0 0 200 200" style={{ width: '100%', height: '100%' }}>
-                    <rect x="0" y="0" width="200" height="28" fill="#E1251B" rx="4" />
-                    <text x="100" y="17" fill="#ffffff" fontSize="9" fontWeight="800" textAnchor="middle" fontFamily="system-ui, -apple-system, sans-serif">{t.billingQrisManual || 'QRIS MANUAL'}</text>
-                    <rect x="25" y="42" width="150" height="150" fill="none" stroke="#E1251B" strokeWidth="2" rx="4" />
-                    <rect x="35" y="52" width="30" height="30" fill="#000000" />
-                    <rect x="40" y="57" width="20" height="20" fill="#ffffff" />
-                    <rect x="45" y="62" width="10" height="10" fill="#000000" />
-                    <rect x="135" y="52" width="30" height="30" fill="#000000" />
-                    <rect x="140" y="57" width="20" height="20" fill="#ffffff" />
-                    <rect x="145" y="62" width="10" height="10" fill="#000000" />
-                    <rect x="35" y="142" width="30" height="30" fill="#000000" />
-                    <rect x="40" y="147" width="20" height="20" fill="#ffffff" />
-                    <rect x="45" y="152" width="10" height="10" fill="#000000" />
-                    <rect x="75" y="52" width="10" height="10" fill="#000000" />
-                    <rect x="95" y="52" width="15" height="5" fill="#000000" />
-                    <rect x="120" y="52" width="5" height="10" fill="#000000" />
-                    <rect x="75" y="72" width="15" height="10" fill="#000000" />
-                    <rect x="100" y="67" width="10" height="15" fill="#000000" />
-                    <rect x="115" y="72" width="10" height="10" fill="#000000" />
-                    <rect x="35" y="92" width="15" height="5" fill="#000000" />
-                    <rect x="60" y="92" width="10" height="10" fill="#000000" />
-                    <rect x="80" y="87" width="25" height="10" fill="#000000" />
-                    <rect x="115" y="92" width="10" height="15" fill="#000000" />
-                    <rect x="135" y="92" width="15" height="10" fill="#000000" />
-                    <rect x="160" y="87" width="5" height="20" fill="#000000" />
-                    <rect x="35" y="112" width="10" height="15" fill="#000000" />
-                    <rect x="55" y="112" width="20" height="10" fill="#000000" />
-                    <rect x="85" y="112" width="10" height="15" fill="#000000" />
-                    <rect x="105" y="107" width="15" height="10" fill="#000000" />
-                    <rect x="130" y="112" width="5" height="10" fill="#000000" />
-                    <rect x="145" y="112" width="20" height="15" fill="#000000" />
-                    <rect x="75" y="132" width="10" height="10" fill="#000000" />
-                    <rect x="95" y="132" width="15" height="15" fill="#000000" />
-                    <rect x="120" y="132" width="10" height="10" fill="#000000" />
-                    <rect x="75" y="152" width="25" height="10" fill="#000000" />
-                    <rect x="110" y="147" width="10" height="15" fill="#000000" />
-                    <rect x="130" y="152" width="15" height="10" fill="#000000" />
-                    <rect x="155" y="147" width="10" height="20" fill="#000000" />
-                    <rect x="75" y="172" width="10" height="10" fill="#000000" />
-                    <rect x="95" y="167" width="15" height="10" fill="#000000" />
-                    <rect x="120" y="172" width="20" height="5" fill="#000000" />
-                    <rect x="150" y="172" width="15" height="10" fill="#000000" />
-                  </svg>
+              {manualInvoice.manualInvoice.instructions.qrisImageUrl ? (
+                <div className="flex flex-col items-center gap-1.5 mt-2">
+                  <div className="bg-white p-2 rounded-xl w-36 h-36">
+                    <img
+                      src={manualInvoice.manualInvoice.instructions.qrisImageUrl}
+                      alt={manualInvoice.manualInvoice.instructions.qrisLabel || t.billingQrisManual || 'QRIS manual'}
+                      className="h-full w-full object-contain"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                  <span className="text-xs font-bold text-secondary tracking-wider">
+                    {manualInvoice.manualInvoice.instructions.qrisLabel || t.billingScanQrisManual || 'SCAN QRIS MANUAL'}
+                  </span>
                 </div>
-                <span className="text-xs font-bold text-secondary tracking-wider">{t.billingScanQrisManual || 'SCAN QRIS MANUAL'}</span>
-              </div>
+              ) : null}
 
               {/* Dynamic banks cards */}
               {manualInvoice.manualInvoice.instructions.banks && manualInvoice.manualInvoice.instructions.banks.length > 0 ? (
@@ -739,6 +701,7 @@ function AiAccessGateDialog({
                   ref={fileInputRef}
                   id="proof-file-input"
                   type="file"
+                  data-testid="ai-gate-proof-input"
                   accept="image/jpeg,image/png,image/webp,application/pdf"
                   onChange={(event) => {
                     const file = event.currentTarget.files?.[0] || null;
@@ -771,6 +734,7 @@ function AiAccessGateDialog({
                 type="button"
                 onClick={() => setTurnstileVerified(!turnstileVerified)}
                 aria-pressed={turnstileVerified}
+                data-testid="ai-gate-confirm-proof"
                 className="flex w-full items-center justify-between p-3 border border-glass rounded-xl bg-surface-alpha hover:bg-surface-alpha-hover cursor-pointer mt-1 select-none text-left"
               >
                 <div className="flex items-center gap-3">
@@ -800,6 +764,7 @@ function AiAccessGateDialog({
                   }
                 }}
                 disabled={manualProofStatus === 'submitting' || !manualProofFile || !turnstileVerified}
+                data-testid="ai-gate-submit-proof"
                 className="w-full min-h-12 bg-[#3b82f6] text-[#ffffff] rounded-full font-black text-sm flex items-center justify-center gap-2 hover:bg-[#60a5fa] transition-all disabled:opacity-40 disabled:cursor-not-allowed mt-2 shadow-[0_8px_20px_rgba(255,210,51,0.2)]"
               >
                 {manualProofStatus === 'submitting' ? (
@@ -880,22 +845,11 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   const tokenPlanCode = normalizePlanCode(user?.planCode);
   const effectivePlanCode = normalizePlanCode(snapshot?.user?.planCode || snapshot?.plan?.code) || tokenPlanCode;
   const hasPaidAiAccess = isAuthenticated && !isGuest && isPaidPlanCode(effectivePlanCode);
-  const isPendingReview = useMemo(() => {
-    if (!snapshot) return false;
-    const message = snapshot.billing.message || '';
-    if (/waiting for admin|verification|review/i.test(message)) return true;
-    if (snapshot.billing.paymentActionRequired && snapshot.billing.provider === 'manual') return true;
-    return false;
-  }, [snapshot]);
-
   const hasPendingManualPayment = isAuthenticated && !isGuest && (
-    readPendingManualPaymentMarker()
-    || isPendingReview
-    || (
-      snapshot?.billing.provider === 'manual'
-      && snapshot.billing.paymentActionRequired
-      && snapshot.billing.paymentAction === 'contact_support'
-    )
+    shouldBlockDuplicateManualPayment({
+      markerRaw: readPendingManualPaymentMarkerRaw(),
+      billing: snapshot?.billing,
+    }) || readPendingManualPaymentMarker()
   );
 
   useEffect(() => {

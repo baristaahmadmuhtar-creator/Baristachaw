@@ -220,9 +220,10 @@ function hasSecurityHeaders(response) {
 }
 
 async function runUnauthSecurityChecks(baseUrl, results, expectTestAuthDisabled) {
+  const origin = baseUrl.replace(/\/+$/, '');
   const unauthChat = await requestAny(baseUrl, '/api/chat', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', Origin: origin },
     body: JSON.stringify({ message: 'Smoke unauth ping', mode: 'race' }),
   });
   if (unauthChat.response.status === 401 && unauthChat.json?.errorCode === 'auth_required') {
@@ -237,7 +238,7 @@ async function runUnauthSecurityChecks(baseUrl, results, expectTestAuthDisabled)
 
   const unauthAi = await requestAny(baseUrl, '/api/ai', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', Origin: origin },
     body: JSON.stringify({ action: 'fast', prompt: 'Smoke unauth ping' }),
   });
   if (unauthAi.response.status === 401 && unauthAi.json?.errorCode === 'auth_required') {

@@ -1,6 +1,7 @@
 import { ArrowRight, Check, CircleAlert, ChevronDown, Globe } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { Link, Route, Routes, useLocation } from 'react-router-dom';
+import { normalizeBillingPlanCode } from '@baristachaw/shared/billingFlow';
 import { BrewerGrid } from './components/BrewerGrid';
 import { DownloadSection } from './components/DownloadSection';
 import { FeatureGraphics } from './components/FeatureGraphics';
@@ -63,11 +64,13 @@ function ConversionProofSection({ language }: { language: Language }) {
 
 type RegisterState = {
   open: boolean;
-  plan: 'free' | 'starter' | 'plus' | 'pro' | 'team';
+  plan: LandingRegisterPlan;
   duration: BillingDuration;
   isLogin?: boolean;
   promoCode?: string;
 };
+
+type LandingRegisterPlan = 'free' | 'starter' | 'pro' | 'team';
 
 const MARKETING_LANGUAGE_KEY = 'baristachaw-marketing-language';
 const MARKETING_REGION_KEY = 'baristachaw-marketing-region';
@@ -101,6 +104,20 @@ function isValidMarketingLanguage(value: unknown): value is Language {
   return value === 'en' || value === 'id' || value === 'bn';
 }
 
+function normalizeLandingRegisterPlan(value: unknown): LandingRegisterPlan | null {
+  const normalized = normalizeBillingPlanCode(value);
+  if (normalized === 'starter' || normalized === 'pro' || normalized === 'team') return normalized;
+  if (normalized === 'enterprise') return 'team';
+  if (normalized === 'free') return 'free';
+  return null;
+}
+
+function toLandingRegisterPlan(value: unknown): LandingRegisterPlan {
+  const normalized = normalizeLandingRegisterPlan(value);
+  if (normalized) return normalized;
+  return 'free';
+}
+
 function getRegionName(region: Region): string {
   switch (region) {
     case 'id': return 'Indonesia';
@@ -114,7 +131,7 @@ function getRegionName(region: Region): string {
   }
 }
 
-function PricingSection({ language, region, onRegionChange, onRegister }: { language: Language; region: Region; onRegionChange: (r: Region) => void; onRegister: (plan: 'free' | 'starter' | 'plus' | 'pro' | 'team', duration: BillingDuration, promoCode?: string) => void }) {
+function PricingSection({ language, region, onRegionChange, onRegister }: { language: Language; region: Region; onRegionChange: (r: Region) => void; onRegister: (plan: LandingRegisterPlan | 'plus', duration: BillingDuration, promoCode?: string) => void }) {
   const [duration, setDuration] = useState<BillingDuration>('quarterly');
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
@@ -192,7 +209,7 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
                 <li key={feature}><Check size={16} /> {feature}</li>
               ))}
             </ul>
-            <button className="plan-cta" type="button" onClick={() => onRegister('free', duration, promoApplied ? promoCode : undefined)}>
+            <button className="plan-cta" type="button" data-testid="landing-pricing-free" onClick={() => onRegister('free', duration, promoApplied ? promoCode : undefined)}>
               {t('plan.free.cta', language)} <ArrowRight size={16} />
             </button>
           </article>
@@ -227,7 +244,7 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
                 <li key={feature}><Check size={16} /> {feature}</li>
               ))}
             </ul>
-            <button className="plan-cta plan-cta-primary" type="button" onClick={() => onRegister('starter', duration)}>
+            <button className="plan-cta plan-cta-primary" type="button" data-testid="landing-pricing-starter" onClick={() => onRegister('starter', duration)}>
               {t('plan.plus.cta', language)} <ArrowRight size={16} />
             </button>
           </article>
@@ -261,7 +278,7 @@ function PricingSection({ language, region, onRegionChange, onRegister }: { lang
                 <li key={feature}><Check size={16} /> {feature}</li>
               ))}
             </ul>
-            <button className="plan-cta plan-cta-pro" type="button" onClick={() => onRegister('pro', duration)}>
+            <button className="plan-cta plan-cta-pro" type="button" data-testid="landing-pricing-pro" onClick={() => onRegister('pro', duration)}>
               {t('plan.pro.cta', language)} <ArrowRight size={16} />
             </button>
           </article>
@@ -422,8 +439,8 @@ export function App() {
   const [userLoading, setUserLoading] = useState(true);
   const [registerState, setRegisterState] = useState<RegisterState>({ open: false, plan: 'free', duration: 'quarterly' });
 
-  const openRegister = (plan: 'free' | 'starter' | 'plus' | 'pro' | 'team', duration: BillingDuration = 'quarterly', promoCode?: string, isLogin = false) => {
-    const normalizedPlan = plan === 'plus' ? 'starter' : plan;
+  const openRegister = (plan: LandingRegisterPlan | 'plus', duration: BillingDuration = 'quarterly', promoCode?: string, isLogin = false) => {
+    const normalizedPlan = toLandingRegisterPlan(plan);
     if (normalizedPlan === 'team') {
       window.location.href = '/support?topic=general';
       return;
@@ -473,7 +490,7 @@ export function App() {
     // If we just redirected from Google OAuth with success query param
     const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.get('login_success') === '1') {
-      const plan = searchParams.get('plan') as 'free' | 'starter' | 'plus' | 'pro' | 'team' | null;
+      const plan = normalizeLandingRegisterPlan(searchParams.get('plan'));
       const duration = searchParams.get('duration') as BillingDuration | null;
       
       if (plan && duration) {

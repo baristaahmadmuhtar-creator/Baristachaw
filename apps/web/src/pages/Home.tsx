@@ -35,11 +35,21 @@ import {
   Sparkles as AppSparklesIcon,
 } from "../components/icons";
 import { normalizeAgentProfileMemory, resolveAgentProfileNamespace, type AgentProfileMemory } from "@baristachaw/shared";
+import { BILLING_PENDING_STORAGE_KEY, shouldBlockDuplicateManualPayment } from "@baristachaw/shared/billingFlow";
 import { getLanguageDirection, getLanguageLocale, LANGUAGE_OPTIONS } from "../constants";
 
 const genId = (prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 const SEARCH_CACHE_KEY = 'home_search';
 const SUPPORT_WHATSAPP_BASE = 'https://wa.me/6738270092';
+
+function readBillingPendingMarkerRaw(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage.getItem(BILLING_PENDING_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
 
 type HomeSearchResult = SearchResultPayload & {
   query: string;
@@ -199,6 +209,10 @@ export function Home() {
 
   const accountAccessStatus = accountSnapshot?.appAccess.status || 'ok';
   const accountBlocked = isAuthenticated && accountAccessStatus === 'blocked';
+  const pendingManualPayment = shouldBlockDuplicateManualPayment({
+    markerRaw: readBillingPendingMarkerRaw(),
+    billing: accountSnapshot?.billing,
+  });
   const workspaceStatus = useMemo(() => resolveWorkspaceStatus({
     snapshot: accountSnapshot,
     loading: accountStatusLoading,
@@ -206,7 +220,8 @@ export function Home() {
     maintenance,
     language,
     locale,
-  }), [accountSnapshot, accountStatusError, accountStatusLoading, language, locale, maintenance]);
+    pendingManualPayment,
+  }), [accountSnapshot, accountStatusError, accountStatusLoading, language, locale, maintenance, pendingManualPayment]);
   const workspaceStatusTone = workspaceStatus.severity === 'danger'
     ? 'border-rose-500/25 bg-rose-500/10 text-rose-700 dark:text-rose-300'
     : workspaceStatus.severity === 'warning'
@@ -908,6 +923,7 @@ export function Home() {
       {showWorkspaceStatusPanel ? (
         <section
           dir={direction}
+          data-testid="home-workspace-status-panel"
           className={`mb-6 max-w-xl lg:max-w-6xl mx-auto w-full rounded-[1.35rem] border px-4 py-4 shadow-[var(--panel-elev-1)] ${workspaceStatusTone}`}
         >
           <div className={`flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between ${isRtl ? 'lg:flex-row-reverse' : ''}`}>
@@ -991,6 +1007,7 @@ export function Home() {
                 <button
                   type="button"
                   onClick={() => setShowPlanCatalog(true)}
+                  data-testid="home-plan-open-catalog"
                   className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-current/15 bg-[var(--bg-base)]/70 px-3 text-sm font-semibold text-primary transition-colors hover:bg-[var(--bg-base)]"
                 >
                   <CreditCard size={15} />

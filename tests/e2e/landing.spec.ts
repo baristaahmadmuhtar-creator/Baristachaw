@@ -21,8 +21,8 @@ test('renders the full landing contract without console errors or overflow', asy
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Seduh Kopi Sempurna Setiap Pagi/);
-  await expect(page.getByRole('region', { name: /Seduh Kopi Sempurna Setiap Pagi/ }).getByRole('link', { name: /Mulai Seduh/ })).toHaveAttribute(
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Sempurnakan Seduhan Kopi Anda Setiap Pagi/i);
+  await expect(page.getByRole('region', { name: /Sempurnakan Seduhan Kopi Anda Setiap Pagi/i }).getByRole('link', { name: /Mulai Seduh/ })).toHaveAttribute(
     'href',
     'https://app.baristachaw.com/tools?tab=ai_brew',
   );
@@ -65,9 +65,36 @@ test('legal and download routes are direct, honest, and non-PWA', async ({ page 
 test('language toggle changes the public interface without mixed primary copy', async ({ page }) => {
   await page.getByLabel('Select Language').click();
   await page.getByRole('option', { name: 'English' }).click();
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Brew the Perfect Cup Every Morning/);
-  await expect(page.getByRole('region', { name: /Brew the Perfect Cup Every Morning/ }).getByRole('link', { name: 'Start Brewing' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/Master the Perfect Extraction Every Morning/i);
+  await expect(page.getByRole('region', { name: /Master the Perfect Extraction Every Morning/i }).getByRole('link', { name: 'Start Brewing' })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+});
+
+test('pricing CTAs open the correct Starter and Pro checkout modal in Indonesian and English', async ({ page }) => {
+  await page.getByTestId('landing-pricing-starter').click();
+  await expect(page.getByTestId('landing-register-modal')).toBeVisible();
+  await expect(page.getByTestId('landing-plan-option-starter')).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('landing-register-modal')).toHaveCount(0);
+
+  await page.getByTestId('landing-pricing-pro').click();
+  await expect(page.getByTestId('landing-register-modal')).toBeVisible();
+  await expect(page.getByTestId('landing-plan-option-pro')).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('landing-register-modal')).toHaveCount(0);
+
+  await page.getByLabel('Select Language').click();
+  await page.getByRole('option', { name: 'English' }).click();
+
+  await page.getByTestId('landing-pricing-starter').click();
+  await expect(page.getByTestId('landing-register-modal')).toBeVisible();
+  await expect(page.getByTestId('landing-plan-option-starter')).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('landing-register-modal')).toHaveCount(0);
+
+  await page.getByTestId('landing-pricing-pro').click();
+  await expect(page.getByTestId('landing-register-modal')).toBeVisible();
+  await expect(page.getByTestId('landing-plan-option-pro')).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('billing modal creates manual invoice and submits proof with inline validation', async ({ page }) => {
@@ -184,22 +211,22 @@ test('billing modal creates manual invoice and submits proof with inline validat
   });
 
   await page.goto('/');
-  await page.getByRole('button', { name: /Get Barista Starter/i }).click();
-  const dialog = page.getByRole('dialog', { name: /Pilih Plan Keanggotaan/i });
+  await page.getByTestId('landing-pricing-starter').click();
+  const dialog = page.getByTestId('landing-register-modal');
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole('button', { name: /Barista Starter Panduan AI/i })).toHaveAttribute('aria-pressed', 'true');
+  await expect(dialog.getByTestId('landing-plan-option-starter')).toHaveAttribute('aria-pressed', 'true');
 
   await page.getByLabel('Nama lengkap').fill('Landing Billing QA');
   await page.getByLabel('Email').fill('landing-billing@example.com');
   await page.getByLabel('Kata sandi').fill('strong-password-123');
-  await page.getByRole('button', { name: /Daftar & Bayar/i }).click();
+  await page.getByTestId('landing-auth-submit').click();
 
   await expect(page.getByText(/TOTAL TRANSFER/i)).toBeVisible();
   await expect(page.getByText(/Kode 123 membantu admin/i)).toBeVisible();
   await expect(page.getByRole('img', { name: /QRIS Baristachaw QA/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Kirim Bukti/i })).toBeDisabled();
+  await expect(page.getByTestId('landing-submit-proof')).toBeDisabled();
 
-  const proofInput = page.locator('input[type="file"][accept*="image/png"]').last();
+  const proofInput = page.getByTestId('landing-proof-input');
   await proofInput.setInputFiles({
     name: 'wrong.txt',
     mimeType: 'text/plain',
@@ -212,16 +239,16 @@ test('billing modal creates manual invoice and submits proof with inline validat
     mimeType: 'image/png',
     buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=', 'base64'),
   });
-  await page.getByRole('button', { name: /Konfirmasi bukti transfer/i }).click();
-  await expect(page.getByRole('button', { name: /Kirim Bukti/i })).toBeEnabled();
-  await page.getByRole('button', { name: /Kirim Bukti/i }).click();
+  await page.getByTestId('landing-confirm-proof').click();
+  await expect(page.getByTestId('landing-submit-proof')).toBeEnabled();
+  await page.getByTestId('landing-submit-proof').click();
 
   await expect(page.getByRole('heading', { name: /Pembayaran Menunggu Review/i })).toBeVisible();
   await page.getByRole('button', { name: 'Selesai' }).click();
-  await page.getByRole('button', { name: /Get Barista Starter/i }).click();
+  await page.getByTestId('landing-pricing-starter').click();
   await expect(page.getByRole('heading', { name: /Pembayaran Menunggu Review/i })).toBeVisible();
   await expect(page.getByText(/Jangan memilih paket lain atau mengirim bukti ulang/i)).toBeVisible();
-  await expect(page.getByRole('button', { name: /Kirim Bukti/i })).toHaveCount(0);
+  await expect(page.getByTestId('landing-submit-proof')).toHaveCount(0);
 });
 
 test('has no serious or critical axe violations', async ({ page }) => {

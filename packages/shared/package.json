@@ -14,6 +14,7 @@
     "./parity": "./src/parity.ts",
     "./scanner": "./src/scanner.ts",
     "./locale": "./src/locale.ts",
-    "./planCatalog": "./src/planCatalog.ts"
+    "./planCatalog": "./src/planCatalog.ts",
+    "./billingFlow": "./src/billingFlow.ts"
   }
 }

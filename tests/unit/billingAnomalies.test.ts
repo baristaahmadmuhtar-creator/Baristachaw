@@ -82,6 +82,18 @@ function resolve(snapshot: AccountStatusSnapshot, maintenance: AccountFeatureFla
   });
 }
 
+function resolveWithPendingMarker(snapshot: AccountStatusSnapshot) {
+  return resolveWorkspaceStatus({
+    snapshot,
+    loading: false,
+    error: '',
+    maintenance: [],
+    language: 'id',
+    locale: 'id-ID',
+    pendingManualPayment: true,
+  });
+}
+
 test('Billing Anomalies & Workspace Status Resolution', async (t) => {
   await t.test('Active free plan -> free', () => {
     const snap = createMockSnapshot();
@@ -98,6 +110,22 @@ test('Billing Anomalies & Workspace Status Resolution', async (t) => {
     assert.equal(result.kind, 'active');
   });
 
+  await t.test('Active paid plan with informational review copy but no billing action -> active', () => {
+    const snap = createMockSnapshot({
+      user: { planCode: 'pro', status: 'active', name: '', role: '', planName: '', id: '', lastSeenAt: '' },
+      billing: {
+        status: 'active',
+        provider: 'manual',
+        market: 'unknown',
+        paymentAction: 'none',
+        paymentActionRequired: false,
+        message: 'Manual payments are reviewed by admin support.',
+      },
+    });
+    const result = resolve(snap);
+    assert.equal(result.kind, 'active');
+  });
+
   await t.test('Active free plan with manual upgrade pending -> pending_review', () => {
     const snap = createMockSnapshot({
       user: { planCode: 'free', status: 'active', name: '', role: '', planName: '', id: '', lastSeenAt: '' },
@@ -106,6 +134,16 @@ test('Billing Anomalies & Workspace Status Resolution', async (t) => {
     const result = resolve(snap);
     assert.equal(result.kind, 'pending_review');
     assert.equal(result.severity, 'info'); // Should be info (blue), not danger
+  });
+
+  await t.test('Local pending manual payment marker blocks duplicate checkout on otherwise free snapshot', () => {
+    const snap = createMockSnapshot({
+      user: { planCode: 'free', status: 'active', name: '', role: '', planName: '', id: '', lastSeenAt: '' },
+      billing: { status: 'none', provider: 'none', market: 'unknown', paymentAction: 'checkout', paymentActionRequired: false, message: '' },
+    });
+    const result = resolveWithPendingMarker(snap);
+    assert.equal(result.kind, 'pending_review');
+    assert.equal(result.action, 'contact_support');
   });
 
   await t.test('Active paid plan with manual upgrade pending -> pending_review', () => {

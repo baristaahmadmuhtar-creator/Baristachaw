@@ -1,6 +1,13 @@
 import { ArrowRight, Loader2, X, Check, UploadCloud, AlertCircle, ArrowLeft, MessageCircle, Instagram } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { OTP_CODE_LENGTH } from '@baristachaw/shared/domain';
+import {
+  BILLING_PENDING_STORAGE_KEY,
+  buildPendingManualPaymentMarker,
+  normalizeBillingPlanCode,
+  parsePendingManualPaymentMarker,
+  type MvpPaidPlanCode,
+} from '@baristachaw/shared/billingFlow';
 import type { Language } from '../i18n';
 import { t } from '../i18n';
 import { APP_ORIGIN, type BillingDuration, formatCurrencyByLang, getCurrencyForLanguage, PRICING } from '../config';
@@ -16,20 +23,16 @@ type RegisterModalProps = {
   promoCode?: string;
 };
 
-const MANUAL_PAYMENT_PENDING_STORAGE_KEY = 'BARISTACHAW_MANUAL_PAYMENT_PENDING_V1';
-
 function readPendingManualPaymentMarker(): boolean {
   try {
-    const raw = window.localStorage.getItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY);
+    const raw = window.localStorage.getItem(BILLING_PENDING_STORAGE_KEY);
     if (!raw) return false;
-    const parsed = JSON.parse(raw) as { status?: string; updatedAt?: number };
-    const updatedAt = Number(parsed.updatedAt || 0);
-    const maxAgeMs = 14 * 24 * 60 * 60 * 1000;
-    if (!updatedAt || Date.now() - updatedAt > maxAgeMs) {
-      window.localStorage.removeItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY);
+    const marker = parsePendingManualPaymentMarker(raw);
+    if (!marker) {
+      window.localStorage.removeItem(BILLING_PENDING_STORAGE_KEY);
       return false;
     }
-    return parsed.status === 'receipt_received' || parsed.status === 'pending_admin_review';
+    return true;
   } catch {
     return false;
   }
@@ -37,18 +40,15 @@ function readPendingManualPaymentMarker(): boolean {
 
 function writePendingManualPaymentMarker(paymentRequestId: string, planCode: string): void {
   try {
-    window.localStorage.setItem(MANUAL_PAYMENT_PENDING_STORAGE_KEY, JSON.stringify({
-      paymentRequestId,
-      planCode,
-      status: 'pending_admin_review',
-      updatedAt: Date.now(),
-    }));
+    const marker = buildPendingManualPaymentMarker(paymentRequestId, planCode);
+    if (marker) window.localStorage.setItem(BILLING_PENDING_STORAGE_KEY, JSON.stringify(marker));
   } catch {
     // Server account status remains the cross-device source of truth.
   }
 }
 
 export function RegisterModal({ language, plan, duration, user, onLoginSuccess, onClose, initialIsLogin, promoCode }: RegisterModalProps) {
+  const normalizedInitialPlan = normalizeBillingPlanCode(plan) || 'free';
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -64,10 +64,10 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
   // Step state: 'pilih' | 'checkout' | 'success' | 'pending'
   const [step, setStep] = useState<'pilih' | 'checkout' | 'success' | 'pending'>(() => (
-    plan !== 'free' && plan !== 'team' && readPendingManualPaymentMarker() ? 'pending' : 'pilih'
+    normalizedInitialPlan !== 'free' && normalizedInitialPlan !== 'team' && readPendingManualPaymentMarker() ? 'pending' : 'pilih'
   ));
-  const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro'>(() => {
-    if (plan === 'pro') return 'pro';
+  const [selectedPlan, setSelectedPlan] = useState<MvpPaidPlanCode>(() => {
+    if (normalizedInitialPlan === 'pro') return 'pro';
     return 'starter';
   });
   const [selectedDuration, setSelectedDuration] = useState<BillingDuration>(duration);
@@ -128,7 +128,8 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   };
 
   useEffect(() => {
-    if (plan !== 'free' && plan !== 'team' && readPendingManualPaymentMarker()) {
+    const normalized = normalizeBillingPlanCode(plan);
+    if (normalized !== 'free' && normalized !== 'team' && readPendingManualPaymentMarker()) {
       setStep('pending');
     }
   }, [plan]);
@@ -248,7 +249,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     } finally {
       setFetchingInvoice(false);
     }
-  }, [currency, selectedDuration, selectedPlan]);
+  }, [currency, promoCode, selectedDuration, selectedPlan]);
 
   useEffect(() => {
     if (step === 'checkout') {
@@ -297,12 +298,12 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
       // Successful login/register
       onLoginSuccess?.();
 
-      if (plan === 'free') {
+      if (normalizedInitialPlan === 'free') {
         window.location.href = APP_ORIGIN;
         return;
       }
 
-      if (plan === 'team') {
+      if (normalizedInitialPlan === 'team') {
         window.location.href = '/support?topic=general';
         return;
       }
@@ -357,12 +358,12 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
       onLoginSuccess?.();
 
-      if (plan === 'free') {
+      if (normalizedInitialPlan === 'free') {
         window.location.href = APP_ORIGIN;
         return;
       }
 
-      if (plan === 'team') {
+      if (normalizedInitialPlan === 'team') {
         window.location.href = '/support?topic=general';
         return;
       }
@@ -469,12 +470,12 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
       onLoginSuccess?.();
 
-      if (plan === 'free') {
+      if (normalizedInitialPlan === 'free') {
         window.location.href = APP_ORIGIN;
         return;
       }
 
-      if (plan === 'team') {
+      if (normalizedInitialPlan === 'team') {
         window.location.href = '/support?topic=general';
         return;
       }
@@ -497,7 +498,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     setLoading(true);
     setError('');
     try {
-      const returnPlan = plan === 'plus' ? 'starter' : plan;
+      const returnPlan = normalizedInitialPlan || 'free';
       const returnTo = window.location.origin + `/?login_success=1&plan=${returnPlan}&duration=${duration}`;
       const res = await fetch(`${APP_ORIGIN}/api/auth/url?provider=google&returnTo=${encodeURIComponent(returnTo)}`, {
         credentials: 'include'
@@ -650,7 +651,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
   return (
     <div className="register-backdrop" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div ref={dialogRef} className="register-panel checkout-dark" role="dialog" aria-modal="true" aria-labelledby="register-title" tabIndex={-1}>
+      <div ref={dialogRef} className="register-panel checkout-dark" role="dialog" aria-modal="true" aria-labelledby="register-title" tabIndex={-1} data-testid="landing-register-modal">
         
         {/* Step 1: PILIH (Plan & Duration Selection) */}
         {step === 'pilih' && (
@@ -658,9 +659,9 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
             <div className="register-header">
               <div>
                 <h2 id="register-title" style={{ fontSize: '20px', color: '#ffffff' }}>
-                  {plan === 'free' ? (isLogin ? t('nav.login', language) : t('nav.register', language)) : 'Pilih Plan Keanggotaan'}
+                  {normalizedInitialPlan === 'free' ? (isLogin ? t('nav.login', language) : t('nav.register', language)) : 'Pilih Plan Keanggotaan'}
                 </h2>
-                {plan !== 'free' && (
+                {normalizedInitialPlan !== 'free' && (
                   <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>Step 1 dari 3: Pilih paket terbaik Anda</p>
                 )}
               </div>
@@ -669,7 +670,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
               </button>
             </div>
 
-            {plan !== 'free' && (
+            {normalizedInitialPlan !== 'free' && (
               <>
                 {/* Plan Duration Toggle */}
                 <div className="duration-selector-tabs" style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', padding: '4px', borderRadius: '12px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -706,6 +707,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                     type="button"
                     onClick={() => setSelectedPlan(p)}
                     aria-pressed={isSelected}
+                    data-testid={`landing-plan-option-${p}`}
                     className={`payment-method-card ${isSelected ? 'selected' : ''}`}
                     style={{
                       display: 'flex',
@@ -740,7 +742,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
             )}
 
             {/* Bottom Actions */}
-            <div style={{ marginTop: plan === 'free' ? '8px' : '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ marginTop: normalizedInitialPlan === 'free' ? '8px' : '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {user ? (
                 <>
                   <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', textAlign: 'center', margin: 0 }}>
@@ -749,6 +751,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                   <button
                     className="checkout-submit-btn"
                     type="button"
+                    data-testid="landing-continue-payment"
                     onClick={() => {
                       if (readPendingManualPaymentMarker()) {
                         showPendingReview();
@@ -982,7 +985,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
                         {error && <p className="register-error" style={{ fontSize: '12px', margin: '4px 0 0' }}>{error}</p>}
 
-                        <button className="checkout-submit-btn" type="submit" disabled={loading} style={{ marginTop: '8px' }}>
+                        <button className="checkout-submit-btn" type="submit" disabled={loading} data-testid="landing-auth-submit" style={{ marginTop: '8px' }}>
                           {loading ? (
                             <><Loader2 size={16} className="spin" /> {t('register.processing', language)}</>
                           ) : (
@@ -1151,6 +1154,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                           onChange={handleFileChange} 
                           style={{ display: 'none' }} 
                           accept="image/png, image/jpeg, image/webp, application/pdf"
+                          data-testid="landing-proof-input"
                         />
                         <div
                           role="button"
@@ -1183,6 +1187,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                       className="turnstile-mock-container"
                       onClick={() => setTurnstileVerified(!turnstileVerified)}
                       aria-pressed={turnstileVerified}
+                      data-testid="landing-confirm-proof"
                     >
                       <div className="turnstile-left">
                         <div className={`turnstile-box ${turnstileVerified ? 'checked' : ''}`}>
@@ -1207,6 +1212,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                       type="button" 
                       onClick={handleCheckoutSubmit}
                       disabled={paymentLoading || (proofUploadReady && (!uploadedFile || !turnstileVerified))}
+                      data-testid="landing-submit-proof"
                     >
                       {paymentLoading ? (
                         <><Loader2 size={16} className="spin" /> Memproses...</>

@@ -8,6 +8,8 @@
  */
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { normalizeMvpPaidPlanCode, type MvpPaidPlanCode } from '../../packages/shared/src/billingFlow.js';
+import { PLAN_PRICING } from '../../packages/shared/src/planCatalog.js';
 
 const MAYAR_API_BASE = 'https://api.mayar.id/hl/v1';
 
@@ -15,7 +17,7 @@ type CurrencyCode = 'idr' | 'bnd' | 'usd';
 type BillingDuration = 'monthly' | 'quarterly' | 'yearly';
 
 interface CheckoutRequest {
-  plan: 'plus' | 'pro';
+  plan: 'plus' | MvpPaidPlanCode;
   duration: BillingDuration;
   email: string;
   name: string;
@@ -23,22 +25,8 @@ interface CheckoutRequest {
   language: string;
 }
 
-// Pricing table mirrors the landing page config
-const PRICING: Record<string, Record<BillingDuration, Record<CurrencyCode, number>>> = {
-  plus: {
-    monthly: { idr: 61_000, bnd: 4.99, usd: 3.99 },
-    quarterly: { idr: 149_000, bnd: 11.99, usd: 8.99 },
-    yearly: { idr: 449_000, bnd: 36.99, usd: 27.99 },
-  },
-  pro: {
-    monthly: { idr: 199_000, bnd: 15.99, usd: 11.99 },
-    quarterly: { idr: 399_000, bnd: 32.99, usd: 23.99 },
-    yearly: { idr: 999_000, bnd: 81.99, usd: 59.99 },
-  },
-};
-
-const PLAN_NAMES: Record<string, string> = {
-  plus: 'Barista Starter',
+const PLAN_NAMES: Record<MvpPaidPlanCode, string> = {
+  starter: 'Barista Starter',
   pro: 'Barista Pro',
 };
 
@@ -53,6 +41,23 @@ function sendJson(res: ServerResponse, status: number, body: unknown): void {
   res.end(JSON.stringify(body));
 }
 
+function envFlag(name: string): boolean {
+  const raw = String(process.env[name] || '').trim().toLowerCase();
+  return raw === '1' || raw === 'true' || raw === 'yes' || raw === 'on';
+}
+
+function resolveCorsOrigin(req: IncomingMessage): string {
+  const origin = String(req.headers.origin || '').trim();
+  const appUrl = String(process.env.APP_URL || 'https://app.baristachaw.com').trim();
+  try {
+    const allowed = new URL(appUrl).origin;
+    if (origin && new URL(origin).origin === allowed) return origin;
+    return allowed;
+  } catch {
+    return 'https://app.baristachaw.com';
+  }
+}
+
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     let data = '';
@@ -64,9 +69,10 @@ function readBody(req: IncomingMessage): Promise<string> {
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', resolveCorsOrigin(req));
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -76,6 +82,14 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
 
   if (req.method !== 'POST') {
     sendJson(res, 405, { error: 'Method not allowed' });
+    return;
+  }
+
+  if (!envFlag('MAYAR_PAYMENT_ENABLED')) {
+    sendJson(res, 503, {
+      error: 'Legacy payment checkout is disabled. Use /api/billing/checkout.',
+      errorCode: 'payment_legacy_disabled',
+    });
     return;
   }
 
@@ -90,29 +104,30 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const rawBody = await readBody(req);
     const body: CheckoutRequest = JSON.parse(rawBody);
 
-    const { plan, duration, email, name, currency } = body;
+    const { duration, email, name, currency } = body;
+    const plan = normalizeMvpPaidPlanCode(body.plan);
 
     // Validate required fields
-    if (!plan || !duration || !email || !name) {
+    if (!body.plan || !duration || !email || !name) {
       sendJson(res, 400, { error: 'Missing required fields: plan, duration, email, name' });
       return;
     }
 
     // Validate plan
-    if (!PRICING[plan]) {
-      sendJson(res, 400, { error: `Invalid plan: ${plan}. Must be 'plus' or 'pro'.` });
+    if (!plan) {
+      sendJson(res, 400, { error: `Invalid plan: ${String(body.plan)}. Must be 'starter' or 'pro'.` });
       return;
     }
 
     // Validate duration
-    if (!PRICING[plan][duration]) {
+    if (!PLAN_PRICING[plan]?.[duration]) {
       sendJson(res, 400, { error: `Invalid duration: ${duration}` });
       return;
     }
 
     const activeCurrency = currency || 'idr';
-    const amount = PRICING[plan][duration][activeCurrency] ?? PRICING[plan][duration].idr;
-    const planName = PLAN_NAMES[plan] || plan;
+    const amount = PLAN_PRICING[plan][duration].discounted[activeCurrency] ?? PLAN_PRICING[plan][duration].discounted.idr;
+    const planName = PLAN_NAMES[plan];
     const durationLabel = DURATION_LABELS[duration] || duration;
 
     // Create Mayar payment link

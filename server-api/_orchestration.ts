@@ -1497,6 +1497,11 @@ export function buildOrchestratedPrompt(
     lines.push(contextBlock);
   }
 
-  lines.push('', `User request: ${cleaned}`);
-  return lines.join('\n');
+  return [
+    '[SYSTEM INSTRUCTIONS]',
+    ...lines,
+    '[END SYSTEM INSTRUCTIONS]',
+    '',
+    `User request: ${cleaned}`,
+  ].join('\n');
 }

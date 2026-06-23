@@ -949,13 +949,6 @@ export async function editLatteArtImage(
   return result.imageDataUrl;
 }
 
-function withStrictAnswerInstruction(prompt: string, mode: 'fast' | 'normal' | 'deep') {
-  const contract = mode === 'fast'
-    ? [
-        'Mode contract: answer in 3-5 concise bullets.',
-        'Answer the actual user question immediately. No long intro.',
-      ]
-    : mode === 'deep'
       ? [
           'Mode contract: start with "Jawaban singkat", then "Analisis", then "Trade-off / Risiko", then "Rekomendasi".',
           'Do not show a generic wizard when the user already asked a clear question.',
@@ -981,7 +974,7 @@ async function structuredTextResponseDetailed(
   requestContext?: ChatRequestContextPayload,
   options?: AiTextRequestOptions,
 ): Promise<StructuredTextDetailedPayload> {
-  const strictPrompt = withStrictAnswerInstruction(prompt, action === 'fast' ? 'fast' : 'normal');
+  const strictPrompt = prompt;
   const fallbackMessage = localize(
     "Sorry, I could not process your request. Please try again.",
     "Maaf, permintaan Anda belum bisa diproses. Silakan coba lagi.",
@@ -1233,7 +1226,7 @@ export async function deepThinkingResponseDetailed(
   requestContext?: ChatRequestContextPayload,
   options?: Pick<AiTextRequestOptions, 'timeoutMs'>,
 ): Promise<DeepThinkingDetailedPayload> {
-  const strictPrompt = withStrictAnswerInstruction(prompt, 'deep');
+  const strictPrompt = prompt;
   try {
     const result = await serverAi("deep_think", strictPrompt, undefined, requestContext, { timeoutMs: options?.timeoutMs });
     const text = String(result.text || '').trim();

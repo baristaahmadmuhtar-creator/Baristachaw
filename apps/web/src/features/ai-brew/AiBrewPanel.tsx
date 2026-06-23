@@ -45,13 +45,6 @@ import {
   sortEquipmentByPreference,
 } from '../../services/equipmentPreferences';
 import type { Recipe } from '../../types';
-import {
-  buildAdjustPrompt,
-  buildExplainPrompt,
-  buildOptimizationPrompt,
-  buildSequenceServerPrompt,
-  buildTroubleshootPrompt,
-} from './prompts';
 import { buildDeterministicAiCoachMarkdown } from './coachNotes';
 import { sanitizeBrewNarrative } from './antiHallucination';
 import { sanitizeAiCoachMarkdown } from './coachGuard';
@@ -2541,6 +2534,7 @@ async function runHybridSequenceUpdate(
     },
   };
 
+  const { buildSequenceServerPrompt } = await import('./prompts');
   const sequencePrompt = buildSequenceServerPrompt(nextPlan, options.language).body;
   const response = await brewSequenceResponseDetailed(
     sequencePrompt,
@@ -2617,6 +2611,7 @@ async function runHybridOptimizationUpdate(
     },
   };
 
+  const { buildOptimizationPrompt } = await import('./prompts');
   const aiResult = await brewOptimizeResponseDetailed(
     `${buildOptimizationPrompt(nextPlan, options.language).body}${
       options.repair

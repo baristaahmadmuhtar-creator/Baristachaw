@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
-import { Plus, Edit2, Trash2, Tag, DollarSign, Save, X, RefreshCw } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { CheckCircle2, Edit2, Plus, RefreshCw, Save, Trash2, X } from 'lucide-react';
+import { ConfirmActionDialog } from '../components/ConfirmActionDialog';
 import {
+  AdminApiError,
   fetchAdminPrices,
   fetchAdminPromos,
   createAdminPrice,
@@ -12,30 +14,140 @@ import {
   type AdminPlanPrice,
   type AdminPromoCode,
 } from '../services/adminApi';
+import type { AdminCopy } from './adminLocalization';
 
-export function AdminPricingPanel() {
+const OPERATOR_NOTE_MIN_LENGTH = 12;
+const PRICE_DURATIONS = ['monthly', 'quarterly', 'yearly'] as const;
+const PLAN_CODES = ['starter', 'pro', 'team', 'enterprise'] as const;
+const CURRENCIES = ['idr', 'bnd', 'myr', 'sgd', 'usd', 'eur', 'aud'] as const;
+
+type PriceDraft = Partial<AdminPlanPrice>;
+type PromoDraft = Partial<AdminPromoCode>;
+type PendingDelete =
+  | { kind: 'price'; id: string; label: string }
+  | { kind: 'promo'; code: string; label: string };
+
+function cleanOperatorNote(value: unknown): string {
+  return typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : '';
+}
+
+function hasOperatorNote(value: unknown): boolean {
+  return cleanOperatorNote(value).length >= OPERATOR_NOTE_MIN_LENGTH;
+}
+
+function formatNumber(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(value)) return '-';
+  return value.toLocaleString();
+}
+
+function formatError(error: unknown): { message: string; detail?: string; requestId?: string } {
+  if (error instanceof AdminApiError) {
+    return {
+      message: error.message,
+      detail: error.details || error.errorCode,
+      requestId: error.requestId,
+    };
+  }
+  return { message: error instanceof Error ? error.message : 'Admin pricing request failed' };
+}
+
+function newPriceDraft(): PriceDraft {
+  return {
+    planCode: 'starter',
+    duration: 'monthly',
+    currency: 'idr',
+    originalPrice: 0,
+    discountPrice: null,
+    isActive: true,
+    operatorNote: '',
+  };
+}
+
+function newPromoDraft(): PromoDraft {
+  return {
+    code: '',
+    discountType: 'percentage',
+    discountValue: 10,
+    validFrom: null,
+    validUntil: null,
+    maxUses: 100,
+    currentUses: 0,
+    validPlanCodes: [],
+    validDurations: [],
+    isActive: true,
+    operatorNote: '',
+  };
+}
+
+function pricePayload(draft: PriceDraft): Partial<AdminPlanPrice> {
+  return {
+    planCode: draft.planCode,
+    duration: draft.duration,
+    currency: String(draft.currency || '').toLowerCase(),
+    originalPrice: Number(draft.originalPrice || 0),
+    discountPrice: draft.discountPrice === null || draft.discountPrice === undefined || Number.isNaN(Number(draft.discountPrice))
+      ? null
+      : Number(draft.discountPrice),
+    isActive: draft.isActive !== false,
+    operatorNote: cleanOperatorNote(draft.operatorNote),
+  };
+}
+
+function promoPayload(draft: PromoDraft): Partial<AdminPromoCode> {
+  return {
+    code: String(draft.code || '').toUpperCase().trim(),
+    discountType: draft.discountType === 'fixed_amount' ? 'fixed_amount' : 'percentage',
+    discountValue: Number(draft.discountValue || 0),
+    validFrom: draft.validFrom || null,
+    validUntil: draft.validUntil || null,
+    maxUses: draft.maxUses === null || draft.maxUses === undefined ? null : Number(draft.maxUses),
+    currentUses: Math.max(0, Number(draft.currentUses || 0)),
+    validPlanCodes: draft.validPlanCodes || [],
+    validDurations: draft.validDurations || [],
+    isActive: draft.isActive !== false,
+    operatorNote: cleanOperatorNote(draft.operatorNote),
+  };
+}
+
+function splitCsv(value: string): string[] {
+  return value
+    .split(/[\n,]+/g)
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean)
+    .filter((item, index, list) => list.indexOf(item) === index);
+}
+
+export function AdminPricingPanel({ admin }: { admin: AdminCopy }) {
   const [prices, setPrices] = useState<AdminPlanPrice[]>([]);
   const [promos, setPromos] = useState<AdminPromoCode[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [busyKey, setBusyKey] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; detail?: string; requestId?: string } | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [editingPrice, setEditingPrice] = useState<PriceDraft | null>(null);
+  const [editingPromo, setEditingPromo] = useState<PromoDraft | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+  const [deleteNote, setDeleteNote] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const [editingPrice, setEditingPrice] = useState<Partial<AdminPlanPrice> | null>(null);
-  const [editingPromo, setEditingPromo] = useState<Partial<AdminPromoCode> | null>(null);
+  const deleteBusy = Boolean(pendingDelete && busyKey === `delete:${pendingDelete.kind}:${pendingDelete.kind === 'price' ? pendingDelete.id : pendingDelete.code}`);
+
+  const sortedPrices = useMemo(() => [...prices].sort((a, b) => `${a.planCode}:${a.duration}:${a.currency}`.localeCompare(`${b.planCode}:${b.duration}:${b.currency}`)), [prices]);
+  const sortedPromos = useMemo(() => [...promos].sort((a, b) => a.code.localeCompare(b.code)), [promos]);
 
   const loadData = async () => {
-    setLoading(true);
     setError(null);
     try {
       const [fetchedPrices, fetchedPromos] = await Promise.all([
         fetchAdminPrices(),
-        fetchAdminPromos()
+        fetchAdminPromos(),
       ]);
       setPrices(fetchedPrices);
       setPromos(fetchedPromos);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load pricing data');
+    } catch (err) {
+      setError(formatError(err));
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
     }
   };
 
@@ -43,353 +155,548 @@ export function AdminPricingPanel() {
     void loadData();
   }, []);
 
-  const handleSavePrice = async () => {
-    if (!editingPrice?.plan_code || !editingPrice?.duration || !editingPrice?.currency) {
-      alert('Plan code, duration, and currency are required.');
+  async function savePrice() {
+    if (!editingPrice) return;
+    const payload = pricePayload(editingPrice);
+    if (!payload.planCode || !payload.duration || !payload.currency || !Number.isFinite(payload.originalPrice)) {
+      setFormError(admin.text('priceValidationRequired'));
       return;
     }
-    setLoading(true);
+    if (!hasOperatorNote(payload.operatorNote)) {
+      setFormError(admin.text('operatorNoteRequired'));
+      return;
+    }
+
+    setBusyKey(`price:${editingPrice.id || 'new'}`);
+    setFormError(null);
+    setError(null);
     try {
-      if (editingPrice.id) {
-        await updateAdminPrice(editingPrice.id, editingPrice);
-      } else {
-        await createAdminPrice(editingPrice);
-      }
+      if (editingPrice.id) await updateAdminPrice(editingPrice.id, payload);
+      else await createAdminPrice(payload);
       setEditingPrice(null);
       await loadData();
-    } catch (err: any) {
-      setError(err.message || 'Failed to save price');
-      setLoading(false);
+    } catch (err) {
+      setError(formatError(err));
+    } finally {
+      setBusyKey(null);
     }
-  };
+  }
 
-  const handleDeletePrice = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this price?')) return;
-    setLoading(true);
-    try {
-      await deleteAdminPrice(id);
-      await loadData();
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete price');
-      setLoading(false);
-    }
-  };
-
-  const handleSavePromo = async () => {
-    if (!editingPromo?.code || !editingPromo?.discount_amount) {
-      alert('Promo code and discount amount are required.');
+  async function savePromo() {
+    if (!editingPromo) return;
+    const payload = promoPayload(editingPromo);
+    if (!payload.code || payload.code.length < 4 || !payload.discountType || !Number.isFinite(payload.discountValue) || Number(payload.discountValue) <= 0) {
+      setFormError(admin.text('promoValidationRequired'));
       return;
     }
-    setLoading(true);
+    if (!hasOperatorNote(payload.operatorNote)) {
+      setFormError(admin.text('operatorNoteRequired'));
+      return;
+    }
+
+    setBusyKey(`promo:${editingPromo.code || 'new'}`);
+    setFormError(null);
+    setError(null);
     try {
-      if (editingPromo.id) {
-        await updateAdminPromo(editingPromo.code, editingPromo);
-      } else {
-        await createAdminPromo(editingPromo);
-      }
+      if (editingPromo.id || promos.some((promo) => promo.code === payload.code)) await updateAdminPromo(payload.code!, payload);
+      else await createAdminPromo(payload);
       setEditingPromo(null);
       await loadData();
-    } catch (err: any) {
-      setError(err.message || 'Failed to save promo code');
-      setLoading(false);
+    } catch (err) {
+      setError(formatError(err));
+    } finally {
+      setBusyKey(null);
     }
-  };
+  }
 
-  const handleDeletePromo = async (code: string) => {
-    if (!confirm('Are you sure you want to delete this promo code?')) return;
-    setLoading(true);
+  async function confirmDelete() {
+    if (!pendingDelete) return;
+    if (!hasOperatorNote(deleteNote)) {
+      setDeleteError(admin.text('operatorNoteRequired'));
+      return;
+    }
+
+    const key = `delete:${pendingDelete.kind}:${pendingDelete.kind === 'price' ? pendingDelete.id : pendingDelete.code}`;
+    setBusyKey(key);
+    setDeleteError(null);
+    setError(null);
     try {
-      await deleteAdminPromo(code);
+      if (pendingDelete.kind === 'price') await deleteAdminPrice(pendingDelete.id, deleteNote);
+      else await deleteAdminPromo(pendingDelete.code, deleteNote);
+      setPendingDelete(null);
+      setDeleteNote('');
       await loadData();
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete promo');
-      setLoading(false);
+    } catch (err) {
+      setError(formatError(err));
+    } finally {
+      setBusyKey(null);
     }
+  }
+
+  const closeDeleteDialog = () => {
+    if (deleteBusy) return;
+    setPendingDelete(null);
+    setDeleteNote('');
+    setDeleteError(null);
   };
 
-  if (loading && !prices.length && !promos.length) {
+  if (initialLoading && !prices.length && !promos.length) {
     return (
-      <div className="flex h-32 items-center justify-center">
-        <RefreshCw size={24} className="animate-spin text-blue-500" />
+      <div className="flex h-28 items-center justify-center" aria-label={admin.text('pricingOperations')}>
+        <RefreshCw size={22} className="animate-spin text-blue-500" />
       </div>
     );
   }
 
   return (
-    <div className="mt-8 space-y-8">
-      {error && (
-        <div className="rounded-xl bg-red-50 p-4 text-sm text-red-600 border border-red-200">
-          {error}
+    <div className="mt-6 space-y-6" data-testid="admin-pricing-panel">
+      <div className="flex flex-col gap-3 border-t border-glass pt-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h3 className="text-base font-semibold text-primary">{admin.text('pricingOperations')}</h3>
+          <p className="mt-1 text-sm leading-6 text-secondary">{admin.text('pricingOperationsSubtitle')}</p>
         </div>
-      )}
+        <button
+          type="button"
+          onClick={() => void loadData()}
+          disabled={Boolean(busyKey)}
+          className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-glass bg-surface-alpha px-3 text-xs font-semibold text-primary transition-colors hover:bg-surface-alpha-hover disabled:opacity-60"
+        >
+          <RefreshCw size={14} className={busyKey ? 'animate-spin' : ''} />
+          {admin.text('refresh')}
+        </button>
+      </div>
 
-      {/* Plan Prices Section */}
-      <div className="rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-4 lg:p-6">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
-              <DollarSign size={20} />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-primary">Dynamic Pricing</h3>
-              <p className="text-sm text-secondary">Manage real-time plan prices across regions.</p>
-            </div>
+      {error ? (
+        <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-300" role="alert">
+          <p className="font-semibold">{error.message}</p>
+          {error.detail ? <p className="mt-1 text-xs opacity-85">{error.detail}</p> : null}
+          {error.requestId ? <p className="mt-1 font-mono text-[11px] opacity-80">requestId: {error.requestId}</p> : null}
+        </div>
+      ) : null}
+
+      <section className="space-y-3" aria-labelledby="admin-dynamic-pricing-title">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h4 id="admin-dynamic-pricing-title" className="text-sm font-bold text-primary">{admin.text('dynamicPricing')}</h4>
+            <p className="mt-0.5 text-xs text-secondary">{admin.text('dynamicPricingSubtitle')}</p>
           </div>
           <button
-            onClick={() => setEditingPrice({ plan_code: 'starter', duration: 'monthly', currency: 'IDR', original_price: 0, discounted_price: 0, discount_pct: 0, save_label: { en: '', id: '' } })}
-            className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700"
+            type="button"
+            onClick={() => {
+              setEditingPromo(null);
+              setEditingPrice(newPriceDraft());
+              setFormError(null);
+            }}
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 text-xs font-bold text-white transition-colors hover:bg-blue-700"
           >
-            <Plus size={16} /> Add Price
+            <Plus size={14} />
+            {admin.text('addPrice')}
           </button>
         </div>
 
-        {editingPrice && (
-          <div className="mb-6 rounded-2xl border border-blue-500/30 bg-blue-50/50 p-5 dark:bg-blue-900/10">
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <label className="mb-1 block text-xs font-bold text-secondary">Plan Code</label>
+        {editingPrice ? (
+          <div className="rounded-xl border border-blue-500/25 bg-blue-500/5 p-3">
+            {formError ? (
+              <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm font-semibold text-amber-700 dark:text-amber-300" role="alert">
+                {formError}
+              </div>
+            ) : null}
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <label className="text-xs font-semibold text-secondary">
+                {admin.text('plan')}
                 <select
-                  value={editingPrice.plan_code}
-                  onChange={(e) => setEditingPrice({ ...editingPrice, plan_code: e.target.value })}
-                  className="w-full rounded-lg border border-glass bg-white px-3 py-2 text-sm text-primary dark:bg-slate-800"
+                  value={editingPrice.planCode || 'starter'}
+                  onChange={(event) => setEditingPrice({ ...editingPrice, planCode: event.currentTarget.value })}
+                  className="mt-1 h-9 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-sm text-primary"
                 >
-                  <option value="starter">Starter</option>
-                  <option value="pro">Pro</option>
-                  <option value="team">Team</option>
+                  {PLAN_CODES.map((code) => <option key={code} value={code}>{admin.enumLabel(code)}</option>)}
                 </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-bold text-secondary">Duration</label>
+              </label>
+              <label className="text-xs font-semibold text-secondary">
+                {admin.text('duration')}
                 <select
-                  value={editingPrice.duration}
-                  onChange={(e) => setEditingPrice({ ...editingPrice, duration: e.target.value })}
-                  className="w-full rounded-lg border border-glass bg-white px-3 py-2 text-sm text-primary dark:bg-slate-800"
+                  value={editingPrice.duration || 'monthly'}
+                  onChange={(event) => setEditingPrice({ ...editingPrice, duration: event.currentTarget.value })}
+                  className="mt-1 h-9 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-sm text-primary"
                 >
-                  <option value="monthly">Monthly</option>
-                  <option value="quarterly">Quarterly</option>
-                  <option value="yearly">Yearly</option>
+                  {PRICE_DURATIONS.map((duration) => <option key={duration} value={duration}>{admin.enumLabel(duration)}</option>)}
                 </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-bold text-secondary">Currency</label>
-                <input
-                  type="text"
-                  value={editingPrice.currency}
-                  onChange={(e) => setEditingPrice({ ...editingPrice, currency: e.target.value.toUpperCase() })}
-                  className="w-full rounded-lg border border-glass bg-white px-3 py-2 text-sm text-primary dark:bg-slate-800"
-                  placeholder="IDR, USD"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-bold text-secondary">Original Price</label>
-                <input
-                  type="number"
-                  value={editingPrice.original_price}
-                  onChange={(e) => setEditingPrice({ ...editingPrice, original_price: Number(e.target.value) })}
-                  className="w-full rounded-lg border border-glass bg-white px-3 py-2 text-sm text-primary dark:bg-slate-800"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-bold text-secondary">Discounted Price</label>
-                <input
-                  type="number"
-                  value={editingPrice.discounted_price}
-                  onChange={(e) => setEditingPrice({ ...editingPrice, discounted_price: Number(e.target.value) })}
-                  className="w-full rounded-lg border border-glass bg-white px-3 py-2 text-sm text-primary dark:bg-slate-800"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-bold text-secondary">Discount %</label>
+              </label>
+              <label className="text-xs font-semibold text-secondary">
+                {admin.text('currency')}
+                <select
+                  value={String(editingPrice.currency || 'idr').toLowerCase()}
+                  onChange={(event) => setEditingPrice({ ...editingPrice, currency: event.currentTarget.value })}
+                  className="mt-1 h-9 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-sm text-primary"
+                >
+                  {CURRENCIES.map((currency) => <option key={currency} value={currency}>{currency.toUpperCase()}</option>)}
+                </select>
+              </label>
+              <label className="flex items-end gap-2 text-xs font-semibold text-secondary">
+                <span className="flex-1">
+                  {admin.text('active')}
+                  <input
+                    type="checkbox"
+                    checked={editingPrice.isActive !== false}
+                    onChange={(event) => setEditingPrice({ ...editingPrice, isActive: event.currentTarget.checked })}
+                    className="mt-3 h-5 w-5 rounded border-glass text-blue-600"
+                  />
+                </span>
+              </label>
+              <label className="text-xs font-semibold text-secondary">
+                {admin.text('originalPrice')}
                 <input
                   type="number"
-                  value={editingPrice.discount_pct}
-                  onChange={(e) => setEditingPrice({ ...editingPrice, discount_pct: Number(e.target.value) })}
-                  className="w-full rounded-lg border border-glass bg-white px-3 py-2 text-sm text-primary dark:bg-slate-800"
+                  min="0"
+                  value={editingPrice.originalPrice ?? 0}
+                  onChange={(event) => setEditingPrice({ ...editingPrice, originalPrice: Number(event.currentTarget.value) })}
+                  className="mt-1 h-9 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-sm text-primary"
                 />
-              </div>
+              </label>
+              <label className="text-xs font-semibold text-secondary">
+                {admin.text('discountPrice')}
+                <input
+                  type="number"
+                  min="0"
+                  value={editingPrice.discountPrice ?? ''}
+                  onChange={(event) => setEditingPrice({ ...editingPrice, discountPrice: event.currentTarget.value === '' ? null : Number(event.currentTarget.value) })}
+                  className="mt-1 h-9 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-sm text-primary"
+                />
+              </label>
+              <label className="sm:col-span-2 text-xs font-semibold text-secondary">
+                {admin.text('operatorNote')}
+                <input
+                  value={editingPrice.operatorNote || ''}
+                  onChange={(event) => setEditingPrice({ ...editingPrice, operatorNote: event.currentTarget.value })}
+                  placeholder={admin.text('operatorNotePlaceholder')}
+                  className="mt-1 h-9 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-sm text-primary"
+                />
+              </label>
             </div>
-            <div className="mt-4 flex justify-end gap-2">
+            <div className="mt-3 flex justify-end gap-2">
               <button
+                type="button"
                 onClick={() => setEditingPrice(null)}
-                className="flex items-center gap-1 rounded-lg px-4 py-2 text-sm font-bold text-secondary hover:bg-slate-100 dark:hover:bg-slate-800"
+                disabled={Boolean(busyKey)}
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-glass bg-surface-alpha px-3 text-xs font-semibold text-primary transition-colors hover:bg-surface-alpha-hover disabled:opacity-60"
               >
-                <X size={16} /> Cancel
+                <X size={14} />
+                {admin.text('cancel')}
               </button>
               <button
-                onClick={handleSavePrice}
-                className="flex items-center gap-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700"
+                type="button"
+                onClick={() => void savePrice()}
+                disabled={Boolean(busyKey)}
+                className="inline-flex h-9 min-w-28 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 text-xs font-bold text-white transition-colors hover:bg-blue-700 disabled:opacity-60"
               >
-                <Save size={16} /> Save Price
+                {busyKey?.startsWith('price:') ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
+                {admin.text('savePrice')}
               </button>
             </div>
           </div>
-        )}
+        ) : null}
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-secondary">
-            <thead className="border-b border-glass text-xs font-bold uppercase text-primary">
+          <table className="w-full min-w-[680px] text-left text-sm text-secondary">
+            <thead className="border-y border-glass text-xs font-bold uppercase text-primary">
               <tr>
-                <th className="px-4 py-3">Plan</th>
-                <th className="px-4 py-3">Duration</th>
-                <th className="px-4 py-3">Currency</th>
-                <th className="px-4 py-3 text-right">Original</th>
-                <th className="px-4 py-3 text-right">Discounted</th>
-                <th className="px-4 py-3 text-center">Actions</th>
+                <th className="px-3 py-2">{admin.text('plan')}</th>
+                <th className="px-3 py-2">{admin.text('duration')}</th>
+                <th className="px-3 py-2">{admin.text('currency')}</th>
+                <th className="px-3 py-2 text-right">{admin.text('originalPrice')}</th>
+                <th className="px-3 py-2 text-right">{admin.text('discountPrice')}</th>
+                <th className="px-3 py-2 text-center">{admin.text('status')}</th>
+                <th className="px-3 py-2 text-center">{admin.text('manage')}</th>
               </tr>
             </thead>
             <tbody>
-              {prices.map((price) => (
+              {sortedPrices.map((price) => (
                 <tr key={price.id} className="border-b border-glass last:border-0 hover:bg-surface-alpha">
-                  <td className="px-4 py-3 font-medium text-primary capitalize">{price.plan_code}</td>
-                  <td className="px-4 py-3 capitalize">{price.duration}</td>
-                  <td className="px-4 py-3 font-medium text-primary">{price.currency}</td>
-                  <td className="px-4 py-3 text-right line-through opacity-70">{price.original_price.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right font-bold text-green-600 dark:text-green-400">{price.discounted_price.toLocaleString()}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-center gap-2">
-                      <button onClick={() => setEditingPrice(price)} className="text-blue-500 hover:text-blue-600"><Edit2 size={16} /></button>
-                      <button onClick={() => handleDeletePrice(price.id)} className="text-red-500 hover:text-red-600"><Trash2 size={16} /></button>
+                  <td className="px-3 py-2 font-semibold text-primary">{admin.enumLabel(price.planCode)}</td>
+                  <td className="px-3 py-2">{admin.enumLabel(price.duration)}</td>
+                  <td className="px-3 py-2 font-semibold text-primary">{price.currency.toUpperCase()}</td>
+                  <td className="px-3 py-2 text-right">{formatNumber(price.originalPrice)}</td>
+                  <td className="px-3 py-2 text-right font-semibold text-emerald-700 dark:text-emerald-300">{formatNumber(price.discountPrice)}</td>
+                  <td className="px-3 py-2 text-center">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-alpha px-2 py-1 text-[11px] font-semibold text-primary">
+                      {price.isActive ? <CheckCircle2 size={12} className="text-emerald-500" /> : null}
+                      {price.isActive ? admin.text('active') : admin.text('inactive')}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex justify-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingPromo(null);
+                          setEditingPrice({ ...price, operatorNote: '' });
+                          setFormError(null);
+                        }}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-600 transition-colors hover:bg-blue-500/10"
+                        aria-label={`${admin.text('edit')} ${price.planCode} ${price.duration}`}
+                      >
+                        <Edit2 size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPendingDelete({ kind: 'price', id: price.id, label: `${price.planCode} ${price.duration} ${price.currency.toUpperCase()}` });
+                          setDeleteNote('');
+                          setDeleteError(null);
+                        }}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-red-600 transition-colors hover:bg-red-500/10"
+                        aria-label={`${admin.text('delete')} ${price.planCode} ${price.duration}`}
+                      >
+                        <Trash2 size={15} />
+                      </button>
                     </div>
                   </td>
                 </tr>
               ))}
-              {prices.length === 0 && !loading && (
+              {sortedPrices.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-secondary">No custom prices configured. Using static fallbacks.</td>
+                  <td colSpan={7} className="px-3 py-8 text-center text-secondary">{admin.text('activePricesEmpty')}</td>
                 </tr>
-              )}
+              ) : null}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
-      {/* Promo Codes Section */}
-      <div className="rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-4 lg:p-6">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-500">
-              <Tag size={20} />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-primary">Promo Codes</h3>
-              <p className="text-sm text-secondary">Manage discount vouchers for checkouts.</p>
-            </div>
+      <section className="space-y-3 border-t border-glass pt-5" aria-labelledby="admin-promo-codes-title">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h4 id="admin-promo-codes-title" className="text-sm font-bold text-primary">{admin.text('promoCodes')}</h4>
+            <p className="mt-0.5 text-xs text-secondary">{admin.text('promoCodesSubtitle')}</p>
           </div>
           <button
-            onClick={() => setEditingPromo({ code: '', discount_amount: 0, discount_type: 'percent', max_uses: 100, current_uses: 0 })}
-            className="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-purple-700"
+            type="button"
+            onClick={() => {
+              setEditingPrice(null);
+              setEditingPromo(newPromoDraft());
+              setFormError(null);
+            }}
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 text-xs font-bold text-white transition-colors hover:bg-blue-700"
           >
-            <Plus size={16} /> Add Promo
+            <Plus size={14} />
+            {admin.text('addPromo')}
           </button>
         </div>
 
-        {editingPromo && (
-          <div className="mb-6 rounded-2xl border border-purple-500/30 bg-purple-50/50 p-5 dark:bg-purple-900/10">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div>
-                <label className="mb-1 block text-xs font-bold text-secondary">Promo Code</label>
+        {editingPromo ? (
+          <div className="rounded-xl border border-blue-500/25 bg-blue-500/5 p-3">
+            {formError ? (
+              <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm font-semibold text-amber-700 dark:text-amber-300" role="alert">
+                {formError}
+              </div>
+            ) : null}
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <label className="text-xs font-semibold text-secondary">
+                {admin.text('promoCode')}
                 <input
-                  type="text"
-                  value={editingPromo.code}
-                  onChange={(e) => setEditingPromo({ ...editingPromo, code: e.target.value.toUpperCase() })}
-                  className="w-full rounded-lg border border-glass bg-white px-3 py-2 text-sm font-bold tracking-widest text-primary dark:bg-slate-800"
+                  value={editingPromo.code || ''}
+                  disabled={Boolean(editingPromo.id)}
+                  onChange={(event) => setEditingPromo({ ...editingPromo, code: event.currentTarget.value.toUpperCase() })}
+                  className="mt-1 h-9 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-sm font-bold tracking-widest text-primary disabled:opacity-70"
                   placeholder="NEWUSER2026"
-                  disabled={!!editingPromo.id}
                 />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-bold text-secondary">Discount Type</label>
+              </label>
+              <label className="text-xs font-semibold text-secondary">
+                {admin.text('discountType')}
                 <select
-                  value={editingPromo.discount_type}
-                  onChange={(e) => setEditingPromo({ ...editingPromo, discount_type: e.target.value as 'percent' | 'fixed' })}
-                  className="w-full rounded-lg border border-glass bg-white px-3 py-2 text-sm text-primary dark:bg-slate-800"
+                  value={editingPromo.discountType || 'percentage'}
+                  onChange={(event) => setEditingPromo({ ...editingPromo, discountType: event.currentTarget.value as AdminPromoCode['discountType'] })}
+                  className="mt-1 h-9 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-sm text-primary"
                 >
-                  <option value="percent">Percentage (%)</option>
-                  <option value="fixed">Fixed Amount</option>
+                  <option value="percentage">{admin.text('percentageDiscount')}</option>
+                  <option value="fixed_amount">{admin.text('fixedAmountDiscount')}</option>
                 </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-bold text-secondary">Discount Amount</label>
+              </label>
+              <label className="text-xs font-semibold text-secondary">
+                {admin.text('discountValue')}
                 <input
                   type="number"
-                  value={editingPromo.discount_amount}
-                  onChange={(e) => setEditingPromo({ ...editingPromo, discount_amount: Number(e.target.value) })}
-                  className="w-full rounded-lg border border-glass bg-white px-3 py-2 text-sm text-primary dark:bg-slate-800"
+                  min="0"
+                  value={editingPromo.discountValue ?? 0}
+                  onChange={(event) => setEditingPromo({ ...editingPromo, discountValue: Number(event.currentTarget.value) })}
+                  className="mt-1 h-9 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-sm text-primary"
                 />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-bold text-secondary">Max Uses</label>
+              </label>
+              <label className="text-xs font-semibold text-secondary">
+                {admin.text('maxUses')}
                 <input
                   type="number"
-                  value={editingPromo.max_uses}
-                  onChange={(e) => setEditingPromo({ ...editingPromo, max_uses: Number(e.target.value) })}
-                  className="w-full rounded-lg border border-glass bg-white px-3 py-2 text-sm text-primary dark:bg-slate-800"
+                  min="1"
+                  value={editingPromo.maxUses ?? ''}
+                  onChange={(event) => setEditingPromo({ ...editingPromo, maxUses: event.currentTarget.value === '' ? null : Number(event.currentTarget.value) })}
+                  className="mt-1 h-9 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-sm text-primary"
                 />
-              </div>
+              </label>
+              <label className="text-xs font-semibold text-secondary">
+                {admin.text('validUntil')}
+                <input
+                  type="date"
+                  value={editingPromo.validUntil ? editingPromo.validUntil.slice(0, 10) : ''}
+                  onChange={(event) => setEditingPromo({ ...editingPromo, validUntil: event.currentTarget.value ? `${event.currentTarget.value}T23:59:59.000Z` : null })}
+                  className="mt-1 h-9 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-sm text-primary"
+                />
+              </label>
+              <label className="text-xs font-semibold text-secondary">
+                {admin.text('validPlanCodes')}
+                <input
+                  value={(editingPromo.validPlanCodes || []).join(', ')}
+                  onChange={(event) => setEditingPromo({ ...editingPromo, validPlanCodes: splitCsv(event.currentTarget.value) })}
+                  placeholder="starter, pro"
+                  className="mt-1 h-9 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-sm text-primary"
+                />
+              </label>
+              <label className="text-xs font-semibold text-secondary">
+                {admin.text('validDurations')}
+                <input
+                  value={(editingPromo.validDurations || []).join(', ')}
+                  onChange={(event) => setEditingPromo({ ...editingPromo, validDurations: splitCsv(event.currentTarget.value) })}
+                  placeholder="monthly, yearly"
+                  className="mt-1 h-9 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-sm text-primary"
+                />
+              </label>
+              <label className="text-xs font-semibold text-secondary">
+                {admin.text('active')}
+                <input
+                  type="checkbox"
+                  checked={editingPromo.isActive !== false}
+                  onChange={(event) => setEditingPromo({ ...editingPromo, isActive: event.currentTarget.checked })}
+                  className="mt-3 h-5 w-5 rounded border-glass text-blue-600"
+                />
+              </label>
+              <label className="sm:col-span-2 lg:col-span-4 text-xs font-semibold text-secondary">
+                {admin.text('operatorNote')}
+                <input
+                  value={editingPromo.operatorNote || ''}
+                  onChange={(event) => setEditingPromo({ ...editingPromo, operatorNote: event.currentTarget.value })}
+                  placeholder={admin.text('operatorNotePlaceholder')}
+                  className="mt-1 h-9 w-full rounded-lg border border-glass bg-[var(--bg-base)] px-2 text-sm text-primary"
+                />
+              </label>
             </div>
-            <div className="mt-4 flex justify-end gap-2">
+            <div className="mt-3 flex justify-end gap-2">
               <button
+                type="button"
                 onClick={() => setEditingPromo(null)}
-                className="flex items-center gap-1 rounded-lg px-4 py-2 text-sm font-bold text-secondary hover:bg-slate-100 dark:hover:bg-slate-800"
+                disabled={Boolean(busyKey)}
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-glass bg-surface-alpha px-3 text-xs font-semibold text-primary transition-colors hover:bg-surface-alpha-hover disabled:opacity-60"
               >
-                <X size={16} /> Cancel
+                <X size={14} />
+                {admin.text('cancel')}
               </button>
               <button
-                onClick={handleSavePromo}
-                className="flex items-center gap-1 rounded-lg bg-purple-600 px-4 py-2 text-sm font-bold text-white hover:bg-purple-700"
+                type="button"
+                onClick={() => void savePromo()}
+                disabled={Boolean(busyKey)}
+                className="inline-flex h-9 min-w-28 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 text-xs font-bold text-white transition-colors hover:bg-blue-700 disabled:opacity-60"
               >
-                <Save size={16} /> Save Promo
+                {busyKey?.startsWith('promo:') ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
+                {admin.text('savePromo')}
               </button>
             </div>
           </div>
-        )}
+        ) : null}
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-secondary">
-            <thead className="border-b border-glass text-xs font-bold uppercase text-primary">
+          <table className="w-full min-w-[760px] text-left text-sm text-secondary">
+            <thead className="border-y border-glass text-xs font-bold uppercase text-primary">
               <tr>
-                <th className="px-4 py-3">Code</th>
-                <th className="px-4 py-3 text-right">Discount</th>
-                <th className="px-4 py-3 text-right">Uses</th>
-                <th className="px-4 py-3 text-center">Status</th>
-                <th className="px-4 py-3 text-center">Actions</th>
+                <th className="px-3 py-2">{admin.text('promoCode')}</th>
+                <th className="px-3 py-2">{admin.text('discount')}</th>
+                <th className="px-3 py-2 text-right">{admin.text('currentUses')}</th>
+                <th className="px-3 py-2">{admin.text('validUntil')}</th>
+                <th className="px-3 py-2 text-center">{admin.text('status')}</th>
+                <th className="px-3 py-2 text-center">{admin.text('manage')}</th>
               </tr>
             </thead>
             <tbody>
-              {promos.map((promo) => {
-                const isExhausted = promo.current_uses >= promo.max_uses;
+              {sortedPromos.map((promo) => {
+                const exhausted = promo.maxUses !== null && promo.currentUses >= promo.maxUses;
                 return (
-                  <tr key={promo.id} className="border-b border-glass last:border-0 hover:bg-surface-alpha">
-                    <td className="px-4 py-3 font-bold tracking-widest text-primary">{promo.code}</td>
-                    <td className="px-4 py-3 text-right font-medium">
-                      {promo.discount_type === 'percent' ? `${promo.discount_amount}%` : promo.discount_amount.toLocaleString()}
+                  <tr key={promo.code} className="border-b border-glass last:border-0 hover:bg-surface-alpha">
+                    <td className="px-3 py-2 font-bold tracking-widest text-primary">{promo.code}</td>
+                    <td className="px-3 py-2">
+                      {promo.discountType === 'percentage' ? `${promo.discountValue}%` : formatNumber(promo.discountValue)}
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      {promo.current_uses} / {promo.max_uses}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${isExhausted ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}`}>
-                        {isExhausted ? 'Exhausted' : 'Active'}
+                    <td className="px-3 py-2 text-right">{promo.currentUses} / {promo.maxUses ?? '-'}</td>
+                    <td className="px-3 py-2">{promo.validUntil ? admin.date(promo.validUntil) : '-'}</td>
+                    <td className="px-3 py-2 text-center">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-surface-alpha px-2 py-1 text-[11px] font-semibold text-primary">
+                        {promo.isActive && !exhausted ? <CheckCircle2 size={12} className="text-emerald-500" /> : null}
+                        {promo.isActive && !exhausted ? admin.text('active') : exhausted ? admin.text('exhausted') : admin.text('inactive')}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex justify-center gap-2">
-                        <button onClick={() => setEditingPromo(promo)} className="text-blue-500 hover:text-blue-600"><Edit2 size={16} /></button>
-                        <button onClick={() => handleDeletePromo(promo.code)} className="text-red-500 hover:text-red-600"><Trash2 size={16} /></button>
+                    <td className="px-3 py-2">
+                      <div className="flex justify-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingPrice(null);
+                            setEditingPromo({ ...promo, operatorNote: '' });
+                            setFormError(null);
+                          }}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-600 transition-colors hover:bg-blue-500/10"
+                          aria-label={`${admin.text('edit')} ${promo.code}`}
+                        >
+                          <Edit2 size={15} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPendingDelete({ kind: 'promo', code: promo.code, label: promo.code });
+                            setDeleteNote('');
+                            setDeleteError(null);
+                          }}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-red-600 transition-colors hover:bg-red-500/10"
+                          aria-label={`${admin.text('delete')} ${promo.code}`}
+                        >
+                          <Trash2 size={15} />
+                        </button>
                       </div>
                     </td>
                   </tr>
                 );
               })}
-              {promos.length === 0 && !loading && (
+              {sortedPromos.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-secondary">No promo codes active.</td>
+                  <td colSpan={6} className="px-3 py-8 text-center text-secondary">{admin.text('promosEmpty')}</td>
                 </tr>
-              )}
+              ) : null}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
+
+      <ConfirmActionDialog
+        open={Boolean(pendingDelete)}
+        title={pendingDelete?.kind === 'price' ? admin.text('deletePriceTitle') : admin.text('deletePromoTitle')}
+        description={(pendingDelete?.kind === 'price' ? admin.text('deletePriceDescription') : admin.text('deletePromoDescription')).replace('{item}', pendingDelete?.label || '')}
+        confirmLabel={admin.text('confirmDelete')}
+        cancelLabel={admin.text('cancel')}
+        busy={deleteBusy}
+        destructive
+        testId="admin-pricing-delete-dialog"
+        onCancel={closeDeleteDialog}
+        onConfirm={confirmDelete}
+      >
+        <label className="block text-xs font-semibold text-secondary">
+          {admin.text('operatorNote')}
+          <textarea
+            value={deleteNote}
+            onChange={(event) => {
+              setDeleteNote(event.currentTarget.value);
+              setDeleteError(null);
+            }}
+            placeholder={admin.text('operatorNotePlaceholder')}
+            className="mt-1 min-h-20 w-full resize-y rounded-lg border border-glass bg-[var(--bg-base)] px-3 py-2 text-sm text-primary"
+          />
+        </label>
+        {deleteError ? <p className="mt-2 text-xs font-semibold text-red-600 dark:text-red-300">{deleteError}</p> : null}
+      </ConfirmActionDialog>
     </div>
   );
 }

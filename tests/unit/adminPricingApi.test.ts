@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import jwt from 'jsonwebtoken';
 import adminPricingHandler from '../../server-api/admin/pricing.ts';
+import adminGatewayHandler from '../../api/admin.ts';
+import catchAllGatewayHandler from '../../api/[...route].ts';
 
 const ORIGINAL_ENV = {
   JWT_SECRET: process.env.JWT_SECRET,
@@ -63,6 +65,7 @@ function createMockRes() {
 
 let mockPrices: any[] = [];
 let mockPromos: any[] = [];
+let mockAuditEvents: any[] = [];
 let originalFetch: typeof globalThis.fetch;
 
 test.before(() => {
@@ -74,6 +77,7 @@ test.before(() => {
 test.beforeEach(() => {
   mockPrices = [];
   mockPromos = [];
+  mockAuditEvents = [];
   originalFetch = globalThis.fetch;
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input.toString();
@@ -94,14 +98,14 @@ test.beforeEach(() => {
       if (method === 'PATCH') {
         const payload = JSON.parse(bodyStr);
         const match = url.match(/id=eq\.([^&]+)/);
-        const id = match ? match[1] : '';
+        const id = match ? decodeURIComponent(match[1]) : '';
         const idx = mockPrices.findIndex(p => p.id === id);
         if (idx >= 0) mockPrices[idx] = { ...mockPrices[idx], ...payload };
         return new Response(JSON.stringify([mockPrices[idx]]), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
       if (method === 'DELETE') {
         const match = url.match(/id=eq\.([^&]+)/);
-        const id = match ? match[1] : '';
+        const id = match ? decodeURIComponent(match[1]) : '';
         mockPrices = mockPrices.filter(p => p.id !== id);
         return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
@@ -121,20 +125,26 @@ test.beforeEach(() => {
       if (method === 'PATCH') {
         const payload = JSON.parse(bodyStr);
         const match = url.match(/code=eq\.([^&]+)/);
-        const code = match ? match[1] : '';
+        const code = match ? decodeURIComponent(match[1]) : '';
         const idx = mockPromos.findIndex(p => p.code === code);
         if (idx >= 0) mockPromos[idx] = { ...mockPromos[idx], ...payload };
         return new Response(JSON.stringify([mockPromos[idx]]), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
       if (method === 'DELETE') {
         const match = url.match(/code=eq\.([^&]+)/);
-        const code = match ? match[1] : '';
+        const code = match ? decodeURIComponent(match[1]) : '';
         mockPromos = mockPromos.filter(p => p.code !== code);
         return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
     }
 
     if (url.includes('/rest/v1/admin_audit_events')) {
+      if (method === 'POST') {
+        const payloadArr = JSON.parse(bodyStr);
+        const payload = Array.isArray(payloadArr) ? payloadArr[0] : payloadArr;
+        mockAuditEvents.push(payload);
+        return new Response(JSON.stringify([payload]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
       return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
     
@@ -161,6 +171,32 @@ test('pricing admin rejects without token', async () => {
   assert.equal(body.ok, false);
 });
 
+test('pricing admin is reachable through api/admin gateway', async () => {
+  const req = makeReq({
+    query: { path: 'pricing/prices' },
+    url: '/api/admin?path=pricing/prices',
+  });
+  const res = createMockRes();
+  await adminGatewayHandler(req, res as any);
+  assert.equal(res.statusCode, 401);
+  const body = JSON.parse(res.body);
+  assert.equal(body.ok, false);
+  assert.equal(body.errorCode, 'auth_required');
+});
+
+test('pricing admin is reachable through catch-all gateway', async () => {
+  const req = makeReq({
+    query: { route: ['admin', 'pricing', 'prices'] },
+    url: '/api/admin/pricing/prices',
+  });
+  const res = createMockRes();
+  await catchAllGatewayHandler(req, res as any);
+  assert.equal(res.statusCode, 401);
+  const body = JSON.parse(res.body);
+  assert.equal(body.ok, false);
+  assert.equal(body.errorCode, 'auth_required');
+});
+
 test('pricing admin rejects non-admin token', async () => {
   const token = createToken({ id: 'user_123', role: 'user' });
   const req = makeReq({ url: '/api/admin/pricing/prices', headers: { authorization: `Bearer ${token}` } });
@@ -172,7 +208,7 @@ test('pricing admin rejects non-admin token', async () => {
 });
 
 test('pricing admin gets prices', async () => {
-  mockPrices.push({ id: '1', plan_code: 'pro', original_price: 100 });
+  mockPrices.push({ id: '1', plan_code: 'pro', duration: 'monthly', currency: 'idr', original_price: 100, discount_price: 80, is_active: true });
   const token = createToken({ id: 'admin_123', role: 'admin' });
   const req = makeReq({ url: '/api/admin/pricing/prices', headers: { authorization: `Bearer ${token}` } });
   const res = createMockRes();
@@ -181,7 +217,15 @@ test('pricing admin gets prices', async () => {
   const body = JSON.parse(res.body);
   assert.equal(body.ok, true);
   assert.equal(body.data.length, 1);
-  assert.equal(body.data[0].plan_code, 'pro');
+  assert.deepEqual(body.data[0], {
+    id: '1',
+    planCode: 'pro',
+    duration: 'monthly',
+    currency: 'idr',
+    originalPrice: 100,
+    discountPrice: 80,
+    isActive: true,
+  });
 });
 
 test('pricing admin creates price', async () => {
@@ -189,7 +233,15 @@ test('pricing admin creates price', async () => {
   const req = makeReq({ 
     url: '/api/admin/pricing/prices', 
     method: 'POST', 
-    body: { plan_code: 'starter', original_price: 50 },
+    body: {
+      planCode: 'starter',
+      duration: 'monthly',
+      currency: 'idr',
+      originalPrice: 50,
+      discountPrice: 40,
+      isActive: true,
+      operatorNote: 'Operator reason: launch monthly starter price.',
+    },
     headers: { authorization: `Bearer ${token}` } 
   });
   const res = createMockRes();
@@ -197,18 +249,19 @@ test('pricing admin creates price', async () => {
   assert.equal(res.statusCode, 200);
   const body = JSON.parse(res.body);
   assert.equal(body.ok, true);
-  assert.equal(body.data.plan_code, 'starter');
+  assert.equal(body.data.planCode, 'starter');
   assert.equal(mockPrices.length, 1);
   assert.equal(mockPrices[0].plan_code, 'starter');
+  assert.equal(mockPrices[0].discount_price, 40);
 });
 
 test('pricing admin updates price', async () => {
-  mockPrices.push({ id: 'price_1', plan_code: 'pro', original_price: 100 });
+  mockPrices.push({ id: 'price_1', plan_code: 'pro', duration: 'monthly', currency: 'idr', original_price: 100, discount_price: 90, is_active: true });
   const token = createToken({ id: 'admin_123', role: 'admin' });
   const req = makeReq({ 
     url: '/api/admin/pricing/prices/price_1', 
     method: 'PUT', 
-    body: { original_price: 150 },
+    body: { originalPrice: 150, operatorNote: 'Operator reason: update pro launch price.' },
     headers: { authorization: `Bearer ${token}` } 
   });
   const res = createMockRes();
@@ -217,6 +270,7 @@ test('pricing admin updates price', async () => {
   const body = JSON.parse(res.body);
   assert.equal(body.ok, true);
   assert.equal(mockPrices[0].original_price, 150);
+  assert.equal(body.data.originalPrice, 150);
 });
 
 test('pricing admin deletes price', async () => {
@@ -225,6 +279,7 @@ test('pricing admin deletes price', async () => {
   const req = makeReq({ 
     url: '/api/admin/pricing/prices/price_1', 
     method: 'DELETE', 
+    body: { operatorNote: 'Operator reason: remove obsolete pro launch price.' },
     headers: { authorization: `Bearer ${token}` } 
   });
   const res = createMockRes();
@@ -234,7 +289,7 @@ test('pricing admin deletes price', async () => {
 });
 
 test('pricing admin gets promos', async () => {
-  mockPromos.push({ code: 'SAVE20', discount_amount: 20 });
+  mockPromos.push({ code: 'SAVE20', discount_type: 'percentage', discount_value: 20, max_uses: 100, current_uses: 1, is_active: true });
   const token = createToken({ id: 'admin_123', role: 'admin' });
   const req = makeReq({ url: '/api/admin/pricing/promos', headers: { authorization: `Bearer ${token}` } });
   const res = createMockRes();
@@ -244,6 +299,8 @@ test('pricing admin gets promos', async () => {
   assert.equal(body.ok, true);
   assert.equal(body.data.length, 1);
   assert.equal(body.data[0].code, 'SAVE20');
+  assert.equal(body.data[0].discountType, 'percentage');
+  assert.equal(body.data[0].discountValue, 20);
 });
 
 test('pricing admin creates promo', async () => {
@@ -251,7 +308,14 @@ test('pricing admin creates promo', async () => {
   const req = makeReq({ 
     url: '/api/admin/pricing/promos', 
     method: 'POST', 
-    body: { code: 'NEW10', discount_amount: 10 },
+    body: {
+      code: 'NEW10',
+      discountType: 'percentage',
+      discountValue: 10,
+      maxUses: 100,
+      isActive: true,
+      operatorNote: 'Operator reason: add launch promo code.',
+    },
     headers: { authorization: `Bearer ${token}` } 
   });
   const res = createMockRes();
@@ -261,15 +325,17 @@ test('pricing admin creates promo', async () => {
   assert.equal(body.ok, true);
   assert.equal(body.data.code, 'NEW10');
   assert.equal(mockPromos.length, 1);
+  assert.equal(mockPromos[0].discount_type, 'percentage');
+  assert.equal(mockPromos[0].discount_value, 10);
 });
 
 test('pricing admin updates promo', async () => {
-  mockPromos.push({ code: 'PROMO1', discount_amount: 10 });
+  mockPromos.push({ code: 'PROMO1', discount_type: 'percentage', discount_value: 10, current_uses: 0, is_active: true });
   const token = createToken({ id: 'admin_123', role: 'admin' });
   const req = makeReq({ 
     url: '/api/admin/pricing/promos/PROMO1', 
     method: 'PUT', 
-    body: { discount_amount: 25 },
+    body: { discountValue: 25, operatorNote: 'Operator reason: update promo value.' },
     headers: { authorization: `Bearer ${token}` } 
   });
   const res = createMockRes();
@@ -277,7 +343,8 @@ test('pricing admin updates promo', async () => {
   assert.equal(res.statusCode, 200);
   const body = JSON.parse(res.body);
   assert.equal(body.ok, true);
-  assert.equal(mockPromos[0].discount_amount, 25);
+  assert.equal(mockPromos[0].discount_value, 25);
+  assert.equal(body.data.discountValue, 25);
 });
 
 test('pricing admin deletes promo', async () => {
@@ -286,10 +353,101 @@ test('pricing admin deletes promo', async () => {
   const req = makeReq({ 
     url: '/api/admin/pricing/promos/PROMO1', 
     method: 'DELETE', 
+    body: { operatorNote: 'Operator reason: retire launch promo.' },
     headers: { authorization: `Bearer ${token}` } 
   });
   const res = createMockRes();
   await adminPricingHandler(req, res);
   assert.equal(res.statusCode, 200);
   assert.equal(mockPromos.length, 0);
+});
+
+test('pricing admin rejects writes without operator note', async () => {
+  const token = createToken({ id: 'admin_123', role: 'admin' });
+  const req = makeReq({
+    url: '/api/admin/pricing/prices',
+    method: 'POST',
+    body: {
+      planCode: 'starter',
+      duration: 'monthly',
+      currency: 'idr',
+      originalPrice: 50,
+    },
+    headers: { authorization: `Bearer ${token}` },
+  });
+  const res = createMockRes();
+  await adminPricingHandler(req, res);
+  assert.equal(res.statusCode, 400);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'operator_reason_required');
+});
+
+test('pricing admin rejects cross-site writes with bad origin', async () => {
+  const token = createToken({ id: 'admin_123', role: 'admin' });
+  const req = makeReq({
+    url: '/api/admin/pricing/prices',
+    method: 'POST',
+    body: {
+      planCode: 'starter',
+      duration: 'monthly',
+      currency: 'idr',
+      originalPrice: 50,
+      operatorNote: 'Operator reason: valid note.',
+    },
+    headers: { 
+      authorization: `Bearer ${token}`,
+      origin: 'https://evil.com',
+    },
+  });
+  const res = createMockRes();
+  await adminPricingHandler(req, res);
+  assert.equal(res.statusCode, 403);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'csrf_origin_denied');
+});
+
+test('pricing admin handles URL-encoded IDs and promo codes properly', async () => {
+  mockPromos.push({ code: 'HOLIDAY24', discount_type: 'percentage', discount_value: 10, is_active: true });
+  const token = createToken({ id: 'admin_123', role: 'admin' });
+  
+  // URL encode the plus sign
+  const encodedCode = encodeURIComponent('HOLIDAY+24');
+  
+  const req = makeReq({ 
+    url: `/api/admin/pricing/promos/${encodedCode}`, 
+    method: 'PUT', 
+    body: { discountValue: 20, operatorNote: 'Operator reason: update holiday promo.' },
+    headers: { authorization: `Bearer ${token}` } 
+  });
+  const res = createMockRes();
+  await adminPricingHandler(req, res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(mockPromos[0].discount_value, 20);
+});
+
+test('pricing admin writes to audit log with correct payload', async () => {
+  const token = createToken({ id: 'admin_123', role: 'admin' });
+  const req = makeReq({ 
+    url: '/api/admin/pricing/prices', 
+    method: 'POST', 
+    body: {
+      planCode: 'pro',
+      duration: 'monthly',
+      currency: 'usd',
+      originalPrice: 15,
+      operatorNote: 'Operator reason: adding test price for audit.',
+    },
+    headers: { authorization: `Bearer ${token}` } 
+  });
+  const res = createMockRes();
+  await adminPricingHandler(req, res);
+  assert.equal(res.statusCode, 200);
+  
+  assert.equal(mockAuditEvents.length, 1);
+  const event = mockAuditEvents[0];
+  assert.equal(event.actor_user_id, 'admin_123');
+  assert.equal(event.action, 'create_plan_price');
+  assert.ok(event.detail.includes('Operator reason: adding test price for audit.'));
+  assert.equal(event.after.duration, 'monthly');
+  assert.equal(event.after.currency, 'usd');
 });

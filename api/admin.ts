@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import adminManagementHandler from '../server-api/admin/management.js';
 import adminProofViewHandler from '../server-api/admin/proofView.js';
+import adminPricingHandler from '../server-api/admin/pricing.js';
 
 type Handler = (req: VercelRequest, res: VercelResponse) => unknown;
 
@@ -17,6 +18,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   if (path === 'proof-view' || path === 'proof_view') {
     return (adminProofViewHandler as Handler)(req, res);
+  }
+  if (path === 'pricing' || path.startsWith('pricing/')) {
+    return (adminPricingHandler as Handler)(req, res);
   }
 
   return res.status(404).json({ error: 'Not found' });

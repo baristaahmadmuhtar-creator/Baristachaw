@@ -4821,7 +4821,7 @@ export function AdminManagement() {
                     onPatch={(planCode, patch) => void commitPlanPatch(planCode, patch)}
                     onDirtyChange={trackPlanDraftDirty}
                   />
-                  <AdminPricingPanel />
+                  <AdminPricingPanel admin={admin} />
                 </motion.section>
               ) : null}
 

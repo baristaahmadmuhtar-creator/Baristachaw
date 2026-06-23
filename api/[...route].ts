@@ -51,6 +51,7 @@ const ROUTE_LOADERS: Record<string, () => Promise<{ default: Handler }>> = {
   'account/status': () => import('../server-api/account/status.js'),
   'library/sync': () => import('../server-api/library/sync.js'),
   'admin/management': () => import('../server-api/admin/management.js'),
+  'admin/pricing': () => import('../server-api/admin/pricing.js'),
   'billing/checkout': () => import('../server-api/billing/checkout.js'),
   'billing/portal': () => import('../server-api/billing/portal.js'),
   'billing/proof': () => import('../server-api/billing/proof.js'),
@@ -77,6 +78,10 @@ function matchRoute(req: VercelRequest): RouteMatch | null {
         req.query.id = segments[1];
       },
     };
+  }
+
+  if (segments[0] === 'admin' && segments[1] === 'pricing' && segments.length >= 2) {
+    return { load: () => loadDefaultHandler(ROUTE_LOADERS['admin/pricing']) };
   }
 
   if (

@@ -637,26 +637,32 @@ export function createCatalogRequest(patch: AdminCatalogRequestPatch): Promise<A
 
 export type AdminPlanPrice = {
   id: string;
-  plan_code: string;
+  planCode: 'starter' | 'pro' | 'team' | 'enterprise' | string;
   duration: string;
   currency: string;
-  original_price: number;
-  discounted_price: number;
-  discount_pct: number;
-  save_label: any;
-  created_at?: string;
-  updated_at?: string;
+  originalPrice: number;
+  discountPrice: number | null;
+  isActive: boolean;
+  operatorNote?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type AdminPromoCode = {
-  id: string;
+  id?: string;
   code: string;
-  discount_amount: number;
-  discount_type: 'percent' | 'fixed';
-  max_uses: number;
-  current_uses: number;
-  expires_at: string | null;
-  created_at?: string;
+  discountType: 'percentage' | 'fixed_amount';
+  discountValue: number;
+  validFrom: string | null;
+  validUntil: string | null;
+  maxUses: number | null;
+  currentUses: number;
+  validPlanCodes: string[];
+  validDurations: string[];
+  isActive: boolean;
+  operatorNote?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export function fetchAdminPrices(): Promise<AdminPlanPrice[]> {
@@ -670,12 +676,15 @@ export function createAdminPrice(payload: Partial<AdminPlanPrice>): Promise<Admi
 }
 
 export function updateAdminPrice(id: string, payload: Partial<AdminPlanPrice>): Promise<AdminPlanPrice> {
-  return adminRequest<{ ok: boolean; data: AdminPlanPrice }>(`/api/admin/pricing/prices/${id}`, { method: 'PUT', body: JSON.stringify(payload) })
+  return adminRequest<{ ok: boolean; data: AdminPlanPrice }>(`/api/admin/pricing/prices/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(payload) })
     .then(res => res.data);
 }
 
-export function deleteAdminPrice(id: string): Promise<void> {
-  return adminRequest<{ ok: boolean }>(`/api/admin/pricing/prices/${id}`, { method: 'DELETE' })
+export function deleteAdminPrice(id: string, operatorNote: string): Promise<void> {
+  return adminRequest<{ ok: boolean }>(`/api/admin/pricing/prices/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    body: JSON.stringify({ operatorNote }),
+  })
     .then(() => {});
 }
 
@@ -690,11 +699,14 @@ export function createAdminPromo(payload: Partial<AdminPromoCode>): Promise<Admi
 }
 
 export function updateAdminPromo(code: string, payload: Partial<AdminPromoCode>): Promise<AdminPromoCode> {
-  return adminRequest<{ ok: boolean; data: AdminPromoCode }>(`/api/admin/pricing/promos/${code}`, { method: 'PUT', body: JSON.stringify(payload) })
+  return adminRequest<{ ok: boolean; data: AdminPromoCode }>(`/api/admin/pricing/promos/${encodeURIComponent(code)}`, { method: 'PUT', body: JSON.stringify(payload) })
     .then(res => res.data);
 }
 
-export function deleteAdminPromo(code: string): Promise<void> {
-  return adminRequest<{ ok: boolean }>(`/api/admin/pricing/promos/${code}`, { method: 'DELETE' })
+export function deleteAdminPromo(code: string, operatorNote: string): Promise<void> {
+  return adminRequest<{ ok: boolean }>(`/api/admin/pricing/promos/${encodeURIComponent(code)}`, {
+    method: 'DELETE',
+    body: JSON.stringify({ operatorNote }),
+  })
     .then(() => {});
 }

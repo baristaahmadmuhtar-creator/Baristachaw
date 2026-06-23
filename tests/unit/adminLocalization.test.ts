@@ -28,6 +28,15 @@ const CRITICAL_ADMIN_KEYS: AdminCopyKey[] = [
   'payloadJson',
   'save',
   'refresh',
+  'pricingOperations',
+  'dynamicPricing',
+  'promoCodes',
+  'addPrice',
+  'addPromo',
+  'savePrice',
+  'savePromo',
+  'deletePriceTitle',
+  'deletePromoTitle',
 ];
 
 test('admin copy exposes localized production-critical labels for every language option', () => {

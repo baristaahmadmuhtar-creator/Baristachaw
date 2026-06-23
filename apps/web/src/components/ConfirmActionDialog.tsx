@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { AlertTriangle, Loader2, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { modalSpringTransition, overlayFadeTransition } from '../utils/motionPresets';
@@ -12,6 +12,7 @@ type ConfirmActionDialogProps = {
   busy?: boolean;
   destructive?: boolean;
   testId?: string;
+  children?: ReactNode;
   onConfirm: () => void | Promise<void>;
   onCancel: () => void;
 };
@@ -25,6 +26,7 @@ export function ConfirmActionDialog({
   busy = false,
   destructive = true,
   testId,
+  children,
   onConfirm,
   onCancel,
 }: ConfirmActionDialogProps) {
@@ -115,6 +117,7 @@ export function ConfirmActionDialog({
                   <X size={16} />
                 </button>
               </div>
+              {children ? <div className="mt-4">{children}</div> : null}
               <div className="mt-5 grid grid-cols-2 gap-2">
                 <button
                   ref={cancelButtonRef}

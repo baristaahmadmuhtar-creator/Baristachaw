@@ -15,6 +15,28 @@ const PUBLIC_PRICING_RATE_LIMIT = {
   burstWindowMs: 10 * 1000,
 } as const;
 
+type PlanPriceRow = {
+  id?: string;
+  plan_code?: string;
+  duration?: string;
+  currency?: string;
+  original_price?: number | string | null;
+  discount_price?: number | string | null;
+  is_active?: boolean;
+};
+
+function mapDynamicPrice(row: PlanPriceRow) {
+  return {
+    id: String(row.id || ''),
+    planCode: String(row.plan_code || ''),
+    duration: String(row.duration || ''),
+    currency: String(row.currency || '').toLowerCase(),
+    originalPrice: Number(row.original_price ?? 0),
+    discountPrice: row.discount_price === null || row.discount_price === undefined ? null : Number(row.discount_price),
+    isActive: row.is_active !== false,
+  };
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const requestId = createRequestId(req);
   applyCors(req, res, 'GET, OPTIONS');
@@ -49,12 +71,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const prices = await supabaseAdminRest<any[]>(config, 'rest/v1/plan_prices?is_active=is.true&select=id,plan_code,duration,currency,original_price,discount_price,is_active');
+    const prices = await supabaseAdminRest<PlanPriceRow[]>(config, 'plan_prices?is_active=is.true&select=id,plan_code,duration,currency,original_price,discount_price,is_active');
 
     return res.status(200).json({
       ok: true,
       requestId,
-      prices: prices || [],
+      prices: (prices || []).map(mapDynamicPrice),
     });
   } catch (error) {
     console.error('Fatal error fetching prices:', error);

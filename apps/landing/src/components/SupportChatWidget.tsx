@@ -61,9 +61,9 @@ const local = {
     bn: 'Hubungi sokongan',
   },
   downloadApp: {
-    id: 'Download app',
-    en: 'Download app',
-    bn: 'Muat turun app',
+    id: 'Unduh Aplikasi',
+    en: 'Download',
+    bn: 'Muat Turun Aplikasi',
   },
   note: {
     id: 'Recipe adalah starting point. Kualitas cup akhir tetap memerlukan real brew.',

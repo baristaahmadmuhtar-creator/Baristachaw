@@ -26,9 +26,9 @@ const local = {
     bn: 'Buka AI Brew di app.baristachaw.com',
   },
   downloadAppLabel: {
-    id: 'Download app',
-    en: 'Download app',
-    bn: 'Muat turun app',
+    id: 'Unduh Aplikasi',
+    en: 'Download',
+    bn: 'Muat Turun Aplikasi',
   },
   downloadAppDesc: {
     id: `${RELEASE_VERSION} - iOS PWA dan Android APK`,

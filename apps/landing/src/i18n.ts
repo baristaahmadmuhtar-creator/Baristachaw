@@ -14,7 +14,7 @@ export function t(key: string, lang: Language): string {
 export const translations: Record<string, TranslationSet> = {
   'nav.aiBrew': { id: 'AI Brew', en: 'AI Brew', bn: 'AI Brew' },
   'nav.methods': { id: 'Metode', en: 'Methods', bn: 'Kaedah' },
-  'nav.download': { id: 'Unduh App', en: 'Download App', bn: 'Muat Turun App' },
+  'nav.download': { id: 'Unduh Aplikasi', en: 'Download', bn: 'Muat Turun Aplikasi' },
   'nav.support': { id: 'Pusat Bantuan', en: 'Support', bn: 'Pusat Bantuan' },
   'nav.login': { id: 'Masuk', en: 'Log In', bn: 'Log Masuk' },
   'nav.tryAiBrew': { id: 'Mulai AI Brew', en: 'Start AI Brew', bn: 'Mula AI Brew' },
@@ -234,7 +234,7 @@ export const translations: Record<string, TranslationSet> = {
   },
 
   'mobileCta.tryAiBrew': { id: 'Mulai AI Brew', en: 'Start AI Brew', bn: 'Mula AI Brew' },
-  'mobileCta.download': { id: 'Unduh App', en: 'Download App', bn: 'Muat Turun App' },
+  'mobileCta.download': { id: 'Unduh Aplikasi', en: 'Download', bn: 'Muat Turun Aplikasi' },
 
   'register.title': { id: 'Pendaftaran & Langganan', en: 'Registration & Subscription', bn: 'Pendaftaran & Langganan' },
   'register.subtitle': {

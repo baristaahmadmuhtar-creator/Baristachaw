@@ -5,9 +5,9 @@ import type { Language } from '../i18n';
 
 const copy = {
   title: {
-    id: 'Download Baristachaw',
+    id: 'Unduh Aplikasi',
     en: 'Download Baristachaw',
-    bn: 'Muat Turun Baristachaw',
+    bn: 'Muat Turun Aplikasi',
   },
   subtitle: {
     id: 'Pilih platform yang ingin Anda gunakan.',
@@ -50,12 +50,12 @@ const copy = {
     bn: 'Selepas siap, buka fail APK dari folder Downloads untuk install.',
   },
   androidButton: {
-    id: 'Download APK',
+    id: 'Unduh APK',
     en: 'Download APK',
     bn: 'Muat Turun APK',
   },
   androidStarted: {
-    id: 'Download dimulai. Jika browser tidak membuka otomatis, buka file APK dari folder Downloads.',
+    id: 'Unduhan dimulai. Jika browser tidak membuka otomatis, buka file APK dari folder Downloads.',
     en: 'Download started. If the browser does not open it automatically, open the APK from Downloads.',
     bn: 'Muat turun bermula. Jika browser tidak membuka automatik, buka APK dari folder Downloads.',
   },

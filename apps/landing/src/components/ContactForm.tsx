@@ -69,7 +69,7 @@ export function ContactForm({ language, initialTopic = 'general' }: ContactFormP
         <select name="topic" defaultValue={initialTopic}>
           <option value="general">{isBn ? 'Pertanyaan umum' : isId ? 'Pertanyaan umum' : 'General question'}</option>
           <option value="account">{isBn ? 'Masalah akaun' : isId ? 'Masalah akun' : 'Account issue'}</option>
-          <option value="download">Download APK</option>
+          <option value="download">Download Android</option>
           <option value="brew">AI Brew recipe</option>
           <option value="bug">{isBn ? 'Laporan bug' : isId ? 'Laporan bug' : 'Bug report'}</option>
           <option value="store-status">Download app / store listing status</option>

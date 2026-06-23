@@ -40,14 +40,14 @@ const copy = {
     bn: 'Android',
   },
   androidBody: {
-    id: `APK ${RELEASE_VERSION} siap diunduh sebagai signed release.`,
-    en: `APK ${RELEASE_VERSION} is ready as a signed release.`,
-    bn: `APK ${RELEASE_VERSION} siap dimuat turun sebagai signed release.`,
+    id: `Android ${RELEASE_VERSION} siap diunduh sebagai signed release.`,
+    en: `Android ${RELEASE_VERSION} is ready as a signed release.`,
+    bn: `Android ${RELEASE_VERSION} siap dimuat turun sebagai signed release.`,
   },
   androidHint: {
-    id: 'Setelah selesai, buka file APK dari folder Downloads untuk install.',
-    en: 'After it finishes, open the APK from Downloads to install.',
-    bn: 'Selepas siap, buka fail APK dari folder Downloads untuk install.',
+    id: 'Setelah selesai, buka file dari folder Downloads untuk install.',
+    en: 'After it finishes, open the file from Downloads to install.',
+    bn: 'Selepas siap, buka fail dari folder Downloads untuk install.',
   },
   androidButton: {
     id: 'Unduh Android',
@@ -55,14 +55,14 @@ const copy = {
     bn: 'Muat Turun Android',
   },
   androidStarted: {
-    id: 'Unduhan dimulai. Jika browser tidak membuka otomatis, buka file APK dari folder Downloads.',
-    en: 'Download started. If the browser does not open it automatically, open the APK from Downloads.',
-    bn: 'Muat turun bermula. Jika browser tidak membuka automatik, buka APK dari folder Downloads.',
+    id: 'Unduhan dimulai. Jika browser tidak membuka otomatis, buka file dari folder Downloads.',
+    en: 'Download started. If the browser does not open it automatically, open the file from Downloads.',
+    bn: 'Muat turun bermula. Jika browser tidak membuka automatik, buka fail dari folder Downloads.',
   },
   secureNote: {
-    id: 'Android memakai release asset resmi. iOS memakai PWA sampai App Store listing siap.',
-    en: 'Android uses the official release asset. iOS uses the PWA until the App Store listing is ready.',
-    bn: 'Android memakai release asset rasmi. iOS memakai PWA sampai App Store listing siap.',
+    id: 'Android memakai release asset resmi. iOS memakai instalasi langsung sampai App Store listing siap.',
+    en: 'Android uses the official release asset. iOS uses guided install until the App Store listing is ready.',
+    bn: 'Android memakai release asset rasmi. iOS memakai instalasi langsung sampai App Store listing siap.',
   },
 } satisfies Record<string, Record<Language, string>>;
 

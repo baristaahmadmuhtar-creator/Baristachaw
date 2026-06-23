@@ -35,6 +35,7 @@ export default defineConfig({
         reuseExistingServer: shouldReuseExistingServer,
         env: {
           ...process.env,
+          NODE_OPTIONS: '--max-old-space-size=2048',
           JWT_SECRET: process.env.JWT_SECRET || 'local-test-jwt-secret-32-chars-minimum',
           ENABLE_TEST_AUTH_ENDPOINT: process.env.ENABLE_TEST_AUTH_ENDPOINT || '1',
           TEST_AUTH_TOKEN: process.env.TEST_AUTH_TOKEN || 'local-test-token',

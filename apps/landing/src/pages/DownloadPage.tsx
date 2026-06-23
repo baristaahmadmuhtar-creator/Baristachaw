@@ -30,15 +30,15 @@ export function DownloadPage({ language, onDownloadClick }: { language: Language
             {isIos
               ? label(
                   language,
-                  'Kami tidak menampilkan tombol App Store palsu. Gunakan PWA dari Safari sampai listing App Store siap.',
-                  'We do not show a fake App Store button. Use the Safari PWA until the App Store listing is ready.',
-                  'Kami tidak menampilkan tombol App Store palsu. Gunakan PWA dari Safari sampai listing App Store siap.',
+                  'Kami tidak menampilkan tombol App Store palsu. Gunakan iOS dari Safari sampai listing App Store siap.',
+                  'We do not show a fake App Store button. Use Safari on iOS until the App Store listing is ready.',
+                  'Kami tidak menampilkan tombol App Store palsu. Gunakan iOS dari Safari sampai listing App Store siap.',
                 )
               : label(
                   language,
-                  'Kami tidak menampilkan tombol Google Play palsu. APK signed release dapat diunduh sekarang.',
-                  'We do not show a fake Google Play button. The signed release APK is ready to download now.',
-                  'Kami tidak menampilkan tombol Google Play palsu. APK signed release dapat dimuat turun sekarang.',
+                  'Kami tidak menampilkan tombol Google Play palsu. Android signed release dapat diunduh sekarang.',
+                  'We do not show a fake Google Play button. The signed release Android is ready to download now.',
+                  'Kami tidak menampilkan tombol Google Play palsu. Android signed release dapat dimuat turun sekarang.',
                 )}
           </p>
           <div className="utility-actions">
@@ -48,7 +48,7 @@ export function DownloadPage({ language, onDownloadClick }: { language: Language
               </a>
             ) : (
               <a className="button button-primary" href={APK_URL} download={ANDROID_APK_FILE_NAME}>
-                <Download size={18} /> {label(language, 'Download APK', 'Download APK', 'Muat Turun APK')}
+                <Download size={18} /> {label(language, 'Download Android', 'Download Android', 'Muat Turun Android')}
               </a>
             )}
             <button className="button button-outline" type="button" onClick={onDownloadClick}>

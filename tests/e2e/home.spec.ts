@@ -86,11 +86,11 @@ test('shows paid plan choices and upgrades free users when AI search is attempte
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await waitForHomeAuthState(page);
 
-  const panel = page.getByTestId('home-plan-growth-panel');
+  const panel = page.getByTestId('home-workspace-status-panel');
   await expect(panel).toBeVisible();
   await expect(page.getByText(/Workspace status|Status ruang kerja/i)).toBeVisible();
   await expect(page.getByText(/Upgrade when you need higher AI|Kelola pembayaran untuk menjaga akses paket Gratis/i)).toHaveCount(0);
-  await expect(panel.getByRole('button', { name: /View plan options|Lihat pilihan paket/i })).toBeVisible();
+  await expect(panel.getByRole('button', { name: /Upgrade plan|Tingkatkan paket/i })).toBeVisible();
 
   await page.getByTestId('home-plan-open-catalog').click();
   const dialog = page.getByRole('dialog', { name: /Pick the plan|Pilih paket/i });
@@ -161,8 +161,7 @@ test('navigates to all primary routes from home cards', async ({ page }) => {
 
   await page.goto('/');
   await clickHomeCard(page, homeContent.locator('a[href="/tools?tab=ai-brew"]').first());
-  await expect(page).toHaveURL(/\/(masuk|login|signin).*returnTo=%2Ftools%3Ftab%3Dai-brew/);
-  await expect(page.getByRole('heading', { name: /Sign in to Baristachaw|Masuk ke Baristachaw/i })).toBeVisible();
+  await expect(page).toHaveURL(/\/tools\?tab=ai-brew$/);
 
   await page.goto('/');
   await clickHomeCard(page, homeContent.locator('a[href="/tools"]').first());
@@ -170,5 +169,6 @@ test('navigates to all primary routes from home cards', async ({ page }) => {
 
   await page.goto('/');
   await clickHomeCard(page, homeContent.locator('a[href="/collection"]').first());
-  await expect(page).toHaveURL(/\/collection$/);
+  await expect(page).toHaveURL(/\/(masuk|login|signin).*returnTo=%2Fcollection/);
+  await expect(page.getByRole('heading', { name: /Sign in to Baristachaw|Masuk ke Baristachaw/i })).toBeVisible();
 });

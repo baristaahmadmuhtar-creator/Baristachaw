@@ -991,6 +991,7 @@ export function Home() {
                   type="button"
                   onClick={() => void handleWorkspaceStatusAction()}
                   disabled={billingBusy}
+                  data-testid={workspaceStatus.action === 'checkout' ? 'home-plan-open-catalog' : undefined}
                   className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-700 disabled:opacity-50"
                 >
                   <CreditCard size={15} />

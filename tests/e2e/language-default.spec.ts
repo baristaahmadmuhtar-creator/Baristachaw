@@ -69,7 +69,7 @@ test('fresh launch defaults to English and AI Brew result surfaces stay English'
   await expect(result).toContainText(/English QA Ethiopia/i, { timeout: 30_000 });
   await expect(result.getByTestId('ai-brew-result-tab-plan')).toContainText(/Summary/i);
   await expect(result.getByTestId('ai-brew-result-tab-flow')).toContainText(/^Brew$/i);
-  await expect(result.getByTestId('ai-brew-result-tab-coach')).toContainText(/^AI$/i);
+  await expect(result.getByTestId('ai-brew-result-tab-coach')).toContainText(/AI Coach/i);
   await expect(result.getByTestId('ai-brew-result-tab-details')).toContainText(/Detail/i);
   await expect(result).toContainText(/Expected cup|Confidence|Safety|Grind|Temperature|Extraction/i);
 
@@ -94,7 +94,7 @@ test('explicit Indonesian AI Brew precision result tabs stay localized', async (
   await expect(result).toContainText(/QA Bahasa Presisi/i, { timeout: 30_000 });
   await expect(result.getByTestId('ai-brew-result-tab-plan')).toContainText(/Ringkasan/i);
   await expect(result.getByTestId('ai-brew-result-tab-flow')).toContainText(/Seduh/i);
-  await expect(result.getByTestId('ai-brew-result-tab-coach')).toContainText(/^AI$/i);
+  await expect(result.getByTestId('ai-brew-result-tab-coach')).toContainText(/AI Coach/i);
   await expect(result.getByTestId('ai-brew-result-tab-details')).toContainText(/Detail/i);
   await expect(result).toContainText(/Prediksi Rasa|Keyakinan|Gilingan|Suhu|Ekstraksi/i);
 

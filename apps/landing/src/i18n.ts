@@ -49,7 +49,7 @@ export const translations: Record<string, TranslationSet> = {
     bn: 'Tingkatkan ritual kopi harian biskita dengan ketepatan dan konsistensi. Pembantu pintar kami menyelaras biji kopi, profil air, dan tetapan pengisar untuk mendapatkan pengekstrakan rasa yang optimum, setiap hari.',
   },
   'hero.startBrew': { id: 'Mulai Seduh', en: 'Start Brewing', bn: 'Mula Menyeduh' },
-  'hero.downloadApk': { id: 'Unduh APK', en: 'Download APK', bn: 'Muat Turun APK' },
+  'hero.downloadApk': { id: 'Unduh Android', en: 'Download Android', bn: 'Muat Turun Android' },
   'hero.registerFree': { id: 'Daftar Gratis', en: 'Register Free', bn: 'Daftar Percuma' },
   'hero.microcopy': {
     id: 'Tanpa hambatan. Dipercaya oleh home brewer antusias dan profesional kopi elit.',
@@ -264,7 +264,7 @@ export const translations: Record<string, TranslationSet> = {
 
   'download.title': { id: 'Unduh Klien Resmi', en: 'Download Official Client', bn: 'Muat Turun Pelanggan Rasmi' },
   'download.webApp': { id: 'Buka Dasbor Web', en: 'Open Web Dashboard', bn: 'Buka Papan Pemuka Web' },
-  'download.android': { id: 'Unduh Paket Android (APK)', en: 'Download Android Package (APK)', bn: 'Muat Turun Pakej Android (APK)' },
+  'download.android': { id: 'Unduh Android', en: 'Download Android', bn: 'Muat Turun Android' },
   'download.androidDesc': {
     id: 'Lakukan instalasi mandiri secara langsung jika rilis perangkat lunak tersedia.',
     en: 'Perform direct self-installation when the software release artifact is available.',

@@ -71,10 +71,10 @@ test('download CTAs open platform modal with Android APK and iOS PWA paths', asy
 
   await expect(modal).toBeVisible();
   await expect(modal.getByText(/App Store segera hadir/i)).toBeVisible();
-  await expect(modal.getByTestId('landing-download-ios')).toHaveAttribute('href', 'https://app.baristachaw.com');
+  await expect(modal.getByTestId('landing-download-ios')).toHaveAttribute('href', 'https://app.baristachaw.com?guided_install=ios');
   await expect(modal.getByTestId('landing-download-android')).toHaveAttribute(
     'href',
-    /releases\/download\/android-v1\.0\.4\/baristachaw-android\.apk/,
+    /releases\/download\/v1\.0\.4\/BaristaChaw-v1\.0\.4\.apk/,
   );
   await expect(page.getByText(/Request access|Minta akses/i)).toHaveCount(0);
 

@@ -420,6 +420,12 @@ test('mobile ai brew loading stays centered and keeps bottom nav hidden through 
   await expect(page.getByTestId('mobile-bottom-nav')).toBeHidden();
 
   const overlayCardLocator = page.getByTestId('ai-brew-generation-card');
+  await expect(overlayCardLocator).toBeVisible();
+  await expect.poll(async () => {
+    const box = await overlayCardLocator.boundingBox();
+    return box ? box.width : 0;
+  }).toBeGreaterThan(10);
+
   const overlayCard = await overlayCardLocator.evaluate((element) => {
     const rect = element.getBoundingClientRect();
     return {
@@ -617,7 +623,8 @@ test('mobile ai brew picker stays usable for overlay and adjustResize keyboards'
   const pickerDialog = page.getByRole('dialog').last();
   const search = page.getByTestId('ai-brew-picker-search-process');
   const list = page.getByTestId('ai-brew-picker-process');
-  await search.focus();
+  await expect(search).toBeVisible();
+  await search.click();
   await expect(search).toBeFocused();
   await page.waitForTimeout(650);
 

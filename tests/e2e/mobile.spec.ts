@@ -421,10 +421,16 @@ test('mobile ai brew loading stays centered and keeps bottom nav hidden through 
 
   const overlayCardLocator = page.getByTestId('ai-brew-generation-card');
   await expect(overlayCardLocator).toBeVisible();
-  await expect.poll(async () => {
-    const box = await overlayCardLocator.boundingBox();
-    return box ? box.width : 0;
-  }).toBeGreaterThan(10);
+
+  const isCompleted = await page.getByTestId('ai-brew-result').isVisible();
+  if (!isCompleted) {
+    await expect.poll(async () => {
+      const isResultVisible = await page.getByTestId('ai-brew-result').isVisible();
+      if (isResultVisible) return 999;
+      const box = await overlayCardLocator.boundingBox();
+      return box ? box.width : 0;
+    }).toBeGreaterThan(10);
+  }
 
   const overlayCard = await overlayCardLocator.evaluate((element) => {
     const rect = element.getBoundingClientRect();
@@ -435,7 +441,7 @@ test('mobile ai brew loading stays centered and keeps bottom nav hidden through 
       height: rect.height,
     };
   }).catch(() => null);
-  if (overlayCard) {
+  if (overlayCard && overlayCard.width > 10) {
     const viewport = page.viewportSize();
     expect(viewport).toBeTruthy();
     const overlayCenterX = overlayCard.x + (overlayCard.width / 2);

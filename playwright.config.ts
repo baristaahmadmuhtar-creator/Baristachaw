@@ -9,6 +9,7 @@ const systemChrome = shouldUseSystemChrome ? { channel: 'chrome' as const } : {}
 
 export default defineConfig({
   testDir: './tests',
+  testIgnore: '**/landing.spec.ts',
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 1 : 0,

@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   BILLING_PENDING_STORAGE_KEY,
   getMvpUpgradeOptions,
+  isBillingPlanAtLeast,
+  minimumMvpPlanForFeature,
   normalizeBillingPlanCode,
   parsePendingManualPaymentMarker,
   shouldBlockDuplicateManualPayment,
@@ -23,6 +25,19 @@ test('MVP upgrade options only expose starter and pro forward upgrades', () => {
   assert.deepEqual(getMvpUpgradeOptions('pro'), []);
   assert.deepEqual(getMvpUpgradeOptions('team'), []);
   assert.deepEqual(getMvpUpgradeOptions('enterprise'), []);
+  assert.deepEqual(getMvpUpgradeOptions('free', 'pro'), ['pro']);
+  assert.deepEqual(getMvpUpgradeOptions('starter', 'pro'), ['pro']);
+  assert.deepEqual(getMvpUpgradeOptions('pro', 'pro'), []);
+});
+
+test('feature-specific billing gates can require Pro only', () => {
+  assert.equal(minimumMvpPlanForFeature('scanner-latte'), 'pro');
+  assert.equal(minimumMvpPlanForFeature('chat_image_generation'), 'pro');
+  assert.equal(minimumMvpPlanForFeature('ai_brew_pro'), 'pro');
+  assert.equal(minimumMvpPlanForFeature('scanner'), 'starter');
+  assert.equal(isBillingPlanAtLeast('starter', 'pro'), false);
+  assert.equal(isBillingPlanAtLeast('pro', 'pro'), true);
+  assert.equal(isBillingPlanAtLeast('team', 'pro'), true);
 });
 
 test('pending manual payment marker validates shape, status, and expiry', () => {

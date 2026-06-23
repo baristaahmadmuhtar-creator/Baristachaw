@@ -247,6 +247,69 @@ test('account status treats manual proof review as contact support without paid 
   assert.equal(body.appAccess.status, 'limited');
 });
 
+test('account status ignores stale free manual checkout draft without proof', async () => {
+  const originalFetch = globalThis.fetch;
+  process.env.SUPABASE_URL = 'https://unit-project.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
+  const token = createToken({
+    id: 'free-checkout-draft-user',
+    email: 'draft@example.com',
+    name: 'Draft User',
+    provider: 'email',
+  });
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    if (url.includes('app_users?on_conflict=')) {
+      return new Response('', { status: 201 });
+    }
+    if (url.includes('app_users?id=eq.free-checkout-draft-user')) {
+      return new Response(JSON.stringify([{
+        id: 'free-checkout-draft-user',
+        email: 'draft@example.com',
+        display_name: 'Draft User',
+        provider: 'email',
+        status: 'active',
+        plan_code: 'free',
+        billing_status: 'none',
+        billing_provider: 'none',
+        billing_market: 'brunei',
+        payment_action_required: true,
+        updated_at: new Date().toISOString(),
+      }]), { status: 200 });
+    }
+    if (url.includes('user_entitlements?user_id=eq.free-checkout-draft-user')) {
+      return new Response(JSON.stringify([]), { status: 200 });
+    }
+    if (url.includes('app_plans?') || url.includes('app_feature_flags?')) {
+      return new Response(JSON.stringify([]), { status: 200 });
+    }
+    throw new Error(`Unexpected fetch ${url} ${init?.method || 'GET'}`);
+  }) as typeof fetch;
+  const req = makeReq({
+    headers: {
+      origin: 'http://127.0.0.1:3000',
+      authorization: `Bearer ${token}`,
+    },
+  });
+  const res = createMockRes();
+
+  try {
+    await accountStatusHandler(req, res as any);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.user.planCode, 'free');
+  assert.equal(body.billing.status, 'none');
+  assert.equal(body.billing.provider, 'none');
+  assert.equal(body.billing.paymentAction, 'checkout');
+  assert.equal(body.billing.paymentActionRequired, false);
+  assert.equal(body.recommendedUpgrade.action, 'checkout');
+  assert.equal(body.appAccess.status, 'ok');
+});
+
 test('account status prefers active provider entitlement over app user fallback', async () => {
   const originalFetch = globalThis.fetch;
   process.env.SUPABASE_URL = 'https://unit-project.supabase.co';

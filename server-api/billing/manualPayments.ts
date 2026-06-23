@@ -574,6 +574,9 @@ async function ensureManualPaymentAppUser(
   config: Extract<SupabaseAdminConfig, { configured: true }>,
   request: ManualPaymentRequest,
 ): Promise<void> {
+  const reviewStarted = request.status !== 'pending_review';
+  const billingStatus = reviewStarted ? 'trialing' : 'none';
+  const billingProvider = reviewStarted ? 'manual' : 'none';
   const existing = await supabaseAdminRest<Array<{ id: string }>>(
     config,
     `app_users?id=eq.${encodeURIComponent(request.userId)}&select=id&limit=1`,
@@ -583,9 +586,9 @@ async function ensureManualPaymentAppUser(
       method: 'PATCH',
       headers: { Prefer: 'return=minimal' },
       body: JSON.stringify({
-        payment_action_required: true,
-        billing_status: request.status === 'pending_review' ? 'none' : 'trialing',
-        billing_provider: request.status === 'pending_review' ? 'none' : 'manual',
+        payment_action_required: reviewStarted,
+        billing_status: billingStatus,
+        billing_provider: billingProvider,
         billing_market: billingMarketForCurrency(request.currency),
         billing_last_event_at: new Date(request.updatedAt).toISOString(),
         last_seen_at: new Date(request.updatedAt).toISOString(),
@@ -606,10 +609,10 @@ async function ensureManualPaymentAppUser(
       role: 'user',
       status: 'active',
       plan_code: 'free',
-      billing_status: 'none',
-      billing_provider: 'none',
+      billing_status: billingStatus,
+      billing_provider: billingProvider,
       billing_market: 'global',
-      payment_action_required: true,
+      payment_action_required: reviewStarted,
       billing_last_event_at: new Date(request.updatedAt).toISOString(),
       last_seen_at: new Date(request.updatedAt).toISOString(),
       metadata: {

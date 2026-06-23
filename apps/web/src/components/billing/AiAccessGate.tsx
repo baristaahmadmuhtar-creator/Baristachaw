@@ -21,6 +21,8 @@ import {
   BILLING_PENDING_STORAGE_KEY,
   buildPendingManualPaymentMarker,
   getMvpUpgradeOptions,
+  isBillingPlanAtLeast,
+  minimumMvpPlanForFeature,
   parsePendingManualPaymentMarker,
   shouldBlockDuplicateManualPayment,
   type MvpPaidPlanCode,
@@ -192,7 +194,11 @@ function AiAccessGateDialog({
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
 
-  const availablePlans = useMemo(() => getMvpUpgradeOptions(effectivePlanCode || 'free'), [effectivePlanCode]);
+  const minimumRequiredPlan = useMemo(() => minimumMvpPlanForFeature(state.source), [state.source]);
+  const availablePlans = useMemo(
+    () => getMvpUpgradeOptions(effectivePlanCode || 'free', minimumRequiredPlan),
+    [effectivePlanCode, minimumRequiredPlan],
+  );
 
   useEffect(() => {
     if (availablePlans.length > 0 && !availablePlans.includes(selectedPlan)) {
@@ -845,6 +851,14 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   const tokenPlanCode = normalizePlanCode(user?.planCode);
   const effectivePlanCode = normalizePlanCode(snapshot?.user?.planCode || snapshot?.plan?.code) || tokenPlanCode;
   const hasPaidAiAccess = isAuthenticated && !isGuest && isPaidPlanCode(effectivePlanCode);
+  const activeGateSource = state?.source || feature;
+  const requiredPlanCode = minimumMvpPlanForFeature(activeGateSource);
+  const requiredPaidPlan = useMemo(() => {
+    const plans = snapshot?.plans || [];
+    return plans.find((item) => item.code === requiredPlanCode)
+      || minimumPaidPlan
+      || null;
+  }, [minimumPaidPlan, requiredPlanCode, snapshot?.plans]);
   const hasPendingManualPayment = isAuthenticated && !isGuest && (
     shouldBlockDuplicateManualPayment({
       markerRaw: readPendingManualPaymentMarkerRaw(),
@@ -890,13 +904,14 @@ export function useAiAccessGate(feature: AiPaidFeature): {
       return false;
     }
 
-    if (!isPaidPlanCode(effectivePlanCode)) {
+    const minimumForSource = minimumMvpPlanForFeature(source);
+    if (!isPaidPlanCode(effectivePlanCode) || !isBillingPlanAtLeast(effectivePlanCode, minimumForSource)) {
       openGate('upgrade', source);
       return false;
     }
 
     return true;
-  }, [effectivePlanCode, isAuthenticated, isGuest, loading, openAuthModal, openGate, snapshot, tokenPlanCode, feature]);
+  }, [effectivePlanCode, isAuthenticated, isGuest, loading, openAuthModal, openGate, snapshot, tokenPlanCode]);
 
   const isRenewal = snapshot?.billing?.status === 'expired' || snapshot?.billing?.status === 'cancelled';
   const renewalRequired = isRenewal && (minimumPaidPlan?.code === tokenPlanCode || tokenPlanCode === 'pro' || tokenPlanCode === 'team');
@@ -909,7 +924,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
         ? formatText(t.aiGateRenewTitle || 'Renew {plan} for {feature}', { feature: featureLabel, plan: minimumPaidPlan?.name || t.aiGatePlanFallbackName || '' })
         : formatText(t.aiGateUpgradeTitle, {
             feature: featureLabel,
-            plan: minimumPaidPlan?.name || t.aiGatePlanFallbackName || '',
+            plan: requiredPaidPlan?.name || t.aiGatePlanFallbackName || '',
           });
           
   const body = state?.mode === 'login'
@@ -920,8 +935,8 @@ export function useAiAccessGate(feature: AiPaidFeature): {
         ? formatText(t.aiGateRenewBody || 'Your plan has expired. Renew your access to continue using {feature} and other premium features.', { feature: featureLabel })
         : formatText(t.aiGateUpgradeBody, {
             feature: featureLabel,
-            plan: minimumPaidPlan?.name || t.aiGatePlanFallbackName || '',
-            price: minimumPaidPlan?.displayPrice || t.aiGatePriceFallback || '',
+            plan: requiredPaidPlan?.name || t.aiGatePlanFallbackName || '',
+            price: requiredPaidPlan?.displayPrice || t.aiGatePriceFallback || '',
           });
 
   const handleSignin = useCallback(() => {
@@ -1061,7 +1076,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
             state={state}
             title={title}
             body={body}
-            plan={minimumPaidPlan}
+            plan={requiredPaidPlan}
             t={t}
             checkoutBusy={checkoutBusy}
             checkoutError={checkoutError}

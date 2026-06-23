@@ -101,6 +101,23 @@ test('Billing Anomalies & Workspace Status Resolution', async (t) => {
     assert.equal(result.kind, 'free');
   });
 
+  await t.test('Free user with stale manual checkout draft does not become past_due', () => {
+    const snap = createMockSnapshot({
+      user: { planCode: 'free', status: 'active', name: '', role: '', planName: '', id: '', lastSeenAt: '' },
+      billing: {
+        status: 'none',
+        provider: 'none',
+        market: 'unknown',
+        paymentAction: 'checkout',
+        paymentActionRequired: true,
+        message: 'Manual invoice created; waiting for transfer proof.',
+      },
+    });
+    const result = resolve(snap);
+    assert.equal(result.kind, 'free');
+    assert.equal(result.action, 'checkout');
+  });
+
   await t.test('Active paid plan -> active', () => {
     const snap = createMockSnapshot({
       user: { planCode: 'starter', status: 'active', name: '', role: '', planName: '', id: '', lastSeenAt: '' },

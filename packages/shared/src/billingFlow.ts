@@ -36,10 +36,34 @@ export function normalizeMvpPaidPlanCode(value: unknown): MvpPaidPlanCode | '' {
   return normalized === 'starter' || normalized === 'pro' ? normalized : '';
 }
 
-export function getMvpUpgradeOptions(currentPlanCode: unknown): MvpPaidPlanCode[] {
+export function getMvpUpgradeOptions(currentPlanCode: unknown, minimumPlanCode: unknown = 'starter'): MvpPaidPlanCode[] {
   const current = normalizeBillingPlanCode(currentPlanCode) || 'free';
   const currentTier = PLAN_TIERS[current] ?? 0;
-  return MVP_PAID_PLAN_CODES.filter((code) => (PLAN_TIERS[code] ?? 0) > currentTier);
+  const minimum = normalizeMvpPaidPlanCode(minimumPlanCode) || 'starter';
+  const minimumTier = PLAN_TIERS[minimum] ?? PLAN_TIERS.starter;
+  return MVP_PAID_PLAN_CODES.filter((code) => {
+    const tier = PLAN_TIERS[code] ?? 0;
+    return tier > currentTier && tier >= minimumTier;
+  });
+}
+
+export function minimumMvpPlanForFeature(featureOrSource: unknown): MvpPaidPlanCode {
+  const raw = typeof featureOrSource === 'string' ? featureOrSource.trim().toLowerCase() : '';
+  if (
+    raw.includes('latte')
+    || raw.includes('deep')
+    || raw.includes('image_generation')
+    || raw.includes('pro')
+  ) {
+    return 'pro';
+  }
+  return 'starter';
+}
+
+export function isBillingPlanAtLeast(currentPlanCode: unknown, minimumPlanCode: unknown): boolean {
+  const current = normalizeBillingPlanCode(currentPlanCode) || 'free';
+  const minimum = normalizeBillingPlanCode(minimumPlanCode) || 'starter';
+  return (PLAN_TIERS[current] ?? 0) >= (PLAN_TIERS[minimum] ?? PLAN_TIERS.starter);
 }
 
 function readMarkerObject(raw: string): Record<string, unknown> | null {

@@ -192,7 +192,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.error('[DEBUG] statusSnapshot user_upgrade:', JSON.stringify(statusSnapshot));
       }
       const hasActivePaidPlan = statusSnapshot.user.planCode !== 'free' && statusSnapshot.billing.status === 'active';
-      const hasPendingManual = (statusSnapshot as any).manualInvoice?.status === 'pending_proof' || (statusSnapshot as any).manualInvoice?.status === 'under_review';
+      const hasPendingManual = statusSnapshot.billing.provider === 'manual'
+        && statusSnapshot.billing.paymentActionRequired === true
+        && statusSnapshot.billing.paymentAction === 'contact_support';
       
       if (hasPendingManual) {
         return res.status(403).json({

@@ -40,6 +40,14 @@ function daysUntil(value: string | undefined): number | null {
 
 function isManualReview(snapshot: AccountStatusSnapshot): boolean {
   if (
+    snapshot.user.planCode === 'free'
+    && snapshot.billing.status === 'none'
+    && snapshot.billing.provider === 'none'
+  ) {
+    return false;
+  }
+
+  if (
     snapshot.billing.paymentActionRequired &&
     snapshot.billing.provider === 'manual'
   ) {
@@ -109,6 +117,9 @@ export function resolveWorkspaceStatus(
 
   const billing = snapshot.billing;
   const primaryMaintenance = maintenance[0];
+  const staleFreeCheckoutDraft = snapshot.user.planCode === 'free'
+    && billing.status === 'none'
+    && billing.provider === 'none';
 
   if (snapshot.appAccess.status === 'blocked') {
     return {
@@ -160,7 +171,7 @@ export function resolveWorkspaceStatus(
     };
   }
 
-  if (billing.status === 'past_due' || billing.paymentActionRequired) {
+  if (billing.status === 'past_due' || (billing.paymentActionRequired && !staleFreeCheckoutDraft)) {
     return {
       kind: 'past_due',
       severity: 'danger',

@@ -370,6 +370,9 @@ function billingFromRow(row: any, user: AccountUser): AccountBilling {
   const metadata = row?.metadata && typeof row.metadata === 'object' ? row.metadata : {};
   let rawStatus = normalizeBillingStatus(row?.billing_status ?? metadata.billingStatus, defaultBillingStatus(user.planCode, user.status));
   const provider = normalizeBillingProvider(row?.billing_provider ?? metadata.billingProvider);
+  const staleFreeCheckoutDraft = user.planCode === 'free'
+    && rawStatus === 'none'
+    && provider === 'none';
   
   const currentPeriodStart = normalizeText(row?.billing_period_start ?? row?.current_period_start ?? metadata.billingPeriodStart) || undefined;
   const currentPeriodEnd = normalizeText(row?.billing_period_end ?? row?.current_period_end ?? metadata.billingPeriodEnd) || undefined;
@@ -390,7 +393,9 @@ function billingFromRow(row: any, user: AccountUser): AccountBilling {
     && rawStatus !== 'expired'
     && rawStatus !== 'refunded';
   const status = unverifiedPaidPlan ? 'trialing' : rawStatus;
-  const paymentActionRequired = Boolean(row?.payment_action_required ?? metadata.paymentActionRequired ?? (status === 'past_due')) || unverifiedPaidPlan;
+  const paymentActionRequired = staleFreeCheckoutDraft
+    ? false
+    : Boolean(row?.payment_action_required ?? metadata.paymentActionRequired ?? (status === 'past_due')) || unverifiedPaidPlan;
   const manualReviewPending = provider === 'manual' && paymentActionRequired;
   const manageUrl = readPublicUrl('BILLING_PORTAL_URL', 'STRIPE_CUSTOMER_PORTAL_URL', 'REVENUECAT_CUSTOMER_CENTER_URL');
   const checkoutUrl = readPublicUrl(`BILLING_CHECKOUT_URL_${user.planCode.toUpperCase()}`, `STRIPE_CHECKOUT_URL_${user.planCode.toUpperCase()}`, `REVENUECAT_CHECKOUT_URL_${user.planCode.toUpperCase()}`, 'BILLING_CHECKOUT_URL');

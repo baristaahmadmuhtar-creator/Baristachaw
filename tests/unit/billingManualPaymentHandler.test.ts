@@ -166,18 +166,26 @@ test.beforeEach(() => {
       if (method === 'PATCH' || method === 'POST') {
         const bodyStr = typeof init?.body === 'string' ? init.body : '{}';
         const updates = JSON.parse(bodyStr);
+        const rows = Array.isArray(updates) ? updates : [updates];
         const match = url.match(/id=eq\.([^&]+)/);
-        const userId = match ? decodeURIComponent(match[1]) : 'runtime_user_trial_review';
-        const existing = mockUsers.get(userId) || { id: userId };
-        mockUsers.set(userId, {
-          ...existing,
-          ...updates,
-          planCode: updates.plan_code !== undefined ? updates.plan_code : (existing.planCode || existing.plan_code),
-        });
+        for (const row of rows) {
+          const userId = match ? decodeURIComponent(match[1]) : (row.id || 'runtime_user_trial_review');
+          const existing = mockUsers.get(userId) || { id: userId };
+          mockUsers.set(userId, {
+            ...existing,
+            ...row,
+            planCode: row.plan_code !== undefined ? row.plan_code : (existing.planCode || existing.plan_code),
+          });
+        }
         return new Response(JSON.stringify({ ok: true }), { status: 200 });
       }
       
-      const list = [...mockUsers.values()].map(u => ({
+      const match = url.match(/id=eq\.([^&]+)/);
+      const requestedUserId = match ? decodeURIComponent(match[1]) : '';
+      const sourceUsers = requestedUserId
+        ? (mockUsers.has(requestedUserId) ? [mockUsers.get(requestedUserId)] : [])
+        : [...mockUsers.values()];
+      const list = sourceUsers.map(u => ({
         ...u,
         plan_code: u.plan_code || u.planCode,
         planCode: u.planCode || u.plan_code,
@@ -258,6 +266,11 @@ test('manual checkout returns env-configured invoice without granting paid entit
   assert.equal(body.manualInvoice.proof.endpoint, '/api/billing/proof');
   assert.match(body.manualInvoice.message, /not granted until the payment is verified/i);
   assert.doesNotMatch(JSON.stringify(body), /STRIPE|REVENUECAT|sk_|service-role/i);
+
+  const userAfterInvoice = mockUsers.get('runtime_user_trial_review');
+  assert.equal(userAfterInvoice.payment_action_required, false);
+  assert.equal(userAfterInvoice.billing_status, 'none');
+  assert.equal(userAfterInvoice.billing_provider, 'none');
 });
 
 test('manual checkout still returns actionable invoice when receipt storage is temporarily unavailable', async () => {
@@ -354,6 +367,25 @@ test('manual payment proof accepts allowlisted metadata and rejects unsafe uploa
   await proofHandler(tooLargeReq, tooLargeRes as any);
   assert.equal(tooLargeRes.statusCode, 413);
   assert.equal(JSON.parse(tooLargeRes.body).errorCode, 'proof_too_large');
+});
+
+test('manual payment proof blocks duplicate checkout until admin review finishes', async () => {
+  const { body, token } = await postCheckout('runtime_user_duplicate_guard');
+  const proofReq = makeReq({
+    cookies: { auth_token: token },
+    body: {
+      requestId: body.paymentRequestId,
+      mimeType: 'image/png',
+      sizeBytes: 12345,
+    },
+  });
+  const proofRes = createMockRes();
+  await proofHandler(proofReq, proofRes as any);
+  assert.equal(proofRes.statusCode, 200);
+
+  const duplicate = await postCheckout('runtime_user_duplicate_guard');
+  assert.equal(duplicate.res.statusCode, 403);
+  assert.equal(duplicate.body.errorCode, 'pending_invoice_exists');
 });
 
 test('manual payment proof falls back to support when signed upload generation fails', async () => {

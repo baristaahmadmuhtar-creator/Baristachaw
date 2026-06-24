@@ -548,6 +548,7 @@ export function PlanGrowthSurface({
         requestId: manualInvoice.paymentRequestId,
         mimeType: manualProofFile.type,
         sizeBytes: manualProofFile.size,
+        draftToken: manualInvoice.draftToken || '',
       });
       writePendingManualPaymentMarker(manualInvoice.paymentRequestId, manualInvoice.planCode);
       if (proofResponse.uploadUrl) {

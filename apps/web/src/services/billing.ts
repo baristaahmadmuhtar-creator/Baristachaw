@@ -66,6 +66,7 @@ export type BillingManualInvoiceResponse = {
   duration: BillingDuration;
   promoCode?: string;
   manualInvoice: BillingManualInvoice;
+  draftToken?: string;
 };
 
 export type BillingCheckoutResponse = BillingRedirectResponse | BillingManualInvoiceResponse;
@@ -90,6 +91,7 @@ export type ManualPaymentProofSubmission = {
   requestId: string;
   mimeType: string;
   sizeBytes: number;
+  draftToken: string;
 };
 
 export class BillingApiError extends Error {

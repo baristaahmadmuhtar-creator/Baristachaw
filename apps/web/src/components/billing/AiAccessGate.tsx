@@ -1028,6 +1028,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
         requestId: manualInvoice.paymentRequestId,
         mimeType: manualProofFile.type,
         sizeBytes: manualProofFile.size,
+        draftToken: manualInvoice.draftToken || '',
       });
       writePendingManualPaymentMarker(manualInvoice.paymentRequestId, selectedPlan);
       if (proofResponse.uploadUrl) {

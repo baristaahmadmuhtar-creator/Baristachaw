@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it } from 'node:test';
+import * as assert from 'node:assert/strict';
 import { resolveWorkspaceStatus } from '../../apps/web/src/utils/workspaceStatus';
 import type { AccountStatusSnapshot, AccountFeatureFlag } from '../../apps/web/src/services/accountStatus';
 
@@ -42,7 +43,7 @@ describe('resolveWorkspaceStatus', () => {
       language: 'en',
       locale: 'en-US',
     });
-    expect(status.kind).toBe('loading');
+    assert.equal(status.kind, 'loading');
   });
 
   it('error/no snapshot => kind unavailable', () => {
@@ -54,7 +55,7 @@ describe('resolveWorkspaceStatus', () => {
       language: 'en',
       locale: 'en-US',
     });
-    expect(status.kind).toBe('unavailable');
+    assert.equal(status.kind, 'unavailable');
   });
 
   it('free account, billing none/provider none => kind free', () => {
@@ -66,7 +67,7 @@ describe('resolveWorkspaceStatus', () => {
       language: 'en',
       locale: 'en-US',
     });
-    expect(status.kind).toBe('free');
+    assert.equal(status.kind, 'free');
   });
 
   it('active paid plan + billing active => kind active', () => {
@@ -88,8 +89,8 @@ describe('resolveWorkspaceStatus', () => {
       language: 'en',
       locale: 'en-US',
     });
-    expect(status.kind).toBe('active');
-    expect(status.action).toBe('none');
+    assert.equal(status.kind, 'active');
+    assert.equal(status.action, 'none');
   });
 
   it('billing manual + paymentActionRequired true => kind pending_review', () => {
@@ -110,8 +111,8 @@ describe('resolveWorkspaceStatus', () => {
       language: 'en',
       locale: 'en-US',
     });
-    expect(status.kind).toBe('pending_review');
-    expect(status.action).toBe('contact_support');
+    assert.equal(status.kind, 'pending_review');
+    assert.equal(status.action, 'contact_support');
   });
 
   it('local pending manual marker + free snapshot => kind pending_review hanya jika marker valid dan belum expired', () => {
@@ -124,7 +125,7 @@ describe('resolveWorkspaceStatus', () => {
       locale: 'en-US',
       pendingManualPayment: true,
     });
-    expect(status.kind).toBe('pending_review');
+    assert.equal(status.kind, 'pending_review');
   });
 
   it('billing past_due => kind past_due', () => {
@@ -146,7 +147,7 @@ describe('resolveWorkspaceStatus', () => {
       language: 'en',
       locale: 'en-US',
     });
-    expect(status.kind).toBe('past_due');
+    assert.equal(status.kind, 'past_due');
   });
 
   it('appAccess blocked => kind blocked', () => {
@@ -165,8 +166,8 @@ describe('resolveWorkspaceStatus', () => {
       language: 'en',
       locale: 'en-US',
     });
-    expect(status.kind).toBe('blocked');
-    expect(status.action).toBe('contact_support');
+    assert.equal(status.kind, 'blocked');
+    assert.equal(status.action, 'contact_support');
   });
 
   it('maintenance feature flag => kind maintenance', () => {
@@ -181,7 +182,7 @@ describe('resolveWorkspaceStatus', () => {
       language: 'en',
       locale: 'en-US',
     });
-    expect(status.kind).toBe('maintenance');
+    assert.equal(status.kind, 'maintenance');
   });
 
   it('active plan expiring <= 7 days => kind expiring', () => {
@@ -203,7 +204,7 @@ describe('resolveWorkspaceStatus', () => {
       language: 'en',
       locale: 'en-US',
     });
-    expect(status.kind).toBe('expiring');
+    assert.equal(status.kind, 'expiring');
   });
 
   it('cancelled/expired/refunded => kind inactive', () => {
@@ -222,6 +223,6 @@ describe('resolveWorkspaceStatus', () => {
       language: 'en',
       locale: 'en-US',
     });
-    expect(status.kind).toBe('inactive');
+    assert.equal(status.kind, 'inactive');
   });
 });

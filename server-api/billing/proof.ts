@@ -112,20 +112,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  // Pre-attach the proof without persisting the request just yet to leverage validation
-  const proofInput = {
-    requestId: manualRequest.id,
-    userId: manualRequest.userId,
-    mimeType,
-    sizeBytes,
-  };
-
-  // Temporarily place the reconstructed request in memory so attachManualPaymentProof can find it
-  // But attachManualPaymentProof expects it via REQUESTS.get(). Actually it's easier to just call attachManualPaymentProof if it's in REQUESTS.
-  // We can just construct the proof metadata directly, or inject the request. Let's see...
-  // Actually, wait, `attachManualPaymentProof` loads the request from REQUESTS or DB. 
-  // Let's modify attachManualPaymentProof to accept a preloaded request or bypass it here.
-  // Actually, I can just create the proof object manually here since we have the reconstructed request!
   const maxBytes = getManualPaymentProofMaxBytes();
   if (sizeBytes > maxBytes) {
     return res.status(413).json({
@@ -143,7 +129,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ok: false,
       requestId,
       error: 'Unsupported file type',
-      errorCode: 'unsupported_media_type',
+      errorCode: 'invalid_proof_type',
     });
   }
 

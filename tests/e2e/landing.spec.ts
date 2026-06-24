@@ -200,7 +200,7 @@ test('billing modal creates manual invoice and submits proof with inline validat
             allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
             storage: 'persisted',
           },
-          message: 'Manual payment is pending admin review.',
+          message: 'Invoice is ready. Transfer the exact amount, then upload proof to enter admin review.',
         },
       }),
     });

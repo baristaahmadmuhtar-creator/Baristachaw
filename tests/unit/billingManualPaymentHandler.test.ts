@@ -308,7 +308,7 @@ test('manual checkout still returns actionable invoice when receipt storage is t
     assert.equal(body.reviewStorage, 'persisted');
     assert.equal(body.manualInvoice.proof.endpoint, '/api/billing/proof');
     assert.equal(body.manualInvoice.proof.storage, 'persisted');
-    assert.match(body.manualInvoice.message, /pending admin review/i);
+    assert.match(body.manualInvoice.message, /Invoice is ready/i);
     assert.match(body.manualInvoice.supportLinks.whatsappUrl, /^https:\/\/wa\.me\//);
   } finally {
     globalThis.fetch = activeFetch;

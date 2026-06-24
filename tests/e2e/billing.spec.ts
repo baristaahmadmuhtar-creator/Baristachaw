@@ -145,7 +145,7 @@ test('upgrade gate flows to manual invoice checkout and handles valid/invalid pr
             allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
             storage: 'persisted',
           },
-          message: 'Manual payment is pending admin review.',
+          message: 'Invoice is ready. Transfer the exact amount, then upload proof to enter admin review.',
         },
       }),
     });
@@ -280,7 +280,7 @@ test('free users can choose Pro directly from the AI gate checkout', async ({ pa
             allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
             storage: 'persisted',
           },
-          message: 'Manual payment is pending admin review.',
+          message: 'Invoice is ready. Transfer the exact amount, then upload proof to enter admin review.',
         },
       }),
     });
@@ -339,7 +339,7 @@ test('starter users only see Pro as a webapp upgrade option', async ({ page }) =
             allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
             storage: 'persisted',
           },
-          message: 'Manual payment is pending admin review.',
+          message: 'Invoice is ready. Transfer the exact amount, then upload proof to enter admin review.',
         },
       }),
     });

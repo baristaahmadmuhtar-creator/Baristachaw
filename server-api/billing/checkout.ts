@@ -125,7 +125,7 @@ function manualInvoiceResponse(input: {
         storage: input.reviewStorage,
       },
       message: proofReady
-        ? 'Manual payment is pending admin review. Paid entitlement is not granted until the payment is verified.'
+        ? 'Invoice is ready. Transfer the exact amount, then upload proof to enter admin review.'
         : 'Manual payment details are ready, but automated proof storage is temporarily unavailable. Send proof to support with the invoice ID for admin review.',
     },
   };

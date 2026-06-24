@@ -150,9 +150,10 @@ async function classifySupabaseAuthFailure(status: number, message: string, mode
       const config = getSupabaseAdminConfig();
       if (config.configured) {
         try {
+          const safeEmail = `"${email.replace(/"/g, '""')}"`;
           const users = await supabaseAdminRest<any[]>(
             config,
-            `app_users?email=eq.${encodeURIComponent(email)}&select=id&limit=1`
+            `app_users?email=eq.${encodeURIComponent(safeEmail)}&select=id&limit=1`
           );
           if (Array.isArray(users) && users.length === 0) {
             return {

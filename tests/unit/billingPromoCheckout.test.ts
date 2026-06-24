@@ -5,6 +5,7 @@ import checkoutHandler from '../../server-api/billing/checkout.ts';
 
 const ORIGINAL_ENV = {
   JWT_SECRET: process.env.JWT_SECRET,
+  SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET,
   MANUAL_PAYMENT_ENABLED: process.env.MANUAL_PAYMENT_ENABLED,
   SUPABASE_URL: process.env.SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -87,6 +88,7 @@ let originalFetch: typeof fetch | undefined;
 
 test.beforeEach(() => {
   process.env.JWT_SECRET = 'test-secret';
+  process.env.SUPABASE_JWT_SECRET = 'test-secret';
   process.env.MANUAL_PAYMENT_ENABLED = 'true';
   process.env.SUPABASE_URL = 'https://unit-test.supabase.co';
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'dummy-service-role-key';

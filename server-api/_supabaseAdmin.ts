@@ -93,6 +93,41 @@ export async function createSignedUploadUrl(
   };
 }
 
+export async function createSignedReadUrl(
+  config: Extract<SupabaseAdminConfig, { configured: true }>,
+  bucket: string,
+  path: string,
+  expiresInSeconds = 3600,
+): Promise<{ signedUrl: string; path: string }> {
+  const response = await fetch(`${config.url}/storage/v1/object/sign/${bucket}/${path}`, {
+    method: 'POST',
+    headers: {
+      apikey: config.serviceRoleKey,
+      Authorization: `Bearer ${config.serviceRoleKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ expiresIn: expiresInSeconds }),
+  });
+  
+  const text = await response.text();
+  if (!response.ok) {
+    throw new Error(`Supabase read sign returned ${response.status}: ${text.slice(0, 180)}`);
+  }
+  
+  const data = JSON.parse(text) as { signedURL?: string; signedUrl?: string; signed_url?: string; url?: string };
+  const urlSuffix = data.signedURL || data.signedUrl || data.signed_url || data.url || '';
+  
+  let absoluteUrl = urlSuffix;
+  if (urlSuffix && urlSuffix.startsWith('/')) {
+    absoluteUrl = `${config.url}/storage/v1${urlSuffix}`;
+  }
+  
+  return {
+    signedUrl: absoluteUrl,
+    path: path
+  };
+}
+
 export function hashRequestIp(req: VercelRequest): string {
   const forwarded = firstHeaderValue(req.headers['x-forwarded-for']);
   const ip = (

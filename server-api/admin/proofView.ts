@@ -8,7 +8,7 @@ import {
   sanitizeErrorDetails,
 } from '../_shared.js';
 import { requireAdmin } from './_access.js';
-import { getSupabaseAdminConfig } from '../_supabaseAdmin.js';
+import { getSupabaseAdminConfig, createSignedReadUrl } from '../_supabaseAdmin.js';
 import { loadPersistedManualPaymentRequest, getManualPaymentRequest } from '../billing/manualPayments.js';
 
 const ADMIN_PROOF_VIEW_RATE_LIMIT = {
@@ -102,44 +102,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const path = request.proof.generatedFileName;
-    const signUrl = `${config.url}/storage/v1/object/sign/${bucket}/${path}`;
-    const response = await fetch(signUrl, {
-      method: 'POST',
-      headers: {
-        apikey: config.serviceRoleKey,
-        Authorization: `Bearer ${config.serviceRoleKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ expiresIn: 120 }), // URL valid for 2 minutes
-    });
-
-    const text = await response.text();
-    if (!response.ok) {
-      throw new Error(`Supabase storage sign returned ${response.status}: ${text.slice(0, 180)}`);
-    }
-
-    const data = JSON.parse(text) as { signedURL?: string; signedUrl?: string };
-    const signedUrl = data.signedURL || data.signedUrl;
-    if (!signedUrl) {
-      throw new Error('Signed URL was missing from storage response');
-    }
-
-    // Resolve relative signed URL path if it is relative
-    let absoluteSignedUrl = signedUrl;
-    if (!absoluteSignedUrl.startsWith('http')) {
-      if (absoluteSignedUrl.startsWith('/storage/v1')) {
-        absoluteSignedUrl = `${config.url}${absoluteSignedUrl}`;
-      } else {
-        absoluteSignedUrl = `${config.url}/storage/v1${absoluteSignedUrl.startsWith('/') ? '' : '/'}${absoluteSignedUrl}`;
-      }
-    }
+    const signedData = await createSignedReadUrl(config, bucket, path, 120);
 
     return res.status(200).json({
       ok: true,
       requestId,
-      signedUrl: absoluteSignedUrl,
+      signedUrl: signedData.signedUrl,
       mimeType: request.proof.mimeType,
-      fileName: path,
+      fileName: signedData.path,
     });
   } catch (error) {
     console.error('Failed to generate signed read URL:', error);

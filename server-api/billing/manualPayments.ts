@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import jwt from 'jsonwebtoken';
 import {
   formatCurrency,
   getPlanByCode,
@@ -264,6 +265,60 @@ function readMetadataObject(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
     : {};
+}
+
+export function createDraftToken(request: ManualPaymentRequest): string {
+  const secret = process.env.SUPABASE_JWT_SECRET;
+  if (!secret) throw new Error('Missing SUPABASE_JWT_SECRET for draft token');
+  
+  const payload = {
+    userId: request.userId,
+    email: request.email,
+    planCode: request.planCode,
+    duration: request.duration,
+    currency: request.currency,
+    amount: request.amount,
+    amountLabel: request.amountLabel,
+    uniqueSuffix: request.uniqueSuffix,
+    promoCode: request.promoCode,
+    createdAt: request.createdAt,
+    instructions: request.instructions,
+  };
+  
+  // 3 days expiration for draft tokens
+  return jwt.sign(payload, secret, { expiresIn: '3d', subject: request.id });
+}
+
+export function verifyDraftToken(token: string, userId: string): ManualPaymentRequest | null {
+  const secret = process.env.SUPABASE_JWT_SECRET;
+  if (!secret) return null;
+
+  try {
+    const decoded = jwt.verify(token, secret) as jwt.JwtPayload;
+    if (decoded.userId !== userId) return null;
+    if (!decoded.sub) return null;
+
+    const req: ManualPaymentRequest = {
+      id: decoded.sub,
+      userId: decoded.userId,
+      email: decoded.email,
+      planCode: decoded.planCode as PaidPlanCode,
+      duration: decoded.duration as BillingDuration,
+      currency: decoded.currency as CurrencyCode,
+      amount: decoded.amount,
+      amountLabel: decoded.amountLabel,
+      uniqueSuffix: decoded.uniqueSuffix,
+      promoCode: decoded.promoCode,
+      createdAt: decoded.createdAt,
+      updatedAt: decoded.createdAt,
+      status: 'pending_review',
+      paymentActionRequired: true,
+      instructions: decoded.instructions,
+    };
+    return req;
+  } catch (err) {
+    return null;
+  }
 }
 
 function normalizeBankDetails(value: unknown, fallback: BankDetail[] | undefined): BankDetail[] | undefined {

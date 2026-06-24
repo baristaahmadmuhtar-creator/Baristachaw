@@ -9,6 +9,7 @@ import { resetManualPaymentRequestsForTests, readManualPaymentInstructions } fro
 
 const ORIGINAL_ENV = {
   JWT_SECRET: process.env.JWT_SECRET,
+  SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET,
   ADMIN_EMAILS: process.env.ADMIN_EMAILS,
   MANUAL_PAYMENT_ENABLED: process.env.MANUAL_PAYMENT_ENABLED,
   MANUAL_PAYMENT_BANK_NAME: process.env.MANUAL_PAYMENT_BANK_NAME,
@@ -128,6 +129,7 @@ test.beforeEach(() => {
   mockAudits.length = 0;
 
   process.env.JWT_SECRET = 'billing-unit-test-secret-32-chars-min';
+  process.env.SUPABASE_JWT_SECRET = 'billing-unit-test-secret-32-chars-min';
   process.env.ADMIN_EMAILS = 'owner@example.com';
   process.env.MANUAL_PAYMENT_ENABLED = '1';
   process.env.MANUAL_PAYMENT_BANK_NAME = 'Unit Bank';
@@ -225,7 +227,14 @@ test.beforeEach(() => {
     }
 
     if (url.includes('/rest/v1/payment_receipts')) {
-      return new Response(JSON.stringify([{ id: 'mocked-receipt-id' }]), {
+      const method = init?.method || 'GET';
+      if (method === 'POST' || method === 'PATCH') {
+        return new Response(JSON.stringify([{ id: 'mocked-receipt-id' }]), {
+          status: 201,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify([]), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -331,6 +340,7 @@ test('manual payment proof accepts allowlisted metadata and rejects unsafe uploa
   const proofReq = makeReq({
     cookies: { auth_token: token },
     body: {
+      draftToken: body.draftToken,
       requestId,
       mimeType: 'image/png',
       sizeBytes: 12345,
@@ -352,6 +362,7 @@ test('manual payment proof accepts allowlisted metadata and rejects unsafe uploa
   const badTypeReq = makeReq({
     cookies: { auth_token: token },
     body: {
+      draftToken: body.draftToken,
       requestId,
       mimeType: 'text/html',
       sizeBytes: 100,
@@ -365,6 +376,7 @@ test('manual payment proof accepts allowlisted metadata and rejects unsafe uploa
   const tooLargeReq = makeReq({
     cookies: { auth_token: token },
     body: {
+      draftToken: body.draftToken,
       requestId,
       mimeType: 'application/pdf',
       sizeBytes: 2 * 1024 * 1024,
@@ -381,6 +393,7 @@ test('manual payment proof blocks duplicate checkout until admin review finishes
   const proofReq = makeReq({
     cookies: { auth_token: token },
     body: {
+      draftToken: body.draftToken,
       requestId: body.paymentRequestId,
       mimeType: 'image/png',
       sizeBytes: 12345,
@@ -410,6 +423,7 @@ test('manual payment proof falls back to support when signed upload generation f
     const proofReq = makeReq({
       cookies: { auth_token: token },
       body: {
+        draftToken: body.draftToken,
         requestId: body.paymentRequestId,
         mimeType: 'image/jpeg',
         sizeBytes: 32100,
@@ -458,6 +472,7 @@ test('admin manual payment verification grants entitlement only after verified p
   const proofReq = makeReq({
     cookies: { auth_token: token },
     body: {
+      draftToken: body.draftToken,
       requestId: body.paymentRequestId,
       mimeType: 'application/pdf',
       sizeBytes: 54321,

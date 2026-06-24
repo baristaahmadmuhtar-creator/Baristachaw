@@ -12,7 +12,7 @@ import {
   loadPersistedManualPaymentQrConfigs,
   loadPersistedManualPaymentRequest,
   normalizeManualCurrency,
-  persistManualPaymentRequest,
+  createDraftToken,
 } from './manualPayments.js';
 import { buildAccountStatus } from '../account/status.js';
 import { getSupabaseAdminConfig, supabaseAdminRest } from '../_supabaseAdmin.js';
@@ -317,37 +317,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       // Idempotency: Check if there's already a pending manual request for the same plan & duration.
-      let existingRequestId: string | undefined;
       try {
-        const pendingRows = await supabaseAdminRest<any[]>(config, `payment_receipts?user_id=eq.${encodeURIComponent(authResult.auth.userId)}&status=eq.queued&requested_plan_code=eq.${planCode}&requested_duration=eq.${duration}&select=manual_request_id,metadata&order=created_at.desc&limit=1`);
-        if (pendingRows?.[0]) {
-           const row = pendingRows[0];
-           existingRequestId = row.manual_request_id || row.metadata?.manualRequestId;
+        const pendingRows = await supabaseAdminRest<any[]>(config, `payment_receipts?user_id=eq.${encodeURIComponent(authResult.auth.userId)}&status=in.(queued,manual_review)&requested_plan_code=eq.${planCode}&requested_duration=eq.${duration}&requested_currency=eq.${currency}&select=manual_request_id,metadata&limit=1`);
+        if (pendingRows && pendingRows.length > 0) {
+          return res.status(403).json({
+            ok: false,
+            requestId,
+            error: 'Anda memiliki tagihan manual yang belum selesai untuk paket ini.',
+            errorCode: 'pending_invoice_exists',
+            details: 'Harap selesaikan pembayaran dan unggah bukti transfer, atau tunggu review admin selesai sebelum memesan ulang paket yang sama.',
+          });
         }
       } catch (e) {
-        // ignore
-      }
-
-      if (existingRequestId) {
-        const existingRequest = await loadPersistedManualPaymentRequest(existingRequestId, authResult.auth.userId);
-        if (
-          existingRequest &&
-          existingRequest.status === 'pending_review' &&
-          existingRequest.planCode === validPlanCode &&
-          (existingRequest.promoCode || '') === (promoCode || '')
-        ) {
-          // Verify it matches the override amount if any
-          if (overrideAmount === undefined || existingRequest.amount === (currency === 'idr' ? overrideAmount + (existingRequest.uniqueSuffix || 0) : overrideAmount)) {
-            return res.status(200).json(manualInvoiceResponse({
-              requestId,
-              planCode,
-              duration,
-              promoCode: promoCode || undefined,
-              manualRequest: existingRequest,
-              reviewStorage: 'persisted',
-            }));
-          }
-        }
+        console.error('Failed to check pending manual payment idempotency:', e);
       }
     }
 
@@ -361,21 +343,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       overrideAmount,
       allowFallbackInstructions: true,
     });
+    
     if (manualRequest) {
-      let reviewStorage: 'persisted' | 'deferred' = 'deferred';
+      let draftToken = '';
       try {
-        reviewStorage = await persistManualPaymentRequest(manualRequest) ? 'persisted' : 'deferred';
+        draftToken = createDraftToken(manualRequest);
       } catch (error) {
-        console.error('Failed to persist manual payment request:', error);
+        console.error('Failed to create manual payment draft token:', error);
+        return res.status(500).json({
+          ok: false,
+          requestId,
+          error: 'Failed to prepare billing session',
+          errorCode: 'internal_error',
+        });
       }
-      return res.status(200).json(manualInvoiceResponse({
+
+      const responsePayload = manualInvoiceResponse({
         requestId,
         planCode,
         duration,
         promoCode: promoCode || undefined,
         manualRequest,
-        reviewStorage,
-      }));
+        reviewStorage: 'deferred',
+      });
+      // Attach token to response
+      (responsePayload as any).draftToken = draftToken;
+      return res.status(200).json(responsePayload);
     }
 
     return res.status(503).json({

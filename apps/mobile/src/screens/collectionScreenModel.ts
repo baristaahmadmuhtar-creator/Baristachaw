@@ -21,6 +21,7 @@ export function isCollectionNote(item: CollectionItemRecord): item is Collection
 export function buildFolderCounts(items: CollectionItemRecord[]): Map<string, number> {
   const counts = new Map<string, number>();
   items.forEach((item) => {
+    if (item.deletedAt) return;
     const key = item.folderId || 'uncategorized';
     counts.set(key, (counts.get(key) || 0) + 1);
   });
@@ -61,7 +62,8 @@ export function getFolderPreview(
   items: CollectionItemRecord[],
   limit = COLLECTION_FOLDER_PREVIEW_LIMIT,
 ): { folders: CollectionFolderRecord[]; remainingCount: number } {
-  const sorted = sortFoldersForPreview(folders, items);
+  const activeFolders = folders.filter(f => !f.deletedAt);
+  const sorted = sortFoldersForPreview(activeFolders, items);
   return {
     folders: sorted.slice(0, limit),
     remainingCount: Math.max(0, sorted.length - limit),
@@ -73,7 +75,7 @@ export function resolveActiveFolder(
   folders: CollectionFolderRecord[],
 ): CollectionFolderRecord | null {
   if (!selectedFolderId || selectedFolderId === 'uncategorized') return null;
-  return folders.find((folder) => folder.id === selectedFolderId) || null;
+  return folders.find((folder) => folder.id === selectedFolderId && !folder.deletedAt) || null;
 }
 
 export function resolveCollectionMode(input: {
@@ -92,7 +94,7 @@ export function isSelectedFolderStale(
   return Boolean(
     selectedFolderId &&
     selectedFolderId !== 'uncategorized' &&
-    !folders.some((folder) => folder.id === selectedFolderId),
+    !folders.some((folder) => folder.id === selectedFolderId && !folder.deletedAt),
   );
 }
 
@@ -144,6 +146,7 @@ export function filterCollectionItems(input: {
 }): CollectionItemRecord[] {
   const normalizedQuery = normalizeSearchValue(input.query);
   return input.items.filter((item) => {
+    if (item.deletedAt) return false;
     if (input.selectedFolderId === 'uncategorized' && item.folderId) return false;
     if (
       input.selectedFolderId &&
@@ -161,12 +164,14 @@ export function filterCollectionFolders(input: {
   items: CollectionItemRecord[];
   query: string;
 }): CollectionFolderRecord[] {
+  const activeFolders = input.folders.filter(f => !f.deletedAt);
   const normalizedQuery = normalizeSearchValue(input.query);
-  if (!normalizedQuery) return input.folders;
+  if (!normalizedQuery) return activeFolders;
 
-  return input.folders.filter((folder) => {
+  return activeFolders.filter((folder) => {
     if (normalizeSearchValue(folder.name).includes(normalizedQuery)) return true;
     return input.items.some((item) =>
+      !item.deletedAt &&
       item.folderId === folder.id &&
       itemMatchesQuery(item, normalizedQuery),
     );

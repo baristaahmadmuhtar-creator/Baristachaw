@@ -8,11 +8,17 @@ import {
   requireAuth,
 } from '../_shared.js';
 import {
-  attachManualPaymentProof,
   getManualPaymentProofMaxBytes,
-  loadPersistedManualPaymentRequest,
-  persistManualPaymentProof,
+  persistManualPaymentRequest,
+  verifyDraftToken,
 } from './manualPayments.js';
+
+const ALLOWED_PROOF_TYPES: ReadonlyMap<string, string> = new Map([
+  ['image/jpeg', 'jpg'],
+  ['image/png', 'png'],
+  ['image/webp', 'webp'],
+  ['application/pdf', 'pdf'],
+] as const);
 
 import {
   getSupabaseAdminConfig,
@@ -82,46 +88,91 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const paymentRequestId = normalizeRequestId(req.body?.requestId);
-  const proofInput = {
-    requestId: paymentRequestId,
-    userId: authResult.auth.userId,
-    mimeType: normalizeMimeType(req.body?.mimeType),
-    sizeBytes: normalizeSize(req.body?.sizeBytes),
-  };
+  const draftToken = typeof req.body?.draftToken === 'string' ? req.body.draftToken : '';
+  const mimeType = normalizeMimeType(req.body?.mimeType);
+  const sizeBytes = normalizeSize(req.body?.sizeBytes);
 
-  let result = attachManualPaymentProof(proofInput);
-  if (result.ok === false && result.errorCode === 'manual_payment_not_found' && paymentRequestId) {
-    await loadPersistedManualPaymentRequest(paymentRequestId, authResult.auth.userId).catch((error) => {
-      console.error('Failed to hydrate persisted manual payment request:', error);
-      return undefined;
-    });
-    result = attachManualPaymentProof(proofInput);
-  }
-
-  if (result.ok === false) {
-    return res.status(result.statusCode).json({
+  if (!draftToken) {
+    return res.status(400).json({
       ok: false,
       requestId,
-      error: result.error,
-      errorCode: result.errorCode,
-      maxBytes: getManualPaymentProofMaxBytes(),
+      error: 'Draft token is required to submit payment proof.',
+      errorCode: 'validation_error',
     });
   }
+
+  const manualRequest = verifyDraftToken(draftToken, authResult.auth.userId);
+  if (!manualRequest || manualRequest.id !== paymentRequestId) {
+    return res.status(403).json({
+      ok: false,
+      requestId,
+      error: 'Invalid or expired manual payment session.',
+      errorCode: 'invalid_draft_token',
+      details: 'Please start a new checkout process.',
+    });
+  }
+
+  // Pre-attach the proof without persisting the request just yet to leverage validation
+  const proofInput = {
+    requestId: manualRequest.id,
+    userId: manualRequest.userId,
+    mimeType,
+    sizeBytes,
+  };
+
+  // Temporarily place the reconstructed request in memory so attachManualPaymentProof can find it
+  // But attachManualPaymentProof expects it via REQUESTS.get(). Actually it's easier to just call attachManualPaymentProof if it's in REQUESTS.
+  // We can just construct the proof metadata directly, or inject the request. Let's see...
+  // Actually, wait, `attachManualPaymentProof` loads the request from REQUESTS or DB. 
+  // Let's modify attachManualPaymentProof to accept a preloaded request or bypass it here.
+  // Actually, I can just create the proof object manually here since we have the reconstructed request!
+  const maxBytes = getManualPaymentProofMaxBytes();
+  if (sizeBytes > maxBytes) {
+    return res.status(413).json({
+      ok: false,
+      requestId,
+      error: 'File size exceeds maximum allowed',
+      errorCode: 'payload_too_large',
+      maxBytes,
+    });
+  }
+
+  const extension = ALLOWED_PROOF_TYPES.get(mimeType);
+  if (!extension) {
+    return res.status(415).json({
+      ok: false,
+      requestId,
+      error: 'Unsupported file type',
+      errorCode: 'unsupported_media_type',
+    });
+  }
+
+  const generatedFileName = `${manualRequest.userId}/${manualRequest.id}_proof_${Date.now()}.${extension}`;
+  const proofMetadata = {
+    generatedFileName,
+    mimeType,
+    sizeBytes,
+    storage: 'metadata_only' as const,
+    receivedAt: Date.now(),
+  };
+
+  manualRequest.proof = proofMetadata;
+  manualRequest.status = 'receipt_received';
 
   let proofStorage: 'storage_ready' | 'support_fallback' = 'support_fallback';
   let uploadUrl = '';
   let persistenceReady = false;
   try {
-    persistenceReady = await persistManualPaymentProof(result.request);
+    persistenceReady = await persistManualPaymentRequest(manualRequest);
   } catch (error) {
-    console.error('Failed to persist manual payment proof:', error);
+    console.error('Failed to persist manual payment request during proof upload:', error);
   }
 
   const config = getSupabaseAdminConfig();
   const bucket = (process.env.SUPABASE_STORAGE_BUCKET_PROOF || 'payment-proofs').trim();
   if (persistenceReady && config.configured && bucket) {
     try {
-      const signedData = await createSignedUploadUrl(config, bucket, result.proof.generatedFileName);
+      const signedData = await createSignedUploadUrl(config, bucket, generatedFileName);
       uploadUrl = signedData.signedUrl;
       proofStorage = 'storage_ready';
     } catch (error) {
@@ -132,13 +183,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   return res.status(200).json({
     ok: true,
     requestId,
-    paymentRequestId: result.request.id,
-    status: result.request.status,
-    proof: result.proof,
+    paymentRequestId: manualRequest.id,
+    status: manualRequest.status,
+    proof: manualRequest.proof,
     proofStorage,
     deliveryMode: uploadUrl ? 'direct_upload' : 'manual_support',
     uploadUrl: uploadUrl || undefined,
-    supportLinks: supportLinksFor(result.request),
+    supportLinks: supportLinksFor(manualRequest),
     paymentActionRequired: true,
     entitlement: 'pending_admin_review',
     message: uploadUrl

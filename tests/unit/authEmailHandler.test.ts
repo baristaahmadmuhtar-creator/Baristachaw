@@ -110,6 +110,9 @@ test('email sign-in maps invalid_credentials to email_not_registered if email do
     if (url.includes('/rest/v1/app_users')) {
       return jsonResponse([]);
     }
+    if (url.includes('/auth/v1/admin/users')) {
+      return jsonResponse([]);
+    }
     throw new Error(`Unexpected fetch ${url}`);
   }) as typeof fetch;
 

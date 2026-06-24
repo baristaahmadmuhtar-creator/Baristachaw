@@ -155,15 +155,32 @@ async function classifySupabaseAuthFailure(status: number, message: string, mode
             config,
             `app_users?email=eq.${encodeURIComponent(safeEmail)}&select=id&limit=1`
           );
-          if (Array.isArray(users) && users.length === 0) {
-            return {
-              statusCode: 401,
-              errorCode: 'email_not_registered',
-              error: 'Email is not registered',
-            };
+          let userExists = Array.isArray(users) && users.length > 0;
+          if (!userExists) {
+            // Also check Supabase Auth Admin users in case app_users isn't synced
+            const authResponse = await fetch(`${config.url}/auth/v1/admin/users`, {
+              headers: {
+                apikey: config.serviceRoleKey,
+                Authorization: `Bearer ${config.serviceRoleKey}`
+              }
+            });
+            if (authResponse.ok) {
+              const authData = await authResponse.json();
+              // In the open source API, we might just get an array or an object with 'users'
+              const authUsers = Array.isArray(authData) ? authData : authData?.users || [];
+              const authUserExists = authUsers.some((u: any) => u.email?.toLowerCase() === email.toLowerCase());
+              
+              if (!authUserExists) {
+                return {
+                  statusCode: 401,
+                  errorCode: 'email_not_registered',
+                  error: 'Email is not registered',
+                };
+              }
+            }
           }
         } catch (e) {
-          // ignore error and fallback to generic
+          // ignore error and fallback to generic invalid_credentials
         }
       }
     }

@@ -8,6 +8,11 @@ import {
   type AccountStatusSnapshot,
   type FeatureSurface,
 } from '../services/accountStatus';
+import { 
+  BILLING_PENDING_STORAGE_KEY, 
+  clearBillingPendingMarker, 
+  shouldClearBillingPendingMarker 
+} from '@baristachaw/shared/billingFlow';
 
 type AccountStatusContextValue = {
   snapshot: AccountStatusSnapshot | null;
@@ -51,6 +56,7 @@ export function AccountStatusProvider({ children }: { children: ReactNode }) {
       setSnapshot(null);
       setError(null);
       setLoading(false);
+      clearBillingPendingMarker();
       return;
     }
     setLoading(!snapshotRef.current);
@@ -58,10 +64,28 @@ export function AccountStatusProvider({ children }: { children: ReactNode }) {
       const next = await fetchAccountStatus(surface);
       setSnapshot(next);
       setError(null);
+
+      // Check if we need to clear the pending marker based on the new snapshot
+      let markerRaw: string | null = null;
+      try {
+        markerRaw = window.localStorage.getItem(BILLING_PENDING_STORAGE_KEY);
+      } catch {}
+      
+      if (markerRaw && shouldClearBillingPendingMarker({
+        markerRaw,
+        now: Date.now(),
+        billing: next.billing,
+      })) {
+        clearBillingPendingMarker();
+      }
+
     } catch (err) {
       if (err instanceof AccountStatusError) {
         setError(err);
-        if (err.status === 401 || err.status === 403) setSnapshot(null);
+        if (err.status === 401 || err.status === 403) {
+          setSnapshot(null);
+          clearBillingPendingMarker();
+        }
       } else {
         setError(new AccountStatusError('Account status unavailable.', { status: 0 }));
       }

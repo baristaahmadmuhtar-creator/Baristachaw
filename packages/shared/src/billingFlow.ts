@@ -12,6 +12,7 @@ export type PendingManualPaymentMarker = {
 };
 
 export type BillingSnapshotForPendingCheck = {
+  status?: string;
   provider?: string;
   paymentActionRequired?: boolean;
   paymentAction?: string;
@@ -135,4 +136,48 @@ export function shouldBlockDuplicateManualPayment(input: {
   if (billing.paymentActionRequired && action === 'contact_support') return true;
   return billing.paymentActionRequired === true
     && /waiting for admin|verification|review|menunggu review|pending review/.test(message);
+}
+
+export function clearBillingPendingMarker(): void {
+  if (typeof window !== 'undefined') {
+    try {
+      window.localStorage.removeItem(BILLING_PENDING_STORAGE_KEY);
+    } catch {}
+  }
+}
+
+export function shouldClearBillingPendingMarker(input: {
+  markerRaw?: string | null;
+  now?: number;
+  billing?: BillingSnapshotForPendingCheck | null;
+}): boolean {
+  if (!input.markerRaw) return false;
+  
+  const marker = parsePendingManualPaymentMarker(input.markerRaw, input.now);
+  if (!marker) return true; // Invalid or expired
+
+  const billing = input.billing;
+  if (!billing) return false; // Needs snapshot to decide
+
+  const status = String(billing.status || '').toLowerCase();
+  const provider = String(billing.provider || '').toLowerCase();
+  const action = String(billing.paymentAction || '').toLowerCase();
+  const message = String(billing.message || '').toLowerCase();
+
+  // 1. Account snapshot active
+  if (status === 'active' || status === 'trialing') return true;
+
+  // 2. Rejected or specific clear states
+  if (/rejected|declined|failed/.test(message)) return true;
+  
+  // 3. No longer pending according to the server.
+  const isPendingReview = (provider === 'manual' && billing.paymentActionRequired) ||
+    (billing.paymentActionRequired && action === 'contact_support') ||
+    (billing.paymentActionRequired === true && /waiting for admin|verification|review|menunggu review|pending review/.test(message));
+
+  if (!isPendingReview) {
+    return true;
+  }
+
+  return false;
 }

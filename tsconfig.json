@@ -8,6 +8,7 @@
   "include": [
     "api",
     "lib",
+    "server-api",
     "server.ts",
     "playwright.config.ts",
     "scripts"

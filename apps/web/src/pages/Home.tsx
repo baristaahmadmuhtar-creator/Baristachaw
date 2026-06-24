@@ -1012,7 +1012,7 @@ export function Home() {
                   className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-current/15 bg-[var(--bg-base)]/70 px-3 text-sm font-semibold text-primary transition-colors hover:bg-[var(--bg-base)]"
                 >
                   <CreditCard size={15} />
-                  {language === 'id' ? 'Lihat manfaat' : 'View benefits'}
+                  {t.homeViewBenefits || (language === 'id' ? 'Lihat manfaat' : 'View benefits')}
                 </button>
               ) : null}
               <button

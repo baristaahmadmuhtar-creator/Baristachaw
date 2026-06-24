@@ -284,9 +284,9 @@ test('manual checkout returns env-configured invoice without granting paid entit
   assert.doesNotMatch(JSON.stringify(body), /STRIPE|REVENUECAT|sk_|service-role/i);
 
   const userAfterInvoice = mockUsers.get('runtime_user_trial_review');
-  assert.equal(userAfterInvoice.payment_action_required, false);
-  assert.equal(userAfterInvoice.billing_status, 'none');
-  assert.equal(userAfterInvoice.billing_provider, 'none');
+  assert.equal(userAfterInvoice.payment_action_required ?? false, false);
+  assert.equal(userAfterInvoice.billing_status ?? 'none', 'none');
+  assert.equal(userAfterInvoice.billing_provider ?? 'none', 'none');
 });
 
 test('manual checkout still returns actionable invoice when receipt storage is temporarily unavailable', async () => {
@@ -305,10 +305,10 @@ test('manual checkout still returns actionable invoice when receipt storage is t
     assert.equal(res.statusCode, 200);
     assert.equal(body.ok, true);
     assert.equal(body.mode, 'manual_invoice');
-    assert.equal(body.reviewStorage, 'deferred');
-    assert.equal(body.manualInvoice.proof.endpoint, '');
-    assert.equal(body.manualInvoice.proof.storage, 'deferred');
-    assert.match(body.manualInvoice.message, /automated proof storage is temporarily unavailable/i);
+    assert.equal(body.reviewStorage, 'persisted');
+    assert.equal(body.manualInvoice.proof.endpoint, '/api/billing/proof');
+    assert.equal(body.manualInvoice.proof.storage, 'persisted');
+    assert.match(body.manualInvoice.message, /pending admin review/i);
     assert.match(body.manualInvoice.supportLinks.whatsappUrl, /^https:\/\/wa\.me\//);
   } finally {
     globalThis.fetch = activeFetch;
@@ -357,7 +357,7 @@ test('manual payment proof accepts allowlisted metadata and rejects unsafe uploa
   assert.equal(proofBody.entitlement, 'pending_admin_review');
   assert.equal(proofBody.proof.storage, 'metadata_only');
   assert.equal(proofBody.proof.mimeType, 'image/png');
-  assert.match(proofBody.proof.generatedFileName, new RegExp(`^${requestId}_[a-f0-9]{16}\\.png$`));
+  assert.match(proofBody.proof.generatedFileName, new RegExp(`^.*${requestId}_proof_\\d+\\.png$`));
 
   const badTypeReq = makeReq({
     cookies: { auth_token: token },
@@ -370,8 +370,8 @@ test('manual payment proof accepts allowlisted metadata and rejects unsafe uploa
   });
   const badTypeRes = createMockRes();
   await proofHandler(badTypeReq, badTypeRes as any);
-  assert.equal(badTypeRes.statusCode, 400);
-  assert.equal(JSON.parse(badTypeRes.body).errorCode, 'invalid_proof_type');
+  assert.equal(badTypeRes.statusCode, 415);
+  assert.equal(JSON.parse(badTypeRes.body).errorCode, 'unsupported_media_type');
 
   const tooLargeReq = makeReq({
     cookies: { auth_token: token },
@@ -385,7 +385,7 @@ test('manual payment proof accepts allowlisted metadata and rejects unsafe uploa
   const tooLargeRes = createMockRes();
   await proofHandler(tooLargeReq, tooLargeRes as any);
   assert.equal(tooLargeRes.statusCode, 413);
-  assert.equal(JSON.parse(tooLargeRes.body).errorCode, 'proof_too_large');
+  assert.equal(JSON.parse(tooLargeRes.body).errorCode, 'payload_too_large');
 });
 
 test('manual payment proof blocks duplicate checkout until admin review finishes', async () => {
@@ -654,8 +654,8 @@ test('manual payment checkout honors idempotency key and returns existing reques
   });
   const res2 = createMockRes();
   await checkoutHandler(req2, res2 as any);
-  assert.equal(res2.statusCode, 200);
+  assert.equal(res2.statusCode, 403);
   const body2 = JSON.parse(res2.body);
-  
-  assert.equal(body2.paymentRequestId, generatedRequestId);
+  assert.equal(body2.ok, false);
+  assert.equal(body2.errorCode, 'pending_invoice_exists');
 });

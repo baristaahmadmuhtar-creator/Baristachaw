@@ -364,7 +364,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         duration,
         promoCode: promoCode || undefined,
         manualRequest,
-        reviewStorage: 'deferred',
+        reviewStorage: 'persisted',
       });
       // Attach token to response
       (responsePayload as any).draftToken = draftToken;

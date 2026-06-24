@@ -18,6 +18,7 @@ import type { CollectionItem } from "../types";
 import Markdown from "react-markdown";
 import { useRuntimeDisplayMode } from "../hooks/useRuntimeDisplayMode";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
+import { useSEO } from "../hooks/useSEO";
 import { subscribeMediaQueryChange } from "../utils/mediaQuery";
 import { useAccountStatus } from "../context/AccountStatusContext";
 import type { AccountFeatureFlag, AccountStatusSnapshot } from "../services/accountStatus";
@@ -146,6 +147,13 @@ function FeatureStatusBadge({ flag, t }: { flag?: AccountFeatureFlag | null; t: 
 
 export function Home() {
   const { t, language, setLanguage } = useGlobalState();
+  
+  useSEO({
+    title: t.homeSEOTitle || "Baristachaw - AI Coffee Assistant",
+    description: t.homeSEODescription || "Your AI-powered barista assistant. Scan coffee beans, get expert recipes, and brew like a pro.",
+    url: "https://app.baristachaw.com/"
+  });
+
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<HomeSearchResult | null>(null);

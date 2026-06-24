@@ -15,6 +15,7 @@ import {
   GoogleMark,
 } from '../components/icons';
 import type { Language } from '../types';
+import { useSEO } from '../hooks/useSEO';
 
 interface AuthScreenProps {
   intent?: 'signIn' | 'signUp';
@@ -38,6 +39,13 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
   const isSignUp = intent === 'signUp';
   const authTitle = isSignUp ? t.authRouteSignupTitle : t.authRouteSigninTitle;
   const authSubtitle = isSignUp ? t.authRouteSignupSubtitle : t.authRouteSigninSubtitle;
+
+  useSEO({
+    title: `${authTitle} - Baristachaw`,
+    description: authSubtitle,
+    url: `https://app.baristachaw.com${isSignUp ? '/register' : '/login'}`
+  });
+
   const isAuthActionPending = activeAction !== null || authBusy;
   const isGoogleBusy = activeAction === 'google';
   const isFacebookBusy = activeAction === 'facebook';

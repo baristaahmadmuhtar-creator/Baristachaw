@@ -280,7 +280,7 @@ test('manual checkout returns env-configured invoice without granting paid entit
   assert.match(body.manualInvoice.instructions.whatsappUrl, /^https:\/\/wa\.me\/6731234567\?text=/);
   assert.equal(body.manualInvoice.instructions.notifyWebhookConfigured, false);
   assert.equal(body.manualInvoice.proof.endpoint, '/api/billing/proof');
-  assert.match(body.manualInvoice.message, /not granted until the payment is verified/i);
+  assert.match(body.manualInvoice.message, /Invoice is ready/i);
   assert.doesNotMatch(JSON.stringify(body), /STRIPE|REVENUECAT|sk_|service-role/i);
 
   const userAfterInvoice = mockUsers.get('runtime_user_trial_review');
@@ -371,7 +371,7 @@ test('manual payment proof accepts allowlisted metadata and rejects unsafe uploa
   const badTypeRes = createMockRes();
   await proofHandler(badTypeReq, badTypeRes as any);
   assert.equal(badTypeRes.statusCode, 415);
-  assert.equal(JSON.parse(badTypeRes.body).errorCode, 'unsupported_media_type');
+  assert.equal(JSON.parse(badTypeRes.body).errorCode, 'invalid_proof_type');
 
   const tooLargeReq = makeReq({
     cookies: { auth_token: token },

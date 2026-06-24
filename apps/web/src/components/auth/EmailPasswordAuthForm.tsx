@@ -153,8 +153,12 @@ export function EmailPasswordAuthForm({
         setPassword('');
         setStep('confirmation');
       }
-    } catch {
-      // AuthModalContext surfaces the localized server error.
+    } catch (err: any) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg === t.authEmailNotRegistered || msg.includes('belum terdaftar') || msg.includes('not registered')) {
+        setLocalError(msg);
+        clearAuthError();
+      }
     } finally {
       setPendingAction(null);
     }
@@ -302,10 +306,22 @@ export function EmailPasswordAuthForm({
 
   const renderError = () => {
     if (!localError) return null;
+    const isNotRegistered = localError === t.authEmailNotRegistered || localError.includes('belum terdaftar') || localError.includes('not registered');
     return (
       <div className="mb-4 flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-sm font-medium text-red-600 dark:text-red-400">
         <AlertCircle size={18} className="mt-0.5 shrink-0" variant="glyph" tone="red" />
-        <span>{localError}</span>
+        <div className="flex-1 flex flex-col items-start gap-1">
+          <span>{localError}</span>
+          {isNotRegistered && !isSignUp && (
+            <button
+              type="button"
+              onClick={() => { switchMode(); setLocalError(''); }}
+              className="mt-1 text-xs font-bold uppercase tracking-wider text-red-700 hover:text-red-800 dark:text-red-300 dark:hover:text-red-200 text-left"
+            >
+              {t.authSwitchToPasswordSignup || 'Create a new Baristachaw account'}
+            </button>
+          )}
+        </div>
       </div>
     );
   };

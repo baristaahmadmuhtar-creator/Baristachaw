@@ -125,7 +125,7 @@ function buildNativeShellBootstrap(platform: 'ios' | 'android', authSession?: Au
 }
 
 function buildWebParityUrl(baseUrl: string, platform: 'ios' | 'android', hostSafeBottom: number, language: string) {
-  const safeBottom = Math.max(0, Math.min(48, Math.round(hostSafeBottom)));
+  const safeBottom = Math.max(0, Math.min(120, Math.round(hostSafeBottom)));
   const languageParam = encodeURIComponent(language);
   try {
     const url = new URL(baseUrl);

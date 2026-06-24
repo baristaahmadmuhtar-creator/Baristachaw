@@ -13,6 +13,7 @@ import {
 
 import { decorateUserWithAdminClaims } from '../admin/_access.js';
 import { fetchSupabaseProfile, resolveAppUrl, resolveSupabaseAuthConfig } from './mobile/shared.js';
+import { getSupabaseAdminConfig, supabaseAdminRest } from '../_supabaseAdmin.js';
 
 const EMAIL_AUTH_RATE_LIMIT = {
   maxRequests: 18,
@@ -130,7 +131,7 @@ function readSupabaseError(payload: SupabaseAuthPayload): string {
   );
 }
 
-function classifySupabaseAuthFailure(status: number, message: string, mode: PasswordAuthMode) {
+async function classifySupabaseAuthFailure(status: number, message: string, mode: PasswordAuthMode, email: string) {
   const text = message.toLowerCase();
   if (status === 429 || text.includes('rate limit')) {
     return { statusCode: 429, errorCode: 'rate_limited', error: 'Too many authentication attempts' };
@@ -145,6 +146,26 @@ function classifySupabaseAuthFailure(status: number, message: string, mode: Pass
     return { statusCode: 400, errorCode: 'weak_password', error: 'Password does not meet the requirement' };
   }
   if (text.includes('invalid login credentials') || text.includes('invalid credentials') || status === 400) {
+    if (mode === 'signIn' && email) {
+      const config = getSupabaseAdminConfig();
+      if (config.configured) {
+        try {
+          const users = await supabaseAdminRest<any[]>(
+            config,
+            `app_users?email=eq.${encodeURIComponent(email)}&select=id&limit=1`
+          );
+          if (Array.isArray(users) && users.length === 0) {
+            return {
+              statusCode: 401,
+              errorCode: 'email_not_registered',
+              error: 'Email is not registered',
+            };
+          }
+        } catch (e) {
+          // ignore error and fallback to generic
+        }
+      }
+    }
     return {
       statusCode: mode === 'signIn' ? 401 : 400,
       errorCode: mode === 'signIn' ? 'invalid_credentials' : 'auth_rejected',
@@ -197,7 +218,7 @@ async function requestSupabaseEmailAuth(params: {
   const payload = await response.json().catch(() => ({})) as SupabaseAuthPayload;
 
   if (!response.ok) {
-    const failure = classifySupabaseAuthFailure(response.status, readSupabaseError(payload), params.mode);
+    const failure = await classifySupabaseAuthFailure(response.status, readSupabaseError(payload), params.mode, params.email);
     const error = new Error(failure.error) as Error & { statusCode?: number; errorCode?: string };
     error.statusCode = failure.statusCode;
     error.errorCode = failure.errorCode;

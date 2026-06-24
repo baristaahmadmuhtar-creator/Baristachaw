@@ -224,6 +224,13 @@ test.beforeEach(() => {
       });
     }
 
+    if (url.includes('/rest/v1/payment_receipts')) {
+      return new Response(JSON.stringify([{ id: 'mocked-receipt-id' }]), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     if (url.includes('/rest/v1/')) {
       return new Response(JSON.stringify([]), {
         status: 200,
@@ -524,4 +531,116 @@ test('manual payment instructions return dynamic banks by currency (BND / IDR)',
   assert.equal(bndInstructions.whatsappNumber, '6738270092');
   assert.equal(bndInstructions.instagramHandle, '@baristachaw');
   assert.equal(bndInstructions.instagramUrl, 'https://instagram.com/baristachaw');
+});
+
+test('manual payment checkout honors idempotency key and returns existing request', async () => {
+  const tokenPayload = {
+    id: 'idempotent-user',
+    email: 'idempotent@example.com',
+    name: 'Idempotent User',
+  };
+  const token = createToken(tokenPayload);
+
+  let insertCount = 0;
+  let generatedRequestId = '';
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    const method = init?.method || 'GET';
+
+    if (url.includes('/rest/v1/payment_receipts') && method === 'GET') {
+      return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/payment_receipts') && method === 'POST') {
+      if (insertCount > 0) {
+        return new Response(JSON.stringify({ code: '23505', message: 'duplicate key value violates unique constraint' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+      }
+      insertCount++;
+      return new Response(JSON.stringify([{ id: 'mock-id' }]), { status: 201, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/payment_receipts') && method === 'PATCH') {
+      return new Response(JSON.stringify([{ id: 'mock-id' }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    // Also mock app_users so the first request doesn't throw
+    if (url.includes('/rest/v1/app_users') && method === 'GET') {
+      return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/app_users') && method === 'POST') {
+      return new Response(JSON.stringify([{ id: tokenPayload.id }]), { status: 201, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/app_users') && method === 'PATCH') {
+      return new Response(JSON.stringify([{ id: tokenPayload.id }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/user_entitlements') || url.includes('/rest/v1/app_plans') || url.includes('/rest/v1/app_feature_flags') || url.includes('/rest/v1/admin_audit_events') || url.includes('/rest/v1/plan_prices')) {
+      return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    throw new Error(`Unexpected fetch: ${method} ${url}`);
+  }) as typeof fetch;
+
+  const req1 = makeReq({
+    cookies: { auth_token: token },
+    body: {
+      planCode: 'pro',
+      duration: 'yearly',
+      idempotencyKey: 'idem-test-key-1',
+    },
+  });
+  const res1 = createMockRes();
+  await checkoutHandler(req1, res1 as any);
+  assert.equal(res1.statusCode, 200);
+  const body1 = JSON.parse(res1.body);
+  generatedRequestId = body1.paymentRequestId;
+  assert.match(generatedRequestId, /^manual_/);
+
+  // Change fetch to return existing record for the next request
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    const method = init?.method || 'GET';
+    console.log(`[TEST FETCH MOCK] ${method} ${url}`);
+
+    if (url.includes('/rest/v1/payment_receipts') && method === 'GET') {
+      const decodedUrl = decodeURIComponent(url);
+      if (decodedUrl.includes('select=manual_request_id,metadata')) {
+        console.log(`[TEST FETCH MOCK] Returning existing request id: ${generatedRequestId}`);
+        return new Response(JSON.stringify([{ manual_request_id: generatedRequestId, metadata: { manualRequestId: generatedRequestId } }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      if (decodedUrl.includes('select=*')) {
+        console.log(`[TEST FETCH MOCK] Returning full request record`);
+        return new Response(JSON.stringify([{
+          manual_request_id: generatedRequestId,
+          user_id: tokenPayload.id,
+          requested_plan_code: 'pro',
+          requested_duration: 'yearly',
+          requested_currency: 'usd',
+          amount: 12000,
+          status: 'queued',
+          metadata: { manualRequestId: generatedRequestId, amount: 12000 }
+        }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      console.log(`[TEST FETCH MOCK] Returning empty array for GET payment_receipts`);
+      return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    
+    if (url.includes('/rest/v1/')) {
+      console.log(`[TEST FETCH MOCK] Returning empty array for catch-all`);
+      return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    
+    throw new Error(`Unexpected fetch: ${method} ${url}`);
+  }) as typeof fetch;
+
+  const req2 = makeReq({
+    cookies: { auth_token: token },
+    body: {
+      planCode: 'pro',
+      duration: 'yearly',
+      idempotencyKey: 'idem-test-key-1',
+    },
+  });
+  const res2 = createMockRes();
+  await checkoutHandler(req2, res2 as any);
+  assert.equal(res2.statusCode, 200);
+  const body2 = JSON.parse(res2.body);
+  
+  assert.equal(body2.paymentRequestId, generatedRequestId);
 });

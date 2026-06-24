@@ -125,9 +125,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Resolve relative signed URL path if it is relative
-    const absoluteSignedUrl = signedUrl.startsWith('http') 
-      ? signedUrl 
-      : `${config.url}/storage/v1${signedUrl}`;
+    let absoluteSignedUrl = signedUrl;
+    if (!absoluteSignedUrl.startsWith('http')) {
+      if (absoluteSignedUrl.startsWith('/storage/v1')) {
+        absoluteSignedUrl = `${config.url}${absoluteSignedUrl}`;
+      } else {
+        absoluteSignedUrl = `${config.url}/storage/v1${absoluteSignedUrl.startsWith('/') ? '' : '/'}${absoluteSignedUrl}`;
+      }
+    }
 
     return res.status(200).json({
       ok: true,

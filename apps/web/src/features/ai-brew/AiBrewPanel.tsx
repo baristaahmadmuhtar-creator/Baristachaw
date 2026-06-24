@@ -13184,9 +13184,9 @@ export function AiBrewPanel() {
       : formState.brewMode === 'iced' || displayedSwitchPresetId === 'iced_hybrid'
         ? (isIndonesianAiBrewLanguage(language) ? 'Katup tutup -> buka di atas es' : 'Closed -> release over ice')
         : (isIndonesianAiBrewLanguage(language) ? 'Katup tutup -> buka katup' : 'Closed -> open');
-    const switchSafetyTone = selectedDripper?.id === 'hario-switch-02' && parsedDoseG >= 20
+    const switchSafetyTone = selectedDripper?.id === 'hario-switch-02' && parsedDoseG >= 20 && formState.brewMode !== 'iced'
       ? 'caution'
-      : selectedDripper?.id === 'mugen-x-switch' && parsedDoseG > 15
+      : selectedDripper?.id === 'mugen-x-switch' && parsedDoseG > 15 && formState.brewMode !== 'iced'
         ? 'caution'
         : 'safe';
     const switchSafetyLabel = switchSafetyTone === 'caution' ? copy.switchSafetyCaution : copy.switchSafetySafe;

@@ -471,6 +471,7 @@ export function Collection() {
   }, [noteTitle, noteMarkdown, savingNote, editingNoteId, noteFolderId, closeNoteEditor, refresh, t]);
 
   const filteredItems = useMemo(() => items.filter((item) => {
+    if (item.deletedAt) return false;
     if (filter === 'note' && !isNoteItem(item)) return false;
     if (filter === 'image' && !(isLatteArtItem(item) || (item.content as any)?.imageDataUrl)) return false;
     if (filter !== 'all' && filter !== 'note' && filter !== 'image' && item.type !== filter) return false;
@@ -902,7 +903,7 @@ export function Collection() {
             <div className="mb-8">
               <h2 className="text-sm font-semibold text-secondary uppercase tracking-widest mb-4">{t.collectionRecentItems}</h2>
               <div className="space-y-3">
-                {filteredItems.slice(0, 5).map((item) => (
+                {filteredItems.map((item) => (
                   <motion.div key={item.id} className="glass-card p-4 flex items-center gap-4 group cursor-pointer" onClick={() => setSelectedItem(item)}>
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item.type === 'recipe' ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-500'}`}>
                       {item.type === 'recipe' ? <BookOpen size={18} /> : (isNoteItem(item) ? <NotebookPen size={18} /> : <FileText size={18} />)}

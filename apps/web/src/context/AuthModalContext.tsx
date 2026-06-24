@@ -150,6 +150,7 @@ function isGuestUser(user: AuthUser | null): boolean {
 function resolveEmailAuthError(payload: Record<string, unknown>, fallback: string, copy: Record<string, string>): string {
   const errorCode = typeof payload.errorCode === 'string' ? payload.errorCode : '';
   if (errorCode === 'invalid_credentials') return copy.authEmailInvalidCredentials || fallback;
+  if (errorCode === 'email_not_registered') return copy.authEmailNotRegistered || fallback;
   if (errorCode === 'email_confirmation_required') return copy.authEmailConfirmationRequired || fallback;
   if (errorCode === 'email_already_registered') return copy.authEmailAlreadyRegistered || fallback;
   if (errorCode === 'weak_password') return copy.authPasswordTooShort || fallback;

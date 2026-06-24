@@ -621,7 +621,9 @@ function AiAccessGateDialog({
                 <span className="text-xs font-bold text-secondary uppercase tracking-widest">{t.billingTotalTransfer || 'TOTAL TRANSFER'}</span>
                 <strong className="text-2xl font-black text-blue-600 dark:text-blue-300">{manualInvoice.manualInvoice.amountLabel}</strong>
                 <p className="text-xs text-secondary">
-                  {formatText(t.billingTransferInstruction || '*Pastikan transfer sesuai hingga 3 digit terakhir {suffix}', { suffix: manualInvoice.manualInvoice.uniqueSuffix || manualInvoice.manualInvoice.id.slice(-3).replace(/[^0-9]/g, '3') })}
+                  {manualInvoice.manualInvoice.uniqueSuffix 
+                    ? formatText(t.billingTransferInstruction || '*Pastikan transfer sesuai hingga 3 digit terakhir {suffix}', { suffix: manualInvoice.manualInvoice.uniqueSuffix })
+                    : (t.billingTransferInstructionExact || '*Pastikan transfer sesuai dengan nominal.')}
                 </p>
               </div>
 

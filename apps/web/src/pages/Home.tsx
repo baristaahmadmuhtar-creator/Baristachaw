@@ -1019,7 +1019,11 @@ export function Home() {
                 type="button"
                 onClick={() => void refreshAccountStatus()}
                 disabled={accountStatusLoading}
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-current/15 bg-[var(--bg-base)]/70 px-3 text-sm font-semibold text-primary transition-colors hover:bg-[var(--bg-base)] disabled:opacity-50"
+                className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border px-3 text-sm font-semibold transition-all disabled:opacity-50 ${
+                  hasPendingPaymentReview && !accountStatusLoading
+                    ? 'border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 shadow-[0_0_12px_rgba(59,130,246,0.3)] animate-pulse'
+                    : 'border-current/15 bg-[var(--bg-base)]/70 text-primary hover:bg-[var(--bg-base)]'
+                }`}
               >
                 <RefreshCcw size={15} className={accountStatusLoading ? 'animate-spin' : ''} />
                 {t.homeSyncStatus}

@@ -71,7 +71,7 @@ function parseRuntimeHostSafeBottom(raw: string | null) {
   if (!raw) return 0;
   const parsed = Number.parseFloat(raw);
   if (!Number.isFinite(parsed)) return 0;
-  return Math.max(0, Math.min(48, parsed));
+  return Math.max(0, Math.min(120, parsed));
 }
 
 function readRuntimeFlags() {

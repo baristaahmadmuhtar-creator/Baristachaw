@@ -767,15 +767,25 @@ export async function updatePersistedManualPaymentStatus(
   REQUESTS.set(request.id, request);
 
   const reviewedActions = new Set<ManualPaymentAction>(['verified_paid', 'rejected', 'expired', 'downgrade_free']);
-  await supabaseAdminRest(config, `payment_receipts?manual_request_id=eq.${encodeURIComponent(request.id)}`, {
+  let query = `payment_receipts?manual_request_id=eq.${encodeURIComponent(request.id)}`;
+  if (action === 'verified_paid' || action === 'rejected') {
+    query += `&status=in.(queued,pending_review,receipt_received)`;
+  }
+
+  const res = await supabaseAdminRest<any[]>(config, query, {
     method: 'PATCH',
-    headers: { Prefer: 'return=minimal' },
+    headers: { Prefer: 'return=representation' },
     body: JSON.stringify({
       ...paymentReceiptPayload(request),
       reviewed_by: reviewedActions.has(action) ? (reviewedBy || 'admin') : null,
       reviewed_at: reviewedActions.has(action) ? new Date(request.updatedAt).toISOString() : null,
     }),
   });
+
+  if ((action === 'verified_paid' || action === 'rejected') && (!res || res.length === 0)) {
+    throw new Error('ATOMIC_UPDATE_FAILED_ALREADY_PROCESSED');
+  }
+
   return request;
 }
 

@@ -10,6 +10,7 @@ import {
 import {
   createManualPaymentRequest,
   loadPersistedManualPaymentQrConfigs,
+  loadPersistedManualPaymentRequest,
   normalizeManualCurrency,
   persistManualPaymentRequest,
 } from './manualPayments.js';
@@ -312,6 +313,40 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
              error: 'Promo code not found or inactive.',
              errorCode: 'invalid_promo_code',
            });
+        }
+      }
+
+      // Idempotency: Check if there's already a pending manual request for the same plan & duration.
+      let existingRequestId: string | undefined;
+      try {
+        const pendingRows = await supabaseAdminRest<any[]>(config, `payment_receipts?user_id=eq.${encodeURIComponent(authResult.auth.userId)}&status=eq.queued&requested_plan_code=eq.${planCode}&requested_duration=eq.${duration}&select=manual_request_id,metadata&order=created_at.desc&limit=1`);
+        if (pendingRows?.[0]) {
+           const row = pendingRows[0];
+           existingRequestId = row.manual_request_id || row.metadata?.manualRequestId;
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      if (existingRequestId) {
+        const existingRequest = await loadPersistedManualPaymentRequest(existingRequestId, authResult.auth.userId);
+        if (
+          existingRequest &&
+          existingRequest.status === 'pending_review' &&
+          existingRequest.planCode === validPlanCode &&
+          (existingRequest.promoCode || '') === (promoCode || '')
+        ) {
+          // Verify it matches the override amount if any
+          if (overrideAmount === undefined || existingRequest.amount === (currency === 'idr' ? overrideAmount + (existingRequest.uniqueSuffix || 0) : overrideAmount)) {
+            return res.status(200).json(manualInvoiceResponse({
+              requestId,
+              planCode,
+              duration,
+              promoCode: promoCode || undefined,
+              manualRequest: existingRequest,
+              reviewStorage: 'persisted',
+            }));
+          }
         }
       }
     }

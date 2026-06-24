@@ -89,11 +89,74 @@ test.beforeEach(() => {
   process.env.APP_URL = 'https://app.baristachaw.com';
   process.env.SUPABASE_URL = 'https://unit-test.supabase.co';
   process.env.SUPABASE_PUBLISHABLE_KEY = 'publishable-test-key';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'dummy-service-role-key';
 });
 
 test.after(() => {
   globalThis.fetch = ORIGINAL_FETCH;
   restoreEnv();
+});
+
+test('email sign-in maps invalid_credentials to email_not_registered if email does not exist', async () => {
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes('/auth/v1/token')) {
+      return jsonResponse({
+        error: 'invalid_credentials',
+        error_description: 'Invalid login credentials',
+      }, 400);
+    }
+    // Simulate lookup returning empty result
+    if (url.includes('/rest/v1/app_users')) {
+      return jsonResponse([]);
+    }
+    throw new Error(`Unexpected fetch ${url}`);
+  }) as typeof fetch;
+
+  const res = createMockRes();
+  await authEmailHandler(makeReq({
+    query: { path: 'email/signin' },
+    body: {
+      email: 'notfound@example.com',
+      password: 'wrong-password',
+    },
+  }), res as any);
+
+  assert.equal(res.statusCode, 401);
+  const body = JSON.parse(res.body);
+  assert.equal(body.ok, false);
+  assert.equal(body.errorCode, 'email_not_registered');
+});
+
+test('email sign-in keeps invalid_credentials if email exists', async () => {
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes('/auth/v1/token')) {
+      return jsonResponse({
+        error: 'invalid_credentials',
+        error_description: 'Invalid login credentials',
+      }, 400);
+    }
+    // Simulate lookup returning existing user
+    if (url.includes('/rest/v1/app_users')) {
+      return jsonResponse([{ id: 'existing-id' }]);
+    }
+    throw new Error(`Unexpected fetch ${url}`);
+  }) as typeof fetch;
+
+  const res = createMockRes();
+  await authEmailHandler(makeReq({
+    query: { path: 'email/signin' },
+    body: {
+      email: 'owner@example.com',
+      password: 'wrong-password',
+    },
+  }), res as any);
+
+  assert.equal(res.statusCode, 401);
+  const body = JSON.parse(res.body);
+  assert.equal(body.ok, false);
+  assert.equal(body.errorCode, 'invalid_credentials');
 });
 
 test('email sign-in exchanges Supabase password auth for the app session cookie', async () => {

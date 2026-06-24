@@ -4384,6 +4384,11 @@ export function AdminManagement() {
                     {adminQueues.riskUsers.length + adminQueues.recoveryUsers.length}
                   </span>
                 )}
+                {id === 'plans' && ((snapshot?.metrics.manualQueueCounts?.pending_review || 0) + (snapshot?.metrics.manualQueueCounts?.receipt_received || 0)) > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 rounded-full bg-blue-500/15 text-blue-500 px-1 text-[9px] font-bold">
+                    {(snapshot?.metrics.manualQueueCounts?.pending_review || 0) + (snapshot?.metrics.manualQueueCounts?.receipt_received || 0)}
+                  </span>
+                )}
               </div>
             </button>
           ))}
@@ -4493,6 +4498,11 @@ export function AdminManagement() {
                       {id === 'users' && (adminQueues.riskUsers.length + adminQueues.recoveryUsers.length > 0) && (
                         <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 rounded-full bg-amber-500/15 text-amber-500 px-1 text-[9px] font-bold">
                           {adminQueues.riskUsers.length + adminQueues.recoveryUsers.length}
+                        </span>
+                      )}
+                      {id === 'plans' && ((snapshot?.metrics.manualQueueCounts?.pending_review || 0) + (snapshot?.metrics.manualQueueCounts?.receipt_received || 0)) > 0 && (
+                        <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 rounded-full bg-blue-500/15 text-blue-500 px-1 text-[9px] font-bold">
+                          {(snapshot?.metrics.manualQueueCounts?.pending_review || 0) + (snapshot?.metrics.manualQueueCounts?.receipt_received || 0)}
                         </span>
                       )}
                     </div>

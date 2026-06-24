@@ -376,6 +376,11 @@ export type AdminSnapshot = {
     scannerRunsToday: number;
     collectionWritesToday: number;
     planConversionRate: number;
+    manualQueueCounts?: {
+      checkout: number;
+      pending_review: number;
+      receipt_received: number;
+    };
   };
   plans: AdminPlan[];
   users: AdminUserRecord[];

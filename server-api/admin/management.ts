@@ -3359,20 +3359,30 @@ async function updateManualPayment(
       details: targetAuthorization.details,
     });
   }
-  const request = config.configured
-    ? await updatePersistedManualPaymentStatus(
+  let request: ManualPaymentRequest | undefined = undefined;
+  if (config.configured) {
+    try {
+      request = await updatePersistedManualPaymentStatus(
         paymentRequestId,
         manualAction,
         reason,
         admin.email || admin.userId || 'admin',
-      ).catch((error) => {
-        throw new AdminMutationError('Manual payment storage update failed', {
-          statusCode: 503,
-          errorCode: 'manual_payment_storage_unavailable',
-          details: sanitizeErrorDetails(error, 180),
-        });
-      })
-    : updateManualPaymentStatus(paymentRequestId, manualAction, reason);
+      );
+    } catch (error: any) {
+      if (error.message === 'ATOMIC_UPDATE_FAILED_ALREADY_PROCESSED' || error.message?.includes('ATOMIC_UPDATE_FAILED_ALREADY_PROCESSED')) {
+        // Already processed by another concurrent request.
+        // Just return the latest snapshot without running entitlement logic twice.
+        return buildAdminSnapshot(requestId, admin, rawUser);
+      }
+      throw new AdminMutationError('Manual payment storage update failed', {
+        statusCode: 503,
+        errorCode: 'manual_payment_storage_unavailable',
+        details: sanitizeErrorDetails(error, 180),
+      });
+    }
+  } else {
+    request = updateManualPaymentStatus(paymentRequestId, manualAction, reason);
+  }
   if (!request) {
     throw new AdminMutationError('Manual payment request was not found', {
       statusCode: 404,

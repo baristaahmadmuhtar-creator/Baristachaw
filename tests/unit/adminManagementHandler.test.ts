@@ -1175,3 +1175,61 @@ test('admin management patch updates runtime maintenance flags', async () => {
   assert.equal(flag.message, 'Scanner maintenance window');
   assert.ok(body.audit.some((event: any) => event.action === 'feature_flag_updated'));
 });
+
+test('admin management ignores atomic update already processed error gracefully', async () => {
+  process.env.SUPABASE_URL = 'https://unit-test.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'dummy-service-role-key';
+
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    const method = init?.method || 'GET';
+    if (url.includes('/rest/v1/payment_receipts') && method === 'GET') {
+      return new Response(JSON.stringify([{
+        manual_request_id: 'pay-123',
+        user_id: 'mocked-user',
+        requested_plan_code: 'pro',
+        requested_duration: 'yearly',
+        requested_currency: 'usd',
+        amount: 12000,
+        status: 'pending_review',
+        metadata: { manualRequestId: 'pay-123', duration: 'yearly', currency: 'usd', amount: 12000 },
+      }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/payment_receipts') && method === 'PATCH') {
+      return new Response(JSON.stringify({
+        code: '23505',
+        details: 'ATOMIC_UPDATE_FAILED_ALREADY_PROCESSED',
+        message: 'The record has already been processed and the precondition failed.',
+      }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+    }
+    // Handle audit logging silently for test
+    if (url.includes('/rest/v1/audit_logs')) {
+      return new Response(JSON.stringify({}), { status: 201, headers: { 'Content-Type': 'application/json' } });
+    }
+    throw new Error(`Unexpected fetch: ${url}`);
+  }) as typeof fetch;
+
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_manual_payment',
+      paymentRequestId: 'pay-123',
+      manualAction: 'verified_paid',
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.ok, true);
+  // It shouldn't crash. It just returns ok: true
+});

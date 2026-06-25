@@ -15,6 +15,8 @@ export interface PredictionPrecisionInput {
   };
   expectedCupConfidence: AiBrewScoreConfidence;
   workflowStatus: MethodWorkflowValidationResult['status'];
+  switchValidationStatus?: 'blocked' | 'caution' | 'safe';
+  switchRecoveryApplied?: boolean;
   guardrailErrorCount: number;
 }
 
@@ -57,7 +59,18 @@ export function buildPredictionPrecision(input: PredictionPrecisionInput): Predi
   );
 
   if (input.workflowStatus === 'needs_review') score = Math.min(score, 69);
-  if (input.workflowStatus === 'blocked') score = Math.min(score, 39);
+  
+  if (input.workflowStatus === 'blocked') {
+    if (input.switchRecoveryApplied && input.switchValidationStatus !== 'blocked') {
+      // Bypass 39 hard-cap if Hario Switch safely recovered
+    } else {
+      score = Math.min(score, 39);
+    }
+  }
+  
+  if (input.switchValidationStatus === 'blocked') score = Math.min(score, 39);
+  if (input.switchValidationStatus === 'caution') score = Math.min(score, 69);
+
   if (input.guardrailErrorCount > 0) {
     score = Math.min(score - (input.guardrailErrorCount * 8), 39);
   }

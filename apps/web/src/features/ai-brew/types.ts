@@ -474,6 +474,17 @@ export interface SwitchTasteProgrammePlan {
   sensoryReason: string;
   riskWarnings: string[];
   suggestedPresetId?: SwitchPublicPresetId;
+  originalPresetId?: SwitchPublicPresetId;
+  finalPresetId?: SwitchPublicPresetId;
+  recoveryApplied?: boolean;
+  recoveryReason?: string;
+  originalPresetStatus?: 'safe' | 'caution' | 'blocked';
+  finalPresetStatus?: 'safe' | 'caution' | 'blocked';
+  safeClosedPhaseMaxMl?: number;
+  peakClosedLoadMl?: number;
+  canonicalHotWaterMl?: number;
+  canonicalTotalWaterMl?: number;
+  recoveryOptions?: SwitchPublicPresetId[];
 }
 
 export interface SwitchStepValidation {
@@ -916,6 +927,8 @@ export interface DeviceBrewProfile extends CatalogProvenance {
   brewTimeDeltaSec: number;
   grindBias: GrindBias;
   note: string;
+  targetWaterMl?: number;
+  hotWaterMl?: number;
   steps: BrewTemplateStep[];
 }
 

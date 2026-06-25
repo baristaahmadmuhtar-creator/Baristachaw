@@ -604,17 +604,19 @@ export function deriveSwitchTargetTuning(params: SwitchTargetTuningParams): Swit
       {
         stepId: 'switch_closed_bloom',
         valveState: preset.id === 'v60_mode' ? 'open' : 'closed',
-        chamberLoadMl: preset.id === 'v60_mode' ? 0 : Math.min(bloomMl, maxClosedLoadMl),
+        chamberLoadMl: preset.id === 'v60_mode' ? 0 : bloomMl,
       },
       {
         stepId: 'switch_closed_phase',
         valveState: preset.id === 'v60_mode' ? 'open' : 'closed',
-        chamberLoadMl: preset.id === 'v60_mode' ? 0 : Math.min(Math.round(closedPhaseMl), maxClosedLoadMl),
+        chamberLoadMl: preset.id === 'v60_mode' ? 0 : Math.round(closedPhaseMl),
       },
     ],
     sensoryReason,
     riskWarnings,
     suggestedPresetId,
+    canonicalHotWaterMl: hotReferenceMl,
+    canonicalTotalWaterMl: safeWaterReference({ input, doseG, row: doseRow }),
   };
 }
 
@@ -1039,6 +1041,8 @@ export function applySwitchPresetToDeviceProfile(
     methodFamily: 'hario_switch',
     methodProgramme: selection.preset.defaultProgramme,
     recipeStyle: selection.preset.id,
+    targetWaterMl: selection.tasteProgramme.canonicalTotalWaterMl || profile.targetWaterMl,
+    hotWaterMl: selection.tasteProgramme.canonicalHotWaterMl || profile.hotWaterMl,
     note: `${profile.note} Switch method: ${selection.preset.label}. ${selection.preset.why}`.trim(),
     steps,
   };
@@ -1068,6 +1072,8 @@ export function resolveSwitchPlanSelection(params: {
     processEntry,
   });
   if (!preset) return null;
+
+  const originalPresetId = preset.id;
   let tasteProgramme = deriveSwitchTargetTuning({
     input,
     preset,
@@ -1079,10 +1085,29 @@ export function resolveSwitchPlanSelection(params: {
     grinderVerification,
     doseG,
   });
+
+  const maxClosedLoadMl = doseRow?.safeClosedPhaseMaxMl || (dripper.id === 'hario-switch-03' ? 320 : 180);
+  const peakLoad = Math.max(0, ...tasteProgramme.chamberLoadPlan.map((c) => c.chamberLoadMl));
+
+  let originalPresetStatus: 'safe' | 'caution' | 'blocked' = 'safe';
+  if (peakLoad > maxClosedLoadMl) {
+    originalPresetStatus = 'blocked';
+  } else if (maxClosedLoadMl > 0 && peakLoad > maxClosedLoadMl * 0.9) {
+    originalPresetStatus = 'caution';
+  }
+
+  let recoveryApplied = false;
+  let recoveryReason = '';
+  let finalPresetStatus = originalPresetStatus;
+
   const explicitPresetSelected = isTruthyString(input.switchPresetId);
-  if (!explicitPresetSelected && tasteProgramme.suggestedPresetId && tasteProgramme.suggestedPresetId !== preset.id) {
-    const safePreset = getCompatiblePreset(catalog, tasteProgramme.suggestedPresetId, dripper.id);
-    if (safePreset && !doseRow?.blockedPresetIds.includes(safePreset.id)) {
+  const wantsRecovery = originalPresetStatus === 'blocked' || (!explicitPresetSelected && tasteProgramme.suggestedPresetId && tasteProgramme.suggestedPresetId !== preset.id);
+
+  if (wantsRecovery) {
+    const suggestedId = tasteProgramme.suggestedPresetId || suggestedSafeSwitchPreset({ dripperId: dripper.id, targetProfile, presetId: preset.id, brewMode: input.brewMode });
+    const safePreset = getCompatiblePreset(catalog, suggestedId, dripper.id);
+
+    if (safePreset && safePreset.id !== preset.id && !doseRow?.blockedPresetIds.includes(safePreset.id)) {
       preset = safePreset;
       tasteProgramme = deriveSwitchTargetTuning({
         input,
@@ -1095,8 +1120,27 @@ export function resolveSwitchPlanSelection(params: {
         grinderVerification,
         doseG,
       });
+      recoveryApplied = true;
+      recoveryReason = `Full immersion exceeds safe capacity (${maxClosedLoadMl} ml). Recovered to a safe hybrid method.`;
+
+      const newPeakLoad = Math.max(0, ...tasteProgramme.chamberLoadPlan.map((c) => c.chamberLoadMl));
+      finalPresetStatus = newPeakLoad > maxClosedLoadMl ? 'blocked' : (maxClosedLoadMl > 0 && newPeakLoad > maxClosedLoadMl * 0.9) ? 'caution' : 'safe';
     }
   }
+
+  tasteProgramme = {
+    ...tasteProgramme,
+    originalPresetId,
+    finalPresetId: preset.id,
+    recoveryApplied,
+    recoveryReason,
+    originalPresetStatus,
+    finalPresetStatus,
+    safeClosedPhaseMaxMl: maxClosedLoadMl,
+    peakClosedLoadMl: Math.max(0, ...tasteProgramme.chamberLoadPlan.map((c) => c.chamberLoadMl)),
+    recoveryOptions: doseRow?.recommendedPresetIds || [],
+  };
+
   const compatibility = buildCompatibility(preset, doseRow, dripper);
   return {
     preset,

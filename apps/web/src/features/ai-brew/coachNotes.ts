@@ -324,6 +324,8 @@ function getSweeterShift(plan: BrewPlan, language?: string) {
     case 'kono':
       return 'Hold the pour path tighter in the center for a little longer through the middle to extend sweet contact.';
     case 'origami':
+    case 'hario_switch':
+      return 'Extend the closed-valve steep time or move the grind 0.5 step finer.';
     case 'v60':
     default:
       return 'Move the grind 0.5 step finer or make the middle phase slightly fuller without adding bypass.';
@@ -359,6 +361,8 @@ function getTighterShift(plan: BrewPlan, language?: string) {
       case 'kono':
         return 'Pertahankan jalur tuang yang lebih terpusat di tengah tanpa mengubah rasio.';
       case 'origami':
+      case 'hario_switch':
+        return 'Gunakan porsi air mendidih yang lebih besar di fase awal atau perpanjang durasi katup tertutup.';
       case 'v60':
       default:
         return 'Pertahankan aliran akhir tetap tenang dan buat kontak tengah lebih konsisten tanpa mengubah rasio.';
@@ -392,6 +396,8 @@ function getTighterShift(plan: BrewPlan, language?: string) {
     case 'kono':
       return 'Keep the pour path more centered through the middle without changing the ratio.';
     case 'origami':
+    case 'hario_switch':
+      return 'Use a larger boiling water portion in the early phase or extend the closed-valve duration.';
     case 'v60':
     default:
       return 'Keep the finish calm and make middle contact more consistent without changing the ratio.';

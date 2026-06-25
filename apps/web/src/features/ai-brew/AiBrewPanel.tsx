@@ -6798,6 +6798,8 @@ function PlanResultDialog({
       },
     expectedCupConfidence: expectedCup?.confidence || 'low',
     workflowStatus: plan.workflowValidation?.status || 'ready',
+    switchValidationStatus: plan.switchTasteProgramme?.finalPresetStatus || plan.switchStepValidation?.status,
+    switchRecoveryApplied: plan.switchTasteProgramme?.recoveryApplied,
     guardrailErrorCount: plan.guardrails.errors.length,
   });
   const predictionPrecisionLabel = predictionPrecision.band === 'high'

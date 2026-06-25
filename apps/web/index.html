@@ -1,113 +1,147 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
-
-  <!-- iOS PWA / App Store -->
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-touch-fullscreen" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="BaristaChaw" />
-  <meta id="theme-color-meta" name="theme-color" content="#F5F8FE" />
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F5F8FE" />
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="color-scheme" content="dark light" />
-  <style>
-    html,
-    body,
-    #root {
-      min-height: 100%;
-      background: #F2F2F7;
-      color-scheme: light;
-    }
-
-    @media (prefers-color-scheme: dark) {
-
-      html:not(.light),
-      html:not(.light) body,
-      html:not(.light) #root {
-        background: #000000;
-        color-scheme: dark;
-      }
-    }
-  </style>
-  <script>
-    (function () {
-      try {
-        var params = new URLSearchParams(window.location.search);
-        var nativeSystemTheme = params.get('theme') === 'system'
-          || (params.get('runtime') === 'web_parity' && params.get('ui_profile') === 'native_shell');
-        var storedTheme = window.localStorage && window.localStorage.getItem('BARISTA_THEME');
-        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        var theme = nativeSystemTheme ? (prefersDark ? 'dark' : 'light') : (storedTheme === 'dark' || storedTheme === 'light' ? storedTheme : (prefersDark ? 'dark' : 'light'));
-        document.documentElement.classList.remove('dark', 'light');
-        document.documentElement.classList.add(theme);
-        document.documentElement.style.backgroundColor = theme === 'dark' ? '#000000' : '#F2F2F7';
-        document.documentElement.style.colorScheme = theme;
-        var themeMeta = document.getElementById('theme-color-meta');
-        if (themeMeta) themeMeta.setAttribute('content', theme === 'dark' ? '#000000' : '#F2F2F7');
-      } catch (error) {
-        document.documentElement.classList.add('dark');
-      }
-    })();
-  </script>
-
-  <!-- Prevent text-size-adjust on rotation -->
-  <meta name="format-detection" content="telephone=no" />
-
-  <!-- SEO -->
-  <title>Baristachaw - AI Coffee Assistant</title>
-  <meta name="description"
-    content="Baristachaw - Your AI-powered barista assistant. Scan coffee beans, get expert recipes, and brew like a pro." />
-
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://app.baristachaw.com/" />
-  <meta property="og:title" content="Baristachaw - AI Coffee Assistant" />
-  <meta property="og:description" content="Your AI-powered barista assistant. Scan coffee beans, get expert recipes, and brew like a pro." />
-  <meta property="og:image" content="https://app.baristachaw.com/og-image.png" />
-
-  <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image" />
-  <meta property="twitter:url" content="https://app.baristachaw.com/" />
-  <meta property="twitter:title" content="Baristachaw - AI Coffee Assistant" />
-  <meta property="twitter:description" content="Your AI-powered barista assistant. Scan coffee beans, get expert recipes, and brew like a pro." />
-  <meta property="twitter:image" content="https://app.baristachaw.com/og-image.png" />
-
-  <!-- JSON-LD Structured Data -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Baristachaw",
-      "applicationCategory": "LifestyleApplication",
-      "operatingSystem": "Web, iOS, Android",
-      "description": "Your AI-powered barista assistant. Scan coffee beans, get expert recipes, and brew like a pro.",
-      "url": "https://app.baristachaw.com",
-      "offers": {
-        "@type": "Offer",
-        "price": "0"
-      }
-    }
-  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+  <meta name="theme-color" content="#030303" />
+  
+  <title>Baristachaw | Coming Soon</title>
+  <meta name="description" content="Baristachaw - Your AI-powered barista assistant. Coming soon." />
 
   <!-- Icons -->
   <link rel="icon" type="image/png" sizes="48x48" href="/icons/icon-48.png?v=20260430c" />
-  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png?v=20260430c" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png?v=20260430c" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png?v=20260430c" />
   <link rel="shortcut icon" href="/favicon.ico?v=20260430c" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png?v=20260430c" />
-  <link rel="manifest" href="/manifest.json?v=20260430c" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #030303;
+      --text: #ffffff;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Subtle ambient light */
+    .ambient {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70vw;
+      height: 70vw;
+      background: radial-gradient(circle, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0) 60%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Premium noise texture */
+    .noise {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+      opacity: 0.04;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    /* Aesthetic Top Logo */
+    .brand {
+      position: absolute;
+      top: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 10;
+      opacity: 0;
+      animation: fadeIn 2s ease forwards 0.8s;
+    }
+
+    .logo {
+      width: 18px;
+      height: 18px;
+    }
+
+    .brand-name {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Centered Content */
+    .content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 3.5rem;
+      font-weight: 300;
+      letter-spacing: -0.5px;
+      margin: 0;
+      background: linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.4) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: slideUp 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s;
+    }
+
+    @keyframes slideUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 2.2rem; }
+      .brand { top: 32px; }
+      .brand-name { font-size: 11px; letter-spacing: 2px; }
+      .logo { width: 16px; height: 16px; }
+    }
+  </style>
 </head>
-
 <body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
-</body>
+  <div class="noise"></div>
+  <div class="ambient"></div>
+  
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+      <circle cx="12" cy="12" r="4" fill="rgba(255,255,255,0.7)"/>
+    </svg>
+    <span class="brand-name">Baristachaw</span>
+  </div>
 
+  <div class="content">
+    <h1>Coming Soon</h1>
+  </div>
+</body>
 </html>

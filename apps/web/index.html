@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
-  <meta name="theme-color" content="#030303" />
+  <meta name="theme-color" content="#000000" />
   
   <title>Baristachaw | Coming Soon</title>
   <meta name="description" content="Baristachaw - Your AI-powered barista assistant. Coming soon." />
@@ -15,12 +15,13 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   
   <style>
     :root {
-      --bg: #030303;
+      --bg: #000000;
       --text: #ffffff;
+      --accent: #007AFF; /* Baristachaw Primary Blue */
     }
     body, html {
       margin: 0;
@@ -37,15 +38,15 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Subtle ambient light */
+    /* Baristachaw Brand Blue Ambient Light */
     .ambient {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 70vw;
-      height: 70vw;
-      background: radial-gradient(circle, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0) 60%);
+      width: 80vw;
+      height: 80vw;
+      background: radial-gradient(circle, rgba(0, 122, 255, 0.12) 0%, rgba(0, 0, 0, 0) 60%);
       z-index: 0;
       pointer-events: none;
     }
@@ -68,23 +69,25 @@
       transform: translateX(-50%);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       z-index: 10;
       opacity: 0;
       animation: fadeIn 2s ease forwards 0.8s;
     }
 
     .logo {
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      border-radius: 6px;
     }
 
     .brand-name {
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--text);
     }
 
     /* Centered Content */
@@ -99,7 +102,7 @@
       font-weight: 300;
       letter-spacing: -0.5px;
       margin: 0;
-      background: linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.4) 100%);
+      background: linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.5) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       opacity: 0;
@@ -124,7 +127,7 @@
       h1 { font-size: 2.2rem; }
       .brand { top: 32px; }
       .brand-name { font-size: 11px; letter-spacing: 2px; }
-      .logo { width: 16px; height: 16px; }
+      .logo { width: 20px; height: 20px; }
     }
   </style>
 </head>
@@ -133,10 +136,7 @@
   <div class="ambient"></div>
   
   <div class="brand">
-    <svg class="logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
-      <circle cx="12" cy="12" r="4" fill="rgba(255,255,255,0.7)"/>
-    </svg>
+    <img class="logo" src="/icons/icon-48.png?v=20260430c" alt="Baristachaw" />
     <span class="brand-name">Baristachaw</span>
   </div>
 

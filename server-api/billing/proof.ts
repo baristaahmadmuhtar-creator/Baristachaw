@@ -9,7 +9,7 @@ import {
 } from '../_shared.js';
 import {
   getManualPaymentProofMaxBytes,
-  persistManualPaymentRequest,
+  persistManualPaymentProof,
   verifyDraftToken,
 } from './manualPayments.js';
 
@@ -147,23 +147,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   let proofStorage: 'storage_ready' | 'support_fallback' = 'support_fallback';
   let uploadUrl = '';
-  let persistenceReady = false;
-  try {
-    persistenceReady = await persistManualPaymentRequest(manualRequest);
-  } catch (error) {
-    console.error('Failed to persist manual payment request during proof upload:', error);
-  }
-
   const config = getSupabaseAdminConfig();
   const bucket = (process.env.SUPABASE_STORAGE_BUCKET_PROOF || 'payment-proofs').trim();
-  if (persistenceReady && config.configured && bucket) {
+  if (config.configured && bucket) {
     try {
       const signedData = await createSignedUploadUrl(config, bucket, generatedFileName);
       uploadUrl = signedData.signedUrl;
       proofStorage = 'storage_ready';
+      manualRequest.proof = {
+        ...proofMetadata,
+        storage: 'supabase_signed_upload',
+        bucket,
+        objectPath: signedData.path,
+        uploadUrlExpiresAt: Date.now() + 2 * 60 * 60 * 1000,
+      };
     } catch (error) {
       console.error('Failed to generate signed upload URL:', error);
     }
+  }
+
+  try {
+    await persistManualPaymentProof(manualRequest);
+  } catch (error) {
+    console.error('Failed to persist manual payment proof metadata:', error);
+    uploadUrl = '';
+    proofStorage = 'support_fallback';
+    manualRequest.proof = proofMetadata;
   }
 
   return res.status(200).json({

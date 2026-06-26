@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import jwt from 'jsonwebtoken';
 import mayarHandler from '../../server-api/payment/mayar.ts';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
@@ -7,6 +8,7 @@ const ORIGINAL_ENV = {
   MAYAR_API_KEY: process.env.MAYAR_API_KEY,
   MAYAR_PAYMENT_ENABLED: process.env.MAYAR_PAYMENT_ENABLED,
   APP_URL: process.env.APP_URL,
+  JWT_SECRET: process.env.JWT_SECRET,
 };
 
 function restoreEnv() {
@@ -16,10 +18,28 @@ function restoreEnv() {
   }
 }
 
+let authCounter = 0;
+
+function authHeader() {
+  authCounter += 1;
+  const token = jwt.sign(
+    { user: { id: `mayar-user-${authCounter}`, email: `test-${authCounter}@example.com` } },
+    process.env.JWT_SECRET!,
+    { expiresIn: '1h' },
+  );
+  return `Bearer ${token}`;
+}
+
 function makeReq(bodyObj: Record<string, unknown>, method: string = 'POST'): IncomingMessage {
   const req: any = {
     method,
-    headers: { 'content-type': 'application/json' },
+    headers: {
+      'content-type': 'application/json',
+      origin: 'http://127.0.0.1:3000',
+      host: '127.0.0.1:3000',
+      'x-forwarded-proto': 'http',
+      authorization: authHeader(),
+    },
   };
   
   const bodyStr = JSON.stringify(bodyObj);
@@ -61,6 +81,17 @@ function makeRes(): any {
   res.end = (data: string) => {
     if (data) res.body += data;
   };
+
+  res.status = (status: number) => {
+    res.statusCode = status;
+    return res;
+  };
+
+  res.json = (data: unknown) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(data));
+    return res;
+  };
   
   return res;
 }
@@ -71,6 +102,7 @@ test.beforeEach(() => {
   process.env.MAYAR_API_KEY = 'test-mayar-key';
   process.env.MAYAR_PAYMENT_ENABLED = '1';
   process.env.APP_URL = 'http://127.0.0.1:3000';
+  process.env.JWT_SECRET = 'unit-test-secret-32-chars-minimum';
 
   originalFetch = globalThis.fetch;
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {

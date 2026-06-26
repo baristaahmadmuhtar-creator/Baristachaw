@@ -5,6 +5,11 @@ import test from 'node:test';
 import { validateBrewPlanOutput } from '../../apps/web/src/features/ai-brew/antiHallucination.ts';
 import { loadAiBrewCatalog } from '../../apps/web/src/features/ai-brew/catalog.ts';
 import {
+  AEROPRESS_TARGET_INTENTS,
+  resolveAeroPressTargetIntent,
+  resolveAeroPressProductionTarget,
+} from '../../apps/web/src/features/ai-brew/aeropressCalibration.ts';
+import {
   buildAiBrewPlan,
   createDefaultAiBrewFormState,
 } from '../../apps/web/src/features/ai-brew/planner.ts';
@@ -86,6 +91,23 @@ const AEROPRESS_TARGET_PROFILE_IDS = [
   'soft_round',
   'dense_comforting',
 ] as const;
+
+test('AeroPress target intent and guardrails are explicit for every target rasa', () => {
+  assert.equal(Object.keys(AEROPRESS_TARGET_INTENTS).length, AEROPRESS_TARGET_PROFILE_IDS.length);
+  for (const targetProfileId of AEROPRESS_TARGET_PROFILE_IDS) {
+    const intent = resolveAeroPressTargetIntent(targetProfileId);
+    const calibration = resolveAeroPressProductionTarget('bypass', targetProfileId, 'medium');
+    assert.equal(intent.targetProfileId, targetProfileId);
+    assert.match(intent.sensoryIntent, /clean|sweet|acid|body|floral|fruit|round|comfort/i);
+    assert.match(intent.extractionMove, /contact|stir|press|ratio|bypass|agitation/i);
+    assert.ok(intent.guardrails.length >= 6, `${targetProfileId} must expose core guardrails`);
+    assert.ok(intent.guardrails.some((item) => /240 ml/.test(item)), `${targetProfileId} must mention upright chamber cap`);
+    assert.ok(intent.guardrails.some((item) => /220 ml/.test(item)), `${targetProfileId} must mention inverted chamber cap`);
+    assert.ok(intent.guardrails.some((item) => /bypass water only after pressing/i.test(item)), `${targetProfileId} must guard bypass order`);
+    assert.ok(intent.guardrails.some((item) => /dry hiss/i.test(item)), `${targetProfileId} must guard hiss stop`);
+    assert.ok(calibration.targetCue.en.length > 20, `${targetProfileId} must feed target cue into calibration`);
+  }
+});
 
 function findIdByName(catalog: AiBrewCatalog, kind: 'processes' | 'varieties', text: string) {
   const normalized = text.toLowerCase();

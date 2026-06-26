@@ -317,7 +317,10 @@ export type AdminManualPaymentRequest = {
     generatedFileName: string;
     mimeType: string;
     sizeBytes: number;
-    storage: 'metadata_only';
+    storage: 'metadata_only' | 'supabase_signed_upload';
+    bucket?: string;
+    objectPath?: string;
+    uploadUrlExpiresAt?: number;
     receivedAt: number;
   };
   reason?: string;

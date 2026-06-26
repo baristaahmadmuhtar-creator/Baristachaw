@@ -2410,6 +2410,11 @@ function ManualPaymentQueuePanel({
   onAction: (paymentRequestId: string, action: ManualPaymentAction, reason?: string) => void;
 }) {
   const visible = payments.slice(0, 8);
+  const proofStorageLabel = (payment: AdminManualPaymentRequest): string => {
+    if (!payment.proof) return 'no proof';
+    if (payment.proof.storage === 'supabase_signed_upload') return 'Supabase signed upload';
+    return 'metadata only';
+  };
   return (
     <div className="mb-4 rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 lg:p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -2446,6 +2451,13 @@ function ManualPaymentQueuePanel({
                     <p className="mt-1 text-xs text-secondary">
                       {payment.instructions.bankName} / {payment.instructions.accountName} / {payment.instructions.accountNumber}
                     </p>
+                    {payment.proof ? (
+                      <p className="mt-2 break-all text-xs text-secondary">
+                        Proof: {proofStorageLabel(payment)}
+                        {payment.proof.bucket ? ` / ${payment.proof.bucket}` : ''}
+                        {payment.proof.objectPath ? ` / ${payment.proof.objectPath}` : ''}
+                      </p>
+                    ) : null}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {payment.proof ? (

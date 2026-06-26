@@ -85,7 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const config = getSupabaseAdminConfig();
-  const bucket = (process.env.SUPABASE_STORAGE_BUCKET_PROOF || 'payment-proofs').trim();
+  const bucket = request.proof.bucket || (process.env.SUPABASE_STORAGE_BUCKET_PROOF || 'payment-proofs').trim();
   if (!config.configured || !bucket) {
     return res.status(200).json({
       ok: true,
@@ -101,7 +101,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const path = request.proof.generatedFileName;
+    const path = request.proof.objectPath || request.proof.generatedFileName;
     const signedData = await createSignedReadUrl(config, bucket, path, 120);
 
     return res.status(200).json({

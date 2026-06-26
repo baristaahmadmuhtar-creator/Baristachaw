@@ -16,6 +16,12 @@ export interface SiphonPlanSelection {
   watch: string;
 }
 
+const SIPHON_GLASS_HEAT_SAFETY_WARNING = 'Peringatan keselamatan siphon: alat memakai panas dan kaca. Jaga panas stabil. Untuk mencegah kejutan termal dan kaca retak, bowl bawah dan globe tidak boleh diisi es atau air dingin langsung. Jika ingin efek dingin, tuang hasil seduhan ke server kaca terpisah yang aman untuk es.';
+const SIPHON_HIGH_AGITATION_WARNING = 'Peringatan agitasi siphon: agitasi tinggi dapat membuat rasa kasar, kering, atau pahit. Pastikan kubah bubuk merata dan hentikan pengadukan setelah aliran turun stabil.';
+const SIPHON_PREMATURE_DROPDOWN_WARNING = 'Peringatan siphon: jaga panas stabil agar air tetap berada di ruang atas sampai fase kontak selesai.';
+const SIPHON_MUDDY_FINE_GRIND_WARNING = 'Peringatan siphon: risiko rasa berlumpur atau kasar tinggi jika gilingan terlalu halus atau agitasi berlebihan. Putar paddle secukupnya untuk membentuk pusaran yang stabil.';
+const SIPHON_BLOCKED_SPIRIT_WARNING = 'Diblokir. Jangan mencoba infusi alkohol di siphon karena uap alkohol mudah terbakar dan berisiko ledakan.';
+
 export function isSiphonDripperId(id: string): boolean {
   const haystack = id.toLowerCase();
   return haystack.includes('siphon') || haystack.includes('vacuum') || haystack.includes('hario');
@@ -61,7 +67,7 @@ export function resolveSiphonPlanSelection(params: {
         recipeStyle: activeStyle as DeviceBrewProfile['recipeStyle'],
       },
       why: 'Vacuum siphon brewing extracts a very clean, sweet, and hot cup.',
-      watch: 'Safety Warning: Heat/glass safety hazard. Keep heat stable. To prevent thermal shock and crack the glass, the lower bowl and globe must never contain frozen water or cold water directly. Serve flash-chilled only by decanting over frozen water blocks in a separate glass server.',
+      watch: SIPHON_GLASS_HEAT_SAFETY_WARNING,
     };
   }
 
@@ -73,7 +79,7 @@ export function resolveSiphonPlanSelection(params: {
   let why = '';
   let watch = '';
 
-  const safetyWarning = 'Safety Warning: Heat/glass safety hazard. Keep heat stable. To prevent thermal shock and crack the glass, the lower bowl and globe must never contain frozen water or cold water directly. Serve flash-chilled only by decanting over frozen water blocks in a separate glass server.';
+  const safetyWarning = SIPHON_GLASS_HEAT_SAFETY_WARNING;
 
   switch (activeStyle) {
     case 'traditional_vacuum_siphon': {
@@ -224,7 +230,7 @@ export function resolveSiphonPlanSelection(params: {
         },
       ];
       why = 'Competition Triple Agitation introduces three separate, intense paddle agitations to maximize solubles extraction, yielding massive body and intense sweetness.';
-      watch = `${safetyWarning} Warning: High agitation can cause over-agitation, leading to harshness and drying bitterness. Ensure dome is uniform.`;
+      watch = `${safetyWarning} ${SIPHON_HIGH_AGITATION_WARNING}`;
       break;
     }
 
@@ -305,7 +311,7 @@ export function resolveSiphonPlanSelection(params: {
         },
       ];
       why = `Low Temperature Delicate reduces heating to brew fragile light roasts at ${whyTemperature}, highlighting floral, tea-like, and highly volatile flavor profiles.`;
-      watch = `${safetyWarning} Premature drop warning: Keep heat stable to hold the water column in the upper chamber.`;
+      watch = `${safetyWarning} ${SIPHON_PREMATURE_DROPDOWN_WARNING}`;
       break;
     }
 
@@ -375,7 +381,7 @@ export function resolveSiphonPlanSelection(params: {
         },
       ];
       why = 'High Body Fast Drawdown utilizes a coarse grind and a rapid, short extraction window to capture rich aromatic oils without pulling bitter heavy tannins.';
-      watch = `${safetyWarning} Warning: High risk of muddy/harsh flavors if the coffee is ground too fine or over-agitated. Swirl firmly to maintain vortex.`;
+      watch = `${safetyWarning} ${SIPHON_MUDDY_FINE_GRIND_WARNING}`;
       break;
     }
 
@@ -434,7 +440,7 @@ export function resolveSiphonPlanSelection(params: {
         },
       ];
       why = 'Spirit Infusion Style is blocked by default due to alcohol vapor flammability and food safety risks.';
-      watch = 'Blocked. Do not attempt spirit infusion in a siphon due to explosion and fire hazards. (spirit_infusion_style)';
+      watch = `${SIPHON_BLOCKED_SPIRIT_WARNING} (spirit_infusion_style)`;
       break;
     }
   }

@@ -355,7 +355,12 @@ test('manual payment proof accepts allowlisted metadata and rejects unsafe uploa
   assert.equal(proofBody.status, 'receipt_received');
   assert.equal(proofBody.paymentActionRequired, true);
   assert.equal(proofBody.entitlement, 'pending_admin_review');
-  assert.equal(proofBody.proof.storage, 'metadata_only');
+  assert.equal(proofBody.proof.storage, 'supabase_signed_upload');
+  assert.equal(proofBody.proof.bucket, 'payment-proofs');
+  assert.match(proofBody.proof.objectPath, new RegExp(`^.*${requestId}_proof_\\d+\\.png$`));
+  assert.equal(proofBody.proofStorage, 'storage_ready');
+  assert.equal(proofBody.deliveryMode, 'direct_upload');
+  assert.match(proofBody.uploadUrl, /^https:\/\/unit-test\.supabase\.co\/storage\/v1\/mock-upload-path/);
   assert.equal(proofBody.proof.mimeType, 'image/png');
   assert.match(proofBody.proof.generatedFileName, new RegExp(`^.*${requestId}_proof_\\d+\\.png$`));
 
@@ -437,6 +442,7 @@ test('manual payment proof falls back to support when signed upload generation f
     assert.equal(proofBody.ok, true);
     assert.equal(proofBody.status, 'receipt_received');
     assert.equal(proofBody.proofStorage, 'support_fallback');
+    assert.equal(proofBody.proof.storage, 'metadata_only');
     assert.equal(proofBody.deliveryMode, 'manual_support');
     assert.equal(proofBody.uploadUrl, undefined);
     assert.match(proofBody.supportLinks.whatsappUrl, /^https:\/\/wa\.me\//);

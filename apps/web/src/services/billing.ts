@@ -94,6 +94,17 @@ export type ManualPaymentProofSubmission = {
   draftToken: string;
 };
 
+export type ManualPaymentProofReceipt = {
+  generatedFileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  storage: 'metadata_only' | 'supabase_signed_upload';
+  bucket?: string;
+  objectPath?: string;
+  uploadUrlExpiresAt?: number;
+  receivedAt: number;
+};
+
 export class BillingApiError extends Error {
   status: number;
   errorCode?: string;
@@ -158,7 +169,7 @@ export function submitManualPaymentProof(input: ManualPaymentProofSubmission): P
   requestId: string;
   paymentRequestId: string;
   status: BillingManualInvoice['status'];
-  proof: { generatedFileName: string; mimeType: string; sizeBytes: number; storage: 'metadata_only'; receivedAt: number };
+  proof: ManualPaymentProofReceipt;
   proofStorage: 'storage_ready' | 'support_fallback';
   deliveryMode: 'direct_upload' | 'manual_support';
   uploadUrl?: string;

@@ -62,6 +62,7 @@ test('AI Brew method-style audit covers real methods, styles, guides, language, 
   assert.equal(summary.failCount, 0, 'method-style matrix must have zero hard failures');
   assert.equal(summary.languageLeakCount, 0, 'method-style matrix must have zero language leakage hard failures');
   assert.equal(summary.methodLeakCount, 0, 'method-style matrix must have zero method vocabulary hard failures');
+  assert.equal(summary.uiWarningCount, 0, 'method-style matrix must have zero mobile-density UI warnings');
   assert.ok(summary.guideCheckedCount >= summary.caseCount, 'each generated case must include Lite/Pro guide coverage');
   assert.ok(summary.uiCheckedCount >= summary.caseCount, 'each generated case must include result-card UI surface coverage');
 

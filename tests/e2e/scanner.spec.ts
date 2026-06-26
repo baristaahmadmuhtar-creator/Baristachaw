@@ -75,7 +75,7 @@ test('scans image and saves result to collection', async ({ page }) => {
 });
 
 test('generates ai latte art from an uploaded photo', async ({ page }) => {
-  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await qaLogin(page.request, buildQaUser({ planCode: 'pro' }));
   await page.goto('/scanner', { waitUntil: 'domcontentloaded' });
 
   await page.getByRole('button', { name: /AI Latte Art|Seni Latte AI/i }).click();

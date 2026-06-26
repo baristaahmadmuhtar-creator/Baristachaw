@@ -8,6 +8,7 @@ import {
   normalizeBillingPlanCode,
   parsePendingManualPaymentMarker,
   shouldBlockDuplicateManualPayment,
+  shouldClearBillingPendingMarker,
 } from '../../packages/shared/src/billingFlow.ts';
 
 test('billing flow normalizes legacy plus to starter and rejects non-MVP paid plans', () => {
@@ -103,5 +104,26 @@ test('pending marker and billing snapshot both block duplicate manual checkout',
       paymentAction: 'none',
       message: 'Manual payments are reviewed by admin support.',
     },
+  }), false);
+});
+
+test('fresh proof marker survives a lagging free account-status snapshot', () => {
+  const now = Date.now();
+  const marker = JSON.stringify({
+    paymentRequestId: 'manual_pending_proof_abcdef',
+    planCode: 'starter',
+    status: 'pending_admin_review',
+    updatedAt: now,
+  });
+
+  assert.equal(shouldBlockDuplicateManualPayment({
+    markerRaw: marker,
+    now,
+    billing: { provider: 'none', paymentActionRequired: false, paymentAction: 'checkout', message: '' },
+  }), true);
+  assert.equal(shouldClearBillingPendingMarker({
+    markerRaw: marker,
+    now,
+    billing: { provider: 'none', paymentActionRequired: false, paymentAction: 'checkout', message: '' },
   }), false);
 });

@@ -1,31 +1,16 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { loadEnvFiles } from './lib/env-check.mjs';
 
-const root = process.cwd();
-
-function parseEnvFile(filePath) {
-  if (!existsSync(filePath)) return {};
-
-  const result = {};
-  const raw = readFileSync(filePath, 'utf8');
-  for (const line of raw.split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-    const index = trimmed.indexOf('=');
-    if (index <= 0) continue;
-    const key = trimmed.slice(0, index).trim();
-    const value = trimmed.slice(index + 1).trim().replace(/^['"]|['"]$/g, '');
-    result[key] = value;
-  }
-  return result;
-}
-
-function mergeEnvFiles(paths) {
-  return Object.assign({}, ...paths.map((path) => parseEnvFile(resolve(root, path))), process.env);
-}
-
-const mobileEnv = mergeEnvFiles(['apps/mobile/.env']);
-const serverEnv = mergeEnvFiles(['.env.local', '.env']);
+const mobileEnv = loadEnvFiles([
+  'apps/mobile/.env.production.local',
+  'apps/mobile/.env.local',
+  'apps/mobile/.env',
+]);
+const serverEnv = loadEnvFiles([
+  '.vercel/.env.production.local',
+  '.env.production.local',
+  '.env.local',
+  '.env',
+]);
 
 const checks = [
   {

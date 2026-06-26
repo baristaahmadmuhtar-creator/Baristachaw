@@ -1425,6 +1425,84 @@ function normalizeNoteList(...groups: Array<Array<string | undefined>>) {
   );
 }
 
+type AiBrewSurfaceNoteKind = 'recipe' | 'confidence';
+
+const AI_BREW_RECIPE_NOTE_PRIORITY_PATTERNS = [
+  /manual brew preset|manual mineral|precision target|japanese-style iced|hot concentrate extracts/i,
+  /target pour behavior|pour control|no automatic process|no automatic variety|custom process detection/i,
+  /high variability|upper-buffered|adjusted manually|exact hario v60 japanese iced/i,
+  /4:6|kasuya|flat-bottom|orea|reported 2026|hario neo|natural high-aroma|longer bloom/i,
+  /risk|caution|feedback|baseline|variability|experimental|decaf|robusta|canephora|bitterness|pahit/i,
+];
+
+const AI_BREW_CONFIDENCE_NOTE_PRIORITY_PATTERNS = [
+  /ai numeric optimizer accepted|generated from the .* family template|pour control source/i,
+  /water source:|origin cue recognized|central america cocoa citrus|andes balanced fruit|robusta.*lowland body/i,
+  /dose calibration active|dose-target-variety calibration|method-family signature active/i,
+  /target-method calibration active|origin-method calibration active|operator knowledge layer/i,
+  /precision target|exact device profile|family fallback|device profile was generated/i,
+  /risk|caution|feedback|baseline|variability|experimental|decaf|robusta|canephora|bitterness|dark roast|pahit/i,
+];
+
+function matchesAnyPattern(value: string, patterns: RegExp[]) {
+  return patterns.some((pattern) => pattern.test(value));
+}
+
+function isOperatorKnowledgeNote(value: string) {
+  return /^Knowledge v\d+\s+-/i.test(value);
+}
+
+function compactAiBrewSurfaceNotes(notes: string[], kind: AiBrewSurfaceNoteKind) {
+  const maxItems = kind === 'recipe' ? 28 : 16;
+  const maxChars = kind === 'recipe' ? 3200 : 1250;
+  const knowledgeLimit = kind === 'recipe' ? 4 : 0;
+  const priorityPatterns = kind === 'recipe'
+    ? AI_BREW_RECIPE_NOTE_PRIORITY_PATTERNS
+    : AI_BREW_CONFIDENCE_NOTE_PRIORITY_PATTERNS;
+  const selected: string[] = [];
+  const used = new Set<string>();
+  let charCount = 0;
+
+  const add = (note: string, force = false) => {
+    const key = note.toLowerCase();
+    if (used.has(key)) return false;
+    const nextCharCount = charCount + note.length + (selected.length > 0 ? 1 : 0);
+    if (!force && (selected.length >= maxItems || nextCharCount > maxChars)) return false;
+    if (force && selected.length >= maxItems + 4) return false;
+    selected.push(note);
+    used.add(key);
+    charCount = nextCharCount;
+    return true;
+  };
+
+  for (const note of notes.slice(0, kind === 'recipe' ? 2 : 1)) {
+    add(note, true);
+  }
+
+  for (const note of notes) {
+    if (!isOperatorKnowledgeNote(note) && matchesAnyPattern(note, priorityPatterns)) {
+      add(note, true);
+    }
+  }
+
+  if (knowledgeLimit > 0) {
+    const knowledgeNotes = notes.filter(isOperatorKnowledgeNote);
+    const rankedKnowledgeNotes = [
+      ...knowledgeNotes.filter((note) => !/universal/i.test(note)),
+      ...knowledgeNotes.filter((note) => /universal/i.test(note)),
+    ];
+    for (const note of rankedKnowledgeNotes.slice(0, knowledgeLimit)) {
+      add(note);
+    }
+  }
+
+  for (const note of notes) {
+    add(note);
+  }
+
+  return selected;
+}
+
 function resolveAeroPressLowTempWarningFloor(roastLevel: RoastLevel) {
   if (roastLevel === 'light' || roastLevel === 'medium_light') return 91;
   if (roastLevel === 'medium') return 90;
@@ -8931,7 +9009,7 @@ function finalizePlanCore(
     waterTempC,
   );
 
-  const notes = normalizeNoteList(
+  const notes = compactAiBrewSurfaceNotes(normalizeNoteList(
     [
       targetProfile.description,
       controlledDeviceProfile.note,
@@ -8992,9 +9070,9 @@ function finalizePlanCore(
       pourControlNote,
       grinderSetting?.note,
     ],
-  );
+  ), 'recipe');
 
-  const confidenceNotes = normalizeNoteList(
+  const confidenceNotes = compactAiBrewSurfaceNotes(normalizeNoteList(
     [deviceSelection.fallbackUsed
       ? 'Exact device profile unavailable; family fallback was used.'
       : isDerivedTemplateProfile
@@ -9041,7 +9119,7 @@ function finalizePlanCore(
         : undefined,
       pourControlNote ? `Pour control source: ${pourControlNote}` : undefined,
     ],
-  );
+  ), 'confidence');
   const beanCoverageBase = {
     input,
     processEntry,

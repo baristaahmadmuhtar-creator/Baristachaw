@@ -170,14 +170,16 @@ export function shouldClearBillingPendingMarker(input: {
   // 2. Rejected or specific clear states
   if (/rejected|declined|failed/.test(message)) return true;
   
-  // 3. No longer pending according to the server.
+  // 3. Still pending according to the server.
   const isPendingReview = (provider === 'manual' && billing.paymentActionRequired) ||
     (billing.paymentActionRequired && action === 'contact_support') ||
     (billing.paymentActionRequired === true && /waiting for admin|verification|review|menunggu review|pending review/.test(message));
 
-  if (!isPendingReview) {
-    return true;
+  if (isPendingReview) {
+    return false;
   }
 
+  // Account status can lag immediately after proof upload. Keep a fresh local
+  // proof marker until the server reports a final entitlement or rejection.
   return false;
 }

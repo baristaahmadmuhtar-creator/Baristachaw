@@ -1101,7 +1101,11 @@ export function resolveSwitchPlanSelection(params: {
   let finalPresetStatus = originalPresetStatus;
 
   const explicitPresetSelected = isTruthyString(input.switchPresetId);
-  const wantsRecovery = originalPresetStatus === 'blocked' || (!explicitPresetSelected && tasteProgramme.suggestedPresetId && tasteProgramme.suggestedPresetId !== preset.id);
+  const wantsRecovery = !explicitPresetSelected
+    && (
+      originalPresetStatus === 'blocked'
+      || (tasteProgramme.suggestedPresetId && tasteProgramme.suggestedPresetId !== preset.id)
+    );
 
   if (wantsRecovery) {
     const suggestedId = tasteProgramme.suggestedPresetId || suggestedSafeSwitchPreset({ dripperId: dripper.id, targetProfile, presetId: preset.id, brewMode: input.brewMode });

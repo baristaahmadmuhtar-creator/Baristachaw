@@ -1,0 +1,225 @@
+{
+  "capturedAt": "2026-06-26",
+  "notes": [
+    "Source-backed Indonesian seed lots for software stress coverage. These are not sensory validation claims.",
+    "Missing fields stay explicit so AI Brew does not invent process, variety, or roast details."
+  ],
+  "items": [
+    {
+      "id": "id-aceh-gayo-queen-ketiara-wet-hulled",
+      "lotName": "Aceh Gayo Queen Ketiara",
+      "origin": "Indonesia",
+      "region": "Gayo, Aceh",
+      "process": "wet_hulled",
+      "variety": "mixed_variety",
+      "roastLevel": "medium",
+      "sourceUrls": [
+        "https://morphcoffee.com/product/aceh-gayo-queen-ketiara/",
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "evidenceLevel": "roaster_page",
+      "expectedCharacter": "heavy body, herbal-spice, cocoa, wet-hulled structure",
+      "missingFields": []
+    },
+    {
+      "id": "id-aceh-gayo-honey-ateng-catimor",
+      "lotName": "Aceh Gayo Honey Process",
+      "origin": "Indonesia",
+      "region": "Atu Lintang, Gayo, Aceh",
+      "process": "honey",
+      "variety": "catimor",
+      "roastLevel": "light",
+      "sourceUrls": [
+        "https://ottencoffee.co.id/drip-coffee/drip-coffee-10g-arabica-gayo-honey-process-4-pcs",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "evidenceLevel": "roaster_page",
+      "expectedCharacter": "citrus, palm sugar, black tea, honey-process sweetness",
+      "missingFields": []
+    },
+    {
+      "id": "id-java-wanoja-extended-natural",
+      "lotName": "Wanoja Extended Natural",
+      "origin": "Indonesia",
+      "region": "Kamojang, West Java",
+      "process": "natural_extended_fermentation",
+      "variety": "mixed_variety",
+      "roastLevel": "medium_light",
+      "sourceUrls": [
+        "https://www.commongrounds.co.id/coffee-sneakers-lokal-vol-1-special/185-wanoja-extended-natural.html",
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "evidenceLevel": "roaster_page",
+      "expectedCharacter": "mango, strawberry candy, raisins, high-ferment fruit",
+      "missingFields": []
+    },
+    {
+      "id": "id-java-preanger-washed-ateng",
+      "lotName": "Java Preanger Washed Ateng Style",
+      "origin": "Indonesia",
+      "region": "Priangan, West Java",
+      "process": "washed",
+      "variety": "ateng",
+      "roastLevel": "medium",
+      "sourceUrls": [
+        "https://allianceforcoffeeexcellence.org/competition-auction-results/",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "evidenceLevel": "industry_reference",
+      "expectedCharacter": "clean cocoa, mild citrus, tea-like Java structure",
+      "missingFields": [
+        "producer",
+        "exact_roaster_lot"
+      ]
+    },
+    {
+      "id": "id-bali-kintamani-washed-kartika",
+      "lotName": "Bali Kintamani Washed Kartika Style",
+      "origin": "Indonesia",
+      "region": "Kintamani, Bali",
+      "process": "washed",
+      "variety": "kartika",
+      "roastLevel": "medium_light",
+      "sourceUrls": [
+        "https://allianceforcoffeeexcellence.org/competition-auction-results/",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "evidenceLevel": "industry_reference",
+      "expectedCharacter": "orange, brown sugar, clean spice, medium body",
+      "missingFields": [
+        "producer",
+        "exact_roaster_lot"
+      ]
+    },
+    {
+      "id": "id-bali-kintamani-natural-sigararutang",
+      "lotName": "Bali Kintamani Natural Sigararutang Style",
+      "origin": "Indonesia",
+      "region": "Kintamani, Bali",
+      "process": "natural",
+      "variety": "sigararutang",
+      "roastLevel": "medium_light",
+      "sourceUrls": [
+        "https://allianceforcoffeeexcellence.org/competition-auction-results/",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "evidenceLevel": "industry_reference",
+      "expectedCharacter": "red fruit, citrus peel, tropical natural sweetness",
+      "missingFields": [
+        "producer",
+        "exact_roaster_lot"
+      ]
+    },
+    {
+      "id": "id-flores-bajawa-honey-typica",
+      "lotName": "Flores Bajawa Honey Typica Style",
+      "origin": "Indonesia",
+      "region": "Bajawa, Flores, NTT",
+      "process": "honey",
+      "variety": "typica",
+      "roastLevel": "medium",
+      "sourceUrls": [
+        "https://allianceforcoffeeexcellence.org/competition-auction-results/",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "evidenceLevel": "industry_reference",
+      "expectedCharacter": "caramel, spice, medium-heavy body, gentle fruit",
+      "missingFields": [
+        "producer",
+        "exact_roaster_lot"
+      ]
+    },
+    {
+      "id": "id-flores-manggarai-washed-s795",
+      "lotName": "Flores Manggarai Washed S-795 Style",
+      "origin": "Indonesia",
+      "region": "Manggarai, Flores, NTT",
+      "process": "fully_washed",
+      "variety": "s795",
+      "roastLevel": "medium",
+      "sourceUrls": [
+        "https://allianceforcoffeeexcellence.org/competition-auction-results/",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "evidenceLevel": "industry_reference",
+      "expectedCharacter": "cocoa, spice, citrus, structured sweetness",
+      "missingFields": [
+        "producer",
+        "exact_roaster_lot"
+      ]
+    },
+    {
+      "id": "id-toraja-sulotco-washed-mixed",
+      "lotName": "Toraja Sulotco",
+      "origin": "Indonesia",
+      "region": "Tana Toraja, Sulawesi",
+      "process": "washed",
+      "variety": "mixed_variety",
+      "roastLevel": "medium",
+      "sourceUrls": [
+        "https://www.commongrounds.co.id/200-grams/78-toraja-sulotco.html"
+      ],
+      "evidenceLevel": "roaster_page",
+      "expectedCharacter": "rose apple, molasses, black tea, clean Toraja profile",
+      "missingFields": []
+    },
+    {
+      "id": "id-toraja-kalosi-wet-hulled-typica",
+      "lotName": "Toraja Kalosi Wet-Hulled Typica Style",
+      "origin": "Indonesia",
+      "region": "Kalosi, Toraja, Sulawesi",
+      "process": "wet_hulled",
+      "variety": "typica",
+      "roastLevel": "medium",
+      "sourceUrls": [
+        "https://allianceforcoffeeexcellence.org/competition-auction-results/",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "evidenceLevel": "industry_reference",
+      "expectedCharacter": "herbal cocoa, dark spice, round body",
+      "missingFields": [
+        "producer",
+        "exact_roaster_lot"
+      ]
+    },
+    {
+      "id": "id-jambi-kerinci-natural-andungsari",
+      "lotName": "Kerinci Natural Andungsari Style",
+      "origin": "Indonesia",
+      "region": "Kerinci, Jambi, Sumatra",
+      "process": "natural",
+      "variety": "andungsari",
+      "roastLevel": "medium_light",
+      "sourceUrls": [
+        "https://allianceforcoffeeexcellence.org/competition-auction-results/",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "evidenceLevel": "industry_reference",
+      "expectedCharacter": "berry, tropical fruit, cacao nib, natural-process sweetness",
+      "missingFields": [
+        "producer",
+        "exact_roaster_lot"
+      ]
+    },
+    {
+      "id": "id-jambi-kerinci-honey-sigararutang",
+      "lotName": "Kerinci Honey Sigararutang Style",
+      "origin": "Indonesia",
+      "region": "Kerinci, Jambi, Sumatra",
+      "process": "honey",
+      "variety": "sigararutang",
+      "roastLevel": "medium",
+      "sourceUrls": [
+        "https://allianceforcoffeeexcellence.org/competition-auction-results/",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "evidenceLevel": "industry_reference",
+      "expectedCharacter": "brown sugar, citrus, mild fermentation, rounded body",
+      "missingFields": [
+        "producer",
+        "exact_roaster_lot"
+      ]
+    }
+  ]
+}

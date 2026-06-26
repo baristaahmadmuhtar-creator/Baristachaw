@@ -47,6 +47,10 @@ function isTruthyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+function normalizeSwitchNotes(...groups: Array<Array<string | undefined>>) {
+  return Array.from(new Set(groups.flat().filter((note): note is string => Boolean(note && note.trim()))));
+}
+
 export function isHarioSwitchDripperId(id: string) {
   return SWITCH_EXACT_IDS.has(id) || SWITCH_LEGACY_IDS.has(id);
 }
@@ -1099,13 +1103,17 @@ export function resolveSwitchPlanSelection(params: {
   let recoveryApplied = false;
   let recoveryReason = '';
   let finalPresetStatus = originalPresetStatus;
+  const statusForPeakLoad = (loadMl: number): 'safe' | 'caution' | 'blocked' => (
+    loadMl > maxClosedLoadMl
+      ? 'blocked'
+      : maxClosedLoadMl > 0 && loadMl > maxClosedLoadMl * 0.9
+        ? 'caution'
+        : 'safe'
+  );
 
   const explicitPresetSelected = isTruthyString(input.switchPresetId);
-  const wantsRecovery = !explicitPresetSelected
-    && (
-      originalPresetStatus === 'blocked'
-      || (tasteProgramme.suggestedPresetId && tasteProgramme.suggestedPresetId !== preset.id)
-    );
+  const wantsRecovery = originalPresetStatus === 'blocked'
+    || (!explicitPresetSelected && Boolean(tasteProgramme.suggestedPresetId && tasteProgramme.suggestedPresetId !== preset.id));
 
   if (wantsRecovery) {
     const suggestedId = tasteProgramme.suggestedPresetId || suggestedSafeSwitchPreset({ dripperId: dripper.id, targetProfile, presetId: preset.id, brewMode: input.brewMode });
@@ -1125,10 +1133,33 @@ export function resolveSwitchPlanSelection(params: {
         doseG,
       });
       recoveryApplied = true;
-      recoveryReason = `Full immersion exceeds safe capacity (${maxClosedLoadMl} ml). Recovered to a safe hybrid method.`;
+      recoveryReason = `Manual full immersion adapted to ${safePreset.label} for the ${Math.round(maxClosedLoadMl)} ml closed-phase limit on ${getSwitchSizeLabel(dripper)}.`;
 
       const newPeakLoad = Math.max(0, ...tasteProgramme.chamberLoadPlan.map((c) => c.chamberLoadMl));
-      finalPresetStatus = newPeakLoad > maxClosedLoadMl ? 'blocked' : (maxClosedLoadMl > 0 && newPeakLoad > maxClosedLoadMl * 0.9) ? 'caution' : 'safe';
+      finalPresetStatus = statusForPeakLoad(newPeakLoad);
+      if (finalPresetStatus !== 'safe') {
+        const conservativePreset = getCompatiblePreset(catalog, 'v60_mode', dripper.id);
+        if (conservativePreset && conservativePreset.id !== preset.id && !doseRow?.blockedPresetIds.includes(conservativePreset.id)) {
+          preset = conservativePreset;
+          tasteProgramme = deriveSwitchTargetTuning({
+            input,
+            preset,
+            doseRow,
+            dripperId: dripper.id,
+            targetProfile,
+            processEntry,
+            waterClassification,
+            grinderVerification,
+            doseG,
+          });
+          const conservativePeakLoad = Math.max(0, ...tasteProgramme.chamberLoadPlan.map((c) => c.chamberLoadMl));
+          finalPresetStatus = statusForPeakLoad(conservativePeakLoad);
+          recoveryReason = `Manual full immersion adapted to ${conservativePreset.label} because the hybrid recovery would sit too close to the ${Math.round(maxClosedLoadMl)} ml closed-phase limit on ${getSwitchSizeLabel(dripper)}.`;
+        }
+      }
+      if (finalPresetStatus !== 'blocked') {
+        tasteProgramme.riskWarnings = normalizeSwitchNotes([recoveryReason], tasteProgramme.riskWarnings);
+      }
     }
   }
 

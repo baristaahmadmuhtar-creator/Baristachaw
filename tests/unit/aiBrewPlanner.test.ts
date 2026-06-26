@@ -2628,9 +2628,15 @@ test('production Hario Switch presets choose safe defaults and preserve programm
     targetWaterMl: '300',
     switchPresetId: 'immersion_heavy_body',
   }, productionCatalog);
-  assert.equal(switch02UnsafeHeavy.switchStepValidation?.status, 'blocked');
-  assert.equal(switch02UnsafeHeavy.workflowValidation?.status, 'blocked');
-  assert.match((switch02UnsafeHeavy.switchStepValidation?.message || ''), /exceeds safe|melebihi batas aman/i);
+  assert.equal(switch02UnsafeHeavy.switchTasteProgramme?.originalPresetId, 'immersion_heavy_body');
+  assert.equal(switch02UnsafeHeavy.switchTasteProgramme?.originalPresetStatus, 'blocked');
+  assert.equal(switch02UnsafeHeavy.switchTasteProgramme?.recoveryApplied, true);
+  assert.notEqual(switch02UnsafeHeavy.switchTasteProgramme?.finalPresetStatus, 'blocked');
+  assert.notEqual(switch02UnsafeHeavy.switchPresetId, 'immersion_heavy_body');
+  assert.notEqual(switch02UnsafeHeavy.switchStepValidation?.status, 'blocked');
+  assert.notEqual(switch02UnsafeHeavy.workflowValidation?.status, 'blocked');
+  assert.ok((switch02UnsafeHeavy.switchTasteProgramme?.peakClosedLoadMl || 0) <= (switch02UnsafeHeavy.switchTasteProgramme?.safeClosedPhaseMaxMl || 0));
+  assert.match((switch02UnsafeHeavy.switchTasteProgramme?.recoveryReason || ''), /adapted|disesuaikan|safe hybrid/i);
 
   const switch03Large = buildAiBrewPlan({
     ...base,
@@ -2747,9 +2753,12 @@ test('Hario Switch taste-first snapshot matrix proves numeric target differences
     process: 'wet_hulled',
     switchPresetId: 'immersion_heavy_body',
   }, productionCatalog);
-  assertUnsafeSwitchPlan(switch02BodyManual);
-  assert.equal(switch02BodyManual.switchPresetId, 'immersion_heavy_body');
-  assert.notEqual(switch02BodyManual.workflowValidation?.status, 'ready');
+  assertSafeSwitchPlan(switch02BodyManual);
+  assert.equal(switch02BodyManual.switchTasteProgramme?.originalPresetId, 'immersion_heavy_body');
+  assert.equal(switch02BodyManual.switchTasteProgramme?.originalPresetStatus, 'blocked');
+  assert.equal(switch02BodyManual.switchTasteProgramme?.recoveryApplied, true);
+  assert.notEqual(switch02BodyManual.switchPresetId, 'immersion_heavy_body');
+  assert.notEqual(switch02BodyManual.workflowValidation?.status, 'blocked');
 
   const switch03Floral = buildAiBrewPlan({
     ...base,
@@ -2926,11 +2935,12 @@ test('AI Brew release snapshot matrix keeps global methods safe, honest, and met
     requiredText?: RegExp;
     forbiddenText?: RegExp;
     expectBlocked?: boolean;
+    expectRecovered?: boolean;
   }> = [
     { label: 'Switch 03 20g 300ml Seimbang', input: { dripperId: 'hario-switch-03', doseG: '20', targetWaterMl: '300', targetProfileId: 'balance_clean' }, expectedMethod: 'hario_switch', requiredText: /Katup|Switch|muatan ruang/i },
     { label: 'Switch 03 15g Manis', input: { dripperId: 'hario-switch-03', targetProfileId: 'more_sweetness' }, expectedMethod: 'hario_switch', requiredText: /Katup|tuang \d+ ml sampai/i },
     { label: 'Switch 02 20g Body Auto', input: { dripperId: 'hario-switch-02', doseG: '20', targetWaterMl: '300', targetProfileId: 'more_body', process: 'wet_hulled' }, expectedMethod: 'hario_switch', requiredText: /Katup buka|safe|aman/i },
-    { label: 'Switch 02 20g Heavy manual', input: { dripperId: 'hario-switch-02', doseG: '20', targetWaterMl: '300', targetProfileId: 'more_body', process: 'wet_hulled', switchPresetId: 'immersion_heavy_body' }, expectedMethod: 'hario_switch', requiredText: /exceeds|melebihi|blocked|muatan|chamber/i, expectBlocked: true },
+    { label: 'Switch 02 20g Heavy manual', input: { dripperId: 'hario-switch-02', doseG: '20', targetWaterMl: '300', targetProfileId: 'more_body', process: 'wet_hulled', switchPresetId: 'immersion_heavy_body' }, expectedMethod: 'hario_switch', requiredText: /adapted|Mode V60|closed-phase limit|Katup buka/i, expectRecovered: true },
     { label: 'Switch 03 15g Floral Transparan', input: { dripperId: 'hario-switch-03', targetProfileId: 'floral_transparent' }, expectedMethod: 'hario_switch', requiredText: /Katup|tuang \d+ ml sampai/i },
     { label: 'Switch 03 15g Buah Menonjol', input: { dripperId: 'hario-switch-03', targetProfileId: 'fruit_forward', process: 'natural' }, expectedMethod: 'hario_switch', requiredText: /Katup|tuang \d+ ml sampai/i },
     { label: 'Switch 03 15g Lembut Bulat', input: { dripperId: 'hario-switch-03', targetProfileId: 'soft_round', process: 'honey' }, expectedMethod: 'hario_switch', requiredText: /Katup|tuang \d+ ml sampai/i },
@@ -2968,7 +2978,14 @@ test('AI Brew release snapshot matrix keeps global methods safe, honest, and met
     ].join('\n');
     if (entry.requiredText) assert.match(text, entry.requiredText, `${entry.label} required method language`);
     if (entry.forbiddenText) assert.doesNotMatch(text, entry.forbiddenText, `${entry.label} forbidden method leakage`);
-    if (entry.expectBlocked) {
+    if (entry.expectRecovered) {
+      assert.equal(plan.switchTasteProgramme?.originalPresetStatus, 'blocked', `${entry.label} should remember original unsafe manual preset`);
+      assert.equal(plan.switchTasteProgramme?.recoveryApplied, true, `${entry.label} should recover before user-facing output`);
+      assert.notEqual(plan.switchStepValidation?.status, 'blocked', `${entry.label} final Switch validation`);
+      assert.notEqual(plan.workflowValidation?.status, 'blocked', `${entry.label} final workflow`);
+      assert.notEqual(plan.beanCoverage?.category, 'unsupported_unsafe', `${entry.label} should not be unsafe coverage after recovery`);
+      assert.doesNotMatch(text, /\bblocked\b|diblokir|memblokir/i, `${entry.label} should not leak blocked copy`);
+    } else if (entry.expectBlocked) {
       assert.equal(plan.beanCoverage?.category, 'unsupported_unsafe', `${entry.label} should be unsafe coverage`);
       assert.ok(plan.switchStepValidation?.status === 'blocked' || plan.workflowValidation?.status === 'blocked');
     } else {
@@ -10738,7 +10755,7 @@ test('Indonesian critical AI Brew trust copy stays localized and honest', () => 
   assert.match(badgeText, /Siap|Grinder resmi|Grinder kurasi|Profil alat tepat|Template turunan|Profil keluarga alat/i);
   assert.doesNotMatch(badgeText, /\bReady|Device Exact|Grinder Official|Grinder Curated|Grinder Estimated|High Buffer|Manual Required|Family Fallback\b/i);
 
-  const switchUnsafe = buildAiBrewPlan({
+  const switchRecovered = buildAiBrewPlan({
     ...base,
     coffeeName: 'Switch 02 Body QA',
     process: 'wet_hulled',
@@ -10750,16 +10767,21 @@ test('Indonesian critical AI Brew trust copy stays localized and honest', () => 
     targetProfileId: 'more_body',
     switchPresetId: 'immersion_heavy_body',
   }, localizedCatalog);
-  assert.equal(switchUnsafe.switchStepValidation?.status, 'blocked');
+  assert.equal(switchRecovered.switchTasteProgramme?.originalPresetStatus, 'blocked');
+  assert.equal(switchRecovered.switchTasteProgramme?.recoveryApplied, true);
+  assert.notEqual(switchRecovered.switchStepValidation?.status, 'blocked');
+  assert.notEqual(switchRecovered.workflowValidation?.status, 'blocked');
   const switchSafetyCopy = [
-    switchUnsafe.switchStepValidation?.message,
-    switchUnsafe.switchWatch,
-    ...(switchUnsafe.switchTasteProgramme?.riskWarnings || []),
+    switchRecovered.switchStepValidation?.message,
+    switchRecovered.switchWatch,
+    switchRecovered.switchTasteProgramme?.recoveryReason,
+    ...(switchRecovered.switchTasteProgramme?.riskWarnings || []),
   ].filter(Boolean).map((item) => localizeAiBrewDynamicText(String(item), 'id')).join(' ');
-  assert.match(switchSafetyCopy, /muatan ruang|batas aman|katup|Mode V60|hybrid konservatif/i);
+  assert.match(switchSafetyCopy, /disesuaikan|batas fase tertutup|muatan ruang|katup|Mode V60/i);
   assert.doesNotMatch(switchSafetyCopy, localizedLeakPattern);
+  assert.doesNotMatch(switchSafetyCopy, /\bblocked\b|diblokir|memblokir/i);
 
-  const localizedSwitchSteps = buildLocalizedPlanRecipeSteps(switchUnsafe, 'id').join(' ');
+  const localizedSwitchSteps = buildLocalizedPlanRecipeSteps(switchRecovered, 'id').join(' ');
   assert.match(localizedSwitchSteps, /Katup|Target|ml|Buka/i);
   assert.doesNotMatch(localizedSwitchSteps, /\bvalve closed|valve open|chamber load\b/i);
 

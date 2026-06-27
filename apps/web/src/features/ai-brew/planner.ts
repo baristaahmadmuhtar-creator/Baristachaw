@@ -1265,6 +1265,28 @@ function parseOptionalNumber(label: string, value: string, min: number, max: num
   return parsed;
 }
 
+function parseRecoverableOptionalNumber(
+  label: string,
+  value: string,
+  min: number,
+  max: number,
+  recoveryNotes: string[],
+) {
+  const normalized = value.trim();
+  if (!normalized) return null;
+  const parsed = Number.parseFloat(normalized);
+  if (!Number.isFinite(parsed)) {
+    recoveryNotes.push(`${label} override ignored because it was not a valid number.`);
+    return null;
+  }
+  if (parsed < min || parsed > max) {
+    const recovered = clamp(parsed, min, max);
+    recoveryNotes.push(`${label} override adjusted from ${parsed} to ${roundTo(recovered, 1)} to stay inside the safe recipe range (${min}-${max}).`);
+    return recovered;
+  }
+  return parsed;
+}
+
 function resolveTargetWaterOverrideBounds(methodFamily: AiBrewMethodFamily, doseG: number, ratioLowerBound: number, ratioUpperBound: number, brewMode: 'hot' | 'iced' = 'hot') {
   const hardLimits = TARGET_WATER_METHOD_LIMITS[methodFamily];
   if (methodFamily === 'french_press') {
@@ -8319,21 +8341,23 @@ function finalizePlanCore(
     input.targetWaterMl || '',
     methodFamily,
   );
-  const targetWaterOverrideMl = parseOptionalNumber(
+  const precisionOverrideNotes: string[] = [];
+  const targetWaterOverrideMl = parseRecoverableOptionalNumber(
     'Target water',
     manualPresetScaledWaterMl !== null ? String(manualPresetScaledWaterMl) : input.targetWaterMl || '',
     targetWaterBounds.min,
     targetWaterBounds.max,
+    precisionOverrideNotes,
   );
   const targetRatioOverride = targetWaterOverrideMl !== null
     ? null
-    : parseOptionalNumber(
+    : parseRecoverableOptionalNumber(
       'Target ratio',
       input.targetRatio || '',
       ratioLowerBound,
       ratioUpperBound,
+      precisionOverrideNotes,
     );
-  const precisionOverrideNotes: string[] = [];
 
   const ratioBeforeIcedStrengthCalibration = targetWaterOverrideMl === null
     && targetRatioOverride === null
@@ -8710,11 +8734,12 @@ function finalizePlanCore(
   const methodTempBounds = (methodFamily === 'cold_brew' || input.manualPresetId === 'inspired-aeropress-cold-brew-express')
     ? { min: 4, max: 25 }
     : { min: 78, max: 98 };
-  const targetTempOverrideC = parseOptionalNumber(
+  const targetTempOverrideC = parseRecoverableOptionalNumber(
     'Target temperature',
     input.targetTempC || '',
     methodTempBounds.min,
     methodTempBounds.max,
+    precisionOverrideNotes,
   );
   const baseWaterTempC = midpoint(roastAdjustedTargets.adjustedTempRangeC, 1)
     + effectiveDeviceProfile.tempDeltaC
@@ -9487,6 +9512,23 @@ function finalizePlanCore(
       ...methodStyleValidation.errors,
       ...methodStyleValidation.warnings,
     ];
+  const switchRecoveryApplied = Boolean(plan.switchTasteProgramme?.recoveryApplied);
+  const recoveredFromBlocked = switchRecoveryApplied
+    && plan.switchTasteProgramme?.originalPresetStatus === 'blocked'
+    && plan.switchTasteProgramme?.finalPresetStatus !== 'blocked';
+  const recoverableOverrideNotes = precisionOverrideNotes.filter((note) => /\boverride (?:ignored|adjusted)\b/i.test(note));
+  const recoveryApplied = switchRecoveryApplied || recoveredFromBlocked || recoverableOverrideNotes.length > 0;
+  const recoveryReason = plan.switchTasteProgramme?.recoveryReason
+    || recoverableOverrideNotes.join(' ')
+    || (
+      recoveryApplied
+        ? `Recipe adapted to the safe ${methodStyleValidation.styleId || plan.recipeStyle || plan.methodFamily} style before showing the final brew plan.`
+        : undefined
+    );
+  const userFacingRecoveryMessage = recoveryApplied
+    ? `Safe adjustment applied: ${recoveryReason}`
+    : undefined;
+  const originalGuardrailRisk = recoveredFromBlocked ? 'blocked' : recoveryApplied ? 'caution' : 'none';
   const timeSemantics = deriveBrewPlanTimeSemantics(plan, workflowGuideSteps);
   const canonicalSummary = buildSummary({
     ...plan,
@@ -9506,17 +9548,27 @@ function finalizePlanCore(
     ...plan,
     workflowGuideSteps,
     workflowValidation,
+    recoveryApplied,
+    recoveryReason,
+    originalGuardrailRisk,
+    safeAlternativeStyle: recoveryApplied ? (methodStyleValidation.styleId || plan.recipeStyle) : undefined,
+    userFacingRecoveryMessage,
     ...timeSemantics,
     summary: canonicalSummary,
     extractionRationale: canonicalExtractionRationale,
     warnings: workflowValidation.passed
-      ? normalizeNoteList(plan.warnings, methodStyleValidation.errors)
-      : normalizeNoteList(plan.warnings, workflowValidation.blockingErrors, methodStyleValidation.errors),
+      ? normalizeNoteList(plan.warnings, methodStyleValidation.errors, userFacingRecoveryMessage ? [userFacingRecoveryMessage] : [])
+      : normalizeNoteList(plan.warnings, workflowValidation.blockingErrors, methodStyleValidation.errors, userFacingRecoveryMessage ? [userFacingRecoveryMessage] : []),
     confidenceNotes: normalizeNoteList(plan.confidenceNotes, workflowConfidenceNotes, methodStyleConfidenceNotes),
     beanCoverage: buildBeanCoverageState({
       ...beanCoverageBase,
-      guardrailErrors: normalizeNoteList(baseGuardrails.errors, workflowValidation.blockingErrors, methodStyleValidation.errors),
-      workflowStatus: workflowValidation.status,
+      guardrailErrors: recoveredFromBlocked
+        ? normalizeNoteList(baseGuardrails.errors, methodStyleValidation.errors)
+        : normalizeNoteList(baseGuardrails.errors, workflowValidation.blockingErrors, methodStyleValidation.errors),
+      workflowStatus: recoveredFromBlocked && workflowValidation.status === 'blocked' ? 'needs_review' : workflowValidation.status,
+      switchValidation: recoveredFromBlocked && beanCoverageBase.switchValidation?.status === 'blocked'
+        ? { ...beanCoverageBase.switchValidation, status: 'caution' }
+        : beanCoverageBase.switchValidation,
     }),
   } satisfies BrewPlan;
 
@@ -10698,6 +10750,11 @@ export function buildPlanRecipeMetadata(plan: BrewPlan) {
     methodFamily: plan.methodFamily,
     recipeStyle: plan.recipeStyle,
     recipeStyleLabel,
+    recoveryApplied: plan.recoveryApplied || false,
+    recoveryReason: plan.recoveryReason,
+    originalGuardrailRisk: plan.originalGuardrailRisk,
+    safeAlternativeStyle: plan.safeAlternativeStyle,
+    userFacingRecoveryMessage: plan.userFacingRecoveryMessage,
     process: plan.process,
     variety: plan.variety,
     roastLevel: plan.roastLevel,

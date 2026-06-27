@@ -67,7 +67,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: 'Baristachaw',
     slug: 'baristaclaw-mobile',
-    version: '1.0.4',
+    version: '1.0.5',
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'automatic',
@@ -101,7 +101,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     android: {
       package: DEFAULT_ANDROID_PACKAGE,
-      versionCode: 7,
+      versionCode: 8,
       newArchEnabled: false,
       allowBackup: false,
       blockedPermissions: ANDROID_BLOCKED_STORE_PERMISSIONS,

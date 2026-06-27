@@ -207,6 +207,41 @@ test('admin management returns runtime snapshot for allowlisted owner', async ()
   assert.ok(body.checks.some((check: any) => check.id === 'paid_ai_quota_failure_policy' && check.status === 'fail'));
 });
 
+test('admin management supports section pagination and filters for user tab payloads', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+    provider: 'google',
+  });
+  const req = makeReq({
+    query: {
+      section: 'users',
+      limit: '2',
+      page: '1',
+      query: 'runtime',
+      sort: 'risk_desc',
+      status: 'active',
+    },
+    cookies: { auth_token: token },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.section, 'users');
+  assert.equal(body.pagination.users.limit, 2);
+  assert.equal(body.pagination.users.page, 1);
+  assert.equal(body.pagination.users.returned <= 2, true);
+  assert.equal(body.pagination.users.filters.status, 'active');
+  assert.equal(body.appliedFilters.query, 'runtime');
+  assert.equal(body.appliedFilters.sort, 'risk_desc');
+  assert.equal(typeof body.counts.users, 'number');
+  assert.ok(body.users.every((user: any) => user.status === 'active'));
+});
+
 test('admin management exposes AI provider inventory without leaking server keys', async () => {
   process.env.GROQ_API_KEY = 'gsk_live_secret_one,gsk_live_secret_two';
   process.env.AI_PAID_OPENAI_API_KEY = 'sk-paid-openai-secret';

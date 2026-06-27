@@ -15,6 +15,29 @@ export type AdminCatalogReviewStatus = 'queued' | 'approved' | 'published' | 're
 export type ManualPaymentStatus = 'pending_review' | 'receipt_received' | 'verified_paid' | 'rejected' | 'expired';
 export type ManualPaymentAction = 'receipt_received' | 'verified_paid' | 'rejected' | 'expired' | 'downgrade_free';
 export type ManualPaymentQrCurrency = 'idr' | 'bnd' | 'myr' | 'sgd' | 'usd' | 'eur' | 'aud';
+export type AdminManagementSection =
+  | 'komando'
+  | 'users'
+  | 'plans'
+  | 'ai_control'
+  | 'maintenance'
+  | 'database'
+  | 'recipe_library'
+  | 'audit'
+  | 'launching';
+
+export type AdminSectionPagination = {
+  section: AdminManagementSection;
+  page: number;
+  limit: number;
+  total: number;
+  returned: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  query: string;
+  sort: string;
+  filters: Record<string, string>;
+};
 
 export type AdminPlan = {
   code: PlanCode;
@@ -361,6 +384,21 @@ export type AdminSnapshot = {
   dataMode: DataMode;
   dataFreshnessSec: number;
   degraded: boolean;
+  degradedReason?: string;
+  section?: AdminManagementSection;
+  counts?: {
+    users: number;
+    plans: number;
+    audit: number;
+    featureFlags: number;
+    manualPayments: number;
+    catalogRequests: number;
+    recipeLibraryItems: number;
+    launchChecklist: number;
+    checks: number;
+  };
+  pagination?: Partial<Record<AdminManagementSection, AdminSectionPagination>>;
+  appliedFilters?: Record<string, string>;
   admin: {
     userId: string;
     email?: string;
@@ -561,10 +599,31 @@ async function adminRequest<T>(path: string, init: RequestInit = {}, timeoutMs =
   }
 }
 
-export function fetchAdminSnapshot(options: { aiFrom?: string; aiTo?: string } = {}): Promise<AdminSnapshot> {
+export function fetchAdminSnapshot(options: {
+  aiFrom?: string;
+  aiTo?: string;
+  section?: AdminManagementSection;
+  page?: number;
+  limit?: number;
+  query?: string;
+  sort?: string;
+  status?: string;
+  plan?: string;
+  queue?: string;
+  severity?: string;
+} = {}): Promise<AdminSnapshot> {
   const params = new URLSearchParams();
   if (options.aiFrom) params.set('aiFrom', options.aiFrom);
   if (options.aiTo) params.set('aiTo', options.aiTo);
+  if (options.section) params.set('section', options.section);
+  if (Number.isFinite(options.page)) params.set('page', String(options.page));
+  if (Number.isFinite(options.limit)) params.set('limit', String(options.limit));
+  if (options.query) params.set('query', options.query);
+  if (options.sort) params.set('sort', options.sort);
+  if (options.status) params.set('status', options.status);
+  if (options.plan) params.set('plan', options.plan);
+  if (options.queue) params.set('queue', options.queue);
+  if (options.severity) params.set('severity', options.severity);
   const path = params.toString() ? `/api/admin/management?${params.toString()}` : '/api/admin/management';
   return adminRequest<AdminSnapshot>(path, { method: 'GET' }, 18_000);
 }

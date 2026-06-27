@@ -1318,6 +1318,11 @@ export interface BrewPlan {
   steps: BrewPlanStep[];
   workflowGuideSteps?: WorkflowGuideStep[];
   workflowValidation?: MethodWorkflowValidationResult;
+  recoveryApplied?: boolean;
+  recoveryReason?: string;
+  originalGuardrailRisk?: 'none' | 'caution' | 'blocked';
+  safeAlternativeStyle?: string;
+  userFacingRecoveryMessage?: string;
   devicePhysicalConstraints?: DevicePhysicalConstraints;
   methodProgramme?: SwitchBrewProgramme | string;
   switchPresetId?: SwitchPublicPresetId;

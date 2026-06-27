@@ -49,6 +49,10 @@ test('Hario Switch manual over-capacity preset is adapted to a safe final recipe
   assert.equal(programme.originalPresetId, 'immersion_heavy_body');
   assert.equal(programme.originalPresetStatus, 'blocked');
   assert.equal(programme.recoveryApplied, true);
+  assert.equal(plan.recoveryApplied, true);
+  assert.equal(plan.originalGuardrailRisk, 'blocked');
+  assert.ok(plan.safeAlternativeStyle, 'recovered plan should expose the safe alternative style');
+  assert.match(plan.userFacingRecoveryMessage || '', /Safe adjustment applied/i);
   assert.notEqual(programme.finalPresetId, 'immersion_heavy_body');
   assert.notEqual(programme.finalPresetStatus, 'blocked');
   assert.equal(plan.switchPresetId, programme.finalPresetId);

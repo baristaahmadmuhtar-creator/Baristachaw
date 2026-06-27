@@ -6703,7 +6703,9 @@ function PlanResultDialog({
     : (id ? 'Katup mengikuti preset' : 'Valve follows preset');
   const waterSourceLinks = plan.waterBrandSourceUrls || [];
   const workflowValidation = plan.workflowValidation;
-  const workflowBlocked = workflowValidation?.status === 'blocked';
+  const recoveryApplied = Boolean(plan.recoveryApplied || plan.switchTasteProgramme?.recoveryApplied);
+  const blockedWorkflowRecovered = Boolean(plan.originalGuardrailRisk === 'blocked' || plan.switchTasteProgramme?.originalPresetStatus === 'blocked');
+  const workflowBlocked = workflowValidation?.status === 'blocked' && !blockedWorkflowRecovered;
   const switchSafetyStatus = plan.switchStepValidation?.status || plan.switchCompatibility?.status;
   const switchSafetyMessage = plan.switchStepValidation?.message || plan.switchCompatibility?.message;
   const localizedTargetProfileLabel = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language);
@@ -7750,14 +7752,16 @@ function PlanResultDialog({
                       </p>
                     </div>
                     <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
-                      workflowValidation?.status === 'blocked'
+                      workflowBlocked
                         ? 'border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-300'
-                        : workflowValidation?.status === 'ready' || !workflowValidation
+                        : recoveryApplied || workflowValidation?.status === 'ready' || !workflowValidation
                           ? 'border-emerald-500/18 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
                           : 'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300'
                     }`}>
-                      {workflowValidation?.status === 'blocked'
+                      {workflowBlocked
                         ? (id ? 'Diblokir' : 'Blocked')
+                        : recoveryApplied
+                          ? (id ? 'Aman disesuaikan' : 'Safe recovery')
                         : workflowValidation?.status === 'ready' || !workflowValidation
                           ? (id ? 'Aman' : 'Safe')
                           : (id ? 'Perlu review' : 'Needs review')}
@@ -10972,7 +10976,8 @@ export function AiBrewPanel() {
 
   async function handleSaveRecipe() {
     if (!plan || saving) return;
-    if (plan.workflowValidation?.status === 'blocked') {
+    const blockedWorkflowRecovered = plan.originalGuardrailRisk === 'blocked' || plan.switchTasteProgramme?.originalPresetStatus === 'blocked';
+    if (plan.workflowValidation?.status === 'blocked' && !blockedWorkflowRecovered) {
       setSaveError(isIndonesianAiBrewLanguage(language)
         ? 'Resep belum bisa disimpan karena panduan seduh masih diblokir.'
         : 'Recipe cannot be saved while the workflow guide is blocked.');
@@ -11140,7 +11145,8 @@ export function AiBrewPanel() {
 
   async function runAiCoach(mode: AiCoachMode) {
     if (!plan) return;
-    if (plan.workflowValidation?.status === 'blocked') {
+    const blockedWorkflowRecovered = plan.originalGuardrailRisk === 'blocked' || plan.switchTasteProgramme?.originalPresetStatus === 'blocked';
+    if (plan.workflowValidation?.status === 'blocked' && !blockedWorkflowRecovered) {
       setAiError(isIndonesianAiBrewLanguage(language)
         ? 'AI Assist dikunci karena panduan seduh masih diblokir. Pilih ukuran Switch exact atau programme yang aman dulu.'
         : 'AI Assist is locked because the brew guide is blocked. Choose an exact Switch size or a safe programme first.');
@@ -11324,7 +11330,8 @@ export function AiBrewPanel() {
           ? copy.dripper
           : copy.grinder
     : copy.process;
-  const aiCoachDisabled = !plan || isOffline || aiBusy !== null || plan.workflowValidation?.status === 'blocked';
+  const aiCoachBlockedWorkflowRecovered = plan?.originalGuardrailRisk === 'blocked' || plan?.switchTasteProgramme?.originalPresetStatus === 'blocked';
+  const aiCoachDisabled = !plan || isOffline || aiBusy !== null || (plan.workflowValidation?.status === 'blocked' && !aiCoachBlockedWorkflowRecovered);
   const aiCoachReason = !plan
     ? null
     : isOffline

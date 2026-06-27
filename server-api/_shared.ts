@@ -240,7 +240,7 @@ export function applyCors(req: VercelRequest, res: VercelResponse, methods: stri
   if (corsOrigin) res.setHeader('Access-Control-Allow-Origin', corsOrigin);
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Methods', methods);
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Health-Token, X-Test-Token');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Health-Token, X-Test-Token, X-Billing-Sync-Token');
   res.setHeader('Vary', 'Origin');
 }
 

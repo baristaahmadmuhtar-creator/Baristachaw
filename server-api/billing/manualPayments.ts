@@ -582,8 +582,44 @@ export function resetManualPaymentRequestsForTests(): void {
   REQUESTS.clear();
 }
 
+function manualPaymentLifecycleMetadata(request: ManualPaymentRequest): Record<string, unknown> {
+  const proofObjectPath = request.proof?.objectPath || request.proof?.generatedFileName || '';
+  const proofBucket = request.proof?.bucket || (request.proof ? (process.env.SUPABASE_STORAGE_BUCKET_PROOF || 'payment-proofs').trim() : '');
+  const proofUploadAvailable = Boolean(
+    request.proof?.storage === 'supabase_signed_upload'
+      && request.proof.uploadUrlExpiresAt
+      && request.proof.uploadUrlExpiresAt > Date.now(),
+  );
+  const closed = request.status === 'verified_paid' || request.status === 'rejected' || request.status === 'expired';
+
+  return {
+    manualLifecycleVersion: 1,
+    lifecyclePhase: request.status,
+    reviewState: request.status === 'pending_review'
+      ? 'waiting_for_receipt'
+      : request.status === 'receipt_received'
+        ? 'pending_admin_review'
+        : 'review_closed',
+    adminActionRequired: request.status === 'receipt_received',
+    paymentActionRequired: !closed,
+    entitlementState: request.status === 'verified_paid'
+      ? 'ready_to_grant'
+      : closed
+        ? 'not_granted_closed'
+        : 'not_granted_pending',
+    proofReceived: Boolean(request.proof),
+    proofStorage: request.proof?.storage || 'none',
+    proofBucket: proofBucket || null,
+    proofObjectPath: proofObjectPath || null,
+    proofUploadAvailable,
+    proofReadAvailability: proofObjectPath ? 'bucket_object_path' : 'none',
+    proofReceivedAt: request.proof?.receivedAt || null,
+  };
+}
+
 function manualPaymentMetadata(request: ManualPaymentRequest): Record<string, unknown> {
   return {
+    ...manualPaymentLifecycleMetadata(request),
     manualStatus: request.status,
     manualRequestId: request.id,
     planCode: request.planCode,

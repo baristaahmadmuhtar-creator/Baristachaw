@@ -65,6 +65,7 @@ import {
   type AdminFeatureFlagPatch,
   type AdminManualPaymentRequest,
   type AdminManualPaymentQrConfig,
+  type AdminManagementSection,
   type AdminPlan,
   type AdminPlanPatch,
   type AdminRole,
@@ -138,6 +139,14 @@ const USER_QUEUE_OPTIONS: Array<{ value: UserQueueFilter; labelKey: keyof AdminC
 ];
 const PLAN_OPTIONS: PlanCode[] = ['free', 'starter', 'pro', 'team', 'enterprise'];
 const BILLING_STATUS_OPTIONS: BillingStatus[] = ['none', 'active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded'];
+
+function sectionForAdminTab(tab: AdminTab): AdminManagementSection | undefined {
+  if (tab === 'overview' || tab === 'users') return undefined;
+  if (tab === 'ai') return 'ai_control';
+  if (tab === 'recipes') return 'recipe_library';
+  if (tab === 'launch') return 'launching';
+  return tab;
+}
 const BILLING_PROVIDER_OPTIONS: BillingProvider[] = ['none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit'];
 const BILLING_MARKET_OPTIONS: BillingMarket[] = ['indonesia', 'brunei', 'global', 'unknown'];
 const CHECKOUT_MODE_OPTIONS: CheckoutMode[] = ['disabled', 'external', 'stripe_checkout', 'play_billing', 'app_store', 'manual_invoice'];
@@ -3893,7 +3902,11 @@ export function AdminManagement() {
       setRefreshing(hasSnapshot);
     }
     try {
-      const next = await fetchAdminSnapshot(options?.aiUsageRange || aiUsageRange);
+      const next = await fetchAdminSnapshot({
+        ...(options?.aiUsageRange || aiUsageRange),
+        section: sectionForAdminTab(activeTab),
+        limit: 80,
+      });
       if (requestSequence !== refreshSequenceRef.current) return;
       setSnapshot(next);
       setError(null);
@@ -3908,7 +3921,7 @@ export function AdminManagement() {
         setRefreshing(false);
       }
     }
-  }, [aiUsageRange]);
+  }, [activeTab, aiUsageRange]);
 
   useEffect(() => {
     void refresh();

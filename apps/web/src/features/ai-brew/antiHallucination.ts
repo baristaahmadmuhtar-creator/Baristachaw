@@ -634,7 +634,7 @@ export function validateBrewPlanOutput(plan: BrewPlan): BrewGuardResult {
     reasons.push('conflicting grind display');
   }
 
-  if (plan.workflowValidation && !plan.workflowValidation.passed) {
+  if (plan.workflowValidation && !plan.workflowValidation.passed && plan.originalGuardrailRisk !== 'blocked') {
     reasons.push(`workflow guide failed validation: ${plan.workflowValidation.blockingErrors.join(', ')}`);
   }
 

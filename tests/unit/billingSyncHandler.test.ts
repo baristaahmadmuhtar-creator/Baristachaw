@@ -72,6 +72,26 @@ function createMockRes() {
   };
 }
 
+test('billing sync OPTIONS allows provider token header', async () => {
+  await withEnv(TEST_ENV, async () => {
+    const req = makeReq({
+      method: 'OPTIONS',
+      headers: {
+        origin: 'http://127.0.0.1:3000',
+        'access-control-request-method': 'POST',
+        'access-control-request-headers': 'X-Billing-Sync-Token, Content-Type',
+      },
+    });
+    const res = createMockRes();
+
+    await billingSyncHandler(req, res as any);
+
+    assert.equal(res.statusCode, 204);
+    assert.match(String(res.headers.get('access-control-allow-headers')), /X-Billing-Sync-Token/);
+    assert.match(String(res.headers.get('access-control-allow-methods')), /POST/);
+  });
+});
+
 test('billing sync rejects invalid token', async () => {
   await withEnv(TEST_ENV, async () => {
     const req = makeReq({

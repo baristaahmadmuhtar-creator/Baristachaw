@@ -2,6 +2,7 @@ import { timingSafeEqual } from 'node:crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import {
   applyRateLimitHeaders,
+  applyCors,
   checkRateLimit,
   createRequestId,
   sanitizeErrorDetails,
@@ -162,6 +163,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const requestId = createRequestId(req);
   res.setHeader('X-Request-Id', requestId);
   res.setHeader('Cache-Control', 'no-store');
+  applyCors(req, res, 'POST, OPTIONS');
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') {

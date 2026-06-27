@@ -12,9 +12,9 @@ import type { Language } from './i18n';
 
 export const APP_ORIGIN = (import.meta.env.VITE_PUBLIC_APP_URL || 'https://app.baristachaw.com').replace(/\/+$/, '');
 export const MARKETING_ORIGIN = (import.meta.env.VITE_SITE_URL || 'https://baristachaw.com').replace(/\/+$/, '');
-export const RELEASE_VERSION = 'v1.0.4';
+export const RELEASE_VERSION = 'v1.0.5';
 export const ANDROID_RELEASE_TAG = RELEASE_VERSION;
-export const ANDROID_APK_FILE_NAME = `BaristaChaw-${RELEASE_VERSION}.apk`;
+export const ANDROID_APK_FILE_NAME = 'baristachaw-android.apk';
 export const DEFAULT_ANDROID_APK_URL = `https://github.com/baristaahmadmuhtar-creator/Baristachaw/releases/download/${ANDROID_RELEASE_TAG}/${ANDROID_APK_FILE_NAME}`;
 const configuredAndroidApkUrl = String(import.meta.env.VITE_ANDROID_APK_URL || '').trim();
 export const APK_URL = /^https:\/\//i.test(configuredAndroidApkUrl) ? configuredAndroidApkUrl : DEFAULT_ANDROID_APK_URL;

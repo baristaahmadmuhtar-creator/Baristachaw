@@ -490,8 +490,8 @@ export type AdminUserPatch = Partial<{
   billingStatus: BillingStatus;
   billingProvider: BillingProvider;
   billingMarket: BillingMarket;
-  billingPeriodStart: string;
-  billingPeriodEnd: string;
+  billingPeriodStart: string | null;
+  billingPeriodEnd: string | null;
   paymentActionRequired: boolean;
 }>;
 

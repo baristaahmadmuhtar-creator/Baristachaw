@@ -9,6 +9,7 @@ import {
   AtSign,
   BadgeCheck,
   BookOpenCheck,
+  CalendarDays,
   CheckCircle2,
   Clock3,
   ClipboardCheck,
@@ -23,6 +24,7 @@ import {
   Mail,
   Menu,
   ChevronRight,
+  MessageCircle,
   Moon,
   PanelRightOpen,
   RefreshCcw,
@@ -404,9 +406,80 @@ function formatDate(value: string, locale = 'en', unknownLabel = 'Unknown'): str
   }).format(date);
 }
 
+function isoToDateInput(value?: string): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().slice(0, 10);
+}
+
+function dateInputToUtcStart(value: string): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  return new Date(`${value}T00:00:00.000Z`).toISOString();
+}
+
+function dateInputToUtcEnd(value: string): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  return new Date(`${value}T23:59:59.000Z`).toISOString();
+}
+
+function todayDateInput(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function plusDaysDateInput(days: number): string {
+  const date = new Date();
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
 function formatShortId(value: string): string {
   if (value.length <= 14) return value;
   return `${value.slice(0, 7)}...${value.slice(-5)}`;
+}
+
+function buildWhatsappComposeUrl(message: string): string {
+  return `https://wa.me/?text=${encodeURIComponent(message)}`;
+}
+
+function userContactIssue(user: AdminUserRecord): string {
+  if (user.billing.status === 'past_due') return 'Past due renewal';
+  if (user.billing.paymentActionRequired) return 'Manual payment review';
+  if (user.accountRecoveryStatus === 'requested' || user.passwordResetRequired) return 'Account recovery';
+  if (user.status === 'suspended') return 'Suspended account review';
+  return 'Account support';
+}
+
+function buildUserWhatsappMessage(user: AdminUserRecord, admin: AdminCopy): string {
+  return [
+    'Halo, kami dari Baristachaw Support.',
+    '',
+    `Ref: USER ${user.id}`,
+    `Email: ${user.email || '-'}`,
+    `Issue: ${userContactIssue(user)}`,
+    `Plan: ${user.planName || user.planCode}`,
+    `Account status: ${admin.enumLabel(user.status)}`,
+    `Billing status: ${admin.enumLabel(user.billing.status)} / ${admin.enumLabel(user.billing.provider)}`,
+    user.billing.currentPeriodEnd ? `Due/end date: ${admin.date(user.billing.currentPeriodEnd)}` : '',
+    '',
+    'Mohon balas pesan ini agar admin bisa menyelesaikan status akun dan pembayaran dengan cepat.',
+  ].filter(Boolean).join('\n');
+}
+
+function buildPaymentWhatsappMessage(payment: AdminManualPaymentRequest, admin: AdminCopy): string {
+  return [
+    'Halo, kami dari Baristachaw Support.',
+    '',
+    `Ref: PAYMENT ${payment.id}`,
+    `User ID: ${payment.userId}`,
+    payment.email ? `Email: ${payment.email}` : '',
+    `Plan: ${admin.enumLabel(payment.planCode)} / ${payment.duration}`,
+    `Amount: ${payment.amountLabel}`,
+    `Status: ${admin.enumLabel(payment.status)}`,
+    payment.proof ? `Proof: ${payment.proof.objectPath || payment.proof.generatedFileName || 'received'}` : 'Proof: not received',
+    '',
+    'Mohon konfirmasi transfer dan bukti pembayaran agar admin bisa memproses plan dengan benar.',
+  ].filter(Boolean).join('\n');
 }
 
 function statusTone(status: string): string {
@@ -1948,6 +2021,8 @@ function AccountInspector({
   const [billingStatus, setBillingStatus] = useState<BillingStatus>(user.billing.status);
   const [billingProvider, setBillingProvider] = useState<BillingProvider>(user.billing.provider);
   const [billingMarket, setBillingMarket] = useState<BillingMarket>(user.billing.market);
+  const [billingPeriodStart, setBillingPeriodStart] = useState(isoToDateInput(user.billing.currentPeriodStart));
+  const [billingPeriodEnd, setBillingPeriodEnd] = useState(isoToDateInput(user.billing.currentPeriodEnd));
   const [paymentActionRequired, setPaymentActionRequired] = useState(Boolean(user.billing.paymentActionRequired));
   const [recoveryStatus, setRecoveryStatus] = useState<AccountRecoveryStatus>(user.accountRecoveryStatus || 'none');
   const [passwordResetRequired, setPasswordResetRequired] = useState(Boolean(user.passwordResetRequired));
@@ -1963,6 +2038,8 @@ function AccountInspector({
     setBillingStatus(user.billing.status);
     setBillingProvider(user.billing.provider);
     setBillingMarket(user.billing.market);
+    setBillingPeriodStart(isoToDateInput(user.billing.currentPeriodStart));
+    setBillingPeriodEnd(isoToDateInput(user.billing.currentPeriodEnd));
     setPaymentActionRequired(Boolean(user.billing.paymentActionRequired));
     setRecoveryStatus(user.accountRecoveryStatus || 'none');
     setPasswordResetRequired(Boolean(user.passwordResetRequired));
@@ -1987,6 +2064,8 @@ function AccountInspector({
     || billingStatus !== user.billing.status
     || billingProvider !== user.billing.provider
     || billingMarket !== user.billing.market
+    || billingPeriodStart !== isoToDateInput(user.billing.currentPeriodStart)
+    || billingPeriodEnd !== isoToDateInput(user.billing.currentPeriodEnd)
     || paymentActionRequired !== Boolean(user.billing.paymentActionRequired)
     || recoveryStatus !== currentRecoveryStatus
     || passwordResetRequired !== Boolean(user.passwordResetRequired)
@@ -2008,6 +2087,8 @@ function AccountInspector({
     || billingStatus !== user.billing.status
     || billingProvider !== user.billing.provider
     || billingMarket !== user.billing.market
+    || billingPeriodStart !== isoToDateInput(user.billing.currentPeriodStart)
+    || billingPeriodEnd !== isoToDateInput(user.billing.currentPeriodEnd)
     || paymentActionRequired !== Boolean(user.billing.paymentActionRequired);
   const saveBlockedByReason = dirty
     && entitlementTouched
@@ -2039,6 +2120,12 @@ function AccountInspector({
     if (billingStatus !== user.billing.status) patch.billingStatus = billingStatus;
     if (billingProvider !== user.billing.provider) patch.billingProvider = billingProvider;
     if (billingMarket !== user.billing.market) patch.billingMarket = billingMarket;
+    if (billingPeriodStart !== isoToDateInput(user.billing.currentPeriodStart)) {
+      patch.billingPeriodStart = billingPeriodStart ? dateInputToUtcStart(billingPeriodStart) : null;
+    }
+    if (billingPeriodEnd !== isoToDateInput(user.billing.currentPeriodEnd)) {
+      patch.billingPeriodEnd = billingPeriodEnd ? dateInputToUtcEnd(billingPeriodEnd) : null;
+    }
     if (paymentActionRequired !== Boolean(user.billing.paymentActionRequired)) patch.paymentActionRequired = paymentActionRequired;
     if (recoveryStatus !== currentRecoveryStatus) patch.accountRecoveryStatus = recoveryStatus;
     if (passwordResetRequired !== Boolean(user.passwordResetRequired)) patch.passwordResetRequired = passwordResetRequired;
@@ -2070,12 +2157,16 @@ function AccountInspector({
       : billingProvider === 'none' || billingProvider === 'admin'
         ? 'manual'
         : billingProvider;
+    const nextPeriodStart = billingPeriodStart || todayDateInput();
+    const nextPeriodEnd = billingPeriodEnd || plusDaysDateInput(30);
     onPatch(user.id, {
       planCode,
       billingStatus: planCode === 'free' ? 'none' : 'active',
       billingProvider: provider,
       billingMarket,
       status: status === 'past_due' || status === 'trialing' ? 'active' : status,
+      billingPeriodStart: planCode === 'free' ? null : dateInputToUtcStart(nextPeriodStart),
+      billingPeriodEnd: planCode === 'free' ? null : dateInputToUtcEnd(nextPeriodEnd),
       paymentActionRequired: false,
       supportNote: `Operator reason: verified ${selectedPlan?.name || planCode} billing and refreshed entitlement. Limits: ${selectedPlanLimitLabel}.`,
     });
@@ -2111,13 +2202,15 @@ function AccountInspector({
   };
 
   const markBillingPastDue = () => {
+    const nextPeriodEnd = billingPeriodEnd || todayDateInput();
     onPatch(user.id, {
       billingStatus: 'past_due',
       billingProvider: billingProvider === 'none' ? 'manual' : billingProvider,
       billingMarket,
       status: 'past_due',
+      billingPeriodEnd: dateInputToUtcEnd(nextPeriodEnd),
       paymentActionRequired: true,
-      supportNote: 'Operator reason: payment provider reported past-due renewal.',
+      supportNote: `Operator reason: payment provider reported past-due renewal for ${admin.date(dateInputToUtcEnd(nextPeriodEnd) || new Date().toISOString())}.`,
     });
   };
 
@@ -2183,6 +2276,15 @@ function AccountInspector({
               <span className="inline-flex min-w-0 items-center gap-1.5"><Mail size={11} /> <span className="truncate">{user.email}</span></span>
               <span className="font-semibold text-primary text-[10px]">Email</span>
             </button>
+            <a
+              href={buildWhatsappComposeUrl(buildUserWhatsappMessage(user, admin))}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-8 items-center justify-between gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 text-left text-emerald-800 hover:bg-emerald-500/15 dark:text-emerald-300"
+            >
+              <span className="inline-flex min-w-0 items-center gap-1.5"><MessageCircle size={11} /> <span className="truncate">{admin.text('contactUserWhatsApp')}</span></span>
+              <span className="font-semibold text-[10px]">{admin.text('whatsapp')}</span>
+            </a>
             <div className="flex h-8 items-center justify-between gap-3 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-2.5 text-secondary">
               <span className="inline-flex min-w-0 items-center gap-1.5"><Clock3 size={11} /> <span className="truncate">{admin.date(user.createdAt)}</span></span>
               <span className="font-semibold text-primary text-[10px]">{admin.text('created')}</span>
@@ -2315,6 +2417,26 @@ function AccountInspector({
                   className="h-3.5 w-3.5 accent-blue-500 shrink-0"
                 />
               </label>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <label className="grid gap-1">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-tertiary"><CalendarDays size={11} /> {admin.text('billingPeriodStart')}</span>
+                  <input
+                    type="date"
+                    value={billingPeriodStart}
+                    onChange={(event) => setBillingPeriodStart(event.currentTarget.value)}
+                    className="h-8 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2 text-xs text-primary"
+                  />
+                </label>
+                <label className="grid gap-1">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-tertiary"><CalendarDays size={11} /> {admin.text('pastDueDate')}</span>
+                  <input
+                    type="date"
+                    value={billingPeriodEnd}
+                    onChange={(event) => setBillingPeriodEnd(event.currentTarget.value)}
+                    className="h-8 rounded-lg border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] px-2 text-xs text-primary"
+                  />
+                </label>
+              </div>
             </div>
 
             <div className="mt-2 grid grid-cols-3 gap-1.5">
@@ -2633,9 +2755,17 @@ function ManualPaymentQueuePanel({
                         {admin.text('paymentQueueOpenProof')}
                       </button>
                     ) : null}
+                    <a
+                      className="inline-flex h-9 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-800 hover:bg-emerald-500/15 dark:text-emerald-300"
+                      href={buildWhatsappComposeUrl(buildPaymentWhatsappMessage(payment, admin))}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {admin.text('contactUserWhatsApp')}
+                    </a>
                     {payment.instructions.whatsappUrl ? (
                       <a className="inline-flex h-9 items-center justify-center rounded-lg border border-glass shadow-sm backdrop-blur-md px-3 text-xs font-semibold text-primary hover:bg-surface-alpha transition-colors" href={payment.instructions.whatsappUrl} target="_blank" rel="noopener noreferrer">
-                        WhatsApp
+                        {admin.text('paymentSupportWhatsApp')}
                       </a>
                     ) : null}
                     <button type="button" disabled={busy || closed} onClick={() => onAction(payment.id, 'receipt_received')} className="inline-flex h-9 items-center justify-center rounded-lg border border-glass shadow-sm backdrop-blur-md px-3 text-xs font-semibold text-primary hover:bg-surface-alpha transition-colors disabled:opacity-50">

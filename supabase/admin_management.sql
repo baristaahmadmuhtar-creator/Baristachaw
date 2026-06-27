@@ -807,7 +807,7 @@ create table if not exists public.payment_receipts (
   receipt_reference text not null default '',
   receipt_mime_type text not null default '',
   receipt_size_bytes integer check (receipt_size_bytes is null or receipt_size_bytes >= 0),
-  status text not null default 'queued' check (status in ('queued', 'auto_accepted', 'manual_review', 'rejected', 'applied')),
+  status text not null default 'queued' check (status in ('queued', 'pending_review', 'receipt_received', 'auto_accepted', 'manual_review', 'rejected', 'applied', 'verified_paid', 'expired')),
   reviewed_by text,
   reviewed_at timestamptz,
   apply_error text,
@@ -825,6 +825,13 @@ alter table public.payment_receipts
   add column if not exists payer_email text not null default '',
   add column if not exists receipt_mime_type text not null default '',
   add column if not exists receipt_size_bytes integer check (receipt_size_bytes is null or receipt_size_bytes >= 0);
+
+alter table public.payment_receipts
+  drop constraint if exists payment_receipts_status_check;
+
+alter table public.payment_receipts
+  add constraint payment_receipts_status_check
+  check (status in ('queued', 'pending_review', 'receipt_received', 'auto_accepted', 'manual_review', 'rejected', 'applied', 'verified_paid', 'expired')) not valid;
 
 create table if not exists public.app_feature_flags (
   key text primary key,
@@ -1010,12 +1017,14 @@ create index if not exists app_users_role_idx on public.app_users (role, updated
 create index if not exists app_users_recovery_idx on public.app_users (account_recovery_status, updated_at desc);
 create index if not exists app_users_billing_idx on public.app_users (billing_status, billing_provider, updated_at desc);
 create index if not exists app_users_payment_action_idx on public.app_users (payment_action_required, updated_at desc) where payment_action_required = true;
+create index if not exists app_users_past_due_period_idx on public.app_users (billing_period_end, updated_at desc) where billing_status = 'past_due' or status = 'past_due' or payment_action_required = true;
 create index if not exists app_usage_daily_user_date_idx on public.app_usage_daily (user_id, usage_date desc);
 create index if not exists user_entitlements_user_status_idx on public.user_entitlements (user_id, status, updated_at desc);
 create index if not exists user_entitlements_external_subscription_idx on public.user_entitlements (external_subscription_id) where external_subscription_id is not null;
 create unique index if not exists payment_receipts_manual_request_unique_idx on public.payment_receipts (manual_request_id) where manual_request_id <> '';
 create index if not exists payment_receipts_user_status_idx on public.payment_receipts (user_id, status, updated_at desc);
 create index if not exists payment_receipts_review_queue_idx on public.payment_receipts (status, created_at desc) where status in ('queued', 'auto_accepted', 'manual_review');
+create index if not exists payment_receipts_modern_review_queue_idx on public.payment_receipts (status, updated_at desc) where status in ('queued', 'pending_review', 'receipt_received', 'manual_review');
 create index if not exists app_feature_flags_status_idx on public.app_feature_flags (status, updated_at desc);
 create index if not exists admin_audit_events_created_idx on public.admin_audit_events (created_at desc);
 create index if not exists admin_audit_events_target_idx on public.admin_audit_events (target_type, target_id, created_at desc);

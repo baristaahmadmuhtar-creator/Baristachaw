@@ -48,6 +48,8 @@ test('admin mobile manage opens account control without scrolling', async ({ pag
 
   await expect(page.getByRole('heading', { name: 'Kontrol akun' })).toBeVisible();
   await expect(page.getByText('Kontrol plan cepat')).toBeVisible();
+  await expect(page.getByRole('link', { name: /Kontak user/i })).toBeVisible();
+  await expect(page.getByLabel('Tanggal past due')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Terapkan sementara' }).first()).toBeVisible();
 });
 

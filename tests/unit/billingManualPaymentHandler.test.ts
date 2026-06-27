@@ -5,7 +5,11 @@ import checkoutHandler from '../../server-api/billing/checkout.ts';
 import proofHandler from '../../server-api/billing/proof.ts';
 import portalHandler from '../../server-api/billing/portal.ts';
 import adminManagementHandler from '../../server-api/admin/management.ts';
-import { resetManualPaymentRequestsForTests, readManualPaymentInstructions } from '../../server-api/billing/manualPayments.ts';
+import {
+  readManualPaymentInstructions,
+  resetManualPaymentRequestsForTests,
+  updatePersistedManualPaymentStatus,
+} from '../../server-api/billing/manualPayments.ts';
 
 const ORIGINAL_ENV = {
   JWT_SECRET: process.env.JWT_SECRET,
@@ -539,6 +543,61 @@ test('admin manual payment verification grants entitlement only after verified p
     event.action === 'user_updated'
     && event.target === 'runtime_user_trial_review'
   )));
+});
+
+test('persisted manual payment verification accepts legacy manual_review receipt rows', async () => {
+  const activeFetch = globalThis.fetch;
+  const patchUrls: string[] = [];
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input.toString();
+    const method = init?.method || 'GET';
+    if (url.includes('/rest/v1/payment_receipts') && method === 'GET') {
+      return new Response(JSON.stringify([{
+        manual_request_id: 'manual_legacy_aabbccddeeff',
+        user_id: 'runtime_user_trial_review',
+        requested_plan_code: 'pro',
+        requested_duration: 'monthly',
+        requested_currency: 'usd',
+        requested_amount: 19,
+        requested_amount_label: '$19.00',
+        payer_email: 'manual.customer@example.com',
+        status: 'manual_review',
+        metadata: {
+          manualStatus: 'receipt_received',
+          manualRequestId: 'manual_legacy_aabbccddeeff',
+          duration: 'monthly',
+          currency: 'usd',
+          amount: 19,
+          amountLabel: '$19.00',
+          instructions: readManualPaymentInstructions('usd') || {},
+        },
+        created_at: '2026-06-27T00:00:00.000Z',
+        updated_at: '2026-06-27T00:00:00.000Z',
+      }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/payment_receipts') && method === 'PATCH') {
+      patchUrls.push(url);
+      return new Response(JSON.stringify([{ manual_request_id: 'manual_legacy_aabbccddeeff' }]), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    throw new Error(`Unexpected fetch: ${url}`);
+  }) as typeof fetch;
+
+  try {
+    const request = await updatePersistedManualPaymentStatus(
+      'manual_legacy_aabbccddeeff',
+      'verified_paid',
+      undefined,
+      'owner@example.com',
+    );
+
+    assert.equal(request?.status, 'verified_paid');
+    assert.ok(patchUrls.some((url) => url.includes('status=in.(queued,manual_review,pending_review,receipt_received)')));
+  } finally {
+    globalThis.fetch = activeFetch;
+  }
 });
 
 test('manual payment instructions return dynamic banks by currency (BND / IDR)', () => {

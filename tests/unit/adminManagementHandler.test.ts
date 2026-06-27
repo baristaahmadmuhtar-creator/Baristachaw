@@ -391,6 +391,8 @@ test('admin management patch updates runtime billing controls', async () => {
         billingStatus: 'past_due',
         billingProvider: 'stripe',
         billingMarket: 'indonesia',
+        billingPeriodStart: '2026-06-01T00:00:00.000Z',
+        billingPeriodEnd: '2026-06-30T23:59:59.000Z',
         paymentActionRequired: true,
         supportNote: 'Operator reason: moved user into Starter past-due billing review.',
       },
@@ -408,8 +410,38 @@ test('admin management patch updates runtime billing controls', async () => {
   assert.equal(user.billing.status, 'past_due');
   assert.equal(user.billing.provider, 'stripe');
   assert.equal(user.billing.market, 'indonesia');
+  assert.equal(user.billing.currentPeriodStart, '2026-06-01T00:00:00.000Z');
+  assert.equal(user.billing.currentPeriodEnd, '2026-06-30T23:59:59.000Z');
   assert.equal(user.billing.paymentActionRequired, true);
   assert.ok(body.billing.attentionUsers >= 1);
+});
+
+test('admin management rejects invalid billing period dates', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_trial_review',
+      patch: {
+        billingStatus: 'past_due',
+        billingPeriodStart: '2026-07-01T00:00:00.000Z',
+        billingPeriodEnd: '2026-06-30T23:59:59.000Z',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 400);
+  const body = JSON.parse(res.body);
+  assert.equal(body.error, 'billingPeriodEnd must be after billingPeriodStart');
 });
 
 test('admin management applies receipt-received billing as provisional manual review', async () => {

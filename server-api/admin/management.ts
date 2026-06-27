@@ -364,8 +364,8 @@ type UserPatch = Partial<{
   billingStatus: BillingStatus;
   billingProvider: BillingProvider;
   billingMarket: BillingMarket;
-  billingPeriodStart: string;
-  billingPeriodEnd: string;
+  billingPeriodStart: string | null;
+  billingPeriodEnd: string | null;
   paymentActionRequired: boolean;
 }>;
 
@@ -834,6 +834,18 @@ function validateBooleanPatch(value: unknown, field: string): { ok: true; value:
   return { ok: false, error: `${field} must be boolean` };
 }
 
+function validateOptionalIsoDatePatch(value: unknown, field: string): { ok: true; value: string | null } | ValidationError {
+  if (value === null || value === '') return { ok: true, value: null };
+  if (typeof value !== 'string') return { ok: false, error: `${field} must be an ISO date string or null` };
+  const trimmed = value.trim();
+  if (!trimmed) return { ok: true, value: null };
+  const parsed = new Date(trimmed);
+  if (!Number.isFinite(parsed.getTime())) {
+    return { ok: false, error: `${field} is invalid`, details: `${field} must be a valid ISO date string.` };
+  }
+  return { ok: true, value: parsed.toISOString() };
+}
+
 function validateNumberPatch(
   value: unknown,
   field: string,
@@ -988,8 +1000,12 @@ function mergeBillingPatch(user: AdminUserRecord, patch: UserPatch, nextPlanCode
     provider: patch.billingProvider || user.billing.provider,
     market: patch.billingMarket || user.billing.market,
     source: patch.billingProvider || user.billing.source,
-    currentPeriodStart: patch.billingPeriodStart || user.billing.currentPeriodStart,
-    currentPeriodEnd: patch.billingPeriodEnd || user.billing.currentPeriodEnd,
+    currentPeriodStart: 'billingPeriodStart' in patch
+      ? patch.billingPeriodStart || undefined
+      : user.billing.currentPeriodStart,
+    currentPeriodEnd: 'billingPeriodEnd' in patch
+      ? patch.billingPeriodEnd || undefined
+      : user.billing.currentPeriodEnd,
     paymentActionRequired: typeof patch.paymentActionRequired === 'boolean'
       ? patch.paymentActionRequired
       : user.billing.paymentActionRequired,
@@ -1430,6 +1446,8 @@ function runtimeSeedUsers(admin: AdminAccess, rawUser?: Record<string, unknown>)
       billingStatus,
       billingProvider,
       billingMarket,
+      billingPeriodStart,
+      billingPeriodEnd,
       paymentActionRequired,
       ...recordPatch
     } = patch;
@@ -1443,6 +1461,8 @@ function runtimeSeedUsers(admin: AdminAccess, rawUser?: Record<string, unknown>)
         billingStatus,
         billingProvider,
         billingMarket,
+        billingPeriodStart,
+        billingPeriodEnd,
         paymentActionRequired,
       }, planCode, status),
       flags: user.flags,
@@ -2507,10 +2527,27 @@ function validatePatch(body: any): { ok: true; userId: string; patch: UserPatch 
     if (validated.ok === false) return validated;
     patch.billingMarket = validated.value;
   }
+  if ('billingPeriodStart' in rawPatch) {
+    const validated = validateOptionalIsoDatePatch(rawPatch.billingPeriodStart, 'billingPeriodStart');
+    if (validated.ok === false) return validated;
+    patch.billingPeriodStart = validated.value;
+  }
+  if ('billingPeriodEnd' in rawPatch) {
+    const validated = validateOptionalIsoDatePatch(rawPatch.billingPeriodEnd, 'billingPeriodEnd');
+    if (validated.ok === false) return validated;
+    patch.billingPeriodEnd = validated.value;
+  }
   if ('paymentActionRequired' in rawPatch) {
     const validated = validateBooleanPatch(rawPatch.paymentActionRequired, 'paymentActionRequired');
     if (validated.ok === false) return validated;
     patch.paymentActionRequired = validated.value;
+  }
+  if (patch.billingPeriodStart && patch.billingPeriodEnd && Date.parse(patch.billingPeriodEnd) <= Date.parse(patch.billingPeriodStart)) {
+    return {
+      ok: false,
+      error: 'billingPeriodEnd must be after billingPeriodStart',
+      details: 'Billing period end must be later than billing period start.',
+    };
   }
 
   normalizePlanBillingPatch(patch);
@@ -2852,6 +2889,8 @@ function authorizeUserMutation(admin: AdminAccess, patch: UserPatch): Authorizat
       'billingStatus',
       'billingProvider',
       'billingMarket',
+      'billingPeriodStart',
+      'billingPeriodEnd',
       'paymentActionRequired',
     ]);
     const forbidden = Object.keys(patch).filter((key) => !allowedFields.has(key));
@@ -3081,8 +3120,8 @@ async function patchSupabaseUser(
   }
   if (patch.billingProvider) body.billing_provider = patch.billingProvider;
   if (patch.billingMarket) body.billing_market = patch.billingMarket;
-  if (patch.billingPeriodStart) body.billing_period_start = patch.billingPeriodStart;
-  if (patch.billingPeriodEnd) body.billing_period_end = patch.billingPeriodEnd;
+  if ('billingPeriodStart' in patch) body.billing_period_start = patch.billingPeriodStart || null;
+  if ('billingPeriodEnd' in patch) body.billing_period_end = patch.billingPeriodEnd || null;
   if (typeof patch.paymentActionRequired === 'boolean') body.payment_action_required = patch.paymentActionRequired;
 
   await supabaseRest(config, `app_users?id=eq.${encodeURIComponent(userId)}`, {

@@ -6,7 +6,7 @@ Production mobile policy: the store candidate uses the Expo WebView web-parity s
 
 Full language claim: English + Bahasa Indonesia only.
 
-Auth status: Browse-only preview is available. Protected actions require Google, Facebook, or email sign-in. Email/password and authenticated production smoke remain unverified until secure Supabase and `PROD_SMOKE_*` secrets are configured outside source control.
+Auth status: Browse-only preview is available. Protected actions require Google, Facebook, or email sign-in. Android web-parity sign-in must use the native OAuth bridge so OAuth state is not stored in WebView cookies and then validated in an external browser context. Email/password and authenticated production smoke remain unverified until secure Supabase and `PROD_SMOKE_*` secrets are configured outside source control.
 
 ## Parity Matrix
 
@@ -27,10 +27,10 @@ Auth status: Browse-only preview is available. Protected actions require Google,
 | Calculator / Rasio | Web calculator owns ratio and extraction analysis. | Same calculator loads in shell. | FULL PARITY | mobile-web-parity.no-dead-feature, mobile.spec | None. | Ship via web parity shell. |
 | Ukuran Giling / Grind Size | Web calculator grind-size panel owns grinder guidance. | Same panel is exposed in shell. | FULL PARITY | mobile-web-parity.no-dead-feature, test:unit | None. | Ship via web parity shell. |
 | Tasks | Web task tab is functional and localized. | Same tab loads in shell. | FULL PARITY | mobile-web-parity.no-dead-feature, mobile.spec | None. | Ship via web parity shell. |
-| Coffee collection / saved items | Web collection supports saved recipes and folders. | Same collection route loads in shell. | FULL PARITY | mobile-web-parity.storage, collection.spec | Account sync depends on auth env. | Ship browse-only preview; mutations require auth. |
+| Coffee collection / saved items | Web collection supports saved recipes, folders, and local notes without requiring login. | Same collection route loads in shell and keeps local note/folder mutations available in browse-only mode. | FULL PARITY | mobile-web-parity.storage, collection.spec | Account sync depends on auth env. | Ship local collection now; cloud sync requires auth. |
 | Settings | Web language/theme settings remain source of truth. | Same web settings, when navigated, are available in shell. | MOBILE ADAPTED PARITY | language tests, mobile-web-parity.language | Native fallback settings are not production primary. | Ship through web parity. |
 | Language switch | Web persists language and renders ID/EN copy. | Native shell passes preferred language to web URL. | FULL PARITY | mobileWebParityGate, mobile-web-parity.language | Do not claim other languages as full. | Ship English + Bahasa Indonesia. |
-| Auth login | Web auth route and native bearer bridge are supported. | WebView injects native session, patches same-origin API fetch, opens OAuth externally. | MOBILE ADAPTED PARITY | mobileWebParityGate, mobile:auth:check | Email/password remains unverified without Supabase env. | Ship browse-only preview plus verified providers only. |
+| Auth login | Web auth route and native bearer bridge are supported. | WebView injects native session, patches same-origin API fetch, and delegates OAuth starts to the native shell to avoid WebView/external-browser state-cookie mismatch. | MOBILE ADAPTED PARITY | mobileWebParityGate, mobile:auth:check | Email/password remains unverified without Supabase env. | Ship browse-only preview plus verified providers only. |
 | Auth logout | Web logout returns native logout message. | Native shell clears stored session on message. | FULL PARITY | mobileWebParityGate, mobile:test | None after auth env is verified. | Ship with auth status disclosed. |
 | Browse-only preview | Public routes can be viewed without a session; protected actions open auth. | Native shell opens the same web routes without a guest-session query. | FULL PARITY | mobileWebParityGate, mobile:test | None. | Ship browse-only preview. |
 | Saved data restore | Web local storage and account storage restore old plans. | Same WebView storage behavior is used. | FULL PARITY | mobile-web-parity.storage, test:unit | Cloud restore needs auth env. | Ship local restore; cloud auth unverified. |

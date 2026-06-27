@@ -271,7 +271,7 @@ function AppContent() {
         <Route path="/" element={<Home />} />
         <Route path="/scanner" element={<Scanner />} />
         <Route path="/chat" element={<Chat />} />
-        <Route path="/collection" element={<ProtectedRoute><Collection /></ProtectedRoute>} />
+        <Route path="/collection" element={<Collection />} />
         <Route path="/tools" element={<BaristaTools />} />
         <Route path="/coffee" element={<BaristaTools />} />
         <Route path="/login" element={<AuthScreen intent="signIn" onLogin={() => navigateToReturn('/')} />} />

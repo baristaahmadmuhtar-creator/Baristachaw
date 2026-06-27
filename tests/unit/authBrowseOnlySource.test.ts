@@ -16,6 +16,8 @@ const MOBILE_DOC_SOURCE = readFileSync('docs/mobile-web-parity-gate.md', 'utf8')
 test('web auth uses browse-only preview instead of route-level guest gate', () => {
   assert.doesNotMatch(APP_SOURCE, /ENTRY_AUTH_GATE_PATHS/);
   assert.doesNotMatch(APP_SOURCE, /shouldGateEntryRoute/);
+  assert.match(APP_SOURCE, /<Route path="\/collection" element=\{<Collection \/>\} \/>/);
+  assert.doesNotMatch(APP_SOURCE, /<Route path="\/collection" element=\{<ProtectedRoute><Collection/);
   assert.match(AUTH_SCREEN_SOURCE, /authRouteLanguageTitle/);
   assert.match(AUTH_SCREEN_SOURCE, /authRouteExploreCta/);
   assert.match(AUTH_SCREEN_SOURCE, /BARISTACHAW_ONBOARDING_SEEN/);
@@ -44,6 +46,15 @@ test('browse-only public feature surfaces stay interactive until protected submi
   assert.match(CHAT_SOURCE, /const interactionDisabled = loading \|\| authChecking \|\| authBusy;/);
   assert.doesNotMatch(CHAT_SOURCE, /const interactionDisabled = loading \|\| authChecking \|\| authBusy \|\| !isAuthenticated;/);
   assert.match(AUTH_MODAL_SOURCE, /\^ai_brew\(\?:_\|\$\)/);
+});
+
+test('native web parity auth uses native OAuth bridge instead of WebView cookie state', () => {
+  assert.match(AUTH_CONTEXT_SOURCE, /function requestNativeShellAuth/);
+  assert.match(AUTH_CONTEXT_SOURCE, /data-native-auth-bridge/);
+  assert.match(AUTH_CONTEXT_SOURCE, /BARISTA_NATIVE_AUTH_REQUEST/);
+  assert.match(MOBILE_PARITY_SOURCE, /handleNativeAuthRequest/);
+  assert.match(MOBILE_PARITY_SOURCE, /OAUTH_AUTH_SUCCESS/);
+  assert.match(MOBILE_PARITY_SOURCE, /OAUTH_AUTH_ERROR/);
 });
 
 test('chat Deep Think mode stays Pro-gated before request dispatch', () => {

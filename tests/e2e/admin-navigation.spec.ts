@@ -67,6 +67,20 @@ test('admin mobile exposes editable plans and catalog operations', async ({ page
   await expect(page.getByLabel('Payload JSON')).toBeVisible();
 });
 
+test('admin payment queue is a dedicated compact mobile page', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await qaLogin(page.request, buildQaAdminUser());
+
+  await page.goto('/admin?tab=queues&language=id', { waitUntil: 'domcontentloaded' });
+
+  await expectAdminReady(page);
+  await expect(page.getByRole('heading', { name: 'Antrean payment dan plan' })).toBeVisible();
+  await expect(page.getByTestId('admin-payment-queue')).toBeVisible();
+  await expect(page.getByPlaceholder('Cari invoice, email, user, plan, bank, path bukti')).toBeVisible();
+  await expect(page.getByTestId('admin-plan-user-queue')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Semua/i }).first()).toBeVisible();
+});
+
 test('admin AI control shows provider health without exposing secrets', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await qaLogin(page.request, buildQaAdminUser());
@@ -90,7 +104,7 @@ test('admin iOS XR viewport keeps primary tabs inside the page without overflow'
   const browserErrors = collectFatalBrowserErrors(page);
   await qaLogin(page.request, buildQaAdminUser());
 
-  for (const tab of ['overview', 'users', 'plans', 'payments', 'ai'] as const) {
+  for (const tab of ['overview', 'users', 'plans', 'queues', 'ai'] as const) {
     await page.goto(`/admin?tab=${tab}&language=id`, { waitUntil: 'domcontentloaded' });
     await expectAdminReady(page);
     await expectNoHorizontalOverflow(page, `admin iOS XR ${tab}`);

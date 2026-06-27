@@ -169,6 +169,6 @@ test('navigates to all primary routes from home cards', async ({ page }) => {
 
   await page.goto('/');
   await clickHomeCard(page, homeContent.locator('a[href="/collection"]').first());
-  await expect(page).toHaveURL(/\/(masuk|login|signin).*returnTo=%2Fcollection/);
-  await expect(page.getByRole('heading', { name: /Sign in to Baristachaw|Masuk ke Baristachaw/i })).toBeVisible();
+  await expect(page).toHaveURL(/\/collection$/);
+  await expect(page.getByRole('heading', { name: /Collection|Koleksi/i }).first()).toBeVisible();
 });

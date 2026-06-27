@@ -72,6 +72,9 @@ type NativeShellSession = {
 declare global {
   interface Window {
     __BARISTACHAW_NATIVE_SESSION__?: NativeShellSession | null;
+    ReactNativeWebView?: {
+      postMessage: (message: string) => void;
+    };
   }
 }
 
@@ -145,6 +148,26 @@ function readNativeShellSession(): NativeShellSession | null {
 
 function isGuestUser(user: AuthUser | null): boolean {
   return Boolean(user?.isGuest || user?.provider === 'guest' || user?.id?.startsWith('guest_'));
+}
+
+function requestNativeShellAuth(provider: 'google' | 'facebook', source: string): boolean {
+  if (typeof window === 'undefined') return false;
+  const bridge = window.ReactNativeWebView;
+  const root = document.documentElement;
+  const nativeAuthBridge = root.getAttribute('data-native-auth-bridge');
+  const isNativeShell = root.hasAttribute('data-native-shell-profile') || nativeAuthBridge === 'browse-only' || nativeAuthBridge === 'active';
+  if (!isNativeShell || typeof bridge?.postMessage !== 'function') return false;
+
+  try {
+    bridge.postMessage(JSON.stringify({
+      type: 'BARISTA_NATIVE_AUTH_REQUEST',
+      provider,
+      source,
+    }));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function resolveEmailAuthError(payload: Record<string, unknown>, fallback: string, copy: Record<string, string>): string {
@@ -471,6 +494,10 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     setAuthError(null);
     oauthResultHandledRef.current = false;
 
+    if (requestNativeShellAuth(provider, source)) {
+      return;
+    }
+
     if (isOffline) {
       oauthResultHandledRef.current = true;
       setAuthBusy(false);
@@ -497,7 +524,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
       setAuthError(message);
       setAuthBusy(false);
     }
-  }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline, startOauthPopupMonitor]);
+  }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline, source, startOauthPopupMonitor]);
 
   const startGoogleAuth = useCallback(async () => {
     await startOAuthAuth('google');

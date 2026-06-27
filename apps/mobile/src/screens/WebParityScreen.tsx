@@ -169,6 +169,7 @@ type WebParityScreenProps = {
   onParityFailure?: (reason: 'error' | 'http_error' | 'load_error') => void;
   onNativeLogout?: () => void;
   onNativeAuthExpired?: () => void;
+  onNativeAuthRequest?: (provider: 'google' | 'facebook') => Promise<AuthSession>;
 };
 
 export function WebParityScreen({
@@ -177,6 +178,7 @@ export function WebParityScreen({
   onParityFailure,
   onNativeLogout,
   onNativeAuthExpired,
+  onNativeAuthRequest,
 }: WebParityScreenProps) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
@@ -266,6 +268,42 @@ export function WebParityScreen({
     onParityReady?.();
   }, [onParityReady]);
 
+  const dispatchWebAuthMessage = useCallback((payload: Record<string, unknown>) => {
+    webRef.current?.injectJavaScript(`
+      window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(payload)} }));
+      true;
+    `);
+  }, []);
+
+  const handleNativeAuthRequest = useCallback((provider: unknown) => {
+    if (provider !== 'google' && provider !== 'facebook') {
+      dispatchWebAuthMessage({ type: 'OAUTH_AUTH_ERROR', error: 'Unsupported sign-in provider.' });
+      return;
+    }
+    if (!onNativeAuthRequest) {
+      dispatchWebAuthMessage({ type: 'OAUTH_AUTH_ERROR', error: 'Native sign-in is not available in this build.' });
+      return;
+    }
+
+    void (async () => {
+      try {
+        const nextSession = await onNativeAuthRequest(provider);
+        const bootstrap = buildNativeShellBootstrap(shellPlatform, nextSession);
+        webRef.current?.injectJavaScript(`
+          ${bootstrap}
+          window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify({
+            type: 'OAUTH_AUTH_SUCCESS',
+            user: nextSession.user,
+          })} }));
+          true;
+        `);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Sign-in failed.';
+        dispatchWebAuthMessage({ type: 'OAUTH_AUTH_ERROR', error: message });
+      }
+    })();
+  }, [dispatchWebAuthMessage, onNativeAuthRequest, shellPlatform]);
+
   const openExternalBrowser = useCallback(async (url: string, options?: { reloadOnReturn?: boolean }) => {
     setLoading(false);
     try {
@@ -314,10 +352,11 @@ export function WebParityScreen({
         }}
         onMessage={({ nativeEvent }) => {
           try {
-            const payload = JSON.parse(nativeEvent.data || '{}') as { type?: string };
+            const payload = JSON.parse(nativeEvent.data || '{}') as { type?: string; provider?: unknown };
             if (payload.type === 'BARISTA_WEB_APP_READY') markParityReady();
             if (payload.type === 'BARISTA_NATIVE_LOGOUT') onNativeLogout?.();
             if (payload.type === 'BARISTA_NATIVE_AUTH_EXPIRED') onNativeAuthExpired?.();
+            if (payload.type === 'BARISTA_NATIVE_AUTH_REQUEST') handleNativeAuthRequest(payload.provider);
           } catch {
             // Ignore unknown WebView messages.
           }

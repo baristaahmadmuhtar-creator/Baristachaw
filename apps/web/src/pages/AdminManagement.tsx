@@ -83,6 +83,7 @@ import {
   type LaunchChecklistItem,
   type ManualPaymentAction,
   type ManualPaymentQrCurrency,
+  type ManualPaymentStatus,
   type PlanCode,
 } from '../services/adminApi';
 
@@ -90,6 +91,7 @@ const TABS = [
   { id: 'overview', labelKey: 'tabOverview', icon: Gauge },
   { id: 'users', labelKey: 'tabUsers', icon: Users },
   { id: 'plans', labelKey: 'tabPlans', icon: WalletCards },
+  { id: 'queues', labelKey: 'tabQueues', icon: ClipboardCheck },
   { id: 'ai', labelKey: 'tabAi', icon: Sparkles },
   { id: 'maintenance', labelKey: 'tabMaintenance', icon: Wrench },
   { id: 'database', labelKey: 'tabDatabase', icon: Database },
@@ -101,6 +103,7 @@ const TABS = [
 type AdminTab = (typeof TABS)[number]['id'];
 type AdminAiUsageRange = { aiFrom?: string; aiTo?: string };
 type UserQueueFilter = 'all' | 'risk' | 'recovery' | 'billing' | 'paid' | 'sample';
+type ManualPaymentQueueFilter = ManualPaymentStatus | 'all';
 type UserMutationRiskLevel = 'warning' | 'critical';
 
 type UserMutationRisk = {
@@ -139,9 +142,11 @@ const USER_QUEUE_OPTIONS: Array<{ value: UserQueueFilter; labelKey: keyof AdminC
 ];
 const PLAN_OPTIONS: PlanCode[] = ['free', 'starter', 'pro', 'team', 'enterprise'];
 const BILLING_STATUS_OPTIONS: BillingStatus[] = ['none', 'active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded'];
+const MANUAL_PAYMENT_QUEUE_STATUSES: ManualPaymentStatus[] = ['pending_review', 'receipt_received', 'verified_paid', 'rejected', 'expired'];
 
 function sectionForAdminTab(tab: AdminTab): AdminManagementSection | undefined {
   if (tab === 'overview' || tab === 'users') return undefined;
+  if (tab === 'queues') return 'plans';
   if (tab === 'ai') return 'ai_control';
   if (tab === 'recipes') return 'recipe_library';
   if (tab === 'launch') return 'launching';
@@ -2418,110 +2423,269 @@ function ManualPaymentQueuePanel({
   busyPaymentId: string | null;
   onAction: (paymentRequestId: string, action: ManualPaymentAction, reason?: string) => void;
 }) {
-  const visible = payments.slice(0, 8);
+  const admin = useAdminCopy();
+  const [statusFilter, setStatusFilter] = useState<ManualPaymentQueueFilter>('all');
+  const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 12;
+
   const proofStorageLabel = (payment: AdminManualPaymentRequest): string => {
     if (!payment.proof) return 'no proof';
     if (payment.proof.storage === 'supabase_signed_upload') return 'Supabase signed upload';
     return 'metadata only';
   };
+
+  const counts = useMemo<Record<ManualPaymentQueueFilter, number>>(() => {
+    const next = MANUAL_PAYMENT_QUEUE_STATUSES.reduce<Record<ManualPaymentStatus, number>>((acc, status) => {
+      acc[status] = 0;
+      return acc;
+    }, {} as Record<ManualPaymentStatus, number>);
+    payments.forEach((payment) => {
+      next[payment.status] = (next[payment.status] || 0) + 1;
+    });
+    return {
+      all: payments.length,
+      ...next,
+    };
+  }, [payments]);
+
+  const filteredPayments = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+    return payments.filter((payment) => {
+      if (statusFilter !== 'all' && payment.status !== statusFilter) return false;
+      if (!normalizedSearch) return true;
+      const haystack = [
+        payment.id,
+        payment.userId,
+        payment.email || '',
+        payment.planCode,
+        payment.duration,
+        payment.currency,
+        payment.amountLabel,
+        payment.status,
+        payment.instructions.bankName,
+        payment.instructions.accountName,
+        payment.instructions.accountNumber,
+        payment.proof?.objectPath || '',
+        payment.proof?.generatedFileName || '',
+      ].join(' ').toLowerCase();
+      return haystack.includes(normalizedSearch);
+    });
+  }, [payments, search, statusFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredPayments.length / pageSize));
+  const visible = filteredPayments.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
+
+  const openProof = async (payment: AdminManualPaymentRequest) => {
+    try {
+      const res = await fetch(`/api/admin/proof-view?paymentRequestId=${encodeURIComponent(payment.id)}`, {
+        headers: { 'Accept': 'application/json' },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to fetch proof preview');
+      }
+      const data = await res.json();
+      if (data.signedUrl) {
+        window.open(data.signedUrl, '_blank');
+      } else {
+        throw new Error('Signed URL not returned');
+      }
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Gagal memuat preview bukti transfer');
+    }
+  };
+
+  const askReason = (label: string, payment: AdminManualPaymentRequest, action: ManualPaymentAction) => {
+    const reason = window.prompt(label);
+    if (reason && reason.trim().length >= 3) onAction(payment.id, action, reason.trim());
+  };
+
   return (
-    <div className="mb-4 rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 lg:p-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha p-3 lg:p-4" data-testid="admin-payment-queue">
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
         <div>
-          <p className="text-sm font-semibold text-primary">Manual payment queue</p>
-          <p className="mt-1 text-xs text-secondary">Proof review is provisional. Paid entitlement is granted only after verified paid.</p>
+          <p className="text-sm font-semibold text-primary">{admin.text('paymentQueuesTitle')}</p>
+          <p className="mt-1 max-w-3xl text-xs leading-5 text-secondary">{admin.text('paymentQueuesSubtitle')}</p>
         </div>
-        <StatusBadge value={payments.length ? 'warn' : 'pass'} label={`${payments.length} requests`} />
+        <div className="grid grid-cols-3 gap-2 text-center sm:flex sm:flex-wrap sm:justify-end">
+          <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+            <p className="text-base font-bold text-primary">{admin.number(counts.pending_review || 0)}</p>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.1em] text-tertiary">{admin.text('paymentQueuePending')}</p>
+          </div>
+          <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+            <p className="text-base font-bold text-primary">{admin.number(counts.receipt_received || 0)}</p>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.1em] text-tertiary">{admin.text('paymentQueueReceipt')}</p>
+          </div>
+          <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+            <p className="text-base font-bold text-primary">{admin.number(counts.verified_paid || 0)}</p>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.1em] text-tertiary">{admin.text('paymentQueueVerified')}</p>
+          </div>
+        </div>
       </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+        <label className="relative block">
+          <span className="sr-only">{admin.text('paymentQueueSearchLabel')}</span>
+          <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" />
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.currentTarget.value)}
+            className="glass-input h-10 w-full rounded-xl pl-9 pr-8 text-xs"
+            placeholder={admin.text('paymentQueueSearchPlaceholder')}
+          />
+          {search ? (
+            <button
+              type="button"
+              onClick={() => setSearch('')}
+              className="absolute right-1 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-secondary hover:bg-surface-alpha hover:text-primary"
+              aria-label={admin.text('clearSearch')}
+            >
+              <X size={13} />
+            </button>
+          ) : null}
+        </label>
+        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label={admin.text('queueFilterLabel')}>
+          {(['all', ...MANUAL_PAYMENT_QUEUE_STATUSES] as ManualPaymentQueueFilter[]).map((status) => (
+            <button
+              key={status}
+              type="button"
+              onClick={() => setStatusFilter(status)}
+              className={clsx(
+                'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[10px] font-bold uppercase tracking-[0.08em] transition-colors',
+                statusFilter === status
+                  ? 'border-blue-500 bg-blue-500/12 text-blue-600 dark:text-blue-300'
+                  : 'border-glass bg-[var(--bg-base)] text-tertiary hover:bg-surface-alpha hover:text-primary',
+              )}
+            >
+              <span>{status === 'all' ? admin.text('paymentQueueAll') : admin.enumLabel(status)}</span>
+              <span className="rounded-full bg-current/10 px-1.5 py-0.5">{admin.number(counts[status] || 0)}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-[var(--bg-base)] px-3 py-2 text-xs text-secondary">
+        <span className="font-semibold text-primary">
+          {admin.format('paymentQueueResults', { shown: admin.number(filteredPayments.length), total: admin.number(payments.length) })}
+        </span>
+        <span>{admin.text('paymentQueueActions')}</span>
+      </div>
+
       {visible.length ? (
         <div className="mt-4 grid gap-3">
           {visible.map((payment) => {
             const busy = busyPaymentId === payment.id;
-            const reject = () => {
-              const reason = window.prompt('Reject reason');
-              if (reason && reason.trim().length >= 3) onAction(payment.id, 'rejected', reason.trim());
-            };
-            const downgrade = () => {
-              const reason = window.prompt('Downgrade reason');
-              if (reason && reason.trim().length >= 3) onAction(payment.id, 'downgrade_free', reason.trim());
-            };
+            const closed = payment.status === 'verified_paid' || payment.status === 'rejected' || payment.status === 'expired';
             return (
-              <div key={payment.id} className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] p-3">
-                <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="min-w-0">
+              <article key={payment.id} className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] p-3" data-testid="admin-payment-queue-row">
+                <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+                  <div className="min-w-0 space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-mono text-xs font-bold text-primary">{payment.id}</p>
                       <StatusBadge value={payment.status} label={payment.status.replace(/_/g, ' ')} />
-                      {payment.proof ? <StatusBadge value="receipt_received" label="proof attached" /> : null}
+                      {payment.proof ? <StatusBadge value="receipt_received" label={admin.text('paymentQueueProof')} /> : null}
                     </div>
-                    <p className="mt-1 text-sm font-semibold text-primary">
-                      {payment.email || payment.userId} / {payment.planCode} / {payment.duration} / {payment.amountLabel}
-                    </p>
-                    <p className="mt-1 text-xs text-secondary">
-                      {payment.instructions.bankName} / {payment.instructions.accountName} / {payment.instructions.accountNumber}
+                    <div className="grid gap-2 text-xs sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="min-w-0 rounded-xl bg-surface-alpha px-2.5 py-2">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-tertiary">{admin.text('paymentQueueBuyer')}</p>
+                        <p className="mt-1 truncate font-semibold text-primary">{payment.email || payment.userId}</p>
+                      </div>
+                      <div className="rounded-xl bg-surface-alpha px-2.5 py-2">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-tertiary">{admin.text('plan')}</p>
+                        <p className="mt-1 font-semibold text-primary">{payment.planCode} / {payment.duration}</p>
+                      </div>
+                      <div className="rounded-xl bg-surface-alpha px-2.5 py-2">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-tertiary">{admin.text('billing')}</p>
+                        <p className="mt-1 font-semibold text-primary">{payment.amountLabel}</p>
+                      </div>
+                      <div className="rounded-xl bg-surface-alpha px-2.5 py-2">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-tertiary">{admin.text('created')}</p>
+                        <p className="mt-1 font-semibold text-primary">{admin.date(new Date(payment.createdAt).toISOString())}</p>
+                      </div>
+                    </div>
+                    <p className="break-words text-xs leading-5 text-secondary">
+                      {admin.text('paymentQueueTransfer')}: {payment.instructions.bankName} / {payment.instructions.accountName} / {payment.instructions.accountNumber}
                     </p>
                     {payment.proof ? (
-                      <p className="mt-2 break-all text-xs text-secondary">
-                        Proof: {proofStorageLabel(payment)}
+                      <p className="break-all text-xs leading-5 text-secondary">
+                        {admin.text('paymentQueueProof')}: {proofStorageLabel(payment)}
                         {payment.proof.bucket ? ` / ${payment.proof.bucket}` : ''}
                         {payment.proof.objectPath ? ` / ${payment.proof.objectPath}` : ''}
                       </p>
                     ) : null}
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end xl:max-w-[30rem]">
                     {payment.proof ? (
                       <button
                         type="button"
-                        onClick={async () => {
-                          try {
-                            const res = await fetch(`/api/admin/proof-view?paymentRequestId=${payment.id}`, {
-                              headers: { 'Accept': 'application/json' },
-                            });
-                            if (!res.ok) {
-                              const err = await res.json().catch(() => ({}));
-                              throw new Error(err.error || 'Failed to fetch proof preview');
-                            }
-                            const data = await res.json();
-                            if (data.signedUrl) {
-                              window.open(data.signedUrl, '_blank');
-                            } else {
-                              throw new Error('Signed URL not returned');
-                            }
-                          } catch (e) {
-                            alert(e instanceof Error ? e.message : 'Gagal memuat preview bukti transfer');
-                          }
-                        }}
-                        className="inline-flex h-9 items-center rounded-lg border border-yellow-500/50 bg-yellow-500/10 px-3 text-xs font-semibold text-yellow-500 hover:bg-yellow-500/20"
+                        onClick={() => void openProof(payment)}
+                        className="inline-flex h-9 items-center justify-center rounded-lg border border-yellow-500/50 bg-yellow-500/10 px-3 text-xs font-semibold text-yellow-600 hover:bg-yellow-500/20 dark:text-yellow-300"
                       >
-                        View Proof
+                        {admin.text('paymentQueueOpenProof')}
                       </button>
                     ) : null}
                     {payment.instructions.whatsappUrl ? (
-                      <a className="inline-flex h-9 items-center rounded-lg border border-glass shadow-sm backdrop-blur-md px-3 text-xs font-semibold text-primary hover:bg-surface-alpha hover:bg-surface-alpha-hover transition-colors" href={payment.instructions.whatsappUrl} target="_blank" rel="noopener noreferrer">
+                      <a className="inline-flex h-9 items-center justify-center rounded-lg border border-glass shadow-sm backdrop-blur-md px-3 text-xs font-semibold text-primary hover:bg-surface-alpha transition-colors" href={payment.instructions.whatsappUrl} target="_blank" rel="noopener noreferrer">
                         WhatsApp
                       </a>
                     ) : null}
-                    <button type="button" disabled={busy} onClick={() => onAction(payment.id, 'receipt_received')} className="inline-flex h-9 items-center rounded-lg border border-glass shadow-sm backdrop-blur-md px-3 text-xs font-semibold text-primary hover:bg-surface-alpha hover:bg-surface-alpha-hover transition-colors disabled:opacity-50">
+                    <button type="button" disabled={busy || closed} onClick={() => onAction(payment.id, 'receipt_received')} className="inline-flex h-9 items-center justify-center rounded-lg border border-glass shadow-sm backdrop-blur-md px-3 text-xs font-semibold text-primary hover:bg-surface-alpha transition-colors disabled:opacity-50">
                       Receipt received
                     </button>
-                    <button type="button" disabled={busy} onClick={() => onAction(payment.id, 'verified_paid')} className="inline-flex h-9 items-center rounded-lg bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50">
+                    <button type="button" disabled={busy || closed} onClick={() => onAction(payment.id, 'verified_paid')} className="inline-flex h-9 items-center justify-center rounded-lg bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50">
                       Verify paid
                     </button>
-                    <button type="button" disabled={busy} onClick={reject} className="inline-flex h-9 items-center rounded-lg border border-red-500/30 px-3 text-xs font-semibold text-red-700 hover:bg-red-500/10 disabled:opacity-50">
+                    <button type="button" disabled={busy || closed} onClick={() => askReason('Reject reason', payment, 'rejected')} className="inline-flex h-9 items-center justify-center rounded-lg border border-red-500/30 px-3 text-xs font-semibold text-red-700 hover:bg-red-500/10 disabled:opacity-50 dark:text-red-300">
                       Reject
                     </button>
-                    <button type="button" disabled={busy} onClick={downgrade} className="inline-flex h-9 items-center rounded-lg border border-amber-500/30 px-3 text-xs font-semibold text-amber-700 hover:bg-amber-500/10 disabled:opacity-50">
+                    <button type="button" disabled={busy || closed} onClick={() => askReason('Expire reason', payment, 'expired')} className="inline-flex h-9 items-center justify-center rounded-lg border border-amber-500/30 px-3 text-xs font-semibold text-amber-700 hover:bg-amber-500/10 disabled:opacity-50 dark:text-amber-300">
+                      Expire
+                    </button>
+                    <button type="button" disabled={busy} onClick={() => askReason('Downgrade reason', payment, 'downgrade_free')} className="inline-flex h-9 items-center justify-center rounded-lg border border-amber-500/30 px-3 text-xs font-semibold text-amber-700 hover:bg-amber-500/10 disabled:opacity-50 dark:text-amber-300">
                       Downgrade Free
                     </button>
                   </div>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
       ) : (
-        <p className="mt-4 rounded-2xl bg-[var(--bg-base)] p-3 text-sm text-secondary">No manual payment requests are pending in this runtime.</p>
+        <p className="mt-4 rounded-2xl bg-[var(--bg-base)] p-3 text-sm text-secondary">{admin.text('paymentQueueEmpty')}</p>
       )}
+
+      {filteredPayments.length > pageSize ? (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-secondary">
+          <span>{currentPage} / {totalPages}</span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              disabled={currentPage <= 1}
+              className="inline-flex h-9 items-center rounded-lg border border-glass px-3 font-semibold text-primary disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+              disabled={currentPage >= totalPages}
+              className="inline-flex h-9 items-center rounded-lg border border-glass px-3 font-semibold text-primary disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -2694,12 +2858,14 @@ function BillingReadinessPanel({
   busyQrCurrency,
   onManualPaymentAction,
   onManualQrSave,
+  showOperations = true,
 }: {
   snapshot: AdminSnapshot;
   busyPaymentId: string | null;
   busyQrCurrency: ManualPaymentQrCurrency | null;
   onManualPaymentAction: (paymentRequestId: string, action: ManualPaymentAction, reason?: string) => void;
   onManualQrSave: (input: { currency: ManualPaymentQrCurrency; qrisImageUrl: string; qrisLabel: string; operatorNote: string }) => void;
+  showOperations?: boolean;
 }) {
   const admin = useAdminCopy();
   return (
@@ -2750,17 +2916,135 @@ function BillingReadinessPanel({
         {snapshot.billing.gaps[0] ? <p className="mt-3 text-xs leading-5 text-secondary">{snapshot.billing.gaps[0]}</p> : null}
       </div>
     </div>
-    <ManualPaymentQrPanel
-      configs={snapshot.billing.manualQrConfigs || []}
-      busyCurrency={busyQrCurrency}
-      onSave={onManualQrSave}
-    />
-    <ManualPaymentQueuePanel
-      payments={snapshot.billing.manualPayments}
-      busyPaymentId={busyPaymentId}
-      onAction={onManualPaymentAction}
-    />
+    {showOperations ? (
+      <>
+        <ManualPaymentQrPanel
+          configs={snapshot.billing.manualQrConfigs || []}
+          busyCurrency={busyQrCurrency}
+          onSave={onManualQrSave}
+        />
+        <ManualPaymentQueuePanel
+          payments={snapshot.billing.manualPayments}
+          busyPaymentId={busyPaymentId}
+          onAction={onManualPaymentAction}
+        />
+      </>
+    ) : null}
     </>
+  );
+}
+
+function BillingUserQueuePanel({
+  users,
+  onOpenUser,
+}: {
+  users: AdminUserRecord[];
+  onOpenUser: (userId: string, queue: UserQueueFilter) => void;
+}) {
+  const admin = useAdminCopy();
+  const visible = users.slice(0, 16);
+  return (
+    <section className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha p-3 lg:p-4" data-testid="admin-plan-user-queue">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-primary">{admin.text('paymentQueuePlanUsers')}</p>
+          <p className="mt-1 max-w-3xl text-xs leading-5 text-secondary">{admin.text('paymentQueuePlanUsersSubtitle')}</p>
+        </div>
+        <StatusBadge value={users.length ? 'warn' : 'pass'} label={`${admin.number(users.length)} ${admin.text('queueBilling')}`} />
+      </div>
+      {visible.length ? (
+        <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+          {visible.map((user) => (
+            <button
+              key={user.id}
+              type="button"
+              onClick={() => onOpenUser(user.id, 'billing')}
+              className="min-w-0 rounded-2xl border border-glass bg-[var(--bg-base)] p-3 text-left transition-colors hover:bg-surface-alpha"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-bold text-primary">{user.name || user.email}</p>
+                  <p className="mt-0.5 truncate text-[10px] text-tertiary">{user.email || user.id}</p>
+                </div>
+                <StatusBadge value={user.billing.status} className="shrink-0 text-[9px]" />
+              </div>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-[9px] font-bold uppercase text-blue-600 dark:text-blue-300">{user.planCode}</span>
+                <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-700 dark:text-amber-300">{admin.enumLabel(user.billing.provider)}</span>
+                {user.billing.paymentActionRequired ? <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[9px] font-bold uppercase text-rose-600 dark:text-rose-300">{admin.text('actionRequired')}</span> : null}
+              </div>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-4 rounded-2xl bg-[var(--bg-base)] p-3 text-sm text-secondary">{admin.text('paymentQueueNoBillingUsers')}</p>
+      )}
+    </section>
+  );
+}
+
+function AdminQueuesPanel({
+  snapshot,
+  queues,
+  busyPaymentId,
+  busyQrCurrency,
+  onManualPaymentAction,
+  onManualQrSave,
+  onOpenUser,
+}: {
+  snapshot: AdminSnapshot;
+  queues: AdminQueueSummary;
+  busyPaymentId: string | null;
+  busyQrCurrency: ManualPaymentQrCurrency | null;
+  onManualPaymentAction: (paymentRequestId: string, action: ManualPaymentAction, reason?: string) => void;
+  onManualQrSave: (input: { currency: ManualPaymentQrCurrency; qrisImageUrl: string; qrisLabel: string; operatorNote: string }) => void;
+  onOpenUser: (userId: string, queue: UserQueueFilter) => void;
+}) {
+  const admin = useAdminCopy();
+  const manualCounts = snapshot.billing.manualQueueCounts || {
+    pending_review: 0,
+    receipt_received: 0,
+    verified_paid: 0,
+    rejected: 0,
+    expired: 0,
+  };
+  const pendingManual = (manualCounts.pending_review || 0) + (manualCounts.receipt_received || 0);
+  const closedManual = (manualCounts.verified_paid || 0) + (manualCounts.rejected || 0) + (manualCounts.expired || 0);
+  return (
+    <motion.section
+      id="admin-panel-queues"
+      aria-labelledby="admin-tab-queues"
+      role="tabpanel"
+      key="queues"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      className="space-y-3"
+    >
+      <div className="rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/76 p-3 lg:p-4">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-primary">{admin.text('paymentQueuesTitle')}</h2>
+            <p className="mt-1 max-w-4xl text-sm leading-6 text-secondary">{admin.text('paymentQueuesSubtitle')}</p>
+          </div>
+          <StatusBadge value={pendingManual || queues.billingUsers.length ? 'warn' : 'pass'} />
+        </div>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricTile label={admin.text('paymentQueueKpiManual')} value={admin.number(pendingManual)} detail={admin.format('paymentQueueResults', { shown: admin.number(snapshot.billing.manualPayments.length), total: admin.number(snapshot.billing.manualPayments.length) })} icon={WalletCards} />
+          <MetricTile label={admin.text('paymentQueueKpiProof')} value={admin.number(manualCounts.receipt_received || 0)} detail={admin.text('paymentQueueReceipt')} icon={BadgeCheck} />
+          <MetricTile label={admin.text('paymentQueueKpiPlan')} value={admin.number(queues.billingUsers.length)} detail={admin.text('queueBilling')} icon={Users} />
+          <MetricTile label={admin.text('paymentQueueKpiClosed')} value={admin.number(closedManual)} detail={admin.text('paymentQueueVerified')} icon={CheckCircle2} />
+        </div>
+      </div>
+      <BillingReadinessPanel
+        snapshot={snapshot}
+        busyPaymentId={busyPaymentId}
+        busyQrCurrency={busyQrCurrency}
+        onManualPaymentAction={onManualPaymentAction}
+        onManualQrSave={onManualQrSave}
+      />
+      <BillingUserQueuePanel users={queues.billingUsers} onOpenUser={onOpenUser} />
+    </motion.section>
   );
 }
 
@@ -4409,7 +4693,7 @@ export function AdminManagement() {
                     {adminQueues.riskUsers.length + adminQueues.recoveryUsers.length}
                   </span>
                 )}
-                {id === 'plans' && ((snapshot?.metrics.manualQueueCounts?.pending_review || 0) + (snapshot?.metrics.manualQueueCounts?.receipt_received || 0)) > 0 && (
+                {id === 'queues' && ((snapshot?.metrics.manualQueueCounts?.pending_review || 0) + (snapshot?.metrics.manualQueueCounts?.receipt_received || 0)) > 0 && (
                   <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 rounded-full bg-blue-500/15 text-blue-500 px-1 text-[9px] font-bold">
                     {(snapshot?.metrics.manualQueueCounts?.pending_review || 0) + (snapshot?.metrics.manualQueueCounts?.receipt_received || 0)}
                   </span>
@@ -4525,7 +4809,7 @@ export function AdminManagement() {
                           {adminQueues.riskUsers.length + adminQueues.recoveryUsers.length}
                         </span>
                       )}
-                      {id === 'plans' && ((snapshot?.metrics.manualQueueCounts?.pending_review || 0) + (snapshot?.metrics.manualQueueCounts?.receipt_received || 0)) > 0 && (
+                      {id === 'queues' && ((snapshot?.metrics.manualQueueCounts?.pending_review || 0) + (snapshot?.metrics.manualQueueCounts?.receipt_received || 0)) > 0 && (
                         <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 rounded-full bg-blue-500/15 text-blue-500 px-1 text-[9px] font-bold">
                           {(snapshot?.metrics.manualQueueCounts?.pending_review || 0) + (snapshot?.metrics.manualQueueCounts?.receipt_received || 0)}
                         </span>
@@ -4617,7 +4901,7 @@ export function AdminManagement() {
                 {admin.text(TABS.find((tab) => tab.id === activeTab)?.labelKey || 'tabOverview')}
               </h1>
               <p className="text-xs text-secondary mt-0.5">
-                {activeTab === 'users' ? admin.text('usersSearchPlaceholder') : admin.text('pageSubtitle')}
+                {activeTab === 'users' ? admin.text('usersSearchPlaceholder') : activeTab === 'queues' ? admin.text('paymentQueuesSubtitle') : admin.text('pageSubtitle')}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -4849,6 +5133,7 @@ export function AdminManagement() {
                     busyQrCurrency={busyQrCurrency}
                     onManualPaymentAction={(paymentRequestId, action, reason) => void commitManualPaymentAction(paymentRequestId, action, reason)}
                     onManualQrSave={(input) => void commitManualQrSave(input)}
+                    showOperations={false}
                   />
                   <PlansPanel
                     plans={snapshot.plans}
@@ -4858,6 +5143,18 @@ export function AdminManagement() {
                   />
                   <AdminPricingPanel admin={admin} />
                 </motion.section>
+              ) : null}
+
+              {activeTab === 'queues' ? (
+                <AdminQueuesPanel
+                  snapshot={snapshot}
+                  queues={adminQueues}
+                  busyPaymentId={busyManualPaymentId}
+                  busyQrCurrency={busyQrCurrency}
+                  onManualPaymentAction={(paymentRequestId, action, reason) => void commitManualPaymentAction(paymentRequestId, action, reason)}
+                  onManualQrSave={(input) => void commitManualQrSave(input)}
+                  onOpenUser={openUserFromCommandCenter}
+                />
               ) : null}
 
               {activeTab === 'ai' ? (

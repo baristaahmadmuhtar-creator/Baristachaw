@@ -492,10 +492,11 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
     };
   }, [apiClient, isOnline, parityShellCopy.loginCompleteFailed, parityShellCopy.offlineSignIn, persistSession, session]);
 
-  const handleGoogleLogin = async () => {
+  const performGoogleLogin = async (): Promise<AuthSession> => {
     if (!isOnline) {
-      setAuthError(parityShellCopy.offlineSignIn);
-      return;
+      const message = parityShellCopy.offlineSignIn;
+      setAuthError(message);
+      throw new Error(message);
     }
 
     setAuthBusyProvider('google');
@@ -507,24 +508,36 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
         ? await startGoogleSupabaseOAuth(apiClient)
         : await startGoogleMobileOAuth(apiClient);
       await persistSession(nextSession, 'google');
+      return nextSession;
     } catch (error) {
       const message = error instanceof Error ? error.message : parityShellCopy.googleFailed;
       setAuthError(message);
       captureError(error, { phase: 'web_parity_login_google' });
       trackEvent('auth_fail_google', { message, surface: 'web_parity_gate' });
+      throw new Error(message);
     } finally {
       setAuthBusyProvider(null);
     }
   };
 
-  const handleFacebookLogin = async () => {
+  const handleGoogleLogin = async () => {
+    try {
+      await performGoogleLogin();
+    } catch {
+      // Error state is already rendered by the auth surface.
+    }
+  };
+
+  const performFacebookLogin = async (): Promise<AuthSession> => {
     if (!isSupabaseAuthConfigured) {
-      setAuthError(parityShellCopy.facebookRequiresSupabase);
-      return;
+      const message = parityShellCopy.facebookRequiresSupabase;
+      setAuthError(message);
+      throw new Error(message);
     }
     if (!isOnline) {
-      setAuthError(parityShellCopy.offlineSignIn);
-      return;
+      const message = parityShellCopy.offlineSignIn;
+      setAuthError(message);
+      throw new Error(message);
     }
 
     setAuthBusyProvider('facebook');
@@ -534,14 +547,28 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
     try {
       const nextSession = await startFacebookSupabaseOAuth(apiClient);
       await persistSession(nextSession, 'facebook');
+      return nextSession;
     } catch (error) {
       const message = error instanceof Error ? error.message : parityShellCopy.facebookFailed;
       setAuthError(message);
       captureError(error, { phase: 'web_parity_login_facebook' });
       trackEvent('action_failed', { action: 'auth_login', provider: 'facebook', message, surface: 'web_parity_gate' });
+      throw new Error(message);
     } finally {
       setAuthBusyProvider(null);
     }
+  };
+
+  const handleFacebookLogin = async () => {
+    try {
+      await performFacebookLogin();
+    } catch {
+      // Error state is already rendered by the auth surface.
+    }
+  };
+
+  const handleNativeAuthRequest = async (provider: 'google' | 'facebook'): Promise<AuthSession> => {
+    return provider === 'facebook' ? performFacebookLogin() : performGoogleLogin();
   };
 
   const handleEmailAuth = async (payload: EmailAuthPayload) => {
@@ -683,6 +710,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       onParityFailure={onParityFailure}
       onNativeLogout={handleNativeLogout}
       onNativeAuthExpired={handleNativeAuthExpired}
+      onNativeAuthRequest={handleNativeAuthRequest}
     />
   );
 }

@@ -119,6 +119,38 @@ export type KonoRecipeStyle =
   | 'kono_slow_drip_body'
   | 'iced_kono_meimon'
   | 'kono_agitation_sweet';
+export type V60RecipeStyle =
+  | 'classic_bloom_pulse'
+  | 'continuous_low_agitation'
+  | 'four_six_inspired'
+  | 'high_extraction_light_roast'
+  | 'sweet_body'
+  | 'floral_clarity'
+  | 'japanese_iced';
+export type EspressoRecipeStyle =
+  | 'standard_dial_in'
+  | 'bright_modern'
+  | 'soft_round'
+  | 'milk_base'
+  | 'ristretto_safe'
+  | 'lungo_safe';
+export type AiBrewResolvedRecipeStyle =
+  | V60RecipeStyle
+  | Exclude<AeroPressRecipeStyle, 'auto'>
+  | Exclude<FrenchPressRecipeStyle, 'auto'>
+  | Exclude<KalitaWaveRecipeStyle, 'auto'>
+  | Exclude<CleverDripperRecipeStyle, 'auto'>
+  | Exclude<ChemexRecipeStyle, 'auto'>
+  | Exclude<MokaPotRecipeStyle, 'auto'>
+  | Exclude<ColdBrewRecipeStyle, 'auto'>
+  | Exclude<BatchBrewRecipeStyle, 'auto'>
+  | Exclude<SiphonRecipeStyle, 'auto'>
+  | Exclude<OrigamiRecipeStyle, 'auto'>
+  | Exclude<AprilRecipeStyle, 'auto'>
+  | Exclude<MelittaRecipeStyle, 'auto'>
+  | Exclude<KonoRecipeStyle, 'auto'>
+  | EspressoRecipeStyle
+  | SwitchPublicPresetId;
 export type AiBrewEngineMode =
   | 'local_planner'
   | 'precision_planner'
@@ -905,21 +937,7 @@ export interface DeviceBrewProfile extends CatalogProvenance {
   filterStyle: 'cone' | 'flat' | 'trapezoid' | 'immersion' | 'pressure' | 'vacuum' | 'stovetop' | 'cold_immersion' | 'batch';
   methodWorkflow?: MethodWorkflow;
   flatBottomProfile?: FlatBottomProfileFamily;
-  recipeStyle?:
-    | Exclude<AeroPressRecipeStyle, 'auto'>
-    | Exclude<FrenchPressRecipeStyle, 'auto'>
-    | Exclude<KalitaWaveRecipeStyle, 'auto'>
-    | Exclude<CleverDripperRecipeStyle, 'auto'>
-    | Exclude<ChemexRecipeStyle, 'auto'>
-    | Exclude<MokaPotRecipeStyle, 'auto'>
-    | Exclude<ColdBrewRecipeStyle, 'auto'>
-    | Exclude<BatchBrewRecipeStyle, 'auto'>
-    | Exclude<SiphonRecipeStyle, 'auto'>
-    | Exclude<OrigamiRecipeStyle, 'auto'>
-    | Exclude<AprilRecipeStyle, 'auto'>
-    | Exclude<MelittaRecipeStyle, 'auto'>
-    | Exclude<KonoRecipeStyle, 'auto'>
-    | SwitchPublicPresetId;
+  recipeStyle?: AiBrewResolvedRecipeStyle;
   physicalConstraints?: DevicePhysicalConstraints;
   methodProgramme?: SwitchBrewProgramme | string;
   ratioDelta: number;
@@ -1104,6 +1122,7 @@ export type WorkflowGuideActionType =
   | 'wait';
 
 export type WorkflowGuideChipKey =
+  | 'device'
   | 'flow'
   | 'path'
   | 'height'
@@ -1238,21 +1257,7 @@ export interface BrewPlan {
   formState: AiBrewFormState;
   brewMode: AiBrewMode;
   methodFamily: AiBrewMethodFamily;
-  recipeStyle?:
-    | Exclude<AeroPressRecipeStyle, 'auto'>
-    | Exclude<FrenchPressRecipeStyle, 'auto'>
-    | Exclude<KalitaWaveRecipeStyle, 'auto'>
-    | Exclude<CleverDripperRecipeStyle, 'auto'>
-    | Exclude<ChemexRecipeStyle, 'auto'>
-    | Exclude<MokaPotRecipeStyle, 'auto'>
-    | Exclude<ColdBrewRecipeStyle, 'auto'>
-    | Exclude<BatchBrewRecipeStyle, 'auto'>
-    | Exclude<SiphonRecipeStyle, 'auto'>
-    | Exclude<OrigamiRecipeStyle, 'auto'>
-    | Exclude<AprilRecipeStyle, 'auto'>
-    | Exclude<MelittaRecipeStyle, 'auto'>
-    | Exclude<KonoRecipeStyle, 'auto'>
-    | SwitchPublicPresetId;
+  recipeStyle?: AiBrewResolvedRecipeStyle;
   methodId: BrewMethodId;
   ratioToolMethodId: BrewMethodId;
   coffeeName: string;
@@ -1313,6 +1318,11 @@ export interface BrewPlan {
   steps: BrewPlanStep[];
   workflowGuideSteps?: WorkflowGuideStep[];
   workflowValidation?: MethodWorkflowValidationResult;
+  recoveryApplied?: boolean;
+  recoveryReason?: string;
+  originalGuardrailRisk?: 'none' | 'caution' | 'blocked';
+  safeAlternativeStyle?: string;
+  userFacingRecoveryMessage?: string;
   devicePhysicalConstraints?: DevicePhysicalConstraints;
   methodProgramme?: SwitchBrewProgramme | string;
   switchPresetId?: SwitchPublicPresetId;

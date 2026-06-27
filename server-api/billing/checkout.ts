@@ -181,17 +181,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const url = checkoutUrlForPlan(planCode, duration, promoCode);
   if (!url) {
     const statusSnapshot = await buildAccountStatus(requestId, authResult.auth, 'web').catch((e) => {
-      console.error('[DEBUG] buildAccountStatus error:', e);
+      console.error('Failed to build account status during billing checkout:', e);
       return null;
     });
     let isUpgrade = false;
     let currentPlanCode = 'free';
 
     if (statusSnapshot) {
-      if (authResult.auth.userId === 'user_upgrade') {
-        console.error('[DEBUG] auth userId:', authResult.auth.userId);
-        console.error('[DEBUG] statusSnapshot user_upgrade:', JSON.stringify(statusSnapshot));
-      }
       const hasActivePaidPlan = statusSnapshot.user.planCode !== 'free' && statusSnapshot.billing.status === 'active';
       const hasPendingManual = statusSnapshot.billing.provider === 'manual'
         && statusSnapshot.billing.paymentActionRequired === true

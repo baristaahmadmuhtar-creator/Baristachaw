@@ -9,7 +9,7 @@ const DEFAULT_PARITY_TIMEOUT_MS = 6_000;
 const DEFAULT_ENABLE_PARITY_FALLBACK = false;
 const DEFAULT_ENABLE_DEBUG_WEB_PARITY = false;
 const DEFAULT_HARD_FAIL_TO_DEBUG_PARITY = false;
-const DEFAULT_ENABLE_GUEST_MODE = true;
+const DEFAULT_ENABLE_GUEST_MODE = false;
 const DEFAULT_ENABLE_APPLE_SIGNIN = false;
 
 type MobileUiMode = 'web_parity' | 'native';

@@ -89,11 +89,17 @@ import {
   sanitizeOptimizationPourStyleHint,
 } from './optimizerGuard.ts';
 import { ORIGIN_PROFILE_RULES_V2026_05 } from './plannerCalibration.v2026-05.ts';
+import {
+  getMethodStyle,
+  resolveDefaultStyleForTarget,
+  validatePlanAgainstMethodStyleContract,
+} from './methodStyleContracts.ts';
 import type {
   AiBrewCatalog,
   AiBrewFormState,
   AiBrewMethodFamily,
   AiBrewMode,
+  AiBrewResolvedRecipeStyle,
   AeroPressRecipeStyle,
   BeanCoverageState,
   BeanProfileState,
@@ -1259,6 +1265,28 @@ function parseOptionalNumber(label: string, value: string, min: number, max: num
   return parsed;
 }
 
+function parseRecoverableOptionalNumber(
+  label: string,
+  value: string,
+  min: number,
+  max: number,
+  recoveryNotes: string[],
+) {
+  const normalized = value.trim();
+  if (!normalized) return null;
+  const parsed = Number.parseFloat(normalized);
+  if (!Number.isFinite(parsed)) {
+    recoveryNotes.push(`${label} override ignored because it was not a valid number.`);
+    return null;
+  }
+  if (parsed < min || parsed > max) {
+    const recovered = clamp(parsed, min, max);
+    recoveryNotes.push(`${label} override adjusted from ${parsed} to ${roundTo(recovered, 1)} to stay inside the safe recipe range (${min}-${max}).`);
+    return recovered;
+  }
+  return parsed;
+}
+
 function resolveTargetWaterOverrideBounds(methodFamily: AiBrewMethodFamily, doseG: number, ratioLowerBound: number, ratioUpperBound: number, brewMode: 'hot' | 'iced' = 'hot') {
   const hardLimits = TARGET_WATER_METHOD_LIMITS[methodFamily];
   if (methodFamily === 'french_press') {
@@ -2070,21 +2098,7 @@ type AdaptiveShareContext = {
   dripperName?: string;
   filterStyle: DeviceBrewProfile['filterStyle'];
   flatBottomProfile?: FlatBottomProfileFamily;
-  recipeStyle?:
-    | Exclude<AeroPressRecipeStyle, 'auto'>
-    | Exclude<FrenchPressRecipeStyle, 'auto'>
-    | Exclude<KalitaWaveRecipeStyle, 'auto'>
-    | Exclude<CleverDripperRecipeStyle, 'auto'>
-    | Exclude<ChemexRecipeStyle, 'auto'>
-    | Exclude<MokaPotRecipeStyle, 'auto'>
-    | Exclude<ColdBrewRecipeStyle, 'auto'>
-    | Exclude<BatchBrewRecipeStyle, 'auto'>
-    | Exclude<SiphonRecipeStyle, 'auto'>
-    | Exclude<OrigamiRecipeStyle, 'auto'>
-    | Exclude<AprilRecipeStyle, 'auto'>
-    | Exclude<MelittaRecipeStyle, 'auto'>
-    | Exclude<KonoRecipeStyle, 'auto'>
-    | SwitchPublicPresetId;
+  recipeStyle?: AiBrewResolvedRecipeStyle;
   physicalConstraints?: DevicePhysicalConstraints;
   methodProgramme?: SwitchBrewProgramme | string;
   manualTechniquePattern?: ManualBrewTechniquePattern;
@@ -4801,21 +4815,7 @@ function deriveMethodFamilyAdjustment(params: {
   methodFamily: AiBrewMethodFamily;
   filterStyle: DeviceBrewProfile['filterStyle'];
   flatBottomProfile?: FlatBottomProfileFamily;
-  recipeStyle?:
-    | Exclude<AeroPressRecipeStyle, 'auto'>
-    | Exclude<FrenchPressRecipeStyle, 'auto'>
-    | Exclude<KalitaWaveRecipeStyle, 'auto'>
-    | Exclude<CleverDripperRecipeStyle, 'auto'>
-    | Exclude<ChemexRecipeStyle, 'auto'>
-    | Exclude<MokaPotRecipeStyle, 'auto'>
-    | Exclude<ColdBrewRecipeStyle, 'auto'>
-    | Exclude<BatchBrewRecipeStyle, 'auto'>
-    | Exclude<SiphonRecipeStyle, 'auto'>
-    | Exclude<OrigamiRecipeStyle, 'auto'>
-    | Exclude<AprilRecipeStyle, 'auto'>
-    | Exclude<MelittaRecipeStyle, 'auto'>
-    | Exclude<KonoRecipeStyle, 'auto'>
-    | SwitchPublicPresetId;
+  recipeStyle?: AiBrewResolvedRecipeStyle;
   brewMode: 'hot' | 'iced';
   targetProfileLabel: string;
   targetProfileId?: string;
@@ -7908,6 +7908,62 @@ function resolveFrenchPressProfileId(
   return style === 'traditional' ? 'profile_french_press_hot' : `profile_french_press_${style}_hot`;
 }
 
+function getRequestedMethodStyle(input: AiBrewFormState, methodFamily: AiBrewMethodFamily) {
+  switch (methodFamily) {
+    case 'aeropress':
+      return input.aeropressStyle;
+    case 'french_press':
+      return input.frenchPressStyle;
+    case 'hario_switch':
+      return input.switchPresetId || undefined;
+    case 'kalita_wave':
+      return input.kalitaWaveStyle;
+    case 'clever_dripper':
+      return input.cleverDripperStyle;
+    case 'chemex':
+      return input.chemexStyle;
+    case 'moka_pot':
+      return input.mokaPotStyle;
+    case 'cold_brew':
+      return input.coldBrewStyle;
+    case 'batch_brew':
+      return input.batchBrewStyle;
+    case 'siphon':
+      return input.siphonStyle;
+    case 'origami':
+      return input.origamiStyle;
+    case 'april':
+      return input.aprilStyle;
+    case 'melitta':
+      return input.melittaStyle;
+    case 'kono':
+      return input.konoStyle;
+    default:
+      return undefined;
+  }
+}
+
+function resolveContractRecipeStyle(params: {
+  methodFamily: AiBrewMethodFamily;
+  input: AiBrewFormState;
+  targetProfileId?: string;
+  currentRecipeStyle?: string;
+  selectedRecipeStyle?: string;
+}): AiBrewResolvedRecipeStyle {
+  const selected = params.selectedRecipeStyle && params.selectedRecipeStyle !== 'auto'
+    ? params.selectedRecipeStyle
+    : undefined;
+  const current = params.currentRecipeStyle && params.currentRecipeStyle !== 'auto'
+    ? params.currentRecipeStyle
+    : undefined;
+  const requested = getRequestedMethodStyle(params.input, params.methodFamily);
+  const style = selected || current || resolveDefaultStyleForTarget(params.methodFamily, params.targetProfileId, {
+    brewMode: params.input.brewMode,
+    requestedStyleId: requested,
+  });
+  return style as AiBrewResolvedRecipeStyle;
+}
+
 export function resolveDeviceProfileSelection(
   catalog: AiBrewCatalog,
   dripper: EquipmentCatalogEntry,
@@ -8123,6 +8179,33 @@ function finalizePlanCore(
     konoSelection?.adjustedProfile ||
     deviceSelection.profile;
   const methodFamily = effectiveDeviceProfile.methodFamily || dripper.methodFamily || 'v60';
+  const selectedRecipeStyle =
+    switchSelection?.preset.id ||
+    kalitaSelection?.style ||
+    cleverSelection?.style ||
+    chemexSelection?.style ||
+    mokaSelection?.style ||
+    coldBrewSelection?.style ||
+    batchBrewSelection?.style ||
+    siphonSelection?.style ||
+    origamiSelection?.style ||
+    aprilSelection?.style ||
+    melittaSelection?.style ||
+    konoSelection?.style ||
+    undefined;
+  const resolvedRecipeStyle = resolveContractRecipeStyle({
+    methodFamily,
+    input,
+    targetProfileId: targetProfile.id,
+    currentRecipeStyle: effectiveDeviceProfile.recipeStyle,
+    selectedRecipeStyle,
+  });
+  if (effectiveDeviceProfile.recipeStyle !== resolvedRecipeStyle) {
+    effectiveDeviceProfile = {
+      ...effectiveDeviceProfile,
+      recipeStyle: resolvedRecipeStyle,
+    };
+  }
   const doseG = parseDoseForMethod(input.doseG, methodFamily);
   const manualPreset = findManualBrewPreset(catalog, input.manualPresetId || '');
   let methodId = resolveProfileBrewMethodId(effectiveDeviceProfile, methodFamily, input.brewMode);
@@ -8258,21 +8341,23 @@ function finalizePlanCore(
     input.targetWaterMl || '',
     methodFamily,
   );
-  const targetWaterOverrideMl = parseOptionalNumber(
+  const precisionOverrideNotes: string[] = [];
+  const targetWaterOverrideMl = parseRecoverableOptionalNumber(
     'Target water',
     manualPresetScaledWaterMl !== null ? String(manualPresetScaledWaterMl) : input.targetWaterMl || '',
     targetWaterBounds.min,
     targetWaterBounds.max,
+    precisionOverrideNotes,
   );
   const targetRatioOverride = targetWaterOverrideMl !== null
     ? null
-    : parseOptionalNumber(
+    : parseRecoverableOptionalNumber(
       'Target ratio',
       input.targetRatio || '',
       ratioLowerBound,
       ratioUpperBound,
+      precisionOverrideNotes,
     );
-  const precisionOverrideNotes: string[] = [];
 
   const ratioBeforeIcedStrengthCalibration = targetWaterOverrideMl === null
     && targetRatioOverride === null
@@ -8649,11 +8734,12 @@ function finalizePlanCore(
   const methodTempBounds = (methodFamily === 'cold_brew' || input.manualPresetId === 'inspired-aeropress-cold-brew-express')
     ? { min: 4, max: 25 }
     : { min: 78, max: 98 };
-  const targetTempOverrideC = parseOptionalNumber(
+  const targetTempOverrideC = parseRecoverableOptionalNumber(
     'Target temperature',
     input.targetTempC || '',
     methodTempBounds.min,
     methodTempBounds.max,
+    precisionOverrideNotes,
   );
   const baseWaterTempC = midpoint(roastAdjustedTargets.adjustedTempRangeC, 1)
     + effectiveDeviceProfile.tempDeltaC
@@ -9404,6 +9490,14 @@ function finalizePlanCore(
 
   const workflowGuideSteps = buildWorkflowAwareGuideSteps(plan);
   const workflowValidation = validateMethodWorkflowGuide(plan, workflowGuideSteps);
+  const methodStyleValidation = validatePlanAgainstMethodStyleContract({
+    methodFamily: plan.methodFamily,
+    recipeStyle: plan.recipeStyle,
+    targetProfileId: plan.targetProfileId,
+    workflowGuideSteps,
+    workflowValidation,
+    guardrails: plan.guardrails,
+  });
   const workflowConfidenceNotes = workflowValidation.passed
     ? [`Workflow Ready: ${workflowValidation.readinessScore}/100 method guide validation.`]
     : [
@@ -9411,6 +9505,30 @@ function finalizePlanCore(
       ...workflowValidation.blockingErrors,
       ...workflowValidation.warnings,
     ];
+  const methodStyleConfidenceNotes = methodStyleValidation.passed
+    ? [`Method style contract ready for ${plan.methodFamily}.`]
+    : [
+      `Method style contract needs review for ${plan.methodFamily}.`,
+      ...methodStyleValidation.errors,
+      ...methodStyleValidation.warnings,
+    ];
+  const switchRecoveryApplied = Boolean(plan.switchTasteProgramme?.recoveryApplied);
+  const recoveredFromBlocked = switchRecoveryApplied
+    && plan.switchTasteProgramme?.originalPresetStatus === 'blocked'
+    && plan.switchTasteProgramme?.finalPresetStatus !== 'blocked';
+  const recoverableOverrideNotes = precisionOverrideNotes.filter((note) => /\boverride (?:ignored|adjusted)\b/i.test(note));
+  const recoveryApplied = switchRecoveryApplied || recoveredFromBlocked || recoverableOverrideNotes.length > 0;
+  const recoveryReason = plan.switchTasteProgramme?.recoveryReason
+    || recoverableOverrideNotes.join(' ')
+    || (
+      recoveryApplied
+        ? `Recipe adapted to the safe ${methodStyleValidation.styleId || plan.recipeStyle || plan.methodFamily} style before showing the final brew plan.`
+        : undefined
+    );
+  const userFacingRecoveryMessage = recoveryApplied
+    ? `Safe adjustment applied: ${recoveryReason}`
+    : undefined;
+  const originalGuardrailRisk = recoveredFromBlocked ? 'blocked' : recoveryApplied ? 'caution' : 'none';
   const timeSemantics = deriveBrewPlanTimeSemantics(plan, workflowGuideSteps);
   const canonicalSummary = buildSummary({
     ...plan,
@@ -9430,17 +9548,27 @@ function finalizePlanCore(
     ...plan,
     workflowGuideSteps,
     workflowValidation,
+    recoveryApplied,
+    recoveryReason,
+    originalGuardrailRisk,
+    safeAlternativeStyle: recoveryApplied ? (methodStyleValidation.styleId || plan.recipeStyle) : undefined,
+    userFacingRecoveryMessage,
     ...timeSemantics,
     summary: canonicalSummary,
     extractionRationale: canonicalExtractionRationale,
     warnings: workflowValidation.passed
-      ? plan.warnings
-      : normalizeNoteList(plan.warnings, workflowValidation.blockingErrors),
-    confidenceNotes: normalizeNoteList(plan.confidenceNotes, workflowConfidenceNotes),
+      ? normalizeNoteList(plan.warnings, methodStyleValidation.errors, userFacingRecoveryMessage ? [userFacingRecoveryMessage] : [])
+      : normalizeNoteList(plan.warnings, workflowValidation.blockingErrors, methodStyleValidation.errors, userFacingRecoveryMessage ? [userFacingRecoveryMessage] : []),
+    confidenceNotes: normalizeNoteList(plan.confidenceNotes, workflowConfidenceNotes, methodStyleConfidenceNotes),
     beanCoverage: buildBeanCoverageState({
       ...beanCoverageBase,
-      guardrailErrors: normalizeNoteList(baseGuardrails.errors, workflowValidation.blockingErrors),
-      workflowStatus: workflowValidation.status,
+      guardrailErrors: recoveredFromBlocked
+        ? normalizeNoteList(baseGuardrails.errors, methodStyleValidation.errors)
+        : normalizeNoteList(baseGuardrails.errors, workflowValidation.blockingErrors, methodStyleValidation.errors),
+      workflowStatus: recoveredFromBlocked && workflowValidation.status === 'blocked' ? 'needs_review' : workflowValidation.status,
+      switchValidation: recoveredFromBlocked && beanCoverageBase.switchValidation?.status === 'blocked'
+        ? { ...beanCoverageBase.switchValidation, status: 'caution' }
+        : beanCoverageBase.switchValidation,
     }),
   } satisfies BrewPlan;
 
@@ -10209,6 +10337,13 @@ function formatMethodBriefMl(value: number) {
   return `${Math.round(value)} ml`;
 }
 
+function getPlanRecipeStyleLabel(plan: Pick<BrewPlan, 'methodFamily' | 'recipeStyle'>, locale?: string) {
+  if (!plan.recipeStyle) return '';
+  const style = getMethodStyle(plan.methodFamily, plan.recipeStyle);
+  if (!style) return String(plan.recipeStyle).replace(/_/g, ' ');
+  return isIndonesianLocale(locale) ? style.labelId : style.label;
+}
+
 export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMethodBrief {
   const id = isIndonesianLocale(locale);
   const target = id
@@ -10427,12 +10562,18 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
 
 export function buildPlanRecipeName(plan: BrewPlan, locale?: string) {
   const fallback = isIndonesianLocale(locale) ? 'AI Seduh' : 'AI Brew';
-  return `${plan.coffeeName || fallback} · ${plan.targetProfileLabel}`;
+  const styleLabel = getPlanRecipeStyleLabel(plan, locale);
+  const suffix = styleLabel ? ` - ${styleLabel}` : '';
+  return `${plan.coffeeName || fallback} - ${plan.targetProfileLabel}${suffix}`;
 }
 
 export function buildPlanRecipeDescription(plan: BrewPlan, locale?: string) {
   const id = isIndonesianLocale(locale);
   const gear = `${plan.dripper.name} + ${plan.grinder.name}`;
+  const styleLabel = getPlanRecipeStyleLabel(plan, locale);
+  const styleText = styleLabel
+    ? (id ? ` Gaya: ${styleLabel}. Target rasa: ${plan.targetProfileLabel}.` : ` Style: ${styleLabel}. Taste target: ${plan.targetProfileLabel}.`)
+    : (id ? ` Target rasa: ${plan.targetProfileLabel}.` : ` Taste target: ${plan.targetProfileLabel}.`);
   const split = plan.iceMl > 0
     ? (id ? ` Split ${plan.hotWaterMl} ml panas / ${plan.iceMl} ml es. Rasio final 1:${formatBaristaRatio(plan.finalBeverageRatio)}, konsentrat panas 1:${formatBaristaRatio(plan.hotExtractionRatio)}.` : ` Split ${plan.hotWaterMl} ml hot / ${plan.iceMl} ml ice. Final ratio 1:${formatBaristaRatio(plan.finalBeverageRatio)}, hot concentrate 1:${formatBaristaRatio(plan.hotExtractionRatio)}.`)
     : '';
@@ -10442,8 +10583,8 @@ export function buildPlanRecipeDescription(plan: BrewPlan, locale?: string) {
       : ` Water: ${plan.waterBrandLabel}${plan.waterCustomized ? ' (customized)' : ''}.`)
     : (id ? ' Air: input mineral manual.' : ' Water: manual mineral input.');
   return id
-    ? `${plan.summary} Perangkat: ${gear}.${split}${waterSource}`
-    : `${plan.summary} Gear: ${gear}.${split}${waterSource}`;
+    ? `${plan.summary} Perangkat: ${gear}.${styleText}${split}${waterSource}`
+    : `${plan.summary} Gear: ${gear}.${styleText}${split}${waterSource}`;
 }
 
 function buildPlanRecipeStepAction(step: BrewPlan['steps'][number], locale?: string, plan?: BrewPlan) {
@@ -10543,12 +10684,19 @@ export function buildLocalizedPlanRecipeName(plan: BrewPlan, locale?: string) {
   const fallback = isIndonesianLocale(locale) ? 'AI Seduh' : 'AI Brew';
   const coffeeName = localizeAiBrewDynamicText(plan.coffeeName || fallback, locale);
   const targetLabel = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, locale);
-  return `${coffeeName} · ${targetLabel}`;
+  const styleLabel = getPlanRecipeStyleLabel(plan, locale);
+  const suffix = styleLabel ? ` - ${styleLabel}` : '';
+  return `${coffeeName} - ${targetLabel}${suffix}`;
 }
 
 export function buildLocalizedPlanRecipeDescription(plan: BrewPlan, locale?: string) {
   const id = isIndonesianLocale(locale);
   const gear = `${plan.dripper.name} + ${plan.grinder.name}`;
+  const styleLabel = getPlanRecipeStyleLabel(plan, locale);
+  const targetLabel = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, locale);
+  const styleText = styleLabel
+    ? (id ? ` Gaya: ${styleLabel}. Target rasa: ${targetLabel}.` : ` Style: ${styleLabel}. Taste target: ${targetLabel}.`)
+    : (id ? ` Target rasa: ${targetLabel}.` : ` Taste target: ${targetLabel}.`);
   const split = plan.iceMl > 0
     ? (id ? ` Split ${plan.hotWaterMl} ml panas / ${plan.iceMl} ml es. Rasio final 1:${formatBaristaRatio(plan.finalBeverageRatio)}, konsentrat panas 1:${formatBaristaRatio(plan.hotExtractionRatio)}.` : ` Split ${plan.hotWaterMl} ml hot / ${plan.iceMl} ml ice. Final ratio 1:${formatBaristaRatio(plan.finalBeverageRatio)}, hot concentrate 1:${formatBaristaRatio(plan.hotExtractionRatio)}.`)
     : '';
@@ -10559,8 +10707,8 @@ export function buildLocalizedPlanRecipeDescription(plan: BrewPlan, locale?: str
     : (id ? ' Air: input mineral manual.' : ' Water: manual mineral input.');
   const summary = localizeAiBrewSummary(plan, locale);
   return id
-    ? `${summary} Perangkat: ${gear}.${split}${waterSource}`
-    : `${summary} Gear: ${gear}.${split}${waterSource}`;
+    ? `${summary} Perangkat: ${gear}.${styleText}${split}${waterSource}`
+    : `${summary} Gear: ${gear}.${styleText}${split}${waterSource}`;
 }
 
 export function buildLocalizedPlanRecipeSteps(plan: BrewPlan, locale?: string) {
@@ -10594,10 +10742,19 @@ export function buildBrewPlanRecipeSignature(plan: Pick<
 }
 
 export function buildPlanRecipeMetadata(plan: BrewPlan) {
+  const recipeStyleLabel = getPlanRecipeStyleLabel(plan);
   return {
     planId: plan.id,
     fingerprint: plan.fingerprint,
     brewMode: plan.brewMode,
+    methodFamily: plan.methodFamily,
+    recipeStyle: plan.recipeStyle,
+    recipeStyleLabel,
+    recoveryApplied: plan.recoveryApplied || false,
+    recoveryReason: plan.recoveryReason,
+    originalGuardrailRisk: plan.originalGuardrailRisk,
+    safeAlternativeStyle: plan.safeAlternativeStyle,
+    userFacingRecoveryMessage: plan.userFacingRecoveryMessage,
     process: plan.process,
     variety: plan.variety,
     roastLevel: plan.roastLevel,

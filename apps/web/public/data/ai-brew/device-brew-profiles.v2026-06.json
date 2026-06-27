@@ -59,7 +59,8 @@
       "confidence": "high",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "april_low_agitation"
+      "flatBottomProfile": "april_low_agitation",
+      "recipeStyle": "april_flat_bottom_standard"
     },
     {
       "id": "profile_april_brewer_iced",
@@ -112,7 +113,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "april_low_agitation"
+      "flatBottomProfile": "april_low_agitation",
+      "recipeStyle": "iced_april_style"
     },
     {
       "id": "profile_april_hybrid_hot",
@@ -165,7 +167,8 @@
       "confidence": "high",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "april_low_agitation"
+      "flatBottomProfile": "april_low_agitation",
+      "recipeStyle": "april_flat_bottom_standard"
     },
     {
       "id": "profile_april_hybrid_iced",
@@ -218,7 +221,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "april_low_agitation"
+      "flatBottomProfile": "april_low_agitation",
+      "recipeStyle": "iced_april_style"
     },
     {
       "id": "profile_blue_bottle_hot",
@@ -278,7 +282,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "restricted_flat_bottom"
+      "flatBottomProfile": "restricted_flat_bottom",
+      "recipeStyle": "april_flat_bottom_standard"
     },
     {
       "id": "profile_blue_bottle_iced",
@@ -338,7 +343,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "restricted_flat_bottom"
+      "flatBottomProfile": "restricted_flat_bottom",
+      "recipeStyle": "iced_april_style"
     },
     {
       "id": "profile_brewista-gem-series_hot",
@@ -398,7 +404,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "fast_flat_bottom"
+      "flatBottomProfile": "fast_flat_bottom",
+      "recipeStyle": "april_flat_bottom_standard"
     },
     {
       "id": "profile_brewista-gem-series_iced",
@@ -458,7 +465,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "fast_flat_bottom"
+      "flatBottomProfile": "fast_flat_bottom",
+      "recipeStyle": "iced_april_style"
     },
     {
       "id": "profile_brewista-tornado_hot",
@@ -518,7 +526,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "fast_flat_bottom"
+      "flatBottomProfile": "fast_flat_bottom",
+      "recipeStyle": "april_flat_bottom_standard"
     },
     {
       "id": "profile_brewista-tornado_iced",
@@ -578,7 +587,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "fast_flat_bottom"
+      "flatBottomProfile": "fast_flat_bottom",
+      "recipeStyle": "iced_april_style"
     },
     {
       "id": "profile_cafec_deep27_hot",
@@ -636,7 +646,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "new",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "high_extraction_light_roast"
     },
     {
       "id": "profile_cafec_deep27_iced",
@@ -694,7 +705,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "new",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "japanese_iced"
     },
     {
       "id": "profile_cafec_flower_hot",
@@ -745,7 +757,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "classic_bloom_pulse"
     },
     {
       "id": "profile_cafec_flower_iced",
@@ -796,7 +809,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "japanese_iced"
     },
     {
       "id": "profile_chemex_hot",
@@ -859,7 +873,8 @@
       "releaseStatus": "established",
       "confidence": "high",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "pourover"
+      "methodWorkflow": "pourover",
+      "recipeStyle": "traditional_three_pour"
     },
     {
       "id": "profile_chemex_iced",
@@ -922,7 +937,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "pourover"
+      "methodWorkflow": "pourover",
+      "recipeStyle": "iced_chemex"
     },
     {
       "id": "profile_clever_dripper_hot",
@@ -985,7 +1001,8 @@
       "releaseStatus": "established",
       "confidence": "high",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "immersion"
+      "methodWorkflow": "immersion",
+      "recipeStyle": "classic_closed"
     },
     {
       "id": "profile_clever_dripper_iced",
@@ -1048,7 +1065,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "immersion"
+      "methodWorkflow": "immersion",
+      "recipeStyle": "iced_clever"
     },
     {
       "id": "profile_family_april_hot",
@@ -1105,7 +1123,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "april_flat_bottom_standard"
     },
     {
       "id": "profile_family_april_iced",
@@ -1155,7 +1174,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "iced_april_style"
     },
     {
       "id": "profile_family_clever_hot",
@@ -1216,7 +1236,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "immersion"
+      "methodWorkflow": "immersion",
+      "recipeStyle": "hybrid_balanced"
     },
     {
       "id": "profile_family_clever_iced",
@@ -1277,7 +1298,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "immersion"
+      "methodWorkflow": "immersion",
+      "recipeStyle": "iced_hybrid"
     },
     {
       "id": "profile_family_kalita_hot",
@@ -1333,7 +1355,8 @@
       "marketSegment": "mass_market",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "traditional_flat_three"
     },
     {
       "id": "profile_family_kalita_iced",
@@ -1382,7 +1405,8 @@
       "marketSegment": "mass_market",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "iced_wave"
     },
     {
       "id": "profile_family_kono_hot",
@@ -1431,7 +1455,8 @@
       "marketSegment": "small_market",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "kono_dripper_standard"
     },
     {
       "id": "profile_family_kono_iced",
@@ -1480,7 +1505,8 @@
       "marketSegment": "small_market",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "iced_kono_meimon"
     },
     {
       "id": "profile_family_melitta_hot",
@@ -1536,7 +1562,8 @@
       "marketSegment": "mass_market",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "three_pour_melitta"
     },
     {
       "id": "profile_family_melitta_iced",
@@ -1585,7 +1612,8 @@
       "marketSegment": "mass_market",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "iced_melitta_brew"
     },
     {
       "id": "profile_family_origami_hot",
@@ -1641,7 +1669,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "cone_dripper_style"
     },
     {
       "id": "profile_family_origami_iced",
@@ -1690,7 +1719,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "iced_origami"
     },
     {
       "id": "profile_family_v60_hot",
@@ -1746,7 +1776,8 @@
       "marketSegment": "mass_market",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "classic_bloom_pulse"
     },
     {
       "id": "profile_family_v60_iced",
@@ -1802,7 +1833,8 @@
       "marketSegment": "mass_market",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "japanese_iced"
     },
     {
       "id": "profile_hario_mugen_hot",
@@ -1860,7 +1892,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "continuous_low_agitation"
     },
     {
       "id": "profile_hario_mugen_iced",
@@ -1918,7 +1951,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "japanese_iced"
     },
     {
       "id": "profile_hario_pegasus_hot",
@@ -1976,7 +2010,8 @@
       "marketSegment": "mass_market",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "three_pour_melitta"
     },
     {
       "id": "profile_hario_pegasus_iced",
@@ -2034,7 +2069,8 @@
       "marketSegment": "mass_market",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "iced_melitta_brew"
     },
     {
       "id": "profile_hario_switch_hot",
@@ -2106,7 +2142,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "immersion"
+      "methodWorkflow": "immersion",
+      "recipeStyle": "hybrid_balanced"
     },
     {
       "id": "profile_hario_switch_iced",
@@ -2170,7 +2207,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "immersion"
+      "methodWorkflow": "immersion",
+      "recipeStyle": "iced_hybrid"
     },
     {
       "id": "profile_hario_switch_02_hot",
@@ -2259,7 +2297,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "high",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "hybrid_balanced"
     },
     {
       "id": "profile_hario_switch_02_iced",
@@ -2338,7 +2377,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "high",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "iced_hybrid"
     },
     {
       "id": "profile_hario_switch_03_hot",
@@ -2427,7 +2467,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "high",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "hybrid_balanced"
     },
     {
       "id": "profile_hario_switch_03_iced",
@@ -2506,7 +2547,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "high",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "iced_hybrid"
     },
     {
       "id": "profile_mugen_x_switch_hot",
@@ -2596,7 +2638,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "high",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "mugen_everyday_hybrid"
     },
     {
       "id": "profile_mugen_x_switch_iced",
@@ -2676,7 +2719,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "high",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "iced_hybrid"
     },
     {
       "id": "profile_hario_v60_hot",
@@ -2735,7 +2779,8 @@
       "marketSegment": "mass_market",
       "releaseStatus": "established",
       "confidence": "high",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "classic_bloom_pulse"
     },
     {
       "id": "profile_hario_v60_iced",
@@ -2793,7 +2838,8 @@
       "marketSegment": "mass_market",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "japanese_iced"
     },
     {
       "id": "profile_hero-variable-dripper_hot",
@@ -2851,7 +2897,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "classic_bloom_pulse"
     },
     {
       "id": "profile_hero-variable-dripper_iced",
@@ -2909,7 +2956,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "japanese_iced"
     },
     {
       "id": "profile_kalita_wave_hot",
@@ -2968,7 +3016,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "pourover"
+      "methodWorkflow": "pourover",
+      "recipeStyle": "traditional_flat_three"
     },
     {
       "id": "profile_kalita_wave_155_hot",
@@ -3031,7 +3080,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "pourover"
+      "methodWorkflow": "pourover",
+      "recipeStyle": "traditional_flat_three"
     },
     {
       "id": "profile_kalita_wave_185_hot",
@@ -3094,7 +3144,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "pourover"
+      "methodWorkflow": "pourover",
+      "recipeStyle": "traditional_flat_three"
     },
     {
       "id": "profile_kalita_wave_iced",
@@ -3146,7 +3197,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "pourover"
+      "methodWorkflow": "pourover",
+      "recipeStyle": "iced_wave"
     },
     {
       "id": "profile_kalita_wave_155_iced",
@@ -3201,7 +3253,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "pourover"
+      "methodWorkflow": "pourover",
+      "recipeStyle": "iced_wave"
     },
     {
       "id": "profile_kalita_wave_185_iced",
@@ -3256,7 +3309,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "pourover"
+      "methodWorkflow": "pourover",
+      "recipeStyle": "iced_wave"
     },
     {
       "id": "profile_kalita-102_hot",
@@ -3314,7 +3368,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "three_pour_melitta"
     },
     {
       "id": "profile_kalita-102_iced",
@@ -3372,7 +3427,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "iced_melitta_brew"
     },
     {
       "id": "profile_kono_meimon_hot",
@@ -3423,7 +3479,8 @@
       "marketSegment": "small_market",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "kono_meimon_traditional"
     },
     {
       "id": "profile_kono_meimon_iced",
@@ -3474,7 +3531,8 @@
       "marketSegment": "small_market",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "iced_kono_meimon"
     },
     {
       "id": "profile_latina-cono_hot",
@@ -3532,7 +3590,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "classic_bloom_pulse"
     },
     {
       "id": "profile_latina-cono_iced",
@@ -3590,7 +3649,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "japanese_iced"
     },
     {
       "id": "profile_latina-volcano_hot",
@@ -3648,7 +3708,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "classic_bloom_pulse"
     },
     {
       "id": "profile_latina-volcano_iced",
@@ -3706,7 +3767,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "japanese_iced"
     },
     {
       "id": "profile_loveramics_hot",
@@ -3764,7 +3826,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "classic_bloom_pulse"
     },
     {
       "id": "profile_loveramics_iced",
@@ -3822,7 +3885,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "japanese_iced"
     },
     {
       "id": "profile_melitta_hot",
@@ -3880,7 +3944,8 @@
       "marketSegment": "mass_market",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "traditional_melitta_one_pour"
     },
     {
       "id": "profile_melitta_iced",
@@ -3938,7 +4003,8 @@
       "marketSegment": "mass_market",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "iced_melitta_brew"
     },
     {
       "id": "profile_mhw-3bomber-elf_hot",
@@ -3996,7 +4062,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "classic_bloom_pulse"
     },
     {
       "id": "profile_mhw-3bomber-elf_iced",
@@ -4054,7 +4121,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "japanese_iced"
     },
     {
       "id": "profile_nextlevel_pulsar_hot",
@@ -4114,7 +4182,8 @@
       "confidence": "high",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "flatBottomProfile": "no_bypass",
-      "methodWorkflow": "immersion"
+      "methodWorkflow": "immersion",
+      "recipeStyle": "double_stage_hybrid"
     },
     {
       "id": "profile_nextlevel_pulsar_iced",
@@ -4174,7 +4243,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "flatBottomProfile": "no_bypass",
-      "methodWorkflow": "immersion"
+      "methodWorkflow": "immersion",
+      "recipeStyle": "iced_clever"
     },
     {
       "id": "profile_orea_hot",
@@ -4234,7 +4304,8 @@
       "confidence": "high",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "fast_flat_bottom"
+      "flatBottomProfile": "fast_flat_bottom",
+      "recipeStyle": "april_flat_bottom_standard"
     },
     {
       "id": "profile_orea_iced",
@@ -4287,7 +4358,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "fast_flat_bottom"
+      "flatBottomProfile": "fast_flat_bottom",
+      "recipeStyle": "iced_april_style"
     },
     {
       "id": "profile_origami_air_s_hot",
@@ -4338,7 +4410,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "new",
       "confidence": "high",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "cone_dripper_style"
     },
     {
       "id": "profile_origami_air_s_iced",
@@ -4389,7 +4462,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "new",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "iced_origami"
     },
     {
       "id": "profile_origami_hot",
@@ -4448,7 +4522,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "pourover"
+      "methodWorkflow": "pourover",
+      "recipeStyle": "cone_dripper_style"
     },
     {
       "id": "profile_origami_wave_hot",
@@ -4511,7 +4586,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "pourover"
+      "methodWorkflow": "pourover",
+      "recipeStyle": "wave_dripper_style"
     },
     {
       "id": "profile_origami_iced",
@@ -4563,7 +4639,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "pourover"
+      "methodWorkflow": "pourover",
+      "recipeStyle": "iced_origami"
     },
     {
       "id": "profile_origami_wave_iced",
@@ -4618,7 +4695,8 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
-      "methodWorkflow": "pourover"
+      "methodWorkflow": "pourover",
+      "recipeStyle": "iced_origami"
     },
     {
       "id": "profile_stagg_x_hot",
@@ -4678,7 +4756,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "restricted_flat_bottom"
+      "flatBottomProfile": "restricted_flat_bottom",
+      "recipeStyle": "april_flat_bottom_standard"
     },
     {
       "id": "profile_stagg_x_iced",
@@ -4738,7 +4817,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "restricted_flat_bottom"
+      "flatBottomProfile": "restricted_flat_bottom",
+      "recipeStyle": "iced_april_style"
     },
     {
       "id": "profile_stagg_xf_hot",
@@ -4798,7 +4878,8 @@
       "confidence": "high",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "restricted_flat_bottom"
+      "flatBottomProfile": "restricted_flat_bottom",
+      "recipeStyle": "april_flat_bottom_standard"
     },
     {
       "id": "profile_stagg_xf_iced",
@@ -4858,7 +4939,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "restricted_flat_bottom"
+      "flatBottomProfile": "restricted_flat_bottom",
+      "recipeStyle": "iced_april_style"
     },
     {
       "id": "profile_suji-v60-dripper_hot",
@@ -4916,7 +4998,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "classic_bloom_pulse"
     },
     {
       "id": "profile_suji-v60-dripper_iced",
@@ -4974,7 +5057,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "japanese_iced"
     },
     {
       "id": "profile_suji-wave-dripper_hot",
@@ -5034,7 +5118,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "fast_flat_bottom"
+      "flatBottomProfile": "fast_flat_bottom",
+      "recipeStyle": "april_flat_bottom_standard"
     },
     {
       "id": "profile_suji-wave-dripper_iced",
@@ -5094,7 +5179,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "fast_flat_bottom"
+      "flatBottomProfile": "fast_flat_bottom",
+      "recipeStyle": "iced_april_style"
     },
     {
       "id": "profile_the-gabi-master-a-b_hot",
@@ -5152,7 +5238,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "classic_bloom_pulse"
     },
     {
       "id": "profile_the-gabi-master-a-b_iced",
@@ -5210,7 +5297,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "japanese_iced"
     },
     {
       "id": "profile_timemore_b75_hot",
@@ -5270,7 +5358,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "fast_flat_bottom"
+      "flatBottomProfile": "fast_flat_bottom",
+      "recipeStyle": "april_flat_bottom_standard"
     },
     {
       "id": "profile_timemore_b75_iced",
@@ -5323,7 +5412,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "pourover",
-      "flatBottomProfile": "fast_flat_bottom"
+      "flatBottomProfile": "fast_flat_bottom",
+      "recipeStyle": "iced_april_style"
     },
     {
       "id": "profile_timemore_crystal_eye_hot",
@@ -5374,7 +5464,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "classic_bloom_pulse"
     },
     {
       "id": "profile_timemore_crystal_eye_iced",
@@ -5425,7 +5516,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "japanese_iced"
     },
     {
       "id": "profile_torch-mountain_hot",
@@ -5483,7 +5575,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "classic_bloom_pulse"
     },
     {
       "id": "profile_torch-mountain_iced",
@@ -5541,7 +5634,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "japanese_iced"
     },
     {
       "id": "profile_tricolate-brewer_hot",
@@ -5601,7 +5695,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "flatBottomProfile": "no_bypass",
-      "methodWorkflow": "pourover"
+      "methodWorkflow": "pourover",
+      "recipeStyle": "april_continuous_slow"
     },
     {
       "id": "profile_tricolate-brewer_iced",
@@ -5661,7 +5756,8 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "flatBottomProfile": "no_bypass",
-      "methodWorkflow": "pourover"
+      "methodWorkflow": "pourover",
+      "recipeStyle": "iced_april_style"
     },
     {
       "id": "profile_vietnam-drip_hot",
@@ -5726,7 +5822,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "classic_closed"
     },
     {
       "id": "profile_vietnam-drip_iced",
@@ -5791,7 +5888,8 @@
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "recipeStyle": "iced_clever"
     },
     {
       "exactMatch": true,
@@ -5838,7 +5936,8 @@
         "https://sca.coffee/research/protocols-best-practices"
       ],
       "verificationLevel": "curated",
-      "methodWorkflow": "espresso"
+      "methodWorkflow": "espresso",
+      "recipeStyle": "standard_dial_in"
     },
     {
       "exactMatch": true,
@@ -6621,7 +6720,8 @@
         "https://global.hario.com/coffeelife/siphon.html"
       ],
       "verificationLevel": "official",
-      "methodWorkflow": "vacuum"
+      "methodWorkflow": "vacuum",
+      "recipeStyle": "traditional_vacuum_siphon"
     },
     {
       "exactMatch": true,
@@ -6676,7 +6776,8 @@
         "https://bialetti-cookware.zendesk.com/hc/en-us/articles/5416235346322-How-to-use-the-Moka-Express"
       ],
       "verificationLevel": "official",
-      "methodWorkflow": "stovetop"
+      "methodWorkflow": "stovetop",
+      "recipeStyle": "traditional_stovetop"
     },
     {
       "exactMatch": true,
@@ -6732,7 +6833,8 @@
         "https://www.toddycafe.com/downloads/Toddy_cold_brew_cupping_protocol.pdf"
       ],
       "verificationLevel": "official",
-      "methodWorkflow": "cold_immersion"
+      "methodWorkflow": "cold_immersion",
+      "recipeStyle": "classic_toddy_immersion"
     },
     {
       "exactMatch": true,
@@ -6795,7 +6897,8 @@
         "https://sca.coffee/s/2017-SCA-CHB-Program-Requirements-ba6g.pdf"
       ],
       "verificationLevel": "official",
-      "methodWorkflow": "batch"
+      "methodWorkflow": "batch",
+      "recipeStyle": "sca_gold_cup"
     }
   ]
 }

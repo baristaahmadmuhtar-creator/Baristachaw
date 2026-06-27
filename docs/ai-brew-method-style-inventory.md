@@ -1,57 +1,39 @@
 # AI Brew Method + Style Inventory
 
-Generated: 2026-06-16T12:44:39.191Z
-Local SHA: a1f3e492da1209a1beefb6e561a071ca69558e96
-Remote main SHA: a1f3e492da1209a1beefb6e561a071ca69558e96
-Branch: main
-Working tree status at generation: M api/[...route].ts
- M api/billing.ts
- M apps/landing/package.json
- M apps/landing/src/App.tsx
- M apps/landing/src/components/DownloadSection.tsx
- M apps/landing/src/components/HeroSection.tsx
- M apps/landing/src/components/SupportChatWidget.tsx
- M apps/landing/src/config.ts
- M apps/landing/src/i18n.ts
- M apps/landing/src/pages/DownloadPage.tsx
- M apps/web/src/components/billing/AiAccessGate.tsx
- M apps/web/src/components/billing/PlanGrowthSurface.tsx
- M apps/web/src/features/ai-brew/AiBrewPanel.tsx
- M apps/web/src/features/ai-brew/aiComposer.ts
- M apps/web/src/features/ai-brew/experience.ts
- M apps/web/src/features/ai-brew/mokaPlanner.ts
+Generated: 2026-06-26T18:49:21.307Z
+Local SHA: 34b82645c7259616c024eda7ed6cf7c13af111dc
+Remote main SHA: 34b82645c7259616c024eda7ed6cf7c13af111dc
+Branch: codex/beta-launch-qa-refinement
+Working tree status at generation: M apps/web/public/data/ai-brew/device-brew-profiles.v2026-06.json
+ M apps/web/src/features/ai-brew/aeropressCalibration.ts
  M apps/web/src/features/ai-brew/planner.ts
  M apps/web/src/features/ai-brew/siphonPlanner.ts
+ M apps/web/src/features/ai-brew/types.ts
  M apps/web/src/features/ai-brew/workflowGuide.ts
- M apps/web/src/features/ai-brew/workflowTutorials.ts
- M apps/web/src/features/barista-tools/brewProfiles.ts
  M apps/web/src/pages/AdminManagement.tsx
- M apps/web/src/pages/Home.tsx
- M apps/web/src/pages/Scanner.tsx
  M apps/web/src/services/adminApi.ts
  M apps/web/src/services/billing.ts
- M apps/web/src/services/billingConfig.ts
- M apps/web/src/services/gemini.ts
+ M data/catalog/exports/phase1/grinders.search.json
  M docs/ai-brew-method-style-coverage-report.md
  M docs/ai-brew-method-style-final-verdict.md
  M docs/ai-brew-method-style-inventory.md
  M docs/ai-brew-method-style-ui-ux-report.md
  M docs/ai-brew-real-world-1000-report.md
- M packages/shared/package.json
- M packages/shared/src/index.ts
- M server-api/account/status.ts
- M server-api/admin/management.ts
+ M scripts/ai-brew-method-style-audit.mjs
+ M server-api/admin/proofView.ts
  M server-api/billing/checkout.ts
- M server.ts
- M tests/e2e/landing.spec.ts
- M tests/unit/adminManagementHandler.test.ts
- M tests/unit/grindSizeAdvisor.test.ts
- M tests/unit/landingPageContract.test.ts
-?? packages/shared/src/planCatalog.ts
-?? server-api/billing/manualPayments.ts
-?? server-api/billing/proof.ts
-?? tests/unit/billingManualPaymentHandler.test.ts
-Artifact directory: `artifacts/ai-brew-audit/method-styles/a1f3e492da12`
+ M server-api/billing/manualPayments.ts
+ M server-api/billing/proof.ts
+ M server-api/payment/mayar.ts
+ M tests/unit/aiBrewAeroPressBypassMatrix.test.ts
+ M tests/unit/aiBrewSwitchSafeRecovery.test.ts
+ M tests/unit/billingManualPaymentHandler.test.ts
+ M tests/unit/paymentMayar.test.ts
+?? apps/web/src/features/ai-brew/methodStyleContracts.ts
+?? docs/ai-brew-production-hardening-report.md
+?? docs/superpowers/plans/2026-06-27-ai-brew-production-hardening.md
+?? tests/unit/aiBrewMethodStyleContracts.test.ts
+Artifact directory: `artifacts/ai-brew-audit/method-styles/34b82645c725`
 
 This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
 
@@ -111,7 +93,7 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 ### chemex
 
 - Classification: STRONG
-- Average score: 99.8
+- Average score: 100
 - Visible methods: Chemex (chemex)
 - Styles/gaya: Auto (auto); Traditional three-pour clarity (traditional_three_pour); Competition multi-pulse (competition_multi_pulse); Continuous center pour clarity (continuous_center_pour); Iced flash concentrate (iced_chemex); High-dose thick-filter heavy (high_dose_heavy_body)
 - Manual presets: 3
@@ -196,7 +178,7 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 ### hario_switch
 
 - Classification: STRONG
-- Average score: 99.6
+- Average score: 100
 - Visible methods: Hario Switch (hario-switch); Hario Switch 02 (hario-switch-02); Hario Switch 03 (hario-switch-03); MUGEN x SWITCH (mugen-x-switch)
 - Styles/gaya: Switch immersion sweet (immersion_sweet); Switch immersion heavy body (immersion_heavy_body); Switch hybrid balanced (hybrid_balanced); Switch hybrid bright clean (hybrid_bright_clean); Switch V60 mode (v60_mode); Switch iced hybrid (iced_hybrid); MUGEN x SWITCH everyday hybrid (mugen_everyday_hybrid)
 - Manual presets: 1

@@ -116,6 +116,7 @@ async function postCheckout(userId = 'runtime_user_trial_review') {
 let originalFetch: typeof fetch | undefined;
 const mockUsers = new Map<string, any>();
 const mockAudits: any[] = [];
+const mockPaymentReceiptWrites: any[] = [];
 
 test.beforeEach(() => {
   mockUsers.clear();
@@ -127,6 +128,7 @@ test.beforeEach(() => {
     billing: { status: 'none', provider: 'none', paymentActionRequired: false },
   });
   mockAudits.length = 0;
+  mockPaymentReceiptWrites.length = 0;
 
   process.env.JWT_SECRET = 'billing-unit-test-secret-32-chars-min';
   process.env.SUPABASE_JWT_SECRET = 'billing-unit-test-secret-32-chars-min';
@@ -229,6 +231,7 @@ test.beforeEach(() => {
     if (url.includes('/rest/v1/payment_receipts')) {
       const method = init?.method || 'GET';
       if (method === 'POST' || method === 'PATCH') {
+        mockPaymentReceiptWrites.push(JSON.parse(String(init?.body || 'null')));
         return new Response(JSON.stringify([{ id: 'mocked-receipt-id' }]), {
           status: 201,
           headers: { 'Content-Type': 'application/json' },
@@ -355,9 +358,25 @@ test('manual payment proof accepts allowlisted metadata and rejects unsafe uploa
   assert.equal(proofBody.status, 'receipt_received');
   assert.equal(proofBody.paymentActionRequired, true);
   assert.equal(proofBody.entitlement, 'pending_admin_review');
-  assert.equal(proofBody.proof.storage, 'metadata_only');
+  assert.equal(proofBody.proof.storage, 'supabase_signed_upload');
+  assert.equal(proofBody.proof.bucket, 'payment-proofs');
+  assert.match(proofBody.proof.objectPath, new RegExp(`^.*${requestId}_proof_\\d+\\.png$`));
+  assert.equal(proofBody.proofStorage, 'storage_ready');
+  assert.equal(proofBody.deliveryMode, 'direct_upload');
+  assert.match(proofBody.uploadUrl, /^https:\/\/unit-test\.supabase\.co\/storage\/v1\/mock-upload-path/);
   assert.equal(proofBody.proof.mimeType, 'image/png');
   assert.match(proofBody.proof.generatedFileName, new RegExp(`^.*${requestId}_proof_\\d+\\.png$`));
+  const latestReceiptWrite = mockPaymentReceiptWrites.at(-1);
+  const receiptPayload = Array.isArray(latestReceiptWrite) ? latestReceiptWrite[0] : latestReceiptWrite;
+  assert.equal(receiptPayload.metadata.lifecyclePhase, 'receipt_received');
+  assert.equal(receiptPayload.metadata.reviewState, 'pending_admin_review');
+  assert.equal(receiptPayload.metadata.adminActionRequired, true);
+  assert.equal(receiptPayload.metadata.paymentActionRequired, true);
+  assert.equal(receiptPayload.metadata.entitlementState, 'not_granted_pending');
+  assert.equal(receiptPayload.metadata.proofReceived, true);
+  assert.equal(receiptPayload.metadata.proofStorage, 'supabase_signed_upload');
+  assert.equal(receiptPayload.metadata.proofBucket, 'payment-proofs');
+  assert.match(receiptPayload.metadata.proofObjectPath, new RegExp(`^.*${requestId}_proof_\\d+\\.png$`));
 
   const badTypeReq = makeReq({
     cookies: { auth_token: token },
@@ -437,6 +456,7 @@ test('manual payment proof falls back to support when signed upload generation f
     assert.equal(proofBody.ok, true);
     assert.equal(proofBody.status, 'receipt_received');
     assert.equal(proofBody.proofStorage, 'support_fallback');
+    assert.equal(proofBody.proof.storage, 'metadata_only');
     assert.equal(proofBody.deliveryMode, 'manual_support');
     assert.equal(proofBody.uploadUrl, undefined);
     assert.match(proofBody.supportLinks.whatsappUrl, /^https:\/\/wa\.me\//);

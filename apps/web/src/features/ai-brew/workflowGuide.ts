@@ -1503,8 +1503,16 @@ function buildSwitchSecondaryText(plan: BrewPlan, step: BrewPlanStep) {
   return `Program ${programme}: tahan kontak sesuai waktu, lalu lanjut ke fase berikutnya.`;
 }
 
+function formatSwitchDeviceName(plan: BrewPlan) {
+  if (plan.dripper.id === 'hario-switch-02') return 'Switch 02';
+  if (plan.dripper.id === 'hario-switch-03') return 'Switch 03';
+  if (plan.dripper.id === 'mugen-x-switch') return 'MUGEN x SWITCH';
+  return plan.dripper.name || 'Hario Switch';
+}
+
 function buildHarioSwitchGuide(plan: BrewPlan): WorkflowGuideStep[] {
   const programme = (plan.methodProgramme || 'auto') as SwitchBrewProgramme;
+  const switchDeviceName = formatSwitchDeviceName(plan);
   const guideSteps: WorkflowGuideStep[] = [
     operationalStep({
       id: 'guide_hario_switch_setup',
@@ -1512,9 +1520,10 @@ function buildHarioSwitchGuide(plan: BrewPlan): WorkflowGuideStep[] {
       actionType: 'rinse_preheat',
       startSeconds: 0,
       primaryText: plan.brewMode === 'iced'
-        ? `Bilas kertas V60, panaskan alat dan wadah saji, tara timbangan, lalu masukkan ${formatGrams(plan.iceMl)} es ke wadah saji. Seduh target air panas saja.`
-        : 'Bilas kertas V60, panaskan alat dan wadah saji, tara timbangan, lalu setel katup Switch sesuai program.',
+        ? `Bilas kertas V60 untuk ${switchDeviceName}, panaskan alat dan wadah saji, tara timbangan, lalu masukkan ${formatGrams(plan.iceMl)} es ke wadah saji. Seduh target air panas saja.`
+        : `Bilas kertas V60 untuk ${switchDeviceName}, panaskan alat dan wadah saji, tara timbangan, lalu setel katup Switch sesuai program.`,
       techniqueChips: [
+        chip('device', 'Alat', switchDeviceName),
         chip('programme', 'Program', formatSwitchProgramme(programme)),
         chip('valve', 'Katup', 'set sebelum seduh'),
       ],

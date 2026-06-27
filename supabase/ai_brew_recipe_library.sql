@@ -66,6 +66,8 @@ create table if not exists public.recipe_library_items (
 
 create index if not exists ai_brew_journal_user_updated_idx
   on public.ai_brew_journal (user_id, updated_at desc);
+create index if not exists ai_brew_journal_updated_idx
+  on public.ai_brew_journal (updated_at desc);
 create index if not exists ai_brew_journal_fingerprint_idx
   on public.ai_brew_journal (fingerprint);
 create index if not exists ai_brew_journal_method_updated_idx
@@ -76,6 +78,9 @@ create index if not exists ai_brew_journal_feedback_idx
 
 create index if not exists recipe_library_items_user_updated_idx
   on public.recipe_library_items (user_id, updated_at desc);
+create index if not exists recipe_library_items_updated_live_idx
+  on public.recipe_library_items (updated_at desc)
+  where deleted_at is null;
 create index if not exists recipe_library_items_type_updated_idx
   on public.recipe_library_items (item_type, updated_at desc);
 create index if not exists recipe_library_items_source_updated_idx

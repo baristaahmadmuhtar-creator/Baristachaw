@@ -32,6 +32,77 @@ type AeroPressTargetCalibration = {
   note: string;
 };
 
+export type AeroPressTargetIntent = {
+  targetProfileId: string;
+  sensoryIntent: string;
+  extractionMove: string;
+  guardrails: string[];
+};
+
+const AEROPRESS_CORE_GUARDRAILS = [
+  'Keep upright chamber brew water at or below 240 ml.',
+  'Keep inverted chamber brew water at or below 220 ml.',
+  'Add bypass water only after pressing, never through the coffee bed.',
+  'Stop before the dry hiss so late air pressure does not roughen the cup.',
+  'If press resistance spikes, stop forcing and grind coarser next brew.',
+  'Use measured iced dilution; do not add unplanned water outside the recipe.',
+];
+
+export const AEROPRESS_TARGET_INTENTS: Record<string, AeroPressTargetIntent> = {
+  balance_clean: {
+    targetProfileId: 'balance_clean',
+    sensoryIntent: 'clean balance with even sweetness and no dry finish',
+    extractionMove: 'moderate contact, moderate stir, smooth press',
+    guardrails: AEROPRESS_CORE_GUARDRAILS,
+  },
+  more_sweetness: {
+    targetProfileId: 'more_sweetness',
+    sensoryIntent: 'more middle sweetness without bitter late pressure',
+    extractionMove: 'slightly tighter ratio, slightly longer contact, gentle press',
+    guardrails: AEROPRESS_CORE_GUARDRAILS,
+  },
+  more_acidity: {
+    targetProfileId: 'more_acidity',
+    sensoryIntent: 'brighter acidity with a clean lightweight finish',
+    extractionMove: 'shorter contact, lighter stir, earlier stop',
+    guardrails: AEROPRESS_CORE_GUARDRAILS,
+  },
+  more_body: {
+    targetProfileId: 'more_body',
+    sensoryIntent: 'more body, texture, and density without muddy grit',
+    extractionMove: 'tighter ratio, deeper contact, slower controlled press',
+    guardrails: AEROPRESS_CORE_GUARDRAILS,
+  },
+  floral_transparent: {
+    targetProfileId: 'floral_transparent',
+    sensoryIntent: 'transparent floral aromatics with minimal agitation',
+    extractionMove: 'lowest practical stir, shorter contact, measured bypass when needed',
+    guardrails: AEROPRESS_CORE_GUARDRAILS,
+  },
+  fruit_forward: {
+    targetProfileId: 'fruit_forward',
+    sensoryIntent: 'juicy fruit aromatics without heavy ferment edge',
+    extractionMove: 'medium-low agitation, clean press, measured dilution when needed',
+    guardrails: AEROPRESS_CORE_GUARDRAILS,
+  },
+  soft_round: {
+    targetProfileId: 'soft_round',
+    sensoryIntent: 'rounded sweetness and low harshness',
+    extractionMove: 'baseline contact, gentle stir, low-pressure finish',
+    guardrails: AEROPRESS_CORE_GUARDRAILS,
+  },
+  dense_comforting: {
+    targetProfileId: 'dense_comforting',
+    sensoryIntent: 'compact comforting body while guarding bitterness',
+    extractionMove: 'tight ratio, longer contact, controlled stir without forcing air',
+    guardrails: AEROPRESS_CORE_GUARDRAILS,
+  },
+};
+
+export function resolveAeroPressTargetIntent(targetProfileId?: string): AeroPressTargetIntent {
+  return AEROPRESS_TARGET_INTENTS[targetProfileId || 'balance_clean'] || AEROPRESS_TARGET_INTENTS.balance_clean;
+}
+
 const STYLE_BASE: Record<ResolvedAeroPressStyle, AeroPressBaseTarget> = {
   standard: {
     finalRatio: 13.5,

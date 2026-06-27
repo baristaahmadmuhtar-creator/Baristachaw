@@ -901,6 +901,43 @@ export function validateLocalizedAiBrewCopy({
 
 function translateAiBrewWorkflowTextToEnglish(text: string) {
   return String(text || '')
+    .replace(/Peringatan keselamatan siphon: alat memakai panas dan kaca\. Jaga panas stabil\. Untuk mencegah kejutan termal dan kaca retak, bowl bawah dan globe tidak boleh diisi es atau air dingin langsung\. Jika ingin efek dingin, tuang hasil seduhan ke server kaca terpisah yang aman untuk es\./gi,
+      'Siphon safety warning: this brewer uses heat and glass. Keep heat stable. To prevent thermal shock and cracked glass, do not put ice or cold water directly into the lower bowl or upper globe. For a chilled serve, pour the finished brew into a separate ice-safe glass server.',
+    )
+    .replace(/Peringatan agitasi siphon: agitasi tinggi dapat membuat rasa kasar, kering, atau pahit\. Pastikan kubah bubuk merata dan hentikan pengadukan setelah aliran turun stabil\./gi,
+      'Siphon agitation warning: high agitation can make the cup rough, dry, or bitter. Keep the grounds dome even and stop stirring after drawdown stabilizes.',
+    )
+    .replace(/Peringatan siphon: jaga panas stabil agar air tetap berada di ruang atas sampai fase kontak selesai\./gi,
+      'Siphon warning: keep heat stable so the water stays in the upper chamber until the contact phase finishes.',
+    )
+    .replace(/Peringatan siphon: risiko rasa berlumpur atau kasar tinggi jika gilingan terlalu halus atau agitasi berlebihan\. Putar paddle secukupnya untuk membentuk pusaran yang stabil\./gi,
+      'Siphon warning: muddy or rough flavor risk is high if the grind is too fine or agitation is excessive. Use only enough paddle rotation to form a stable vortex.',
+    )
+    .replace(/Pasang filter siphon, isi air, dan panaskan sampai air naik penuh/i, 'Set the siphon filter, add water, and heat until the water fully rises.')
+    .replace(/Biarkan air naik penuh sebelum menambahkan kopi/i, 'Let the water rise fully before adding coffee.')
+    .replace(/Masukkan kopi saat ruang atas sudah panas, lalu aduk singkat/i, 'Add coffee when the upper chamber is hot, then stir briefly.')
+    .replace(/Jaga kontak stabil di ruang atas tanpa adukan berulang/i, 'Keep contact stable in the upper chamber without repeated stirring.')
+    .replace(/Matikan panas agar vakum menarik kopi turun alami/i, 'Turn off the heat so vacuum drawdown pulls the coffee down naturally.')
+    .replace(/Sajikan segera setelah air turun bersih/i, 'Serve promptly after the drawdown finishes cleanly.')
+    .replace(/Pasang filter siphon, panaskan air, dan siapkan tiga agitasi kecil yang terukur/i, 'Set the siphon filter, heat the water, and prepare three small measured agitations.')
+    .replace(/Masukkan kopi saat air naik, lalu aduk pertama untuk pembasahan merata/i, 'Add coffee as the water rises, then make the first stir for even wetting.')
+    .replace(/Gunakan agitasi kedua dan ketiga secara ringan, bukan mengocok ruang atas/i, 'Use the second and third agitations lightly; do not shake the upper chamber.')
+    .replace(/Matikan panas tepat waktu agar air turun bersih/i, 'Turn off the heat on time so drawdown finishes cleanly.')
+    .replace(/Sajikan setelah seduhan turun dan permukaan tenang/i, 'Serve after the brew draws down and the surface settles.')
+    .replace(/Pasang filter siphon dan jaga panas lebih lembut untuk kopi halus/i, 'Set the siphon filter and keep gentler heat for delicate coffee.')
+    .replace(/Masukkan kopi setelah air naik stabil, lalu aduk sangat singkat/i, 'Add coffee after the water rise stabilizes, then stir very briefly.')
+    .replace(/Jaga kontak lebih tenang agar rasa ringan tidak tertutup body/i, 'Keep contact calmer so lighter flavors are not covered by body.')
+    .replace(/Matikan panas sedikit lebih awal untuk fase turun yang lembut/i, 'Turn off the heat slightly earlier for a gentler drawdown phase.')
+    .replace(/Pasang filter siphon, panaskan stabil, dan siapkan kontak singkat berenergi/i, 'Set the siphon filter, heat steadily, and prepare a short energetic contact phase.')
+    .replace(/Masukkan kopi dan aduk mantap di awal/i, 'Add coffee and stir confidently at the start.')
+    .replace(/Jaga kontak padat tetapi singkat supaya body terbentuk tanpa rasa rebus/i, 'Keep contact dense but short so body builds without boiled flavor.')
+    .replace(/Matikan panas dan dorong fase turun cepat dengan vakum bersih/i, 'Turn off the heat and drive a fast drawdown with clean vacuum pull.')
+    .replace(/Aduk hasil seduh pelan sebelum disajikan/i, 'Stir the brew gently before serving.')
+    .replace(/Pasang filter siphon dan siapkan ruang atas bersih untuk infusi aromatik/i, 'Set the siphon filter and prepare a clean upper chamber for aromatic infusion.')
+    .replace(/Masukkan kopi saat air naik, lalu aduk ringan agar aromatik tidak rusak/i, 'Add coffee as the water rises, then stir lightly to protect aromatics.')
+    .replace(/Jaga kontak halus; tambahan aromatik hanya boleh terukur dan aman pangan/i, 'Keep contact gentle; aromatic additions must be measured and food-safe.')
+    .replace(/Matikan panas dan biarkan vakum menyaring seduhan turun/i, 'Turn off the heat and let vacuum suction filter the brew down.')
+    .replace(/Sajikan segera; jangan menambah panas setelah fase turun/i, 'Serve promptly; do not add heat after drawdown.')
     .replace(/Bilas filter berlipat, panaskan alat, lalu ratakan hamparan kopi datar\.$/i,
       'Rinse the wave filter, preheat the brewer, then level the coffee bed.',
     )

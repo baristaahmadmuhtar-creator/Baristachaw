@@ -49,7 +49,10 @@ export type ManualPaymentProof = {
   generatedFileName: string;
   mimeType: string;
   sizeBytes: number;
-  storage: 'metadata_only';
+  storage: 'metadata_only' | 'supabase_signed_upload';
+  bucket?: string;
+  objectPath?: string;
+  uploadUrlExpiresAt?: number;
   receivedAt: number;
 };
 
@@ -579,8 +582,44 @@ export function resetManualPaymentRequestsForTests(): void {
   REQUESTS.clear();
 }
 
+function manualPaymentLifecycleMetadata(request: ManualPaymentRequest): Record<string, unknown> {
+  const proofObjectPath = request.proof?.objectPath || request.proof?.generatedFileName || '';
+  const proofBucket = request.proof?.bucket || (request.proof ? (process.env.SUPABASE_STORAGE_BUCKET_PROOF || 'payment-proofs').trim() : '');
+  const proofUploadAvailable = Boolean(
+    request.proof?.storage === 'supabase_signed_upload'
+      && request.proof.uploadUrlExpiresAt
+      && request.proof.uploadUrlExpiresAt > Date.now(),
+  );
+  const closed = request.status === 'verified_paid' || request.status === 'rejected' || request.status === 'expired';
+
+  return {
+    manualLifecycleVersion: 1,
+    lifecyclePhase: request.status,
+    reviewState: request.status === 'pending_review'
+      ? 'waiting_for_receipt'
+      : request.status === 'receipt_received'
+        ? 'pending_admin_review'
+        : 'review_closed',
+    adminActionRequired: request.status === 'receipt_received',
+    paymentActionRequired: !closed,
+    entitlementState: request.status === 'verified_paid'
+      ? 'ready_to_grant'
+      : closed
+        ? 'not_granted_closed'
+        : 'not_granted_pending',
+    proofReceived: Boolean(request.proof),
+    proofStorage: request.proof?.storage || 'none',
+    proofBucket: proofBucket || null,
+    proofObjectPath: proofObjectPath || null,
+    proofUploadAvailable,
+    proofReadAvailability: proofObjectPath ? 'bucket_object_path' : 'none',
+    proofReceivedAt: request.proof?.receivedAt || null,
+  };
+}
+
 function manualPaymentMetadata(request: ManualPaymentRequest): Record<string, unknown> {
   return {
+    ...manualPaymentLifecycleMetadata(request),
     manualStatus: request.status,
     manualRequestId: request.id,
     planCode: request.planCode,
@@ -599,7 +638,8 @@ function manualPaymentMetadata(request: ManualPaymentRequest): Record<string, un
 }
 
 function paymentReceiptPayload(request: ManualPaymentRequest): Record<string, unknown> {
-  const bucket = (process.env.SUPABASE_STORAGE_BUCKET_PROOF || 'payment-proofs').trim();
+  const bucket = request.proof?.bucket || (process.env.SUPABASE_STORAGE_BUCKET_PROOF || 'payment-proofs').trim();
+  const proofObjectPath = request.proof?.objectPath || request.proof?.generatedFileName || '';
   return {
     manual_request_id: request.id,
     user_id: request.userId,
@@ -609,8 +649,8 @@ function paymentReceiptPayload(request: ManualPaymentRequest): Record<string, un
     requested_amount: request.amount,
     requested_amount_label: request.amountLabel,
     payer_email: request.email || '',
-    receipt_reference: request.proof?.generatedFileName || '',
-    receipt_url: request.proof?.generatedFileName ? `${bucket}/${request.proof.generatedFileName}` : '',
+    receipt_reference: proofObjectPath,
+    receipt_url: proofObjectPath ? `${bucket}/${proofObjectPath}` : '',
     receipt_mime_type: request.proof?.mimeType || '',
     receipt_size_bytes: request.proof?.sizeBytes || null,
     status: manualStatusToReceiptStatus(request.status),
@@ -702,7 +742,12 @@ function requestFromPaymentReceipt(row: PaymentReceiptRow): ManualPaymentRequest
         generatedFileName: receiptReference,
         mimeType: receiptMimeType,
         sizeBytes: Math.floor(receiptSizeBytes),
-        storage: 'metadata_only' as const,
+        storage: proofMetadata.storage === 'supabase_signed_upload'
+          ? 'supabase_signed_upload' as const
+          : 'metadata_only' as const,
+        bucket: safeText(proofMetadata.bucket, '', 120) || undefined,
+        objectPath: safeText(proofMetadata.objectPath, '', 240) || undefined,
+        uploadUrlExpiresAt: safeNumber(proofMetadata.uploadUrlExpiresAt, 0) || undefined,
         receivedAt: proofReceivedAt,
       }
     : undefined;

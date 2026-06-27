@@ -230,6 +230,30 @@ type LaunchChecklistItem = {
   action: string;
 };
 
+type AdminManagementSection =
+  | 'komando'
+  | 'users'
+  | 'plans'
+  | 'ai_control'
+  | 'maintenance'
+  | 'database'
+  | 'recipe_library'
+  | 'audit'
+  | 'launching';
+
+type AdminSectionPagination = {
+  section: AdminManagementSection;
+  page: number;
+  limit: number;
+  total: number;
+  returned: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  query: string;
+  sort: string;
+  filters: Record<string, string>;
+};
+
 type AdminSnapshot = {
   ok: true;
   requestId: string;
@@ -237,6 +261,21 @@ type AdminSnapshot = {
   dataMode: DataMode;
   dataFreshnessSec: number;
   degraded: boolean;
+  degradedReason?: string;
+  section?: AdminManagementSection;
+  counts?: {
+    users: number;
+    plans: number;
+    audit: number;
+    featureFlags: number;
+    manualPayments: number;
+    catalogRequests: number;
+    recipeLibraryItems: number;
+    launchChecklist: number;
+    checks: number;
+  };
+  pagination?: Partial<Record<AdminManagementSection, AdminSectionPagination>>;
+  appliedFilters?: Record<string, string>;
   admin: {
     userId: string;
     email?: string;
@@ -582,6 +621,42 @@ function parseAiUsageRangeQuery(query: VercelRequest['query']): AiUsageRangeInpu
   const to = queryStringValue(query.aiTo || query.to).trim();
   if (!from && !to) return undefined;
   return { from, to };
+}
+
+function normalizeAdminSection(value: unknown): AdminManagementSection | undefined {
+  const raw = queryStringValue(value).trim().toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_');
+  if (!raw) return undefined;
+  if (raw === 'command' || raw === 'komando' || raw === 'dashboard') return 'komando';
+  if (raw === 'user' || raw === 'users') return 'users';
+  if (raw === 'plan' || raw === 'plans') return 'plans';
+  if (raw === 'kontrol_ai' || raw === 'ai' || raw === 'ai_control' || raw === 'control_ai') return 'ai_control';
+  if (raw === 'maintenance') return 'maintenance';
+  if (raw === 'database' || raw === 'db') return 'database';
+  if (raw === 'recipe' || raw === 'recipes' || raw === 'recipe_library' || raw === 'library') return 'recipe_library';
+  if (raw === 'audit' || raw === 'audits') return 'audit';
+  if (raw === 'launch' || raw === 'launching') return 'launching';
+  return undefined;
+}
+
+function parsePositiveInt(value: unknown, fallback: number, min: number, max: number): number {
+  const parsed = Number.parseInt(queryStringValue(value), 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
+function parseAdminSectionQuery(query: VercelRequest['query']) {
+  const section = normalizeAdminSection(query.section || query.tab || query.view);
+  const page = parsePositiveInt(query.page, 1, 1, 10_000);
+  const limit = parsePositiveInt(query.limit, 50, 1, 250);
+  const search = queryStringValue(query.query || query.q || query.search).trim().toLowerCase();
+  const sort = queryStringValue(query.sort).trim().toLowerCase() || 'updated_desc';
+  const filters = {
+    status: queryStringValue(query.status).trim().toLowerCase(),
+    plan: queryStringValue(query.plan || query.planCode).trim().toLowerCase(),
+    queue: queryStringValue(query.queue).trim().toLowerCase(),
+    severity: queryStringValue(query.severity).trim().toLowerCase(),
+  };
+  return { section, page, limit, search, sort, filters };
 }
 
 function normalizeText(value: unknown, fallback = ''): string {
@@ -1728,7 +1803,7 @@ async function loadSupabaseRecipeLibrarySummary(config: Extract<SupabaseConfig, 
 
   return {
     ready: gaps.length === 0,
-    totalItems: recentItems.length,
+    totalItems: aiBrewItems.length + collectionItems.filter((item) => !item.deletedAt).length,
     aiBrewCount: aiBrewItems.length,
     collectionCount: collectionItems.filter((item) => !item.deletedAt).length,
     feedbackCount: aiBrewItems.filter((item) => Boolean(item.feedbackRating)).length,
@@ -2168,6 +2243,188 @@ async function buildAdminSnapshot(
       sequence: ++snapshotSequence,
     },
   };
+}
+
+function adminSnapshotCounts(snapshot: AdminSnapshot): NonNullable<AdminSnapshot['counts']> {
+  return {
+    users: snapshot.metrics.totalUsers || snapshot.users.length,
+    plans: snapshot.plans.length,
+    audit: snapshot.audit.length,
+    featureFlags: snapshot.featureFlags.length,
+    manualPayments: snapshot.billing.manualPayments.length,
+    catalogRequests: snapshot.catalog.reviewQueue.total || snapshot.catalog.recentRequests.length,
+    recipeLibraryItems: snapshot.recipeLibrary.totalItems,
+    launchChecklist: snapshot.launchChecklist.length,
+    checks: snapshot.checks.length,
+  };
+}
+
+function rowSearchText(...parts: unknown[]): string {
+  return parts
+    .map((part) => {
+      if (Array.isArray(part)) return part.join(' ');
+      if (part && typeof part === 'object') return JSON.stringify(part);
+      return normalizeText(part);
+    })
+    .join(' ')
+    .toLowerCase();
+}
+
+function sortByDateDesc<T>(rows: T[], readDate: (row: T) => string): T[] {
+  return [...rows].sort((a, b) => Date.parse(readDate(b) || '') - Date.parse(readDate(a) || ''));
+}
+
+function paginateSectionRows<T>(
+  section: AdminManagementSection,
+  rows: T[],
+  page: number,
+  limit: number,
+  query: string,
+  sort: string,
+  filters: Record<string, string>,
+): { rows: T[]; meta: AdminSectionPagination } {
+  const total = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const normalizedPage = Math.min(page, totalPages);
+  const start = (normalizedPage - 1) * limit;
+  const pagedRows = rows.slice(start, start + limit);
+  return {
+    rows: pagedRows,
+    meta: {
+      section,
+      page: normalizedPage,
+      limit,
+      total,
+      returned: pagedRows.length,
+      totalPages,
+      hasNextPage: normalizedPage < totalPages,
+      query,
+      sort,
+      filters,
+    },
+  };
+}
+
+function cleanAppliedFilters(filters: Record<string, string>, query: string, sort: string): Record<string, string> {
+  const applied: Record<string, string> = {};
+  if (query) applied.query = query;
+  if (sort) applied.sort = sort;
+  for (const [key, value] of Object.entries(filters)) {
+    if (value) applied[key] = value;
+  }
+  return applied;
+}
+
+function applyAdminSectionQuery(snapshot: AdminSnapshot, query: VercelRequest['query']): AdminSnapshot {
+  const sectionQuery = parseAdminSectionQuery(query);
+  const counts = adminSnapshotCounts(snapshot);
+  const appliedFilters = cleanAppliedFilters(sectionQuery.filters, sectionQuery.search, sectionQuery.sort);
+  const base: AdminSnapshot = {
+    ...snapshot,
+    counts,
+    appliedFilters,
+    degradedReason: snapshot.degraded ? (snapshot.warnings[0] || snapshot.recommendations[0] || 'Admin snapshot degraded.') : undefined,
+  };
+  const section = sectionQuery.section;
+  if (!section) return base;
+
+  const pagination: NonNullable<AdminSnapshot['pagination']> = {};
+  const withPagedRows = <T>(
+    rows: T[],
+    assign: (next: AdminSnapshot, pagedRows: T[]) => AdminSnapshot,
+  ): AdminSnapshot => {
+    const result = paginateSectionRows(
+      section,
+      rows,
+      sectionQuery.page,
+      sectionQuery.limit,
+      sectionQuery.search,
+      sectionQuery.sort,
+      appliedFilters,
+    );
+    pagination[section] = result.meta;
+    return assign({ ...base, section, pagination }, result.rows);
+  };
+
+  if (section === 'users') {
+    let rows = snapshot.users.filter((user) => {
+      const matchesQuery = !sectionQuery.search || rowSearchText(user.id, user.email, user.name, user.username, user.flags).includes(sectionQuery.search);
+      const matchesStatus = !sectionQuery.filters.status || user.status === sectionQuery.filters.status;
+      const matchesPlan = !sectionQuery.filters.plan || user.planCode === sectionQuery.filters.plan;
+      return matchesQuery && matchesStatus && matchesPlan;
+    });
+    if (sectionQuery.sort === 'email_asc') rows = [...rows].sort((a, b) => a.email.localeCompare(b.email));
+    else if (sectionQuery.sort === 'risk_desc') rows = [...rows].sort((a, b) => b.riskScore - a.riskScore);
+    else rows = sortByDateDesc(rows, (row) => row.lastSeenAt || row.createdAt);
+    return withPagedRows(rows, (next, users) => ({ ...next, users }));
+  }
+
+  if (section === 'audit') {
+    let rows = snapshot.audit.filter((event) => {
+      const matchesQuery = !sectionQuery.search || rowSearchText(event.actor, event.target, event.action, event.detail).includes(sectionQuery.search);
+      const matchesSeverity = !sectionQuery.filters.severity || event.severity === sectionQuery.filters.severity;
+      return matchesQuery && matchesSeverity;
+    });
+    rows = sortByDateDesc(rows, (row) => row.createdAt);
+    return withPagedRows(rows, (next, audit) => ({ ...next, audit }));
+  }
+
+  if (section === 'recipe_library') {
+    let rows = snapshot.recipeLibrary.recentItems.filter((item) => (
+      !sectionQuery.search
+      || rowSearchText(item.id, item.userId, item.title, item.source, item.itemType, item.methodFamily, item.coffeeName, item.dripperName, item.summary).includes(sectionQuery.search)
+    ));
+    rows = sortByDateDesc(rows, (row) => row.updatedAt || row.createdAt);
+    return withPagedRows(rows, (next, recentItems) => ({
+      ...next,
+      recipeLibrary: { ...next.recipeLibrary, recentItems },
+    }));
+  }
+
+  if (section === 'plans') {
+    const rows = snapshot.plans.filter((plan) => (
+      !sectionQuery.search
+      || rowSearchText(plan.code, plan.name, plan.description, plan.features, plan.checkoutMode, plan.paymentMethods).includes(sectionQuery.search)
+    ));
+    return withPagedRows(rows, (next, plans) => ({ ...next, plans }));
+  }
+
+  if (section === 'ai_control' || section === 'maintenance') {
+    const rows = snapshot.featureFlags.filter((flag) => {
+      const matchesQuery = !sectionQuery.search || rowSearchText(flag.key, flag.label, flag.message, flag.surfaces).includes(sectionQuery.search);
+      const matchesStatus = !sectionQuery.filters.status || flag.status === sectionQuery.filters.status;
+      return matchesQuery && matchesStatus;
+    });
+    return withPagedRows(rows, (next, featureFlags) => ({ ...next, featureFlags }));
+  }
+
+  if (section === 'database') {
+    const rows = snapshot.catalog.recentRequests.filter((request) => {
+      const matchesQuery = !sectionQuery.search || rowSearchText(request.id, request.kind, request.title, request.sourceUrl, request.operatorNote).includes(sectionQuery.search);
+      const matchesQueue = !sectionQuery.filters.queue || request.reviewStatus === sectionQuery.filters.queue;
+      return matchesQuery && matchesQueue;
+    });
+    return withPagedRows(rows, (next, recentRequests) => ({
+      ...next,
+      catalog: { ...next.catalog, recentRequests },
+    }));
+  }
+
+  if (section === 'launching') {
+    const rows = snapshot.launchChecklist.filter((item) => {
+      const matchesQuery = !sectionQuery.search || rowSearchText(item.id, item.label, item.owner, item.action).includes(sectionQuery.search);
+      const matchesStatus = !sectionQuery.filters.status || item.status === sectionQuery.filters.status;
+      return matchesQuery && matchesStatus;
+    });
+    return withPagedRows(rows, (next, launchChecklist) => ({ ...next, launchChecklist }));
+  }
+
+  const rows = snapshot.checks.filter((check) => {
+    const matchesQuery = !sectionQuery.search || rowSearchText(check.id, check.label, check.owner, check.detail, check.nextAction).includes(sectionQuery.search);
+    const matchesStatus = !sectionQuery.filters.status || check.status === sectionQuery.filters.status;
+    return matchesQuery && matchesStatus;
+  });
+  return withPagedRows(rows, (next, checks) => ({ ...next, checks }));
 }
 
 function validatePatch(body: any): { ok: true; userId: string; patch: UserPatch } | ValidationError {
@@ -3568,7 +3825,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (req.method === 'GET') {
       const snapshot = await buildAdminSnapshot(requestId, access.admin, access.auth.user, parseAiUsageRangeQuery(req.query));
-      return res.status(200).json(snapshot);
+      return res.status(200).json(applyAdminSectionQuery(snapshot, req.query));
     }
 
     if (req.method === 'PATCH') {

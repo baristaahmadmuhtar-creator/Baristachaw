@@ -12126,6 +12126,36 @@ test('validateWaterChemistryConsistency flags GH or KH above TDS', () => {
   assert.equal(ok.length, 0);
 });
 
+test('AI Brew recovers unsafe optional precision overrides without blocking normal recipes', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(productionCatalog),
+    brewMode: 'hot',
+    coffeeName: 'Precision override recovery',
+    dripperId: 'hario-v60',
+    grinderId: '1zpresso-k-ultra',
+    process: 'washed',
+    variety: 'geisha',
+    roastLevel: 'medium',
+    targetProfileId: 'balance_clean',
+    targetWaterMl: '9999',
+    targetRatio: '100',
+    targetTempC: '200',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, productionCatalog);
+
+  assert.equal(plan.recoveryApplied, true);
+  assert.equal(plan.originalGuardrailRisk, 'caution');
+  assert.match(plan.userFacingRecoveryMessage || '', /Safe adjustment applied/i);
+  assert.match(plan.warnings.join(' '), /override adjusted/i);
+  assert.equal(plan.guardrails.errors.length, 0);
+  assert.notEqual(plan.workflowValidation?.status, 'blocked');
+  assert.equal(validateBrewPlanOutput(plan).allowed, true);
+});
+
 test('AeroPress E2E Recipe Logic & Guardrails validation', () => {
   const productionCatalog = buildProductionAiBrewCatalogForTests();
   const baseInput = {

@@ -5,6 +5,7 @@ import path from 'node:path';
 
 const schemaPath = path.resolve('supabase/admin_management.sql');
 const productionVerificationPath = path.resolve('supabase/production_verification.sql');
+const aiBrewRecipeLibraryPath = path.resolve('supabase/ai_brew_recipe_library.sql');
 
 function schemaText() {
   return fs.readFileSync(schemaPath, 'utf8');
@@ -12,6 +13,10 @@ function schemaText() {
 
 function productionVerificationText() {
   return fs.readFileSync(productionVerificationPath, 'utf8');
+}
+
+function aiBrewRecipeLibraryText() {
+  return fs.readFileSync(aiBrewRecipeLibraryPath, 'utf8');
 }
 
 test('admin management schema includes billing-ready plan and user columns', () => {
@@ -83,4 +88,10 @@ test('production verification explicitly checks quota ledgers and RPCs', () => {
   assert.match(sql, /routine_name = 'commit_app_quota'/i);
   assert.match(sql, /routine_name = 'refund_app_quota'/i);
   assert.match(sql, /routine_name = 'consume_app_quota'/i);
+});
+
+test('AI Brew recipe library schema includes admin-scale updated-at indexes', () => {
+  const sql = aiBrewRecipeLibraryText();
+  assert.match(sql, /create index if not exists ai_brew_journal_updated_idx\s+on public\.ai_brew_journal \(updated_at desc\)/i);
+  assert.match(sql, /create index if not exists recipe_library_items_updated_live_idx\s+on public\.recipe_library_items \(updated_at desc\)\s+where deleted_at is null/i);
 });

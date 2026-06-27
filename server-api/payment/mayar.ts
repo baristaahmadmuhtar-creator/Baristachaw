@@ -8,10 +8,25 @@
  */
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { normalizeMvpPaidPlanCode, type MvpPaidPlanCode } from '../../packages/shared/src/billingFlow.js';
 import { PLAN_PRICING } from '../../packages/shared/src/planCatalog.js';
+import {
+  applyCors,
+  applyRateLimitHeaders,
+  checkRateLimit,
+  createRequestId,
+  enforceTrustedRequestOrigin,
+  requireAuth,
+} from '../_shared.js';
 
 const MAYAR_API_BASE = 'https://api.mayar.id/hl/v1';
+const MAYAR_RATE_LIMIT = {
+  maxRequests: 20,
+  windowMs: 5 * 60 * 1000,
+  burstMaxRequests: 4,
+  burstWindowMs: 10 * 1000,
+} as const;
 
 type CurrencyCode = 'idr' | 'bnd' | 'usd';
 type BillingDuration = 'monthly' | 'quarterly' | 'yearly';
@@ -46,18 +61,6 @@ function envFlag(name: string): boolean {
   return raw === '1' || raw === 'true' || raw === 'yes' || raw === 'on';
 }
 
-function resolveCorsOrigin(req: IncomingMessage): string {
-  const origin = String(req.headers.origin || '').trim();
-  const appUrl = String(process.env.APP_URL || 'https://app.baristachaw.com').trim();
-  try {
-    const allowed = new URL(appUrl).origin;
-    if (origin && new URL(origin).origin === allowed) return origin;
-    return allowed;
-  } catch {
-    return 'https://app.baristachaw.com';
-  }
-}
-
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     let data = '';
@@ -67,12 +70,17 @@ function readBody(req: IncomingMessage): Promise<string> {
   });
 }
 
-export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', resolveCorsOrigin(req));
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+async function readJsonBody(req: IncomingMessage & { body?: unknown }): Promise<CheckoutRequest> {
+  if (req.body && typeof req.body === 'object') return req.body as CheckoutRequest;
+  const rawBody = await readBody(req);
+  return JSON.parse(rawBody || '{}') as CheckoutRequest;
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
+  const requestId = createRequestId(req);
+  applyCors(req, res, 'POST, OPTIONS');
+  res.setHeader('X-Request-Id', requestId);
+  res.setHeader('Cache-Control', 'no-store');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -85,10 +93,38 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     return;
   }
 
+  if (!enforceTrustedRequestOrigin(req, res, requestId)) return;
+
   if (!envFlag('MAYAR_PAYMENT_ENABLED')) {
     sendJson(res, 503, {
+      ok: false,
+      requestId,
       error: 'Legacy payment checkout is disabled. Use /api/billing/checkout.',
       errorCode: 'payment_legacy_disabled',
+    });
+    return;
+  }
+
+  const authResult = requireAuth(req);
+  if (authResult.ok === false) {
+    sendJson(res, authResult.statusCode, {
+      ok: false,
+      requestId,
+      error: authResult.error,
+      errorCode: authResult.errorCode,
+    });
+    return;
+  }
+
+  const limit = checkRateLimit(req, '/api/payment/create-checkout', authResult.auth.userId, MAYAR_RATE_LIMIT);
+  applyRateLimitHeaders(res, limit);
+  if (!limit.allowed) {
+    sendJson(res, 429, {
+      ok: false,
+      requestId,
+      error: 'Rate limit exceeded',
+      errorCode: 'rate_limited',
+      retryAfterSec: limit.retryAfterSec,
     });
     return;
   }
@@ -101,8 +137,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   }
 
   try {
-    const rawBody = await readBody(req);
-    const body: CheckoutRequest = JSON.parse(rawBody);
+    const body = await readJsonBody(req);
 
     const { duration, email, name, currency } = body;
     const plan = normalizeMvpPaidPlanCode(body.plan);
@@ -176,7 +211,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       return;
     }
 
-    sendJson(res, 200, { checkoutUrl, invoiceId: mayarData.data?.id });
+    sendJson(res, 200, { ok: true, requestId, checkoutUrl, invoiceId: mayarData.data?.id });
   } catch (err) {
     console.error('[Payment] Error creating checkout:', err);
     sendJson(res, 500, { error: 'Internal server error' });

@@ -484,6 +484,103 @@ test('admin management applies receipt-received billing as provisional manual re
   assert.ok(body.billing.trialingSubscriptions >= 1);
 });
 
+test('admin management keeps open manual proof users in payment queue instead of billing attention', async () => {
+  process.env.SUPABASE_URL = 'https://unit-test.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'dummy-service-role-key';
+  process.env.MANUAL_PAYMENT_ENABLED = '1';
+
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const targetUserId = 'new-email-buyer';
+
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    const method = init?.method || 'GET';
+    if (url.includes('/rest/v1/app_users') && method === 'POST') {
+      return new Response(JSON.stringify([{ id: 'owner-user' }]), { status: 201, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/app_users') && method === 'GET') {
+      return new Response(JSON.stringify([{
+        id: targetUserId,
+        email: 'new.buyer@example.com',
+        display_name: 'New Buyer',
+        provider: 'email',
+        role: 'user',
+        status: 'active',
+        plan_code: 'free',
+        billing_status: 'trialing',
+        billing_provider: 'manual',
+        billing_market: 'indonesia',
+        payment_action_required: true,
+        created_at: '2026-06-28T00:00:00.000Z',
+        updated_at: '2026-06-28T01:00:00.000Z',
+      }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/payment_receipts') && method === 'GET') {
+      return new Response(JSON.stringify([{
+        manual_request_id: 'manual_newbuyer_aabbccddeeff',
+        user_id: targetUserId,
+        requested_plan_code: 'pro',
+        requested_duration: 'monthly',
+        requested_currency: 'idr',
+        requested_amount: 299000,
+        requested_amount_label: 'Rp299.000',
+        payer_email: 'new.buyer@example.com',
+        receipt_reference: 'new-email-buyer/manual_newbuyer_aabbccddeeff_proof_123.png',
+        receipt_mime_type: 'image/png',
+        receipt_size_bytes: 12345,
+        status: 'receipt_received',
+        metadata: {
+          manualStatus: 'receipt_received',
+          manualRequestId: 'manual_newbuyer_aabbccddeeff',
+          duration: 'monthly',
+          currency: 'idr',
+          amount: 299000,
+          amountLabel: 'Rp299.000',
+          proof: {
+            generatedFileName: 'new-email-buyer/manual_newbuyer_aabbccddeeff_proof_123.png',
+            mimeType: 'image/png',
+            sizeBytes: 12345,
+            storage: 'supabase_signed_upload',
+            bucket: 'payment-proofs',
+            objectPath: 'new-email-buyer/manual_newbuyer_aabbccddeeff_proof_123.png',
+            receivedAt: Date.parse('2026-06-28T01:00:00.000Z'),
+          },
+          instructions: {
+            bankName: 'BCA',
+            accountName: 'AHMAD MUHTAR ALIMUDIN',
+            accountNumber: '3480711393',
+            message: 'Baristachaw manual payment manual_newbuyer_aabbccddeeff',
+          },
+        },
+        created_at: '2026-06-28T00:30:00.000Z',
+        updated_at: '2026-06-28T01:00:00.000Z',
+      }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/')) {
+      return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    throw new Error(`Unexpected fetch: ${method} ${url}`);
+  }) as typeof fetch;
+
+  const req = makeReq({
+    cookies: { auth_token: token },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.dataMode, 'supabase');
+  assert.equal(body.billing.manualQueueCounts.receipt_received, 1);
+  assert.equal(body.billing.manualPayments[0].userId, targetUserId);
+  assert.equal(body.billing.attentionUsers, 0);
+});
+
 test('admin management requires support note for direct plan overrides', async () => {
   const token = createToken({
     id: 'owner-user',

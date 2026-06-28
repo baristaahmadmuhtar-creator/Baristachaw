@@ -1540,6 +1540,26 @@ function buildManualQueueCounts(requests: ManualPaymentRequest[]): AdminSnapshot
   });
 }
 
+const OPEN_MANUAL_PAYMENT_STATUSES = new Set<ManualPaymentRequest['status']>(['pending_review', 'receipt_received']);
+
+function isOpenManualPaymentRequest(request: ManualPaymentRequest): boolean {
+  return OPEN_MANUAL_PAYMENT_STATUSES.has(request.status);
+}
+
+function buildOpenManualPaymentUserIds(requests: ManualPaymentRequest[]): Set<string> {
+  return new Set(requests
+    .filter(isOpenManualPaymentRequest)
+    .map((request) => request.userId)
+    .filter(Boolean));
+}
+
+function isBillingAttentionUser(user: AdminUserRecord, openManualPaymentUserIds: ReadonlySet<string>): boolean {
+  if (openManualPaymentUserIds.has(user.id)) return false;
+  return user.billing.paymentActionRequired
+    || user.billing.status === 'past_due'
+    || user.billing.status === 'refunded';
+}
+
 function buildPlanParity(plans: AdminPlan[]): AdminSnapshot['billing']['planParity'] {
   const mismatches: string[] = [];
   const planByCode = new Map(plans.map((plan) => [plan.code, plan]));
@@ -1580,6 +1600,7 @@ async function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[],
   const planParity = buildPlanParity(plans);
   const activeStatuses = new Set<BillingStatus>(['active', 'trialing']);
   const paidUsers = users.filter((user) => user.planCode !== 'free' && user.status !== 'deleted');
+  const openManualPaymentUserIds = buildOpenManualPaymentUserIds(manualPayments);
   const revenueMonthlyUsd = paidUsers
     .filter((user) => activeStatuses.has(user.billing.status))
     .reduce((sum, user) => sum + (plans.find((plan) => plan.code === user.planCode)?.priceMonthlyUsd || 0), 0);
@@ -1614,7 +1635,7 @@ async function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[],
     trialingSubscriptions: users.filter((user) => user.billing.status === 'trialing').length,
     pastDueSubscriptions: users.filter((user) => user.billing.status === 'past_due').length,
     revenueMonthlyUsd: Math.round(revenueMonthlyUsd * 100) / 100,
-    attentionUsers: users.filter((user) => user.billing.paymentActionRequired || user.billing.status === 'past_due' || user.billing.status === 'refunded').length,
+    attentionUsers: users.filter((user) => isBillingAttentionUser(user, openManualPaymentUserIds)).length,
     supportedMarkets: ['indonesia', 'brunei', 'global'],
     realtimeTables: ['app_users', 'app_plans', 'user_entitlements', 'payment_receipts', 'admin_audit_events', 'app_feature_flags', 'catalog_review_queue', 'ai_brew_journal', 'recipe_library_items'],
     gaps,

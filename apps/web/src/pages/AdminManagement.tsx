@@ -653,7 +653,21 @@ function isRecoveryUser(user: AdminUserRecord): boolean {
   return Boolean(user.passwordResetRequired) || (user.accountRecoveryStatus || 'none') === 'requested';
 }
 
-function isBillingAttentionUser(user: AdminUserRecord): boolean {
+const OPEN_MANUAL_PAYMENT_STATUSES = new Set<ManualPaymentStatus>(['pending_review', 'receipt_received']);
+
+function isOpenManualPayment(payment: AdminManualPaymentRequest): boolean {
+  return OPEN_MANUAL_PAYMENT_STATUSES.has(payment.status);
+}
+
+function buildOpenManualPaymentUserIds(payments: AdminManualPaymentRequest[]): Set<string> {
+  return new Set(payments
+    .filter(isOpenManualPayment)
+    .map((payment) => payment.userId)
+    .filter(Boolean));
+}
+
+function isBillingAttentionUser(user: AdminUserRecord, openManualPaymentUserIds?: ReadonlySet<string>): boolean {
+  if (openManualPaymentUserIds?.has(user.id)) return false;
   return Boolean(user.billing.paymentActionRequired)
     || user.billing.status === 'past_due'
     || user.billing.status === 'refunded'
@@ -661,10 +675,10 @@ function isBillingAttentionUser(user: AdminUserRecord): boolean {
     || user.status === 'past_due';
 }
 
-function matchesUserQueue(user: AdminUserRecord, queue: UserQueueFilter): boolean {
+function matchesUserQueue(user: AdminUserRecord, queue: UserQueueFilter, openManualPaymentUserIds?: ReadonlySet<string>): boolean {
   if (queue === 'risk') return isRiskUser(user);
   if (queue === 'recovery') return isRecoveryUser(user);
-  if (queue === 'billing') return isBillingAttentionUser(user);
+  if (queue === 'billing') return isBillingAttentionUser(user, openManualPaymentUserIds);
   if (queue === 'paid') return user.planCode !== 'free' && user.status !== 'deleted';
   if (queue === 'sample') return Boolean(user.isSample);
   return true;
@@ -4412,6 +4426,11 @@ export function AdminManagement() {
     };
   }, []);
 
+  const openManualPaymentUserIds = useMemo(
+    () => buildOpenManualPaymentUserIds(snapshot?.billing.manualPayments || []),
+    [snapshot?.billing.manualPayments],
+  );
+
   const filteredUsers = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     return (snapshot?.users || []).filter((user) => {
@@ -4423,10 +4442,10 @@ export function AdminManagement() {
       const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
       const matchesPlan = planFilter === 'all' || user.planCode === planFilter;
       const matchesRecovery = recoveryFilter === 'all' || (user.accountRecoveryStatus || 'none') === recoveryFilter || (recoveryFilter === 'requested' && Boolean(user.passwordResetRequired));
-      const matchesQueue = matchesUserQueue(user, userQueueFilter);
+      const matchesQueue = matchesUserQueue(user, userQueueFilter, openManualPaymentUserIds);
       return matchesQuery && matchesStatus && matchesPlan && matchesRecovery && matchesQueue;
     });
-  }, [planFilter, query, recoveryFilter, snapshot?.users, statusFilter, userQueueFilter]);
+  }, [openManualPaymentUserIds, planFilter, query, recoveryFilter, snapshot?.users, statusFilter, userQueueFilter]);
 
   const selectedUser = useMemo(() => (
     snapshot?.users.find((user) => user.id === selectedUserId) || null
@@ -4439,14 +4458,14 @@ export function AdminManagement() {
     return {
       riskUsers: users.filter(isRiskUser),
       recoveryUsers: users.filter(isRecoveryUser),
-      billingUsers: users.filter(isBillingAttentionUser),
+      billingUsers: users.filter((user) => isBillingAttentionUser(user, openManualPaymentUserIds)),
       pastDueUsers: users.filter((user) => user.status === 'past_due'),
       paidUsers: users.filter((user) => user.planCode !== 'free' && user.status !== 'deleted'),
       maintenanceFlags: (snapshot?.featureFlags || []).filter((flag) => flag.status !== 'available'),
       criticalChecks: checks.filter((check) => check.status === 'fail'),
       warningChecks: checks.filter((check) => check.status === 'warn'),
     };
-  }, [snapshot?.checks, snapshot?.featureFlags, snapshot?.users]);
+  }, [openManualPaymentUserIds, snapshot?.checks, snapshot?.featureFlags, snapshot?.users]);
 
   const userQueueCounts = useMemo<Record<UserQueueFilter, number>>(() => ({
     all: snapshot?.users.length || 0,

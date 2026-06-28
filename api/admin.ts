@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import adminManagementHandler from '../server-api/admin/management.js';
 import adminProofViewHandler from '../server-api/admin/proofView.js';
 import adminPricingHandler from '../server-api/admin/pricing.js';
+import { applyPrivateApiNoStoreHeaders } from '../server-api/_shared.js';
 
 type Handler = (req: VercelRequest, res: VercelResponse) => unknown;
 
@@ -12,6 +13,7 @@ function getPath(req: VercelRequest): string {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  applyPrivateApiNoStoreHeaders('/api/admin', res);
   const path = getPath(req);
   if (path === 'management' || path === '') {
     return (adminManagementHandler as Handler)(req, res);

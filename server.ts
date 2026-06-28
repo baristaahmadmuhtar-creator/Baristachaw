@@ -35,6 +35,7 @@ import monitoringErrorHandler from "./server-api/monitoring/error";
 import paymentMayarHandler from "./server-api/payment/mayar";
 import { handleTestAuthLogin, handleTestAuthLogout } from "./lib/test-auth/handlers";
 import { buildLocalRuntimeAuthDefaults } from "./lib/test-auth/runtime-defaults";
+import { applyPrivateApiNoStoreHeaders } from "./server-api/_shared";
 
 dotenv.config({ path: ".env.local" });
 dotenv.config();
@@ -114,7 +115,7 @@ function getContentSecurityPolicy() {
   ].join("; ");
 }
 
-function applySecurityHeaders(_req: express.Request, res: express.Response, next: express.NextFunction) {
+function applySecurityHeaders(req: express.Request, res: express.Response, next: express.NextFunction) {
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
   res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
   res.setHeader("X-Frame-Options", "DENY");
@@ -124,6 +125,7 @@ function applySecurityHeaders(_req: express.Request, res: express.Response, next
   res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
   res.setHeader("X-DNS-Prefetch-Control", "off");
   res.setHeader("Content-Security-Policy", getContentSecurityPolicy());
+  applyPrivateApiNoStoreHeaders(req.originalUrl || req.path, res);
   next();
 }
 

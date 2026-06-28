@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { applyPrivateApiNoStoreHeaders } from '../server-api/_shared.js';
 
 type Handler = (req: VercelRequest, res: VercelResponse) => unknown;
 type RouteMatch = { load: () => Promise<Handler>; before?: () => void };
@@ -97,7 +98,14 @@ function matchRoute(req: VercelRequest): RouteMatch | null {
   return null;
 }
 
+function apiPathForRequest(req: VercelRequest): string {
+  const segments = routeSegments(req);
+  if (segments.length) return `/api/${segments.join('/')}`;
+  return String(req.url || '');
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  applyPrivateApiNoStoreHeaders(apiPathForRequest(req), res);
   const matched = matchRoute(req);
   if (!matched) {
     return res.status(404).json({ error: 'Not found' });

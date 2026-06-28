@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import syncHandler from '../server-api/library/sync.js';
+import { applyPrivateApiNoStoreHeaders } from '../server-api/_shared.js';
 
 type Handler = (req: VercelRequest, res: VercelResponse) => unknown;
 
@@ -16,6 +17,7 @@ function routePath(req: VercelRequest): string {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  applyPrivateApiNoStoreHeaders('/api/library', res);
   const path = routePath(req);
   if (path === 'sync' || path === '') {
     return (syncHandler as Handler)(req, res);

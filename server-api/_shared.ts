@@ -56,6 +56,61 @@ const BARISTA_SKILL_FOCUS_VALUES: readonly AgentBaristaSkillFocus[] = [
   'troubleshooting',
 ] as const;
 
+export const PRIVATE_API_NO_STORE_PREFIXES = [
+  '/api/account',
+  '/api/admin',
+  '/api/auth',
+  '/api/billing',
+  '/api/chat',
+  '/api/ai',
+  '/api/library',
+  '/api/monitoring',
+  '/api/payment',
+  '/api/test-auth',
+] as const;
+
+export const PUBLIC_API_CACHE_EXCEPTIONS = [
+  '/api/billing/pricing',
+] as const;
+
+function normalizeApiPath(value: string | undefined | null): string {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+
+  let pathname = raw.split('?')[0] || '';
+  try {
+    pathname = new URL(raw).pathname;
+  } catch {
+    // The value is usually already a relative request path.
+  }
+
+  pathname = pathname.replace(/\/+/g, '/').replace(/\/+$/g, '');
+  if (!pathname) return '';
+  if (!pathname.startsWith('/')) pathname = `/${pathname}`;
+  if (pathname === '/api') return pathname;
+  if (!pathname.startsWith('/api/')) pathname = `/api${pathname}`;
+  return pathname;
+}
+
+export function isPrivateApiPath(value: string | undefined | null): boolean {
+  const pathname = normalizeApiPath(value);
+  if (!pathname) return false;
+  if (PUBLIC_API_CACHE_EXCEPTIONS.some((path) => pathname === path || pathname.startsWith(`${path}/`))) return false;
+  return PRIVATE_API_NO_STORE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
+
+type HeaderSetter = {
+  setHeader(name: string, value: string): unknown;
+};
+
+export function applyPrivateApiNoStoreHeaders(value: string | undefined | null, res: HeaderSetter): boolean {
+  if (!isPrivateApiPath(value)) return false;
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  return true;
+}
+
 function normalizeLanguageTag(value: string | undefined | null): string | undefined {
   if (typeof value !== 'string') return undefined;
   const first = value

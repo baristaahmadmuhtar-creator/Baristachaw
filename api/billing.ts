@@ -4,6 +4,7 @@ import portalHandler from '../server-api/billing/portal.js';
 import pricingHandler from '../server-api/billing/pricing.js';
 import proofHandler from '../server-api/billing/proof.js';
 import syncHandler from '../server-api/billing/sync.js';
+import { applyPrivateApiNoStoreHeaders } from '../server-api/_shared.js';
 type Handler = (req: VercelRequest, res: VercelResponse) => unknown;
 
 function getPath(req: VercelRequest): string {
@@ -14,6 +15,7 @@ function getPath(req: VercelRequest): string {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const path = getPath(req);
+  applyPrivateApiNoStoreHeaders(path ? `/api/billing/${path}` : '/api/billing', res);
   if (path === 'checkout') return (checkoutHandler as Handler)(req, res);
   if (path === 'portal') return (portalHandler as Handler)(req, res);
   if (path === 'pricing') return (pricingHandler as Handler)(req, res);

@@ -7,6 +7,7 @@ import authMeHandler from '../server-api/auth/me.js';
 import authUrlHandler from '../server-api/auth/url.js';
 import mobileAuthHandler from '../server-api/auth/mobile/[...route].js';
 import accountRecoveryHandler from '../server-api/auth/account-recovery.js';
+import { applyPrivateApiNoStoreHeaders } from '../server-api/_shared.js';
 
 type Handler = (req: VercelRequest, res: VercelResponse) => unknown;
 
@@ -17,6 +18,7 @@ function getPath(req: VercelRequest): string {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  applyPrivateApiNoStoreHeaders('/api/auth', res);
   const path = getPath(req);
   let target: Handler | null = null;
 

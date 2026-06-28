@@ -1,5 +1,5 @@
-const SHELL_CACHE = 'baristachaw-shell-v23';
-const API_CACHE = 'baristachaw-api-v23';
+const SHELL_CACHE = 'baristachaw-shell-v24';
+const API_CACHE = 'baristachaw-api-v24';
 
 const API_CACHE_ALLOWLIST = [
   '/api/waters/search',
@@ -88,7 +88,7 @@ async function networkFirstApi(request, url) {
     }
     return new Response(
       JSON.stringify({ error: 'Offline. Please reconnect and try again.' }),
-      { status: 503, headers: { 'Content-Type': 'application/json' } }
+      { status: 503, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } }
     );
   }
 }

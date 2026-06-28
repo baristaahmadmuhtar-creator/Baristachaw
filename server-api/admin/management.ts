@@ -234,6 +234,7 @@ type AdminManagementSection =
   | 'komando'
   | 'users'
   | 'plans'
+  | 'billing'
   | 'ai_control'
   | 'maintenance'
   | 'database'
@@ -629,6 +630,7 @@ function normalizeAdminSection(value: unknown): AdminManagementSection | undefin
   if (raw === 'command' || raw === 'komando' || raw === 'dashboard') return 'komando';
   if (raw === 'user' || raw === 'users') return 'users';
   if (raw === 'plan' || raw === 'plans') return 'plans';
+  if (raw === 'billing' || raw === 'payment' || raw === 'payments' || raw === 'queue' || raw === 'queues') return 'billing';
   if (raw === 'kontrol_ai' || raw === 'ai' || raw === 'ai_control' || raw === 'control_ai') return 'ai_control';
   if (raw === 'maintenance') return 'maintenance';
   if (raw === 'database' || raw === 'db') return 'database';
@@ -2428,6 +2430,32 @@ function applyAdminSectionQuery(snapshot: AdminSnapshot, query: VercelRequest['q
       || rowSearchText(plan.code, plan.name, plan.description, plan.features, plan.checkoutMode, plan.paymentMethods).includes(sectionQuery.search)
     ));
     return withPagedRows(rows, (next, plans) => ({ ...next, plans }));
+  }
+
+  if (section === 'billing') {
+    let rows = snapshot.billing.manualPayments.filter((payment) => {
+      const statusFilter = sectionQuery.filters.status || sectionQuery.filters.queue;
+      const matchesQuery = !sectionQuery.search || rowSearchText(
+        payment.id,
+        payment.userId,
+        payment.email,
+        payment.planCode,
+        payment.duration,
+        payment.currency,
+        payment.amountLabel,
+        payment.status,
+        payment.proof?.objectPath,
+        payment.proof?.generatedFileName,
+      ).includes(sectionQuery.search);
+      const matchesStatus = !statusFilter || payment.status === statusFilter;
+      const matchesPlan = !sectionQuery.filters.plan || payment.planCode === sectionQuery.filters.plan;
+      return matchesQuery && matchesStatus && matchesPlan;
+    });
+    rows = [...rows].sort((a, b) => b.updatedAt - a.updatedAt);
+    return withPagedRows(rows, (next, manualPayments) => ({
+      ...next,
+      billing: { ...next.billing, manualPayments },
+    }));
   }
 
   if (section === 'ai_control' || section === 'maintenance') {

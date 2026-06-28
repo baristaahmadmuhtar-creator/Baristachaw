@@ -5,8 +5,8 @@ import test from 'node:test';
 const SOURCE = readFileSync('apps/web/public/sw.js', 'utf8');
 
 test('service worker keeps AI Brew catalog data network-first to avoid stale production menus', () => {
-  assert.match(SOURCE, /baristachaw-shell-v23/);
-  assert.match(SOURCE, /baristachaw-api-v23/);
+  assert.match(SOURCE, /baristachaw-shell-v24/);
+  assert.match(SOURCE, /baristachaw-api-v24/);
   assert.match(SOURCE, /url\.pathname\.startsWith\('\/data\/ai-brew\/'\)/);
   assert.match(SOURCE, /url\.pathname\.startsWith\('\/data\/catalog\/'\)/);
   assert.match(SOURCE, /event\.respondWith\(networkFirstStatic\(request\)\)/);
@@ -37,9 +37,12 @@ test('service worker only caches explicitly safe public API GET routes', () => {
     '/api/ai',
     '/api/health',
     '/api/geo',
+    '/api/library',
+    '/api/payment',
   ]) {
     assert.match(SOURCE, new RegExp(unsafeRoute.replaceAll('/', '\\/')));
   }
   assert.match(SOURCE, /&& isSafeApiCacheRequest\(url\)/);
   assert.match(SOURCE, /request\.method === 'GET' && isSafeApiCacheRequest\(url\)/);
+  assert.match(SOURCE, /'Cache-Control': 'no-store'/);
 });

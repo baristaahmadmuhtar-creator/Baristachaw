@@ -148,7 +148,7 @@ const MANUAL_PAYMENT_QUEUE_STATUSES: ManualPaymentStatus[] = ['pending_review', 
 
 function sectionForAdminTab(tab: AdminTab): AdminManagementSection | undefined {
   if (tab === 'overview' || tab === 'users') return undefined;
-  if (tab === 'queues') return 'plans';
+  if (tab === 'queues') return 'billing';
   if (tab === 'ai') return 'ai_control';
   if (tab === 'recipes') return 'recipe_library';
   if (tab === 'launch') return 'launching';
@@ -363,7 +363,7 @@ function buildPlanEditorPatch(plan: AdminPlan, draft: PlanEditorDraft): AdminPla
   const computedLimits = featureLimitsMapToJson(draft.featureLimitsMap);
   const existingFeatureLimits = JSON.stringify(plan.featureLimits || {});
   if (JSON.stringify(computedLimits) !== existingFeatureLimits) {
-    (patch as any).featureLimits = computedLimits;
+    patch.featureLimits = computedLimits;
   }
   if (draft.recommended !== Boolean(plan.recommended)) patch.recommended = draft.recommended;
   if (draft.billingProvider !== plan.billingProvider) patch.billingProvider = draft.billingProvider;
@@ -4475,6 +4475,10 @@ export function AdminManagement() {
     paid: adminQueues.paidUsers.length,
     sample: (snapshot?.users || []).filter((user) => user.isSample).length,
   }), [adminQueues.billingUsers.length, adminQueues.paidUsers.length, adminQueues.recoveryUsers.length, adminQueues.riskUsers.length, snapshot?.users]);
+  const pendingManualQueueBadge = (
+    (snapshot?.billing.manualQueueCounts?.pending_review || 0)
+    + (snapshot?.billing.manualQueueCounts?.receipt_received || 0)
+  );
 
   const userFiltersActive = hasActiveUserFilters({
     query,
@@ -4842,9 +4846,9 @@ export function AdminManagement() {
                     {adminQueues.riskUsers.length + adminQueues.recoveryUsers.length}
                   </span>
                 )}
-                {id === 'queues' && ((snapshot?.metrics.manualQueueCounts?.pending_review || 0) + (snapshot?.metrics.manualQueueCounts?.receipt_received || 0)) > 0 && (
+                {id === 'queues' && pendingManualQueueBadge > 0 && (
                   <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 rounded-full bg-blue-500/15 text-blue-500 px-1 text-[9px] font-bold">
-                    {(snapshot?.metrics.manualQueueCounts?.pending_review || 0) + (snapshot?.metrics.manualQueueCounts?.receipt_received || 0)}
+                    {pendingManualQueueBadge}
                   </span>
                 )}
               </div>
@@ -4958,9 +4962,9 @@ export function AdminManagement() {
                           {adminQueues.riskUsers.length + adminQueues.recoveryUsers.length}
                         </span>
                       )}
-                      {id === 'queues' && ((snapshot?.metrics.manualQueueCounts?.pending_review || 0) + (snapshot?.metrics.manualQueueCounts?.receipt_received || 0)) > 0 && (
+                      {id === 'queues' && pendingManualQueueBadge > 0 && (
                         <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 rounded-full bg-blue-500/15 text-blue-500 px-1 text-[9px] font-bold">
-                          {(snapshot?.metrics.manualQueueCounts?.pending_review || 0) + (snapshot?.metrics.manualQueueCounts?.receipt_received || 0)}
+                          {pendingManualQueueBadge}
                         </span>
                       )}
                     </div>

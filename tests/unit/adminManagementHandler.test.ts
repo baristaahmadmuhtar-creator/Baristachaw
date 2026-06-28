@@ -7,6 +7,11 @@ import {
   recordAiProviderUsage,
   resetAiProviderRuntimeStateForTests,
 } from '../../server-api/_aiProviderControl.ts';
+import {
+  createManualPaymentRequest,
+  resetManualPaymentRequestsForTests,
+  updateManualPaymentStatus,
+} from '../../server-api/billing/manualPayments.ts';
 
 const ORIGINAL_ENV = {
   JWT_SECRET: process.env.JWT_SECRET,
@@ -143,6 +148,7 @@ test.beforeEach(() => {
   delete process.env.MANUAL_PAYMENT_WHATSAPP_NUMBER;
   delete process.env.MANUAL_PAYMENT_SUPPORT_EMAIL;
   resetAiProviderRuntimeStateForTests();
+  resetManualPaymentRequestsForTests();
 });
 
 test.after(() => {
@@ -240,6 +246,49 @@ test('admin management supports section pagination and filters for user tab payl
   assert.equal(body.appliedFilters.sort, 'risk_desc');
   assert.equal(typeof body.counts.users, 'number');
   assert.ok(body.users.every((user: any) => user.status === 'active'));
+});
+
+test('admin management supports billing section pagination for manual payment queues', async () => {
+  process.env.MANUAL_PAYMENT_ENABLED = '1';
+  const manualRequest = createManualPaymentRequest({
+    userId: 'queue-billing-user',
+    email: 'queue.billing@example.com',
+    planCode: 'pro',
+    duration: 'monthly',
+    currency: 'idr',
+  });
+  assert.ok(manualRequest);
+  updateManualPaymentStatus(manualRequest.id, 'receipt_received');
+
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+    provider: 'google',
+  });
+  const req = makeReq({
+    query: {
+      section: 'billing',
+      limit: '1',
+      page: '1',
+      query: 'queue.billing@example.com',
+      status: 'receipt_received',
+    },
+    cookies: { auth_token: token },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.section, 'billing');
+  assert.equal(body.pagination.billing.limit, 1);
+  assert.equal(body.pagination.billing.filters.status, 'receipt_received');
+  assert.equal(body.billing.manualQueueCounts.receipt_received, 1);
+  assert.equal(body.billing.manualPayments.length, 1);
+  assert.equal(body.billing.manualPayments[0].id, manualRequest.id);
+  assert.ok(body.plans.length >= 4, 'billing section must not page plan rows');
 });
 
 test('admin management exposes AI provider inventory without leaking server keys', async () => {

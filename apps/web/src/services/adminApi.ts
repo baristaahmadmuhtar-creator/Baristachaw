@@ -19,6 +19,7 @@ export type AdminManagementSection =
   | 'komando'
   | 'users'
   | 'plans'
+  | 'billing'
   | 'ai_control'
   | 'maintenance'
   | 'database'
@@ -417,11 +418,6 @@ export type AdminSnapshot = {
     scannerRunsToday: number;
     collectionWritesToday: number;
     planConversionRate: number;
-    manualQueueCounts?: {
-      checkout: number;
-      pending_review: number;
-      receipt_received: number;
-    };
   };
   plans: AdminPlan[];
   users: AdminUserRecord[];
@@ -521,6 +517,7 @@ export type AdminPlanPatch = Partial<{
   displayPrice: string;
   checkoutMode: CheckoutMode;
   paymentMethods: string[];
+  featureLimits: Record<string, { daily: number; monthly: number }>;
   operatorNote: string;
 }>;
 

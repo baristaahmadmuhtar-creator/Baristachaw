@@ -152,6 +152,9 @@ describe('collection screen copy', () => {
 
     expect(visibleCopy).toContain('Koleksi');
     expect(visibleCopy).not.toMatch(/All folders|Inside folder|Back to Collection|Create folder|Rename folder|Delete folder|Uncategorized/);
+    expect(copy.browseOnly).toBe('Catatan lokal.');
+    expect(copy.readOnlyBody).toMatch(/disimpan lokal/i);
+    expect(copy.readOnlyBody).not.toMatch(/Masuk untuk membuat atau mengedit/i);
   });
 
   test('keeps English collection copy English', () => {
@@ -160,5 +163,8 @@ describe('collection screen copy', () => {
     expect(copy.allFolders).toBe('All folders');
     expect(copy.insideFolder).toBe('Inside folder');
     expect(copy.noFolder).toBe('Uncategorized');
+    expect(copy.browseOnly).toBe('Local notes.');
+    expect(copy.readOnlyBody).toMatch(/saved locally/i);
+    expect(copy.readOnlyBody).not.toMatch(/Sign in to create or edit/i);
   });
 });

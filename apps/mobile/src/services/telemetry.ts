@@ -21,6 +21,7 @@ type TelemetryEventName =
   | 'auth_password_update_started'
   | 'auth_password_update_succeeded'
   | 'auth_gate_seen'
+  | 'local_collection_seen'
   | 'action_succeeded'
   | 'action_failed'
   | 'degraded_response_seen'

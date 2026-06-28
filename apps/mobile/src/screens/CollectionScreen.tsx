@@ -138,7 +138,7 @@ const EN_COPY: CollectionCopy = {
   allFolders: 'All folders',
   allFoldersSubtitle: 'Find, open, rename, or clean up folders.',
   backToCollection: 'Back to Collection',
-  browseOnly: 'Browse only.',
+  browseOnly: 'Local notes.',
   cancel: 'Cancel',
   canvas: 'Canvas',
   close: 'Close',
@@ -190,8 +190,8 @@ const EN_COPY: CollectionCopy = {
   open: 'Open',
   otherFolders: (count) => `+${count} other folder${count === 1 ? '' : 's'}`,
   quickNote: 'Quick Note',
-  readOnlyBody: 'Saved items stay visible here. Sign in to create or edit Collection.',
-  readOnlyTitle: 'Sign in to edit Collection',
+  readOnlyBody: 'Notes and folders are saved locally on this device. Sign in only when you want account sync or protected AI features.',
+  readOnlyTitle: 'Local Collection',
   recipe: 'Recipe',
   recipeItem: 'Recipe item',
   rename: 'Rename',
@@ -217,7 +217,7 @@ const ID_COPY: CollectionCopy = {
   allFolders: 'Semua folder',
   allFoldersSubtitle: 'Cari, buka, ubah nama, atau rapikan folder.',
   backToCollection: 'Kembali ke Koleksi',
-  browseOnly: 'Hanya lihat.',
+  browseOnly: 'Catatan lokal.',
   cancel: 'Batal',
   canvas: 'Kanvas',
   close: 'Tutup',
@@ -269,8 +269,8 @@ const ID_COPY: CollectionCopy = {
   open: 'Buka',
   otherFolders: (count) => `+${count} folder lainnya`,
   quickNote: 'Catatan Cepat',
-  readOnlyBody: 'Item tersimpan tetap terlihat di sini. Masuk untuk membuat atau mengedit Koleksi.',
-  readOnlyTitle: 'Masuk untuk mengedit Koleksi',
+  readOnlyBody: 'Catatan dan folder disimpan lokal di perangkat ini. Masuk hanya saat ingin sinkron akun atau fitur AI terlindungi.',
+  readOnlyTitle: 'Koleksi lokal',
   recipe: 'Resep',
   recipeItem: 'Item resep',
   rename: 'Ubah nama',
@@ -331,7 +331,7 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
   const [folderNameError, setFolderNameError] = useState('');
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
 
-  const guestReadOnly = guestModeEnabled && !session;
+  const guestLocalMode = guestModeEnabled && !session;
   const activeFolder = resolveActiveFolder(selectedFolderId, folders);
   const mode = resolveCollectionMode({ allFoldersOpen, selectedFolderId, folders });
   const folderCounts = useMemo(() => buildFolderCounts(items), [items]);
@@ -381,15 +381,15 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
 
   useEffect(() => {
     if (!isFocused) return;
-    trackEvent('screen_ready', { screen: 'collection', guestReadOnly });
+    trackEvent('screen_ready', { screen: 'collection', guestLocalMode });
     void reload();
-  }, [guestReadOnly, isFocused]);
+  }, [guestLocalMode, isFocused]);
 
   useEffect(() => {
-    if (guestReadOnly) {
-      trackEvent('auth_gate_seen', { surface: 'collection', guestModeEnabled });
+    if (guestLocalMode) {
+      trackEvent('local_collection_seen', { surface: 'collection', guestModeEnabled });
     }
-  }, [guestModeEnabled, guestReadOnly]);
+  }, [guestModeEnabled, guestLocalMode]);
 
   useEffect(() => {
     if (isSelectedFolderStale(selectedFolderId, folders)) {
@@ -427,27 +427,19 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
   };
 
   const openCreateFolder = () => {
-    if (guestReadOnly) {
-      setListError(copy.readOnlyBody);
-      return;
-    }
     setFolderNameInput('');
     setFolderNameError('');
     setFolderForm({ mode: 'create' });
   };
 
   const openRenameFolder = (folder: CollectionFolderRecord) => {
-    if (guestReadOnly) {
-      setListError(copy.readOnlyBody);
-      return;
-    }
     setFolderNameInput(folder.name);
     setFolderNameError('');
     setFolderForm({ mode: 'rename', folder });
   };
 
   const saveFolderForm = async () => {
-    if (!folderForm || guestReadOnly) return;
+    if (!folderForm) return;
     const validation = validateCollectionFolderName({
       name: folderNameInput,
       folders,
@@ -483,10 +475,6 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
   };
 
   const openCreateNote = () => {
-    if (guestReadOnly) {
-      setListError(copy.readOnlyBody);
-      return;
-    }
     setEditingNoteId('');
     setNoteTitle('');
     setNoteMarkdown('');
@@ -496,7 +484,7 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
   };
 
   const openEditNote = (item: CollectionItemRecord) => {
-    if (guestReadOnly || !isCollectionNote(item)) return;
+    if (!isCollectionNote(item)) return;
     setEditingNoteId(item.id);
     setNoteTitle(item.title || '');
     setNoteMarkdown(item.content.markdown || '');
@@ -516,7 +504,6 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
   };
 
   const saveNote = async () => {
-    if (guestReadOnly) return;
     const markdown = noteMarkdown.trim();
     const trimmedTitle = noteTitle.trim();
     if (!markdown && !trimmedTitle) {
@@ -556,7 +543,7 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
   };
 
   const confirmDelete = async () => {
-    if (!confirmState || guestReadOnly) return;
+    if (!confirmState) return;
     if (confirmState.kind === 'deleteFolder') {
       const folderId = confirmState.folder.id;
       await runCollectionMutation('collection_delete_folder', async () => {
@@ -644,12 +631,8 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
           footer={compactActions ? (
             <View style={[styles.actionRow, isRtl ? styles.rowRtl : null]}>
               <ActionButton label={copy.open} compact tone="primary" onPress={() => openFolder(folder.id)} />
-              {!guestReadOnly ? (
-                <>
-                  <ActionButton label={copy.rename} compact onPress={() => openRenameFolder(folder)} />
-                  <ActionButton label={copy.delete} compact tone="danger" onPress={() => setConfirmState({ kind: 'deleteFolder', folder })} />
-                </>
-              ) : null}
+              <ActionButton label={copy.rename} compact onPress={() => openRenameFolder(folder)} />
+              <ActionButton label={copy.delete} compact tone="danger" onPress={() => setConfirmState({ kind: 'deleteFolder', folder })} />
             </View>
           ) : (
             <View style={styles.itemFooter}>
@@ -717,7 +700,7 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
           <SectionCard
             tone="subtle"
             title={query.trim() ? copy.emptySearchTitle : copy.emptySearchTitle}
-            subtitle={query.trim() ? copy.emptySearch : guestReadOnly ? copy.readOnlyBody : copy.emptyDefault}
+            subtitle={query.trim() ? copy.emptySearch : guestLocalMode ? copy.readOnlyBody : copy.emptyDefault}
             compact
           />
         )}
@@ -732,7 +715,7 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
         title={copy.allFolders}
         subtitle={copy.allFoldersSubtitle}
         compact
-        footer={!guestReadOnly ? <ActionButton label={copy.createFolder} compact tone="primary" onPress={openCreateFolder} /> : undefined}
+        footer={<ActionButton label={copy.createFolder} compact tone="primary" onPress={openCreateFolder} />}
       >
         <View style={styles.listSection}>
           {filteredFolders.length > 0 ? filteredFolders.map((folder) => renderFolderCard(folder, true)) : (
@@ -757,12 +740,8 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
           <Text style={[styles.bodyText, isRtl ? styles.textRtl : null]}>{webT.collection} &gt; {activeFolder.name}</Text>
           <View style={[styles.actionRow, isRtl ? styles.rowRtl : null]}>
             <ActionButton label={copy.backToCollection} compact tone="secondary" onPress={goHome} />
-            {!guestReadOnly ? (
-              <>
-                <ActionButton label={copy.renameFolder} compact onPress={() => openRenameFolder(activeFolder)} />
-                <ActionButton label={copy.deleteFolder} compact tone="danger" onPress={() => setConfirmState({ kind: 'deleteFolder', folder: activeFolder })} />
-              </>
-            ) : null}
+            <ActionButton label={copy.renameFolder} compact onPress={() => openRenameFolder(activeFolder)} />
+            <ActionButton label={copy.deleteFolder} compact tone="danger" onPress={() => setConfirmState({ kind: 'deleteFolder', folder: activeFolder })} />
           </View>
         </SectionCard>
         {renderSearch()}
@@ -789,10 +768,10 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
             title={mode === 'folders' ? copy.allFolders : mode === 'folder' && activeFolder ? activeFolder.name : webT.collection}
             subtitle={mode === 'folders' ? copy.allFoldersSubtitle : mode === 'folder' ? copy.folderSubtitle : copy.collectionHomeSubtitle}
             direction={direction}
-            status={<InfoPill label={guestReadOnly ? copy.browseOnly : statusLabel} tone={guestReadOnly ? 'warning' : 'accent'} />}
+            status={<InfoPill label={guestLocalMode ? copy.browseOnly : statusLabel} tone={guestLocalMode ? 'warning' : 'accent'} />}
           />
         )}
-        bottomDock={!guestReadOnly && !dockHidden ? (
+        bottomDock={!dockHidden ? (
           <BottomActionDock
             primaryAction={{
               label: mode === 'folders' ? copy.createFolder : mode === 'folder' ? copy.addNoteToFolder : webT.newNote,
@@ -823,41 +802,39 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
             tone: 'secondary',
             onPress: () => void shareItem(detailItem),
           },
-          ...(detailItem && isCollectionNote(detailItem) && !guestReadOnly ? [{
+          ...(detailItem && isCollectionNote(detailItem) ? [{
             label: `${webT.edit} ${copy.note}`,
             tone: 'primary' as const,
             onPress: () => openEditNote(detailItem),
           }] : []),
-          ...(!guestReadOnly ? [{
+          {
             label: copy.deleteItem,
             tone: 'danger' as const,
             onPress: () => setConfirmState({ kind: 'deleteItem', item: detailItem }),
-          }] : []),
+          },
         ] : []}
         content={detailItem ? (
           <View style={styles.sheetContent}>
             <Text style={[styles.detailBody, isRtl ? styles.textRtl : null]}>{buildCollectionPreview(detailItem, copy.emptyPreview)}</Text>
-            {!guestReadOnly ? (
-              <SectionCard title={copy.moveToFolder} compact>
-                <View style={[styles.folderMoveRow, isRtl ? styles.rowRtl : null]}>
+            <SectionCard title={copy.moveToFolder} compact>
+              <View style={[styles.folderMoveRow, isRtl ? styles.rowRtl : null]}>
+                <ActionButton
+                  label={copy.noFolder}
+                  compact
+                  tone={!detailItem.folderId ? 'primary' : 'secondary'}
+                  onPress={() => void moveDetailItem(undefined)}
+                />
+                {folders.map((folder) => (
                   <ActionButton
-                    label={copy.noFolder}
+                    key={folder.id}
+                    label={folder.name}
                     compact
-                    tone={!detailItem.folderId ? 'primary' : 'secondary'}
-                    onPress={() => void moveDetailItem(undefined)}
+                    tone={detailItem.folderId === folder.id ? 'primary' : 'secondary'}
+                    onPress={() => void moveDetailItem(folder.id)}
                   />
-                  {folders.map((folder) => (
-                    <ActionButton
-                      key={folder.id}
-                      label={folder.name}
-                      compact
-                      tone={detailItem.folderId === folder.id ? 'primary' : 'secondary'}
-                      onPress={() => void moveDetailItem(folder.id)}
-                    />
-                  ))}
-                </View>
-              </SectionCard>
-            ) : null}
+                ))}
+              </View>
+            </SectionCard>
           </View>
         ) : <View />}
       />

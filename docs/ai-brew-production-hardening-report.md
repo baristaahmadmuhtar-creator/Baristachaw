@@ -63,3 +63,23 @@
   - `/scanner` performance 0.71 below 0.75.
 - `npm run prod:env:check` and `npm run launch:doctor` fail because `SUPABASE_SERVICE_ROLE_KEY` is missing or not a real service-role key in the current runtime/local env.
 - Production deployment was not executed because the env doctor blocks launch readiness and perf gate remains red. Code can be committed and pushed, but it is not honest to call this a final production launch from this machine yet.
+
+## Follow-up Hardening - 2026-06-29
+
+These notes supersede the historical blocker state above where later commits have stronger evidence.
+
+- Local production env was repaired after the baseline report:
+  - `npm run prod:env:check`: pass.
+  - `npm run launch:doctor`: pass.
+  - `npm run supabase:quota:verify`: pass.
+- GitHub Release Gate for commit `b03056e6` completed successfully:
+  - Workflow: `Release Gate`.
+  - Run: `28328372993`.
+  - Job: `Lint, Unit, Build, AI Brew E2E`.
+  - Result: success in 31m59s.
+- API privacy and route parity were strengthened after the baseline pass:
+  - private API gateway/cache hardening prevents admin, billing, auth, payment, account, library, AI, chat, monitoring, and test-auth responses from being cached.
+  - local Express and Vercel catch-all parity now includes auth OTP, password reset, account recovery, admin proof view, admin pricing, and billing pricing routes.
+  - added regression coverage in `tests/unit/privateApiCachePolicy.test.ts` and `tests/unit/apiRouteParitySource.test.ts`.
+
+Remaining honest limitation: this report is still not a physical sensory validation certificate. AI Brew software gates verify deterministic recipe bounds, method-native copy, UI/API behavior, and launch scripts; real cup taste validation still requires brewed/cupped production logs.

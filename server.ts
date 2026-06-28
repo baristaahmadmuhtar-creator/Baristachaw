@@ -17,6 +17,7 @@ import authMobileHandler from "./server-api/auth/mobile/[...route]";
 import authUrlHandler from "./server-api/auth/url";
 import authCallbackHandler from "./server-api/auth/callback";
 import authEmailHandler from "./server-api/auth/email";
+import authAccountRecoveryHandler from "./server-api/auth/account-recovery";
 import authGuestHandler from "./server-api/auth/guest";
 import authMeHandler from "./server-api/auth/me";
 import authLogoutHandler from "./server-api/auth/logout";
@@ -25,6 +26,7 @@ import accountExportHandler from "./server-api/account/export";
 import accountStatusHandler from "./server-api/account/status";
 import librarySyncHandler from "./server-api/library/sync";
 import adminManagementHandler from "./server-api/admin/management";
+import adminProofViewHandler from "./server-api/admin/proofView";
 import billingCheckoutHandler from "./server-api/billing/checkout";
 import billingPortalHandler from "./server-api/billing/portal";
 import billingProofHandler from "./server-api/billing/proof";
@@ -155,7 +157,13 @@ app.all("/api/auth/email/signin", wrapVercelHandler(authEmailHandler as unknown 
 app.all("/api/auth/email/signup", wrapVercelHandler(authEmailHandler as unknown as LocalApiHandler));
 app.all("/api/auth/email/reset", wrapVercelHandler(authEmailHandler as unknown as LocalApiHandler));
 app.all("/api/auth/email/update-password", wrapVercelHandler(authEmailHandler as unknown as LocalApiHandler));
+app.all("/api/auth/email/otp/send", wrapVercelHandler(authEmailHandler as unknown as LocalApiHandler));
+app.all("/api/auth/email/otp/verify", wrapVercelHandler(authEmailHandler as unknown as LocalApiHandler));
+app.all("/api/auth/email/password/reset/start", wrapVercelHandler(authEmailHandler as unknown as LocalApiHandler));
+app.all("/api/auth/email/password/reset/verify", wrapVercelHandler(authEmailHandler as unknown as LocalApiHandler));
+app.all("/api/auth/email/password/reset/update", wrapVercelHandler(authEmailHandler as unknown as LocalApiHandler));
 app.all("/api/auth/guest", wrapVercelHandler(authGuestHandler as unknown as LocalApiHandler));
+app.all("/api/auth/account-recovery", wrapVercelHandler(authAccountRecoveryHandler as unknown as LocalApiHandler));
 
 app.all("/api/auth/me", wrapVercelHandler(authMeHandler as unknown as LocalApiHandler));
 
@@ -165,11 +173,14 @@ app.all("/api/account/delete", wrapVercelHandler(accountDeleteHandler as unknown
 app.all("/api/account/status", wrapVercelHandler(accountStatusHandler as unknown as LocalApiHandler));
 app.all("/api/library/sync", wrapVercelHandler(librarySyncHandler as unknown as LocalApiHandler));
 app.all("/api/admin/management", wrapVercelHandler(adminManagementHandler as unknown as LocalApiHandler));
+app.all("/api/admin/proof-view", wrapVercelHandler(adminProofViewHandler as unknown as LocalApiHandler));
+app.all("/api/admin/proof_view", wrapVercelHandler(adminProofViewHandler as unknown as LocalApiHandler));
 app.all("/api/billing/checkout", wrapVercelHandler(billingCheckoutHandler as unknown as LocalApiHandler));
 app.all("/api/billing/portal", wrapVercelHandler(billingPortalHandler as unknown as LocalApiHandler));
 app.all("/api/billing/proof", wrapVercelHandler(billingProofHandler as unknown as LocalApiHandler));
 app.all("/api/billing/sync", wrapVercelHandler(billingSyncHandler as unknown as LocalApiHandler));
 app.all("/api/billing/pricing", wrapVercelHandler(billingPricingHandler as unknown as LocalApiHandler));
+app.all("/api/admin/pricing", wrapVercelHandler(adminPricingHandler as unknown as LocalApiHandler));
 app.all("/api/admin/pricing/*", (req, res, next) => {
   // Pass the remaining path so the handler can read it
   return wrapVercelHandler(adminPricingHandler as unknown as LocalApiHandler)(req, res, next);

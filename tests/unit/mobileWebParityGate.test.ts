@@ -223,6 +223,7 @@ test('WebParityScreen sends native shell parity params, language, safe area, bro
     'BARISTA_WEB_APP_READY',
     'window.__BARISTACHAW_NOTIFY_NATIVE_READY__ = notifyNativeReady',
     'onNativeAuthRequest',
+    'origin: window.location.origin',
     'OAUTH_AUTH_SUCCESS',
     'OAUTH_AUTH_ERROR',
     'accounts.google.com',

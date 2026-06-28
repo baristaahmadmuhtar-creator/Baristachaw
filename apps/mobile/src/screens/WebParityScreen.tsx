@@ -270,7 +270,10 @@ export function WebParityScreen({
 
   const dispatchWebAuthMessage = useCallback((payload: Record<string, unknown>) => {
     webRef.current?.injectJavaScript(`
-      window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(payload)} }));
+      window.dispatchEvent(new MessageEvent('message', {
+        data: ${JSON.stringify(payload)},
+        origin: window.location.origin
+      }));
       true;
     `);
   }, []);
@@ -294,7 +297,7 @@ export function WebParityScreen({
           window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify({
             type: 'OAUTH_AUTH_SUCCESS',
             user: nextSession.user,
-          })} }));
+          })}, origin: window.location.origin }));
           true;
         `);
       } catch (error) {

@@ -180,6 +180,33 @@ type AdminAuditEvent = {
   createdAt: string;
   detail: string;
   severity: 'info' | 'warning' | 'critical';
+  reviewed?: boolean;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  reviewNote?: string;
+};
+
+type AdminDatabaseContractTable = {
+  table: string;
+  required: boolean;
+  exists: boolean;
+  readable: boolean;
+  writable: boolean;
+  realtime: boolean;
+  strategy: 'realtime' | 'polling' | 'service_role_rest';
+  status: CheckStatus;
+  severity: 'BLOCKER' | 'WARNING' | 'INFO';
+  sampleStatus: 'row' | 'empty' | 'missing' | 'error' | 'unchecked';
+  migration: string;
+  lastError?: string;
+};
+
+type AdminDatabaseContract = {
+  ready: boolean;
+  blockers: number;
+  warnings: number;
+  generatedAt: string;
+  tables: AdminDatabaseContractTable[];
 };
 
 type AdminAiBrewFallbackEvent = {
@@ -300,6 +327,7 @@ type AdminSnapshot = {
   plans: AdminPlan[];
   users: AdminUserRecord[];
   audit: AdminAuditEvent[];
+  databaseContract: AdminDatabaseContract;
   checks: AdminSystemCheck[];
   launchChecklist: LaunchChecklistItem[];
   featureFlags: AdminFeatureFlag[];
@@ -485,6 +513,18 @@ const RUNTIME_USER_PATCHES = new Map<string, UserPatch>();
 const RUNTIME_PLAN_PATCHES = new Map<PlanCode, Omit<PlanPatch, 'operatorNote'>>();
 const RUNTIME_CATALOG_REQUESTS: AdminCatalogRequest[] = [];
 const RUNTIME_AUDIT: AdminAuditEvent[] = [];
+
+const REQUIRED_ADMIN_DATABASE_TABLES: Array<Omit<AdminDatabaseContractTable, 'exists' | 'readable' | 'status' | 'severity' | 'sampleStatus' | 'lastError'>> = [
+  { table: 'app_users', required: true, writable: true, realtime: true, strategy: 'realtime', migration: 'supabase/admin_management.sql' },
+  { table: 'app_plans', required: true, writable: true, realtime: true, strategy: 'realtime', migration: 'supabase/admin_management.sql' },
+  { table: 'user_entitlements', required: true, writable: true, realtime: true, strategy: 'realtime', migration: 'supabase/admin_management.sql' },
+  { table: 'payment_receipts', required: true, writable: true, realtime: true, strategy: 'realtime', migration: 'supabase/admin_management.sql' },
+  { table: 'admin_audit_events', required: true, writable: true, realtime: true, strategy: 'realtime', migration: 'supabase/admin_management.sql' },
+  { table: 'app_feature_flags', required: true, writable: true, realtime: true, strategy: 'realtime', migration: 'supabase/admin_management.sql' },
+  { table: 'catalog_review_queue', required: true, writable: true, realtime: false, strategy: 'polling', migration: 'supabase/catalog_platform.sql' },
+  { table: 'ai_brew_journal', required: true, writable: false, realtime: false, strategy: 'polling', migration: 'supabase/ai_brew_recipe_library.sql' },
+  { table: 'recipe_library_items', required: true, writable: false, realtime: false, strategy: 'polling', migration: 'supabase/ai_brew_recipe_library.sql' },
+];
 
 function sharedAdminPlan(code: PlanCode) {
   return PLAN_CATALOG.find((plan) => plan.code === code) || PLAN_CATALOG[0];
@@ -926,7 +966,7 @@ function normalizePlatform(value: unknown): AdminUserRecord['platform'] {
 
 function normalizeBillingProvider(value: unknown): BillingProvider {
   const raw = normalizeText(value).toLowerCase();
-  if (raw === 'admin' || raw === 'google_play' || raw === 'app_store' || raw === 'stripe' || raw === 'revenuecat' || raw === 'manual' || raw === 'midtrans' || raw === 'xendit') {
+  if (raw === 'admin' || raw === 'google_play' || raw === 'app_store' || raw === 'stripe' || raw === 'revenuecat' || raw === 'manual' || raw === 'midtrans' || raw === 'xendit' || raw === 'mayar') {
     return raw;
   }
   return 'none';
@@ -1044,6 +1084,84 @@ async function supabaseRest<T>(config: Extract<SupabaseConfig, { configured: tru
   return JSON.parse(text) as T;
 }
 
+function sanitizeAdminContractError(error: unknown, limit = 160): string {
+  let details = sanitizeErrorDetails(error, limit);
+  const config = getSupabaseConfig();
+  if (config.configured && config.serviceRoleKey) {
+    details = details.split(config.serviceRoleKey).join('[redacted]');
+  }
+  return details
+    .replace(/Bearer\s+[^\s"',)]+/gi, 'Bearer [redacted]')
+    .replace(/service-role-[a-z0-9._-]+/gi, '[redacted]')
+    .replace(/eyJ[a-z0-9._-]+/gi, '[redacted]');
+}
+
+function buildRuntimeDatabaseContract(reason: string): AdminDatabaseContract {
+  const tables = REQUIRED_ADMIN_DATABASE_TABLES.map<AdminDatabaseContractTable>((table) => ({
+    ...table,
+    exists: false,
+    readable: false,
+    writable: false,
+    status: 'fail',
+    severity: table.required ? 'BLOCKER' : 'WARNING',
+    sampleStatus: 'unchecked',
+    lastError: reason,
+  }));
+  return {
+    ready: false,
+    blockers: tables.filter((table) => table.severity === 'BLOCKER').length,
+    warnings: tables.filter((table) => table.severity === 'WARNING').length,
+    generatedAt: nowIso(),
+    tables,
+  };
+}
+
+async function buildDatabaseContract(
+  config: SupabaseConfig,
+  dataMode: DataMode,
+): Promise<AdminDatabaseContract> {
+  if (!config.configured) {
+    return buildRuntimeDatabaseContract('Supabase service-role REST is not configured.');
+  }
+  if (dataMode !== 'supabase') {
+    return buildRuntimeDatabaseContract('Admin reads fell back to runtime data; Supabase contract could not be trusted.');
+  }
+
+  const tables = await Promise.all(REQUIRED_ADMIN_DATABASE_TABLES.map(async (table) => {
+    try {
+      const rows = await supabaseRest<any[]>(config, `${table.table}?select=*&limit=1`);
+      return {
+        ...table,
+        exists: true,
+        readable: true,
+        writable: table.writable,
+        status: 'pass' as CheckStatus,
+        severity: 'INFO' as const,
+        sampleStatus: Array.isArray(rows) && rows.length > 0 ? 'row' as const : 'empty' as const,
+      };
+    } catch (error) {
+      return {
+        ...table,
+        exists: false,
+        readable: false,
+        writable: false,
+        status: table.required ? 'fail' as CheckStatus : 'warn' as CheckStatus,
+        severity: table.required ? 'BLOCKER' as const : 'WARNING' as const,
+        sampleStatus: String(error instanceof Error ? error.message : error).includes('404') ? 'missing' as const : 'error' as const,
+        lastError: sanitizeAdminContractError(error),
+      };
+    }
+  }));
+
+  return {
+    ready: tables.every((table) => table.status === 'pass'),
+    blockers: tables.filter((table) => table.status === 'fail').length,
+    warnings: tables.filter((table) => table.status === 'warn').length,
+    generatedAt: nowIso(),
+    tables,
+  };
+}
+
 function readUsage(raw: any): AdminUserRecord['usage'] {
   const usage = raw && typeof raw === 'object' ? raw : {};
   return {
@@ -1122,6 +1240,7 @@ function planFromSupabase(row: any, activeUsers: number): AdminPlan {
 }
 
 function auditFromSupabase(row: any): AdminAuditEvent {
+  const metadata = row.metadata && typeof row.metadata === 'object' ? row.metadata as Record<string, unknown> : {};
   return {
     id: normalizeText(row.id || row.event_id, `audit_${Date.now()}`),
     actor: normalizeText(row.actor_email || row.actor_user_id || row.actor, 'system'),
@@ -1130,6 +1249,10 @@ function auditFromSupabase(row: any): AdminAuditEvent {
     createdAt: normalizeText(row.created_at, nowIso()),
     detail: normalizeText(row.detail || row.summary, 'Administrative event recorded.'),
     severity: row.severity === 'critical' || row.severity === 'warning' ? row.severity : 'info',
+    reviewed: row.reviewed === true || metadata.reviewed === true,
+    reviewedAt: normalizeText(row.reviewed_at || metadata.reviewedAt || metadata.reviewed_at) || undefined,
+    reviewedBy: normalizeText(row.reviewed_by || metadata.reviewedBy || metadata.reviewed_by) || undefined,
+    reviewNote: normalizeText(row.review_note || metadata.reviewNote || metadata.review_note) || undefined,
   };
 }
 
@@ -1882,17 +2005,48 @@ function buildRuntimeRecipeLibrarySummary(): AdminRecipeLibrarySummary {
   };
 }
 
-function buildChecks(dataMode: DataMode): AdminSystemCheck[] {
+function buildTelemetryReadiness(): AdminSystemCheck {
+  const sentryConfigured = Boolean(readEnv('SENTRY_DSN', 'EXPO_PUBLIC_SENTRY_DSN', 'VITE_SENTRY_DSN'));
+  const releaseConfigured = Boolean(readEnv('SENTRY_RELEASE', 'VERCEL_GIT_COMMIT_SHA', 'RELEASE_VERSION', 'VITE_APP_VERSION'));
+  const environmentConfigured = Boolean(readEnv('SENTRY_ENVIRONMENT', 'VERCEL_ENV', 'NODE_ENV', 'APP_ENV'));
+  const ready = sentryConfigured && releaseConfigured && environmentConfigured;
+  const missing = [
+    !sentryConfigured ? 'DSN' : '',
+    !releaseConfigured ? 'release' : '',
+    !environmentConfigured ? 'environment' : '',
+  ].filter(Boolean).join(', ');
+  return {
+    id: 'telemetry',
+    label: 'Crash and error telemetry',
+    status: ready ? 'pass' : 'warn',
+    owner: 'Operations',
+    detail: ready
+      ? 'Telemetry DSN, release, environment, and user context hooks are ready for launch verification.'
+      : sentryConfigured
+        ? `Telemetry DSN exists, but ${missing || 'release/environment'} and user context verification are incomplete.`
+        : 'Telemetry DSN is not configured; release, environment, and user context cannot be verified.',
+    nextAction: ready ? undefined : 'Set SENTRY_DSN plus SENTRY_RELEASE/SENTRY_ENVIRONMENT and verify user context in web/mobile before rollout.',
+  };
+}
+
+function quotaOutagePolicyFromEnv(): 'strict_fail_closed' | 'graceful_dev_fallback' | '' {
+  const raw = readEnv('AI_QUOTA_OUTAGE_POLICY').toLowerCase();
+  if (raw === 'strict_fail_closed' || raw === 'fail_closed' || raw === 'strict') return 'strict_fail_closed';
+  if (raw === 'graceful_dev_fallback' || raw === 'soft_open' || raw === 'dev_fallback') return 'graceful_dev_fallback';
+  return '';
+}
+
+function buildChecks(dataMode: DataMode, databaseContract: AdminDatabaseContract): AdminSystemCheck[] {
   const supabase = getSupabaseConfig();
   const adminConfigured = Boolean(readEnv('ADMIN_EMAILS', 'ADMIN_BOOTSTRAP_EMAILS', 'ADMIN_USER_IDS', 'ADMIN_BOOTSTRAP_USER_IDS'));
   const jwtConfigured = Boolean(readEnv('JWT_SECRET'));
   const aiConfigured = resolveAiProviderAdminSnapshot().configuredProviders > 0;
   const billingConfigured = connectedBillingProviders().length > 0;
   const billingSyncReady = billingSyncConfigured();
-  const sentryConfigured = Boolean(readEnv('SENTRY_DSN', 'EXPO_PUBLIC_SENTRY_DSN', 'VITE_SENTRY_DSN'));
   const planEnforcementEnabled = envEnabled('PLAN_ENFORCEMENT_ENABLED');
   const planEnforcementReady = planEnforcementEnabled && dataMode === 'supabase';
-  const quotaStrictEnabled = envEnabled('PLAN_QUOTA_STRICT_ENABLED') || envEnabled('PLAN_ENFORCEMENT_STRICT');
+  const quotaOutagePolicy = quotaOutagePolicyFromEnv();
+  const quotaStrictEnabled = quotaOutagePolicy === 'strict_fail_closed' || envEnabled('PLAN_QUOTA_STRICT_ENABLED') || envEnabled('PLAN_ENFORCEMENT_STRICT');
 
   return [
     {
@@ -1918,6 +2072,16 @@ function buildChecks(dataMode: DataMode): AdminSystemCheck[] {
       owner: 'Data',
       detail: dataMode === 'supabase' ? 'Admin reads and mutations are backed by Supabase tables.' : 'Admin is running with runtime fallback data.',
       nextAction: dataMode === 'supabase' ? undefined : 'Run supabase/admin_management.sql and set SUPABASE_SERVICE_ROLE_KEY.',
+    },
+    {
+      id: 'database_contract',
+      label: 'Supabase table contract',
+      status: databaseContract.ready ? 'pass' : databaseContract.blockers > 0 ? 'fail' : 'warn',
+      owner: 'Data',
+      detail: databaseContract.ready
+        ? `${databaseContract.tables.length} required admin/payment/recipe tables are readable with service-role REST.`
+        : `${databaseContract.blockers} required table(s) are missing or unreadable; admin queues may be incomplete.`,
+      nextAction: databaseContract.ready ? undefined : 'Apply the listed Supabase SQL migrations, then refresh Admin > Database.',
     },
     {
       id: 'audit_trail',
@@ -1992,24 +2156,17 @@ function buildChecks(dataMode: DataMode): AdminSystemCheck[] {
       status: planEnforcementReady && quotaStrictEnabled ? 'pass' : planEnforcementReady ? 'warn' : 'fail',
       owner: 'Billing',
       detail: planEnforcementReady && quotaStrictEnabled
-        ? 'Paid AI quota RPC outages fail closed in production strict mode.'
+        ? `Paid AI quota RPC outages fail closed (${quotaOutagePolicy || 'legacy strict flag'}).`
         : planEnforcementReady
-          ? 'Paid AI quota consumption is enabled, but RPC outages currently soft-open for verified paid users.'
+          ? `Paid AI quota consumption is enabled, but outage policy is ${quotaOutagePolicy || 'unset'} so RPC outages can soft-open for verified paid users.`
           : 'Paid AI quota policy cannot be enforced until Supabase-backed plan enforcement is active.',
       nextAction: planEnforcementReady && quotaStrictEnabled
         ? undefined
         : planEnforcementReady
-          ? 'Set PLAN_QUOTA_STRICT_ENABLED=true after confirming consume_app_quota is live in production.'
+          ? 'Set AI_QUOTA_OUTAGE_POLICY=strict_fail_closed after confirming reserve_app_quota is live in production.'
           : 'Apply the admin migration, verify consume_app_quota, then enable PLAN_ENFORCEMENT_ENABLED.',
     },
-    {
-      id: 'telemetry',
-      label: 'Crash and error telemetry',
-      status: sentryConfigured ? 'pass' : 'warn',
-      owner: 'Operations',
-      detail: sentryConfigured ? 'Telemetry DSN is configured.' : 'Telemetry DSN is not configured.',
-      nextAction: sentryConfigured ? undefined : 'Enable Sentry before Play Store rollout.',
-    },
+    buildTelemetryReadiness(),
   ];
 }
 
@@ -2027,7 +2184,7 @@ function buildLaunchChecklist(checks: AdminSystemCheck[]): LaunchChecklistItem[]
     {
       id: 'db_live',
       label: 'User, plan, usage, audit tables live',
-      status: statusFor('database_persistence'),
+      status: statusFor('database_contract'),
       due: 'now',
       owner: 'Backend',
       action: 'Apply Supabase admin migration and verify REST service role access.',
@@ -2107,6 +2264,9 @@ function buildRecommendations(snapshot: {
   const recommendations: string[] = [];
   if (snapshot.dataMode !== 'supabase') {
     recommendations.push('Move admin to Supabase service-role persistence before managing real launch users.');
+  }
+  if (snapshot.checks.some((check) => check.id === 'database_contract' && check.status !== 'pass')) {
+    recommendations.push('Review Admin > Database table contract before launch; missing admin/payment/recipe tables can hide payment queues or audit state.');
   }
   if (snapshot.checks.some((check) => check.id === 'plan_enforcement' && check.status !== 'pass')) {
     recommendations.push('Wire plan_code to quota middleware for /api/ai, scanner, image edit, and speech generation.');
@@ -2245,6 +2405,7 @@ async function buildAdminSnapshot(
     recipeLibrary = buildRuntimeRecipeLibrarySummary();
   }
 
+  const databaseContract = await buildDatabaseContract(config, dataMode);
   const metrics = metricsFromUsers(users);
   const ai = resolveAiProviderAdminSnapshot(featureFlags, aiUsageRange);
   const aiBrewFallbacks = buildAiBrewFallbackSnapshot(
@@ -2252,7 +2413,7 @@ async function buildAdminSnapshot(
     ai,
     dataMode === 'supabase' ? 'admin_audit_events' : 'runtime_audit',
   );
-  const checks = buildChecks(dataMode);
+  const checks = buildChecks(dataMode, databaseContract);
   const billing = await buildBillingSummary(users, plans, dataMode);
   const launchChecklist = buildLaunchChecklist(checks);
   const recommendations = buildRecommendations({ dataMode, metrics, checks });
@@ -2283,6 +2444,7 @@ async function buildAdminSnapshot(
     plans,
     users,
     audit,
+    databaseContract,
     checks,
     launchChecklist,
     featureFlags,
@@ -2892,6 +3054,29 @@ function catalogPatchAuditDetail(prefix: string, patch: CatalogRequestPatch): st
   return `${prefix} ${patch.kind}: ${patch.title}. Operator note: ${notePreview}`;
 }
 
+function hasOperatorReason(value: unknown): boolean {
+  return typeof value === 'string' && value.replace(/\s+/g, ' ').trim().length >= 12;
+}
+
+function validateAuditReviewPatch(body: any): (
+  | { ok: true; auditEventIds: string[]; operatorNote: string }
+  | ValidationError
+) {
+  const source: unknown[] = Array.isArray(body?.auditEventIds)
+    ? body.auditEventIds
+    : typeof body?.auditEventId === 'string'
+      ? [body.auditEventId]
+      : typeof body?.auditEventIds === 'string'
+        ? body.auditEventIds.split(/[\s,;]+/g)
+        : [];
+  const auditEventIds = Array.from(new Set(source.map((item) => normalizeText(item)).filter((item): item is string => Boolean(item)))).slice(0, 50);
+  if (!auditEventIds.length) {
+    return { ok: false, error: 'auditEventIds is required' };
+  }
+  const operatorNote = normalizeText(body?.operatorNote).slice(0, PLAN_OPERATOR_NOTE_MAX_LENGTH);
+  return { ok: true, auditEventIds, operatorNote };
+}
+
 function findUsernameConflict(users: AdminUserRecord[], userId: string, username: string): AdminUserRecord | null {
   const normalized = username.trim().toLowerCase();
   if (!normalized) return null;
@@ -3278,6 +3463,35 @@ function planToSupabaseRow(planCode: PlanCode, patch: PlanPatch): Record<string,
   };
 }
 
+function canonicalPlanSyncRows(): Record<string, unknown>[] {
+  const updatedAt = nowIso();
+  return PLAN_BLUEPRINTS.map((plan, displayOrder) => ({
+    code: plan.code,
+    name: plan.name,
+    description: plan.description,
+    price_monthly_usd: plan.priceMonthlyUsd,
+    ai_daily_limit: plan.aiDailyLimit,
+    deep_daily_limit: plan.deepDailyLimit,
+    scanner_daily_limit: plan.scannerDailyLimit,
+    feature_limits: plan.featureLimits,
+    storage_mb: plan.storageMb,
+    seats: plan.seats,
+    support_sla_hours: plan.supportSlaHours,
+    features: plan.features,
+    recommended: Boolean(plan.recommended),
+    billing_provider: plan.billingProvider,
+    billing_product_id: plan.billingProductId,
+    billing_price_id: plan.billingPriceId,
+    revenuecat_entitlement_id: plan.revenuecatEntitlementId,
+    market: plan.market,
+    display_price: plan.displayPrice,
+    checkout_mode: plan.checkoutMode,
+    payment_methods: plan.paymentMethods,
+    display_order: displayOrder,
+    updated_at: updatedAt,
+  }));
+}
+
 async function patchSupabasePlan(
   config: Extract<SupabaseConfig, { configured: true }>,
   admin: AdminAccess,
@@ -3489,6 +3703,212 @@ async function updatePlan(
   const previous = RUNTIME_PLAN_PATCHES.get(planCode) || {};
   RUNTIME_PLAN_PATCHES.set(planCode, { ...previous, ...writePatch });
   auditRuntimePlanMutation(admin, planCode, patch);
+  return buildAdminSnapshot(requestId, admin, rawUser);
+}
+
+async function syncPlanCatalog(
+  admin: AdminAccess,
+  rawUser: Record<string, unknown> | undefined,
+  operatorNote: string,
+): Promise<AdminSnapshot> {
+  const config = getSupabaseConfig();
+  const requestId = `admin_plan_sync_${Date.now()}`;
+  const rows = canonicalPlanSyncRows();
+  RUNTIME_PLAN_PATCHES.clear();
+
+  if (config.configured) {
+    try {
+      await supabaseRest(config, 'app_plans?on_conflict=code', {
+        method: 'POST',
+        headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify(rows),
+      });
+      await supabaseRest(config, 'admin_audit_events', {
+        method: 'POST',
+        headers: { Prefer: 'return=minimal' },
+        body: JSON.stringify([{
+          actor_user_id: admin.userId,
+          actor_email: admin.email,
+          target_type: 'plan',
+          target_id: 'shared_catalog',
+          action: 'plan_catalog_synced',
+          detail: `Synced ${rows.length} plans from shared catalog. Operator note: ${operatorNote}`,
+          after: {
+            planCodes: rows.map((row) => row.code),
+          },
+          severity: 'info',
+        }]),
+      });
+      return buildAdminSnapshot(requestId, admin, rawUser);
+    } catch (error) {
+      const details = sanitizeErrorDetails(error, 180);
+      RUNTIME_AUDIT.unshift({
+        id: `runtime_supabase_plan_sync_failure_${Date.now()}`,
+        actor: admin.email || admin.userId || 'admin',
+        target: 'shared_catalog',
+        action: 'supabase_plan_sync_failed',
+        createdAt: nowIso(),
+        detail: details,
+        severity: 'critical',
+      });
+      if (!runtimeMutationFallbackEnabled()) {
+        throw new AdminMutationError('Supabase plan catalog sync failed; no runtime fallback write was applied', {
+          statusCode: 503,
+          errorCode: 'supabase_update_failed',
+          details,
+        });
+      }
+    }
+  }
+
+  RUNTIME_AUDIT.unshift({
+    id: `runtime_audit_plan_sync_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    actor: admin.email || admin.userId || 'admin',
+    target: 'shared_catalog',
+    action: 'plan_catalog_synced',
+    createdAt: nowIso(),
+    detail: `Runtime plan catalog reset to shared catalog. Operator note: ${operatorNote}`,
+    severity: 'info',
+  });
+  RUNTIME_AUDIT.splice(RUNTIME_AUDIT_LIMIT);
+  return buildAdminSnapshot(requestId, admin, rawUser);
+}
+
+async function loadSupabaseAuditEventsById(
+  config: Extract<SupabaseConfig, { configured: true }>,
+  auditEventIds: string[],
+): Promise<any[]> {
+  const rows: any[] = [];
+  for (const id of auditEventIds) {
+    const result = await supabaseRest<any[]>(config, `admin_audit_events?id=eq.${encodeURIComponent(id)}&select=*`);
+    if (Array.isArray(result) && result[0]) rows.push(result[0]);
+  }
+  return rows;
+}
+
+async function markSupabaseAuditReviewed(
+  config: Extract<SupabaseConfig, { configured: true }>,
+  admin: AdminAccess,
+  auditEventIds: string[],
+  operatorNote: string,
+): Promise<void> {
+  const rows = await loadSupabaseAuditEventsById(config, auditEventIds);
+  const events = rows.map(auditFromSupabase);
+  if (events.some((event) => event.severity === 'critical') && !hasOperatorReason(operatorNote)) {
+    throw new AdminMutationError('Critical audit review requires an operator note', {
+      statusCode: 400,
+      errorCode: 'operator_reason_required',
+    });
+  }
+  const reviewedAt = nowIso();
+  const reviewedBy = admin.email || admin.userId || 'admin';
+  for (const row of rows) {
+    const metadata = row.metadata && typeof row.metadata === 'object' ? row.metadata as Record<string, unknown> : {};
+    await supabaseRest(config, `admin_audit_events?id=eq.${encodeURIComponent(normalizeText(row.id || row.event_id))}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({
+        metadata: {
+          ...metadata,
+          reviewed: true,
+          reviewedAt,
+          reviewedBy,
+          reviewNote: operatorNote,
+        },
+      }),
+    });
+  }
+  await supabaseRest(config, 'admin_audit_events', {
+    method: 'POST',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify([{
+      actor_user_id: admin.userId,
+      actor_email: admin.email,
+      target_type: 'audit',
+      target_id: auditEventIds.join(','),
+      action: 'audit_mark_reviewed',
+      detail: `Reviewed ${auditEventIds.length} audit event(s). Operator note: ${operatorNote || 'not required'}`,
+      after: {
+        auditEventIds,
+        reviewedAt,
+        reviewedBy,
+      },
+      severity: 'info',
+    }]),
+  });
+}
+
+function markRuntimeAuditReviewed(
+  admin: AdminAccess,
+  auditEventIds: string[],
+  operatorNote: string,
+): void {
+  const events = RUNTIME_AUDIT.filter((event) => auditEventIds.includes(event.id));
+  if (events.some((event) => event.severity === 'critical') && !hasOperatorReason(operatorNote)) {
+    throw new AdminMutationError('Critical audit review requires an operator note', {
+      statusCode: 400,
+      errorCode: 'operator_reason_required',
+    });
+  }
+  const reviewedAt = nowIso();
+  const reviewedBy = admin.email || admin.userId || 'admin';
+  for (const event of events) {
+    event.reviewed = true;
+    event.reviewedAt = reviewedAt;
+    event.reviewedBy = reviewedBy;
+    event.reviewNote = operatorNote || 'Reviewed by admin.';
+  }
+  RUNTIME_AUDIT.unshift({
+    id: `runtime_audit_review_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    actor: reviewedBy,
+    target: auditEventIds.join(','),
+    action: 'audit_mark_reviewed',
+    createdAt: nowIso(),
+    detail: `Reviewed ${auditEventIds.length} audit event(s). Operator note: ${operatorNote || 'not required'}`,
+    severity: 'info',
+    reviewed: true,
+    reviewedAt,
+    reviewedBy,
+    reviewNote: operatorNote || undefined,
+  });
+  RUNTIME_AUDIT.splice(RUNTIME_AUDIT_LIMIT);
+}
+
+async function markAuditReviewed(
+  admin: AdminAccess,
+  rawUser: Record<string, unknown> | undefined,
+  auditEventIds: string[],
+  operatorNote: string,
+): Promise<AdminSnapshot> {
+  const config = getSupabaseConfig();
+  const requestId = `admin_audit_review_${Date.now()}`;
+  if (config.configured) {
+    try {
+      await markSupabaseAuditReviewed(config, admin, auditEventIds, operatorNote);
+      return buildAdminSnapshot(requestId, admin, rawUser);
+    } catch (error) {
+      if (error instanceof AdminMutationError) throw error;
+      const details = sanitizeErrorDetails(error, 180);
+      RUNTIME_AUDIT.unshift({
+        id: `runtime_supabase_audit_review_failure_${Date.now()}`,
+        actor: admin.email || admin.userId || 'admin',
+        target: auditEventIds.join(','),
+        action: 'supabase_audit_review_failed',
+        createdAt: nowIso(),
+        detail: details,
+        severity: 'critical',
+      });
+      if (!runtimeMutationFallbackEnabled()) {
+        throw new AdminMutationError('Supabase audit review failed; no runtime fallback write was applied', {
+          statusCode: 503,
+          errorCode: 'supabase_update_failed',
+          details,
+        });
+      }
+    }
+  }
+
+  markRuntimeAuditReviewed(admin, auditEventIds, operatorNote);
   return buildAdminSnapshot(requestId, admin, rawUser);
 }
 
@@ -3931,12 +4351,74 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === 'PATCH') {
       const action = normalizeText(req.body?.action);
-      if (action !== 'update_user' && action !== 'update_feature_flag' && action !== 'update_plan' && action !== 'create_catalog_request' && action !== 'update_manual_payment' && action !== 'update_manual_payment_qr') {
+      if (
+        action !== 'update_user'
+        && action !== 'update_feature_flag'
+        && action !== 'update_plan'
+        && action !== 'sync_plan_catalog'
+        && action !== 'mark_audit_reviewed'
+        && action !== 'create_catalog_request'
+        && action !== 'update_manual_payment'
+        && action !== 'update_manual_payment_qr'
+      ) {
         return res.status(400).json({
           ok: false,
           requestId,
           error: 'Unsupported admin action',
           errorCode: 'validation_error',
+        });
+      }
+      if (action === 'sync_plan_catalog') {
+        const operatorNote = normalizeText(req.body?.operatorNote).slice(0, PLAN_OPERATOR_NOTE_MAX_LENGTH);
+        const authorization = authorizePlanMutation(access.admin);
+        if (authorization) {
+          return res.status(authorization.statusCode).json({
+            ok: false,
+            requestId,
+            error: authorization.error,
+            errorCode: authorization.errorCode,
+            details: authorization.details,
+          });
+        }
+        if (!hasOperatorReason(operatorNote)) {
+          return res.status(400).json({
+            ok: false,
+            requestId,
+            error: 'Plan catalog sync requires an operator note',
+            errorCode: 'operator_reason_required',
+          });
+        }
+        const snapshot = await syncPlanCatalog(access.admin, access.auth.user, operatorNote);
+        return res.status(200).json({
+          ...snapshot,
+          requestId,
+        });
+      }
+      if (action === 'mark_audit_reviewed') {
+        const validated = validateAuditReviewPatch(req.body);
+        if (validated.ok === false) {
+          return res.status(400).json({
+            ok: false,
+            requestId,
+            error: validated.error,
+            errorCode: 'validation_error',
+            details: validated.details,
+          });
+        }
+        const authorization = authorizePlanMutation(access.admin);
+        if (authorization) {
+          return res.status(authorization.statusCode).json({
+            ok: false,
+            requestId,
+            error: authorization.error,
+            errorCode: authorization.errorCode,
+            details: authorization.details,
+          });
+        }
+        const snapshot = await markAuditReviewed(access.admin, access.auth.user, validated.auditEventIds, validated.operatorNote);
+        return res.status(200).json({
+          ...snapshot,
+          requestId,
         });
       }
       if (action === 'update_plan') {

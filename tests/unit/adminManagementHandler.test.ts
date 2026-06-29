@@ -12,6 +12,7 @@ import {
   resetManualPaymentRequestsForTests,
   updateManualPaymentStatus,
 } from '../../server-api/billing/manualPayments.ts';
+import { getPlanByCode } from '../../packages/shared/src/planCatalog.ts';
 
 const ORIGINAL_ENV = {
   JWT_SECRET: process.env.JWT_SECRET,
@@ -47,6 +48,13 @@ const ORIGINAL_ENV = {
   MANUAL_PAYMENT_ACCOUNT_NUMBER: process.env.MANUAL_PAYMENT_ACCOUNT_NUMBER,
   MANUAL_PAYMENT_WHATSAPP_NUMBER: process.env.MANUAL_PAYMENT_WHATSAPP_NUMBER,
   MANUAL_PAYMENT_SUPPORT_EMAIL: process.env.MANUAL_PAYMENT_SUPPORT_EMAIL,
+  PLAN_ENFORCEMENT_ENABLED: process.env.PLAN_ENFORCEMENT_ENABLED,
+  PLAN_QUOTA_STRICT_ENABLED: process.env.PLAN_QUOTA_STRICT_ENABLED,
+  AI_QUOTA_OUTAGE_POLICY: process.env.AI_QUOTA_OUTAGE_POLICY,
+  SENTRY_DSN: process.env.SENTRY_DSN,
+  SENTRY_RELEASE: process.env.SENTRY_RELEASE,
+  SENTRY_ENVIRONMENT: process.env.SENTRY_ENVIRONMENT,
+  VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA,
 };
 
 function restoreEnv() {
@@ -147,6 +155,13 @@ test.beforeEach(() => {
   delete process.env.MANUAL_PAYMENT_ACCOUNT_NUMBER;
   delete process.env.MANUAL_PAYMENT_WHATSAPP_NUMBER;
   delete process.env.MANUAL_PAYMENT_SUPPORT_EMAIL;
+  delete process.env.PLAN_ENFORCEMENT_ENABLED;
+  delete process.env.PLAN_QUOTA_STRICT_ENABLED;
+  delete process.env.AI_QUOTA_OUTAGE_POLICY;
+  delete process.env.SENTRY_DSN;
+  delete process.env.SENTRY_RELEASE;
+  delete process.env.SENTRY_ENVIRONMENT;
+  delete process.env.VERCEL_GIT_COMMIT_SHA;
   resetAiProviderRuntimeStateForTests();
   resetManualPaymentRequestsForTests();
 });
@@ -211,6 +226,94 @@ test('admin management returns runtime snapshot for allowlisted owner', async ()
   assert.equal(body.aiBrewFallbacks.totalEvents, 0);
   assert.ok(body.checks.some((check: any) => check.id === 'database_persistence' && check.status === 'fail'));
   assert.ok(body.checks.some((check: any) => check.id === 'paid_ai_quota_failure_policy' && check.status === 'fail'));
+});
+
+test('admin management reports required Supabase table readiness with sanitized errors', async () => {
+  process.env.SUPABASE_URL = 'https://unit-test.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-secret';
+  process.env.MANUAL_PAYMENT_ENABLED = '1';
+
+  const requiredTables = [
+    'app_users',
+    'app_plans',
+    'user_entitlements',
+    'payment_receipts',
+    'admin_audit_events',
+    'app_feature_flags',
+    'catalog_review_queue',
+    'ai_brew_journal',
+    'recipe_library_items',
+  ];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    const method = init?.method || 'GET';
+    if (url.includes('/rest/v1/app_users?on_conflict=') && method === 'POST') {
+      return new Response('', { status: 201 });
+    }
+    if (url.includes('/rest/v1/payment_receipts?select=*&limit=1') && method === 'GET') {
+      return new Response(JSON.stringify({
+        message: 'relation "public.payment_receipts" does not exist',
+        hint: 'service-role-secret should never leak',
+      }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/')) {
+      return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    throw new Error(`Unexpected fetch ${method} ${url}`);
+  }) as typeof fetch;
+
+  try {
+    const token = createToken({
+      id: 'owner-user',
+      email: 'owner@example.com',
+      name: 'Owner User',
+    });
+    const req = makeReq({
+      cookies: { auth_token: token },
+    });
+    const res = createMockRes();
+
+    await adminManagementHandler(req, res as any);
+
+    assert.equal(res.statusCode, 200);
+    const body = JSON.parse(res.body);
+    assert.ok(body.databaseContract);
+    assert.deepEqual(
+      body.databaseContract.tables.map((table: any) => table.table).sort(),
+      [...requiredTables].sort(),
+    );
+    const paymentReceipts = body.databaseContract.tables.find((table: any) => table.table === 'payment_receipts');
+    assert.equal(paymentReceipts.status, 'fail');
+    assert.equal(paymentReceipts.exists, false);
+    assert.equal(paymentReceipts.readable, false);
+    assert.equal(paymentReceipts.migration, 'supabase/admin_management.sql');
+    assert.doesNotMatch(JSON.stringify(paymentReceipts), /service-role-secret|Bearer/i);
+    assert.ok(body.checks.some((check: any) => check.id === 'database_contract' && check.status === 'fail'));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('admin management telemetry readiness does not pass with DSN only', async () => {
+  process.env.SENTRY_DSN = 'https://public@example.ingest.sentry.io/123';
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    cookies: { auth_token: token },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  const telemetry = body.checks.find((check: any) => check.id === 'telemetry');
+  assert.equal(telemetry.status, 'warn');
+  assert.match(telemetry.detail, /release|environment|user context/i);
 });
 
 test('admin management supports section pagination and filters for user tab payloads', async () => {
@@ -904,6 +1007,76 @@ test('admin management updates runtime plan catalog and records audit', async ()
   )));
 });
 
+test('admin management syncs Supabase plans from shared catalog and writes audit', async () => {
+  process.env.SUPABASE_URL = 'https://unit-project.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
+  process.env.MANUAL_PAYMENT_ENABLED = '1';
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const originalFetch = globalThis.fetch;
+  let syncedPlanRows: any[] = [];
+  const auditRows: any[] = [];
+
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    const method = init?.method || 'GET';
+    const body = typeof init?.body === 'string' && init.body ? JSON.parse(init.body) : undefined;
+
+    if (url.includes('/rest/v1/app_users?on_conflict=') && method === 'POST') {
+      return new Response('', { status: 201 });
+    }
+    if (url.includes('/rest/v1/app_plans?on_conflict=code') && method === 'POST') {
+      syncedPlanRows = Array.isArray(body) ? body : [];
+      return new Response('', { status: 201 });
+    }
+    if (url.includes('/rest/v1/admin_audit_events') && method === 'POST') {
+      auditRows.push(...(Array.isArray(body) ? body : []));
+      return new Response('', { status: 201 });
+    }
+    if (url.includes('/rest/v1/app_users') && method === 'GET') {
+      return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/app_plans') && method === 'GET') {
+      return new Response(JSON.stringify(syncedPlanRows), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/admin_audit_events') && method === 'GET') {
+      return new Response(JSON.stringify(auditRows), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/')) {
+      return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    throw new Error(`Unexpected fetch ${method} ${url}`);
+  }) as typeof fetch;
+
+  try {
+    const req = makeReq({
+      method: 'PATCH',
+      cookies: { auth_token: token },
+      body: {
+        action: 'sync_plan_catalog',
+        operatorNote: 'Operator reason: sync production Supabase app_plans with shared plan catalog.',
+      },
+    });
+    const res = createMockRes();
+
+    await adminManagementHandler(req, res as any);
+
+    assert.equal(res.statusCode, 200);
+    const body = JSON.parse(res.body);
+    const starter = syncedPlanRows.find((row) => row.code === 'starter');
+    assert.equal(syncedPlanRows.length, 5);
+    assert.equal(starter.name, getPlanByCode('starter').displayName);
+    assert.deepEqual(starter.features, getPlanByCode('starter').features);
+    assert.equal(body.billing.planParity.ok, true);
+    assert.ok(body.audit.some((event: any) => event.action === 'plan_catalog_synced'));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test('admin management requires operator note for plan catalog changes', async () => {
   const token = createToken({
     id: 'owner-user',
@@ -1092,6 +1265,70 @@ test('admin management accepts critical account changes with operator reason', a
     && event.severity === 'warning'
     && event.detail.includes('Support note: Operator reason: verified abuse report')
   )));
+});
+
+test('admin management marks critical audit events reviewed without deleting raw logs', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const mutationReq = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_pro_barista',
+      patch: {
+        role: 'owner',
+        supportNote: 'Operator reason: owner escalation approved after founder verification.',
+      },
+    },
+  });
+  const mutationRes = createMockRes();
+
+  await adminManagementHandler(mutationReq, mutationRes as any);
+
+  assert.equal(mutationRes.statusCode, 200);
+  const mutationBody = JSON.parse(mutationRes.body);
+  const criticalEvent = mutationBody.audit.find((event: any) => event.action === 'user_updated' && event.severity === 'critical');
+  assert.ok(criticalEvent?.id);
+
+  const missingNoteReq = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'mark_audit_reviewed',
+      auditEventIds: [criticalEvent.id],
+    },
+  });
+  const missingNoteRes = createMockRes();
+
+  await adminManagementHandler(missingNoteReq, missingNoteRes as any);
+
+  assert.equal(missingNoteRes.statusCode, 400);
+  assert.equal(JSON.parse(missingNoteRes.body).errorCode, 'operator_reason_required');
+
+  const reviewReq = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'mark_audit_reviewed',
+      auditEventIds: [criticalEvent.id],
+      operatorNote: 'Reviewed by owner: founder verification is complete and escalation remains correct.',
+    },
+  });
+  const reviewRes = createMockRes();
+
+  await adminManagementHandler(reviewReq, reviewRes as any);
+
+  assert.equal(reviewRes.statusCode, 200);
+  const reviewBody = JSON.parse(reviewRes.body);
+  const reviewedEvent = reviewBody.audit.find((event: any) => event.id === criticalEvent.id);
+  assert.equal(reviewedEvent.reviewed, true);
+  assert.match(reviewedEvent.reviewNote, /founder verification is complete/);
+  assert.ok(reviewBody.audit.some((event: any) => event.action === 'audit_mark_reviewed'));
+  assert.ok(reviewBody.audit.some((event: any) => event.id === criticalEvent.id), 'raw audit event must remain available');
 });
 
 test('admin management rejects duplicate usernames', async () => {

@@ -99,7 +99,17 @@ function planMeetsMinimum(planCode: PlanCode, minimumPlanCode: PlanCode): boolea
   return PLAN_ORDER.indexOf(planCode) >= PLAN_ORDER.indexOf(minimumPlanCode);
 }
 
+function quotaOutagePolicy(): 'strict_fail_closed' | 'graceful_dev_fallback' | '' {
+  const raw = normalizeText(process.env.AI_QUOTA_OUTAGE_POLICY).toLowerCase();
+  if (raw === 'strict_fail_closed' || raw === 'fail_closed' || raw === 'strict') return 'strict_fail_closed';
+  if (raw === 'graceful_dev_fallback' || raw === 'soft_open' || raw === 'dev_fallback') return 'graceful_dev_fallback';
+  return '';
+}
+
 function strictQuotaEnforcementEnabled(): boolean {
+  const policy = quotaOutagePolicy();
+  if (policy === 'strict_fail_closed') return true;
+  if (policy === 'graceful_dev_fallback') return false;
   return isEnvFlagEnabled('PLAN_QUOTA_STRICT_ENABLED', false)
     || isEnvFlagEnabled('PLAN_ENFORCEMENT_STRICT', false);
 }

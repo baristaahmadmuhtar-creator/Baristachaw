@@ -14,6 +14,7 @@ const ORIGINAL_ENV = {
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   PLAN_ENFORCEMENT_ENABLED: process.env.PLAN_ENFORCEMENT_ENABLED,
   PLAN_QUOTA_STRICT_ENABLED: process.env.PLAN_QUOTA_STRICT_ENABLED,
+  AI_QUOTA_OUTAGE_POLICY: process.env.AI_QUOTA_OUTAGE_POLICY,
 };
 
 function restoreEnv() {
@@ -44,6 +45,7 @@ test.beforeEach(() => {
   delete process.env.SUPABASE_SERVICE_ROLE_KEY;
   delete process.env.PLAN_ENFORCEMENT_ENABLED;
   delete process.env.PLAN_QUOTA_STRICT_ENABLED;
+  delete process.env.AI_QUOTA_OUTAGE_POLICY;
 });
 
 test.after(() => {
@@ -400,6 +402,62 @@ test('paid AI quota enforcement can fail closed on quota RPC outage in strict mo
       requestId: 'ai-gate-strict-quota-rpc-outage',
       auth: makeAuth('starter', { id: 'strict-quota-user' }),
       rawClientContext: { platform: 'web' },
+      feature: 'chat',
+      quotaKind: 'ai',
+    });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.statusCode, 503);
+    assert.equal(result.errorCode, 'account_status_unavailable');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('paid AI quota outage policy flag can fail closed without legacy strict flags', async () => {
+  process.env.PLAN_ENFORCEMENT_ENABLED = 'true';
+  process.env.AI_QUOTA_OUTAGE_POLICY = 'strict_fail_closed';
+  process.env.SUPABASE_URL = 'https://unit-project.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    const method = init?.method || 'GET';
+    if (url.includes('app_users?on_conflict=')) {
+      return new Response('', { status: 201 });
+    }
+    if (url.includes('app_users?id=eq.policy-quota-user')) {
+      return new Response(JSON.stringify([{
+        id: 'policy-quota-user',
+        email: 'policy-quota-user@example.com',
+        display_name: 'Policy Quota User',
+        provider: 'email',
+        status: 'active',
+        plan_code: 'starter',
+        billing_status: 'active',
+        billing_provider: 'manual',
+        billing_market: 'brunei',
+        payment_action_required: false,
+        updated_at: new Date().toISOString(),
+      }]), { status: 200 });
+    }
+    if (url.includes('user_entitlements?user_id=eq.policy-quota-user')) {
+      return new Response(JSON.stringify([]), { status: 200 });
+    }
+    if (url.includes('app_plans?') || url.includes('app_feature_flags?')) {
+      return new Response(JSON.stringify([]), { status: 200 });
+    }
+    if (url.includes('rpc/reserve_app_quota') && method === 'POST') {
+      return new Response(JSON.stringify({ message: 'Could not find function public.reserve_app_quota' }), { status: 404 });
+    }
+    throw new Error(`Unexpected fetch ${url} ${method}`);
+  }) as typeof fetch;
+
+  try {
+    const result = await requirePaidAiAccess({
+      requestId: 'ai-gate-policy-quota-rpc-outage',
+      auth: makeAuth('starter', { id: 'policy-quota-user' }),
+      rawClientContext: { platform: 'mobile' },
       feature: 'chat',
       quotaKind: 'ai',
     });

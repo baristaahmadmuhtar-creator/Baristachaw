@@ -356,7 +356,7 @@ test('starter users only see Pro as a webapp upgrade option', async ({ page }) =
   await page.getByTestId('plan-card-pro-choose').click();
   await expect.poll(() => checkoutBody?.planCode).toBe('pro');
   await expect(page.getByText(/TOTAL TRANSFER|Transfer Manual/i)).toBeVisible();
-  await expect(page.getByText(/Rp 250\.000/i)).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Rp 250\.000 for Barista Pro/i })).toBeVisible();
 });
 
 test('active Pro users see active-plan state instead of duplicate checkout', async ({ page }) => {

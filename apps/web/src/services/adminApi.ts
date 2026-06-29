@@ -6,7 +6,7 @@ export type CheckStatus = 'pass' | 'warn' | 'fail';
 export type DataMode = 'supabase' | 'runtime_fallback';
 export type FeatureFlagStatus = 'available' | 'maintenance' | 'disabled';
 export type FeatureSurface = 'global' | 'web' | 'pwa' | 'mobile' | 'admin';
-export type BillingProvider = 'none' | 'admin' | 'google_play' | 'app_store' | 'stripe' | 'revenuecat' | 'manual' | 'midtrans' | 'xendit';
+export type BillingProvider = 'none' | 'admin' | 'google_play' | 'app_store' | 'stripe' | 'revenuecat' | 'manual' | 'midtrans' | 'xendit' | 'mayar';
 export type BillingStatus = 'none' | 'active' | 'trialing' | 'past_due' | 'cancelled' | 'expired' | 'refunded';
 export type BillingMarket = 'indonesia' | 'brunei' | 'global' | 'unknown';
 export type CheckoutMode = 'disabled' | 'external' | 'stripe_checkout' | 'play_billing' | 'app_store' | 'manual_invoice';
@@ -179,6 +179,33 @@ export type AdminAuditEvent = {
   createdAt: string;
   detail: string;
   severity: 'info' | 'warning' | 'critical';
+  reviewed?: boolean;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  reviewNote?: string;
+};
+
+export type AdminDatabaseContractTable = {
+  table: string;
+  required: boolean;
+  exists: boolean;
+  readable: boolean;
+  writable: boolean;
+  realtime: boolean;
+  strategy: 'realtime' | 'polling' | 'service_role_rest';
+  status: CheckStatus;
+  severity: 'BLOCKER' | 'WARNING' | 'INFO';
+  sampleStatus: 'row' | 'empty' | 'missing' | 'error' | 'unchecked';
+  migration: string;
+  lastError?: string;
+};
+
+export type AdminDatabaseContract = {
+  ready: boolean;
+  blockers: number;
+  warnings: number;
+  generatedAt: string;
+  tables: AdminDatabaseContractTable[];
 };
 
 export type AdminAiBrewFallbackEvent = {
@@ -440,6 +467,7 @@ export type AdminSnapshot = {
   plans: AdminPlan[];
   users: AdminUserRecord[];
   audit: AdminAuditEvent[];
+  databaseContract: AdminDatabaseContract;
   checks: AdminSystemCheck[];
   launchChecklist: LaunchChecklistItem[];
   featureFlags: AdminFeatureFlag[];
@@ -672,6 +700,27 @@ export function updateAdminPlan(planCode: PlanCode, patch: AdminPlanPatch): Prom
       action: 'update_plan',
       planCode,
       patch,
+    }),
+  }, 18_000);
+}
+
+export function syncPlanCatalog(operatorNote: string): Promise<AdminSnapshot> {
+  return adminRequest<AdminSnapshot>('/api/admin/management', {
+    method: 'PATCH',
+    body: JSON.stringify({
+      action: 'sync_plan_catalog',
+      operatorNote,
+    }),
+  }, 18_000);
+}
+
+export function markAuditReviewed(auditEventIds: string[], operatorNote?: string): Promise<AdminSnapshot> {
+  return adminRequest<AdminSnapshot>('/api/admin/management', {
+    method: 'PATCH',
+    body: JSON.stringify({
+      action: 'mark_audit_reviewed',
+      auditEventIds,
+      ...(operatorNote ? { operatorNote } : {}),
     }),
   }, 18_000);
 }

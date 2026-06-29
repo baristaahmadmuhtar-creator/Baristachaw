@@ -149,6 +149,8 @@ app.all("/api/auth/mobile/start", wrapVercelHandler(authMobileHandler as unknown
 app.all("/api/auth/mobile/callback", wrapVercelHandler(authMobileHandler as unknown as LocalApiHandler));
 app.all("/api/auth/mobile/exchange", wrapVercelHandler(authMobileHandler as unknown as LocalApiHandler));
 app.all("/api/auth/mobile/apple/exchange", wrapVercelHandler(authMobileHandler as unknown as LocalApiHandler));
+app.all("/api/auth/mobile/supabase/exchange", wrapVercelHandler(authMobileHandler as unknown as LocalApiHandler));
+app.all("/api/auth/mobile/supabase/callback", wrapVercelHandler(authMobileHandler as unknown as LocalApiHandler));
 app.all("/api/test-auth/login", (req, res) => handleTestAuthLogin(req as any, res as any));
 app.all("/api/test-auth/logout", (req, res) => handleTestAuthLogout(req as any, res as any));
 app.all("/api/auth/url", wrapVercelHandler(authUrlHandler as unknown as LocalApiHandler));

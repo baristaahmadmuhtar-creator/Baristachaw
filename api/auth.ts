@@ -44,6 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     || path === 'mobile/exchange'
     || path === 'mobile/apple/exchange'
     || path === 'mobile/supabase/exchange'
+    || path === 'mobile/supabase/callback'
   ) target = mobileAuthHandler as Handler;
   else if (path === 'account-recovery') target = accountRecoveryHandler as Handler;
 

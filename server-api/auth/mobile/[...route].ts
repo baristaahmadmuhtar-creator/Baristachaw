@@ -39,11 +39,28 @@ function enforceMobileAuthRateLimit(req: VercelRequest, res: VercelResponse, rou
   return false;
 }
 
+function splitRouteText(text: string): string[] {
+  return text.split('/').map(item => item.trim()).filter(Boolean);
+}
+
+function routePartsFromQueryValue(value: unknown): string[] {
+  if (Array.isArray(value)) return value.flatMap(item => splitRouteText(String(item || '')));
+  return splitRouteText(String(value || '').trim());
+}
+
+function normalizeMobileRouteSegments(segments: string[]): string[] {
+  const clean = segments.map(item => item.trim()).filter(Boolean);
+  if (clean[0] === 'auth' && clean[1] === 'mobile') return clean.slice(2);
+  if (clean[0] === 'mobile') return clean.slice(1);
+  return clean;
+}
+
 function routeSegments(req: VercelRequest): string[] {
-  const raw = req.query.route;
-  if (Array.isArray(raw)) return raw.map(item => String(item || '').trim()).filter(Boolean);
-  const text = String(raw || '').trim();
-  if (text) return [text];
+  const routeParts = routePartsFromQueryValue(req.query.route);
+  if (routeParts.length) return normalizeMobileRouteSegments(routeParts);
+
+  const pathParts = routePartsFromQueryValue(req.query.path);
+  if (pathParts.length) return normalizeMobileRouteSegments(pathParts);
 
   const urlPath = String(req.url || '').split('?')[0] || '';
   const prefix = '/api/auth/mobile/';
@@ -51,7 +68,7 @@ function routeSegments(req: VercelRequest): string[] {
   if (idx >= 0) {
     const suffix = urlPath.slice(idx + prefix.length).trim();
     if (!suffix) return [];
-    return suffix.split('/').map(item => item.trim()).filter(Boolean);
+    return normalizeMobileRouteSegments(splitRouteText(suffix));
   }
 
   return [];

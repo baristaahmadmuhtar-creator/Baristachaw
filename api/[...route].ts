@@ -100,6 +100,7 @@ function matchRoute(req: VercelRequest): RouteMatch | null {
     || joined === 'auth/mobile/exchange'
     || joined === 'auth/mobile/apple/exchange'
     || joined === 'auth/mobile/supabase/exchange'
+    || joined === 'auth/mobile/supabase/callback'
   ) {
     return { load: () => loadDefaultHandler(ROUTE_LOADERS['auth/mobile']) };
   }

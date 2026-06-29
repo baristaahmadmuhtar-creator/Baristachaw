@@ -282,3 +282,103 @@ test('mobile auth exchanges a verified Supabase session for API JWT', async () =
   assert.equal(body.user.provider, 'google');
   assert.equal(typeof body.accessToken, 'string');
 });
+
+test('mobile Supabase exchange accepts api/auth gateway path routing shape', async () => {
+  const originalJwtSecret = process.env.JWT_SECRET;
+  process.env.JWT_SECRET = 'unit-test-secret-32-chars-minimum';
+
+  const req = {
+    method: 'POST',
+    url: '/api/auth?path=mobile/supabase/exchange',
+    query: { path: 'mobile/supabase/exchange' },
+    body: {},
+    headers: {
+      host: 'app.baristachaw.com',
+      'x-forwarded-proto': 'https',
+    },
+    socket: {
+      remoteAddress: '203.0.113.63',
+    },
+  } as any;
+  const res = createMockRes() as any;
+
+  try {
+    await mobileAuthHandler(req, res);
+  } finally {
+    if (typeof originalJwtSecret === 'string') process.env.JWT_SECRET = originalJwtSecret;
+    else delete process.env.JWT_SECRET;
+  }
+
+  const body = JSON.parse(res.body);
+  assert.equal(res.statusCode, 400);
+  assert.equal(body.error, 'accessToken is required');
+  assert.equal(body.errorCode, 'validation_error');
+});
+
+test('mobile Supabase exchange accepts Vercel catch-all route shape', async () => {
+  const originalJwtSecret = process.env.JWT_SECRET;
+  process.env.JWT_SECRET = 'unit-test-secret-32-chars-minimum';
+
+  const req = {
+    method: 'POST',
+    url: '/api/auth/mobile/supabase/exchange',
+    query: { route: ['auth', 'mobile', 'supabase', 'exchange'] },
+    body: {},
+    headers: {
+      host: 'app.baristachaw.com',
+      'x-forwarded-proto': 'https',
+    },
+    socket: {
+      remoteAddress: '203.0.113.64',
+    },
+  } as any;
+  const res = createMockRes() as any;
+
+  try {
+    await mobileAuthHandler(req, res);
+  } finally {
+    if (typeof originalJwtSecret === 'string') process.env.JWT_SECRET = originalJwtSecret;
+    else delete process.env.JWT_SECRET;
+  }
+
+  const body = JSON.parse(res.body);
+  assert.equal(res.statusCode, 400);
+  assert.equal(body.error, 'accessToken is required');
+  assert.equal(body.errorCode, 'validation_error');
+});
+
+test('mobile Supabase callback accepts api/auth gateway path routing shape', async () => {
+  const originalMobileScheme = process.env.MOBILE_APP_SCHEME;
+  const originalAndroidPackage = process.env.MOBILE_APP_ANDROID_PACKAGE;
+  process.env.MOBILE_APP_SCHEME = 'baristachaw';
+  process.env.MOBILE_APP_ANDROID_PACKAGE = 'com.baristachaw.mobile';
+
+  const req = {
+    method: 'GET',
+    url: '/api/auth?path=mobile/supabase/callback',
+    query: { path: 'mobile/supabase/callback' },
+    headers: {
+      host: 'app.baristachaw.com',
+      'x-forwarded-proto': 'https',
+    },
+    socket: {
+      remoteAddress: '203.0.113.65',
+    },
+  } as any;
+  const res = createMockRes() as any;
+
+  try {
+    await mobileAuthHandler(req, res);
+  } finally {
+    if (typeof originalMobileScheme === 'string') process.env.MOBILE_APP_SCHEME = originalMobileScheme;
+    else delete process.env.MOBILE_APP_SCHEME;
+    if (typeof originalAndroidPackage === 'string') process.env.MOBILE_APP_ANDROID_PACKAGE = originalAndroidPackage;
+    else delete process.env.MOBILE_APP_ANDROID_PACKAGE;
+  }
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.headers.get('cache-control'), 'no-store');
+  assert.match(res.body, /scheme = "baristachaw"/);
+  assert.match(res.body, /androidPackage = "com\.baristachaw\.mobile"/);
+  assert.match(res.body, /deep-link-anchor/);
+});

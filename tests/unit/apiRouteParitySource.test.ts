@@ -26,6 +26,15 @@ const AUTH_EMAIL_PARITY_PATHS = [
   '/api/auth/email/password/reset/update',
 ] as const;
 
+const MOBILE_AUTH_PARITY_PATHS = [
+  '/api/auth/mobile/start',
+  '/api/auth/mobile/callback',
+  '/api/auth/mobile/exchange',
+  '/api/auth/mobile/apple/exchange',
+  '/api/auth/mobile/supabase/exchange',
+  '/api/auth/mobile/supabase/callback',
+] as const;
+
 function catchAllKey(path: string): string {
   return path.replace(/^\/api\//, '');
 }
@@ -58,6 +67,17 @@ test('auth routes used by app and landing are reachable in local server and Verc
   assert.match(AUTH_GATEWAY_SOURCE, /path === 'account-recovery'/);
   assert.match(WEB_AUTH_CONTEXT_SOURCE, /\/api\/auth\/account-recovery/);
   assertLocalAndCatchAllRoute('/api/auth/account-recovery', /server-api\/auth\/account-recovery\.js/);
+  assert.match(VERCEL_SOURCE, /"source": "\/api\/auth\/\(\.\*\)"/);
+});
+
+test('mobile auth routes used by Android and iOS stay reachable through all deployment entrypoints', () => {
+  for (const path of MOBILE_AUTH_PARITY_PATHS) {
+    assert.match(AUTH_GATEWAY_SOURCE, new RegExp(authGatewayPath(path).replaceAll('/', '\\/')), `${path} should remain supported by api/auth gateway`);
+    assertLocalAndCatchAllRoute(path, /server-api\/auth\/mobile\/\[\.\.\.route\]\.js/);
+  }
+
+  assert.match(CATCH_ALL_SOURCE, /joined === 'auth\/mobile\/supabase\/callback'/);
+  assert.match(AUTH_GATEWAY_SOURCE, /path === 'mobile\/supabase\/callback'/);
   assert.match(VERCEL_SOURCE, /"source": "\/api\/auth\/\(\.\*\)"/);
 });
 

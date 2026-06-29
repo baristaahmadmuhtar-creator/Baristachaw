@@ -189,6 +189,7 @@ function AiAccessGateDialog({
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [copiedBankIndex, setCopiedBankIndex] = useState<number | null>(null);
+  const [copiedSupportField, setCopiedSupportField] = useState<string | null>(null);
   const [turnstileVerified, setTurnstileVerified] = useState(false);
 
   const [promoCode, setPromoCode] = useState('');
@@ -234,6 +235,21 @@ function AiAccessGateDialog({
   const supportWhatsappNumber = manualInvoice?.manualInvoice?.instructions?.whatsappNumber || "+6738270092";
   const supportInstagramUrl = manualInvoice?.manualInvoice?.instructions?.instagramUrl || "https://instagram.com/baristachaw";
   const supportInstagramHandle = manualInvoice?.manualInvoice?.instructions?.instagramHandle || "@baristachaw";
+  const supportMessageText = manualInvoice?.manualInvoice?.supportMessage?.text || '';
+  const paymentDetailText = manualInvoice ? [
+    `Payment ID: ${manualInvoice.paymentRequestId}`,
+    `Plan: ${planDisplayNames[manualInvoice.planCode] || manualInvoice.planCode}`,
+    `Duration: ${manualInvoice.duration}`,
+    `Amount: ${manualInvoice.manualInvoice.amountLabel}`,
+    `Currency: ${manualInvoice.manualInvoice.currency.toUpperCase()}`,
+  ].join('\n') : '';
+
+  const copySupportText = async (field: string, text: string) => {
+    if (!text) return;
+    await navigator.clipboard?.writeText(text).catch(() => undefined);
+    setCopiedSupportField(field);
+    window.setTimeout(() => setCopiedSupportField(null), 1800);
+  };
 
   const renderSupportLinks = () => (
     <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
@@ -607,6 +623,42 @@ function AiAccessGateDialog({
                 <strong className="text-primary font-bold">{planDisplayNames[selectedPlan]}</strong>
                 <span className="block text-xs text-secondary mt-0.5">{getPriceDisplay()} / {durationLabels[selectedDuration].toLowerCase()}</span>
               </div>
+            </div>
+            <div className="mt-3 rounded-xl border border-glass bg-surface-alpha p-3 text-left">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <span className="text-xs font-bold text-secondary uppercase tracking-wider">Payment ID</span>
+                  <p className="mt-1 break-all font-mono text-sm font-black text-primary">{manualInvoice.paymentRequestId}</p>
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <button
+                    type="button"
+                    onClick={() => void copySupportText('payment-id', manualInvoice.paymentRequestId)}
+                    className="min-h-9 rounded-lg border border-glass bg-[var(--bg-base)] px-3 text-xs font-bold text-primary hover:bg-surface-alpha-hover"
+                  >
+                    {copiedSupportField === 'payment-id' ? 'Copied' : 'Salin Payment ID'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void copySupportText('details', paymentDetailText)}
+                    className="min-h-9 rounded-lg border border-glass bg-[var(--bg-base)] px-3 text-xs font-bold text-primary hover:bg-surface-alpha-hover"
+                  >
+                    {copiedSupportField === 'details' ? 'Copied' : 'Salin detail'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void copySupportText('admin-message', supportMessageText)}
+                    className="min-h-9 rounded-lg border border-blue-500/40 bg-blue-500/10 px-3 text-xs font-bold text-blue-700 hover:bg-blue-500/15 dark:text-blue-300"
+                  >
+                    {copiedSupportField === 'admin-message' ? 'Copied' : 'Salin pesan admin'}
+                  </button>
+                </div>
+              </div>
+              {supportMessageText ? (
+                <pre className="mt-3 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-[var(--bg-base)] p-2 text-xs leading-5 text-secondary">
+                  {supportMessageText}
+                </pre>
+              ) : null}
             </div>
 
             {checkoutError ? (

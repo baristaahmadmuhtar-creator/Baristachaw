@@ -78,6 +78,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   
   const [copied, setCopied] = useState(false);
   const [copiedBankIndex, setCopiedBankIndex] = useState<number | null>(null);
+  const [copiedSupportField, setCopiedSupportField] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [turnstileVerified, setTurnstileVerified] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -93,6 +94,14 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   const supportInstagramUrl = invoice?.instructions?.instagramUrl || "https://instagram.com/baristachaw";
   const supportInstagramHandle = invoice?.instructions?.instagramHandle || "@baristachaw";
   const proofUploadReady = Boolean(invoice?.proof?.endpoint) && invoice?.proof?.storage !== 'deferred';
+  const supportMessageText = invoice?.supportMessage?.text || '';
+  const paymentDetailText = invoice ? [
+    `Payment ID: ${invoice.id}`,
+    `Plan: ${selectedPlan}`,
+    `Duration: ${selectedDuration}`,
+    `Amount: ${invoice.amountLabel}`,
+    `Currency: ${String(invoice.currency || '').toUpperCase()}`,
+  ].join('\n') : '';
   const manualProofFallbackUrl = invoice?.instructions?.whatsappUrl
     || `https://wa.me/6738270092?text=${encodeURIComponent(`Halo Baristachaw, saya sudah transfer untuk invoice ${invoice?.id || ''} dan ingin mengirim bukti pembayaran.`)}`;
 
@@ -108,6 +117,13 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
       </a>
     </div>
   );
+
+  const copySupportText = async (field: string, text: string) => {
+    if (!text) return;
+    await navigator.clipboard?.writeText(text).catch(() => undefined);
+    setCopiedSupportField(field);
+    window.setTimeout(() => setCopiedSupportField(null), 1800);
+  };
 
   const markPendingReview = (
     paymentRequestId = invoice?.id || '',
@@ -1081,6 +1097,55 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                           <> Nominal invoice membantu admin mencocokkan pembayaran Anda.</>
                         )}
                       </p>
+                    </div>
+
+                    <div className="bank-details-card" style={{ marginTop: '12px' }}>
+                      <div className="bank-info-row">
+                        <span className="bank-name-label">Payment ID</span>
+                        <button
+                          className={`bank-copy-btn ${copiedSupportField === 'payment-id' ? 'copied' : ''}`}
+                          onClick={() => void copySupportText('payment-id', invoice.id)}
+                          type="button"
+                        >
+                          {copiedSupportField === 'payment-id' ? 'Copied' : 'Salin ID'}
+                        </button>
+                      </div>
+                      <div className="bank-info-row" style={{ marginTop: '4px' }}>
+                        <span className="bank-account-number">{invoice.id}</span>
+                      </div>
+                      <div className="bank-info-row" style={{ marginTop: '8px', gap: '8px', flexWrap: 'wrap' }}>
+                        <button
+                          className={`bank-copy-btn ${copiedSupportField === 'details' ? 'copied' : ''}`}
+                          onClick={() => void copySupportText('details', paymentDetailText)}
+                          type="button"
+                        >
+                          {copiedSupportField === 'details' ? 'Copied' : 'Salin detail pembayaran'}
+                        </button>
+                        <button
+                          className={`bank-copy-btn ${copiedSupportField === 'admin-message' ? 'copied' : ''}`}
+                          onClick={() => void copySupportText('admin-message', supportMessageText)}
+                          type="button"
+                        >
+                          {copiedSupportField === 'admin-message' ? 'Copied' : 'Salin pesan admin'}
+                        </button>
+                      </div>
+                      {supportMessageText ? (
+                        <pre style={{
+                          margin: '10px 0 0',
+                          maxHeight: '150px',
+                          overflow: 'auto',
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word',
+                          borderRadius: '10px',
+                          background: 'rgba(255,255,255,0.05)',
+                          padding: '10px',
+                          color: 'rgba(255,255,255,0.72)',
+                          fontSize: '11px',
+                          lineHeight: 1.55,
+                        }}>
+                          {supportMessageText}
+                        </pre>
+                      ) : null}
                     </div>
 
                     {invoice.instructions.qrisImageUrl ? (

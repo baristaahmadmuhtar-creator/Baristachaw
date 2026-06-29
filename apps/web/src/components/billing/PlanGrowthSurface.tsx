@@ -388,6 +388,7 @@ export function PlanGrowthSurface({
     }
     return 'choose';
   });
+  const [copiedManualField, setCopiedManualField] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -592,6 +593,26 @@ export function PlanGrowthSurface({
     await navigator.clipboard?.writeText(text).catch(() => undefined);
   };
 
+  const markManualCopied = (field: string) => {
+    setCopiedManualField(field);
+    window.setTimeout(() => setCopiedManualField(null), 1800);
+  };
+
+  const copyManualText = async (field: string, text: string) => {
+    if (!text) return;
+    await navigator.clipboard?.writeText(text).catch(() => undefined);
+    markManualCopied(field);
+  };
+
+  const manualSupportMessage = manualInvoice?.manualInvoice.supportMessage?.text || '';
+  const manualPaymentDetails = manualInvoice ? [
+    `Payment ID: ${manualInvoice.paymentRequestId}`,
+    `Plan: ${planDisplayName(manualInvoice.planCode)}`,
+    `Duration: ${manualInvoice.duration}`,
+    `Amount: ${manualInvoice.manualInvoice.amountLabel}`,
+    `Currency: ${manualInvoice.manualInvoice.currency.toUpperCase()}`,
+  ].join('\n') : '';
+
   const handlePromoApply = () => {
     if (promoCode.trim().length >= 4) {
       setPromoApplied(true);
@@ -710,6 +731,45 @@ export function PlanGrowthSurface({
                   >
                     Back to plans
                   </button>
+                  <div className="mt-4 rounded-xl border border-glass bg-[var(--bg-base)]/70 p-3">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-bold uppercase tracking-wide text-secondary">Payment ID</p>
+                        <p className="mt-1 break-all font-mono text-sm font-black text-primary">{manualInvoice.paymentRequestId}</p>
+                        <p className="mt-2 text-xs leading-5 text-secondary">
+                          {planDisplayName(manualInvoice.planCode)} / {manualInvoice.duration} / {manualInvoice.manualInvoice.amountLabel}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:w-auto">
+                        <button
+                          type="button"
+                          onClick={() => void copyManualText('payment-id', manualInvoice.paymentRequestId)}
+                          className="inline-flex min-h-10 items-center justify-center rounded-xl border border-glass bg-surface-alpha px-3 text-xs font-bold text-primary hover:bg-surface-alpha-hover"
+                        >
+                          {copiedManualField === 'payment-id' ? 'Copied' : 'Salin Payment ID'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void copyManualText('details', manualPaymentDetails)}
+                          className="inline-flex min-h-10 items-center justify-center rounded-xl border border-glass bg-surface-alpha px-3 text-xs font-bold text-primary hover:bg-surface-alpha-hover"
+                        >
+                          {copiedManualField === 'details' ? 'Copied' : 'Salin detail pembayaran'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void copyManualText('admin-message', manualSupportMessage)}
+                          className="inline-flex min-h-10 items-center justify-center rounded-xl border border-blue-500/40 bg-blue-500/10 px-3 text-xs font-bold text-blue-700 hover:bg-blue-500/15 dark:text-blue-300"
+                        >
+                          {copiedManualField === 'admin-message' ? 'Copied' : 'Salin pesan untuk admin'}
+                        </button>
+                      </div>
+                    </div>
+                    {manualSupportMessage ? (
+                      <pre className="mt-3 max-h-44 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-surface-alpha p-3 text-xs leading-5 text-secondary">
+                        {manualSupportMessage}
+                      </pre>
+                    ) : null}
+                  </div>
                   <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
                     <div className="rounded-xl border border-glass bg-[var(--bg-base)]/70 p-3">
                       <dl className="grid gap-2 sm:grid-cols-3">

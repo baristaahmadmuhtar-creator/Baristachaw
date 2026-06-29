@@ -59,6 +59,7 @@ Env yang perlu disiapkan sesuai provider:
 - Midtrans: `MIDTRANS_SERVER_KEY`, `MIDTRANS_WEBHOOK_SECRET`, `BILLING_CHECKOUT_URL_*`.
 - Xendit: `XENDIT_SECRET_KEY`, `XENDIT_WEBHOOK_TOKEN`, `BILLING_CHECKOUT_URL_*`.
 - Stripe/Web: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `BILLING_CHECKOUT_URL`.
+- Mayar: `MAYAR_API_KEY`, `MAYAR_ENV`, `MAYAR_SUCCESS_URL`; keep `MAYAR_CHECKOUT_ENABLED=false` for live launch until official webhook signature verification is documented and implemented.
 - Internal sync: `BILLING_SYNC_TOKEN` atau `BILLING_WEBHOOK_SECRET`.
 - Aktifkan `BILLING_LIVE_MODE=true` hanya setelah webhook dan refund/cancel/past_due sudah diuji.
 

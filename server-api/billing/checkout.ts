@@ -1,5 +1,17 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import {
+  formatCurrency,
+  getPlanByCode,
+  PLAN_PRICING,
+  resolveTeamPrice,
+  type CurrencyCode,
+  type PaidPlanCode,
+} from '../../packages/shared/src/planCatalog.js';
+import {
+  createMayarCheckoutSession,
+  getMayarConfig,
+} from './providers/mayar.js';
+import {
   applyCors,
   applyRateLimitHeaders,
   checkRateLimit,
@@ -9,6 +21,7 @@ import {
 } from '../_shared.js';
 import {
   createManualPaymentRequest,
+  buildManualPaymentRequestSupportMessage,
   loadPersistedManualPaymentQrConfigs,
   loadPersistedManualPaymentRequest,
   normalizeManualCurrency,
@@ -57,6 +70,26 @@ function normalizePromoCode(value: unknown): string {
   return cleaned.length >= 4 ? cleaned : '';
 }
 
+function envFlag(name: string): boolean {
+  const raw = String(process.env[name] || '').trim().toLowerCase();
+  return raw === '1' || raw === 'true' || raw === 'yes' || raw === 'on';
+}
+
+function normalizeCheckoutProvider(value: unknown): 'manual' | 'mayar' | '' {
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (raw === 'manual') return 'manual';
+  if (raw === 'mayar') return 'mayar';
+  return '';
+}
+
+function mayarCheckoutRequested(body: Record<string, unknown> | undefined): boolean {
+  const requested = normalizeCheckoutProvider(body?.provider || body?.billingProvider || body?.checkoutProvider);
+  if (requested === 'mayar') return true;
+  if (requested === 'manual') return false;
+  const envProvider = normalizeCheckoutProvider(process.env.BILLING_CHECKOUT_PROVIDER || process.env.BILLING_PROVIDER);
+  return envProvider === 'mayar' || envFlag('MAYAR_CHECKOUT_ENABLED');
+}
+
 function checkoutUrlForPlan(planCode: PlanCode, duration: BillingDuration, promoCode: string): string {
   const suffix = planCode.toUpperCase();
   const durationSuffix = duration.toUpperCase();
@@ -84,6 +117,44 @@ function providerForPlan(planCode: PlanCode): 'stripe' | 'revenuecat' | 'manual'
 function authEmail(user: Record<string, unknown> | undefined): string | undefined {
   const email = user?.email;
   return typeof email === 'string' && email.includes('@') ? email.slice(0, 160) : undefined;
+}
+
+function authMetadata(user: Record<string, unknown> | undefined): Record<string, unknown> {
+  const metadata = user?.user_metadata;
+  return metadata && typeof metadata === 'object' && !Array.isArray(metadata)
+    ? metadata as Record<string, unknown>
+    : {};
+}
+
+function authName(user: Record<string, unknown> | undefined): string | undefined {
+  const metadata = authMetadata(user);
+  const name = user?.name || user?.displayName || metadata.name;
+  return typeof name === 'string' && name.trim() ? name.trim().slice(0, 120) : undefined;
+}
+
+function authMobile(user: Record<string, unknown> | undefined, body: Record<string, unknown> | undefined): string {
+  const metadata = authMetadata(user);
+  const candidates = [
+    body?.mobile,
+    body?.phone,
+    user?.phone,
+    user?.mobile,
+    metadata.phone,
+    metadata.mobile,
+  ];
+  for (const candidate of candidates) {
+    if (typeof candidate !== 'string') continue;
+    const normalized = candidate.trim().replace(/[^\d+]/g, '').slice(0, 24);
+    if (normalized) return normalized;
+  }
+  return '';
+}
+
+function resolveCheckoutAmount(planCode: PlanCode, duration: BillingDuration, currency: CurrencyCode, overrideAmount?: number): number {
+  if (Number.isFinite(overrideAmount) && Number(overrideAmount) > 0) return Number(overrideAmount);
+  if (planCode === 'starter' || planCode === 'pro') return PLAN_PRICING[planCode][duration].discounted[currency];
+  if (planCode === 'team') return resolveTeamPrice(duration, currency);
+  return 0;
 }
 
 function manualInvoiceResponse(input: {
@@ -119,6 +190,8 @@ function manualInvoiceResponse(input: {
         supportEmail: input.manualRequest.instructions.supportEmail,
         instagramUrl: input.manualRequest.instructions.instagramUrl,
       },
+      supportMessage: input.manualRequest.supportMessage
+        || buildManualPaymentRequestSupportMessage(input.manualRequest, 'payment_initiated'),
       proof: {
         endpoint: proofReady ? '/api/billing/proof' : '',
         allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
@@ -326,6 +399,65 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
       } catch (e) {
         console.error('Failed to check pending manual payment idempotency:', e);
+      }
+    }
+
+    if (mayarCheckoutRequested(req.body)) {
+      const mayarConfig = getMayarConfig();
+      const email = authEmail(authResult.auth.user);
+      const mobile = authMobile(authResult.auth.user, req.body);
+      const mayarAmount = resolveCheckoutAmount(planCode, duration, currency, overrideAmount);
+      if (mayarConfig.configured && email && mobile && mayarAmount > 0) {
+        try {
+          const mayarSession = await createMayarCheckoutSession({
+            requestId,
+            userId: authResult.auth.userId,
+            email,
+            userName: authName(authResult.auth.user),
+            mobile,
+            planCode,
+            planDisplayName: getPlanByCode(planCode).displayName,
+            duration,
+            amount: mayarAmount,
+            amountLabel: formatCurrency(mayarAmount, currency),
+            currency,
+            promoCode: promoCode || undefined,
+            redirectUrl: mayarConfig.successUrl,
+            description: `Baristachaw ${getPlanByCode(planCode).displayName} ${duration}`,
+          });
+          return res.status(200).json({
+            ok: true,
+            requestId,
+            planCode,
+            duration,
+            promoCode: promoCode || undefined,
+            provider: 'mayar',
+            mode: 'redirect',
+            status: 'checkout_created',
+            paymentActionRequired: true,
+            url: mayarSession.checkoutUrl,
+            checkoutUrl: mayarSession.checkoutUrl,
+            mayar: {
+              invoiceId: mayarSession.invoiceId,
+              transactionId: mayarSession.transactionId,
+              paymentId: mayarSession.paymentId,
+              rawMode: mayarSession.rawMode,
+              externalReference: mayarSession.externalReference,
+              expiresAt: mayarSession.expiresAt,
+              webhookSignatureReady: mayarConfig.webhookSignatureReady,
+            },
+            message: 'Mayar checkout dibuat. Status paket aktif hanya setelah webhook/sync server memverifikasi pembayaran.',
+          });
+        } catch (error) {
+          console.error('Mayar checkout failed; falling back to manual invoice:', error);
+        }
+      } else {
+        console.warn('Mayar checkout unavailable; falling back to manual invoice', {
+          configured: mayarConfig.configured,
+          hasEmail: Boolean(email),
+          hasMobile: Boolean(mobile),
+          hasAmount: mayarAmount > 0,
+        });
       }
     }
 

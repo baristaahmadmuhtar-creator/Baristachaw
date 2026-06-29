@@ -31,6 +31,11 @@ const ORIGINAL_ENV = {
   REVENUECAT_CHECKOUT_URL_PRO: process.env.REVENUECAT_CHECKOUT_URL_PRO,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
   REVENUECAT_API_KEY: process.env.REVENUECAT_API_KEY,
+  BILLING_CHECKOUT_PROVIDER: process.env.BILLING_CHECKOUT_PROVIDER,
+  MAYAR_API_KEY: process.env.MAYAR_API_KEY,
+  MAYAR_ENV: process.env.MAYAR_ENV,
+  MAYAR_SUCCESS_URL: process.env.MAYAR_SUCCESS_URL,
+  MAYAR_CHECKOUT_ENABLED: process.env.MAYAR_CHECKOUT_ENABLED,
   SUPABASE_URL: process.env.SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   SUPABASE_STORAGE_BUCKET_PROOF: process.env.SUPABASE_STORAGE_BUCKET_PROOF,
@@ -156,6 +161,11 @@ test.beforeEach(() => {
   delete process.env.REVENUECAT_CHECKOUT_URL_PRO;
   delete process.env.STRIPE_SECRET_KEY;
   delete process.env.REVENUECAT_API_KEY;
+  delete process.env.BILLING_CHECKOUT_PROVIDER;
+  delete process.env.MAYAR_API_KEY;
+  delete process.env.MAYAR_ENV;
+  delete process.env.MAYAR_SUCCESS_URL;
+  delete process.env.MAYAR_CHECKOUT_ENABLED;
   resetManualPaymentRequestsForTests();
 
   originalFetch = globalThis.fetch;
@@ -285,6 +295,15 @@ test('manual checkout returns env-configured invoice without granting paid entit
   assert.equal(body.manualInvoice.instructions.accountName, 'Unit Account');
   assert.equal(body.manualInvoice.instructions.accountNumber, '1234567890');
   assert.match(body.manualInvoice.instructions.whatsappUrl, /^https:\/\/wa\.me\/6731234567\?text=/);
+  assert.equal(body.manualInvoice.supportMessage.templateType, 'payment_initiated');
+  assert.match(body.manualInvoice.supportMessage.text, new RegExp(`Payment ID: ${body.paymentRequestId}`));
+  assert.match(body.manualInvoice.supportMessage.text, /User ID: runtime_user_trial_review/);
+  assert.match(body.manualInvoice.supportMessage.text, /Email: manual\.customer@example\.com/);
+  assert.match(body.manualInvoice.supportMessage.text, /Paket: Barista Pro \(pro\)/);
+  assert.match(body.manualInvoice.supportMessage.text, /Durasi: 3 bulan/);
+  assert.match(body.manualInvoice.supportMessage.text, /Nominal: \$23\.99/);
+  assert.match(decodeURIComponent(body.manualInvoice.instructions.whatsappUrl), /Halo Admin Baristachaw/);
+  assert.doesNotMatch(body.manualInvoice.supportMessage.text, /draftToken|uploadUrl|signedUrl|service role/i);
   assert.equal(body.manualInvoice.instructions.notifyWebhookConfigured, false);
   assert.equal(body.manualInvoice.proof.endpoint, '/api/billing/proof');
   assert.match(body.manualInvoice.message, /Invoice is ready/i);
@@ -340,6 +359,73 @@ test('manual checkout uses support fallback when manual payment env flag is miss
   assert.equal(body.paymentActionRequired, true);
 });
 
+test('checkout can create Mayar redirect session when Mayar is selected and required customer fields exist', async () => {
+  process.env.BILLING_CHECKOUT_PROVIDER = 'mayar';
+  process.env.MAYAR_API_KEY = 'mayar-secret-key';
+  process.env.MAYAR_ENV = 'sandbox';
+  process.env.MAYAR_SUCCESS_URL = 'https://app.baristachaw.com/billing/success';
+
+  const activeFetch = globalThis.fetch;
+  let mayarPayload: any = null;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input.toString();
+    if (url.includes('api.mayar.club/hl/v1/invoice/create')) {
+      mayarPayload = JSON.parse(String(init?.body || '{}'));
+      return new Response(JSON.stringify({
+        statusCode: 200,
+        messages: 'success',
+        data: {
+          id: 'mayar-invoice-id',
+          transactionId: 'mayar-transaction-id',
+          link: 'https://mayar.example/checkout/mayar-invoice-id',
+          expiredAt: Date.parse('2026-07-01T00:00:00.000Z'),
+          extraData: mayarPayload.extraData,
+        },
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return activeFetch(input, init);
+  }) as typeof fetch;
+
+  try {
+    const token = createToken({
+      id: 'runtime_user_mayar_checkout',
+      email: 'mayar.customer@example.com',
+      name: 'Mayar Customer',
+    });
+    const req = makeReq({
+      cookies: { auth_token: token },
+      body: {
+        provider: 'mayar',
+        planCode: 'pro',
+        duration: 'monthly',
+        currency: 'idr',
+        mobile: '081234567890',
+      },
+    });
+    const res = createMockRes();
+    await checkoutHandler(req, res as any);
+
+    assert.equal(res.statusCode, 200);
+    const body = JSON.parse(res.body);
+    assert.equal(body.ok, true);
+    assert.equal(body.provider, 'mayar');
+    assert.equal(body.mode, 'redirect');
+    assert.equal(body.status, 'checkout_created');
+    assert.equal(body.checkoutUrl, 'https://mayar.example/checkout/mayar-invoice-id');
+    assert.equal(body.mayar.invoiceId, 'mayar-invoice-id');
+    assert.equal(body.mayar.webhookSignatureReady, false);
+    assert.equal(mayarPayload.mobile, '081234567890');
+    assert.equal(mayarPayload.extraData.userId, 'runtime_user_mayar_checkout');
+    assert.equal(mayarPayload.extraData.planCode, 'pro');
+    assert.doesNotMatch(JSON.stringify(body), /mayar-secret-key/);
+  } finally {
+    globalThis.fetch = activeFetch;
+  }
+});
+
 test('manual payment proof accepts allowlisted metadata and rejects unsafe uploads', async () => {
   const { body, token } = await postCheckout();
   const requestId = body.paymentRequestId;
@@ -367,6 +453,10 @@ test('manual payment proof accepts allowlisted metadata and rejects unsafe uploa
   assert.match(proofBody.proof.objectPath, new RegExp(`^.*${requestId}_proof_\\d+\\.png$`));
   assert.equal(proofBody.proofStorage, 'storage_ready');
   assert.equal(proofBody.deliveryMode, 'direct_upload');
+  assert.equal(proofBody.supportMessage.templateType, 'proof_submitted');
+  assert.match(proofBody.supportMessage.text, new RegExp(`Payment ID: ${requestId}`));
+  assert.match(proofBody.supportMessage.text, /Status bukti: Bukti berhasil diupload/);
+  assert.match(proofBody.supportMessage.text, /\.png/);
   assert.match(proofBody.uploadUrl, /^https:\/\/unit-test\.supabase\.co\/storage\/v1\/mock-upload-path/);
   assert.equal(proofBody.proof.mimeType, 'image/png');
   assert.match(proofBody.proof.generatedFileName, new RegExp(`^.*${requestId}_proof_\\d+\\.png$`));
@@ -463,6 +553,9 @@ test('manual payment proof falls back to support when signed upload generation f
     assert.equal(proofBody.proof.storage, 'metadata_only');
     assert.equal(proofBody.deliveryMode, 'manual_support');
     assert.equal(proofBody.uploadUrl, undefined);
+    assert.equal(proofBody.supportMessage.templateType, 'proof_upload_failed_support_fallback');
+    assert.match(proofBody.supportMessage.text, /upload bukti transfer di aplikasi gagal/);
+    assert.match(decodeURIComponent(proofBody.supportLinks.whatsappUrl), /Payment ID:/);
     assert.match(proofBody.supportLinks.whatsappUrl, /^https:\/\/wa\.me\//);
     assert.equal(proofBody.entitlement, 'pending_admin_review');
   } finally {

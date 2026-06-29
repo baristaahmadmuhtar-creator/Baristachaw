@@ -43,6 +43,7 @@ import {
   type ManualPaymentAction,
   type ManualPaymentRequest,
 } from '../billing/manualPayments.js';
+import { getMayarConfig } from '../billing/providers/mayar.js';
 
 type AdminRole = 'owner' | 'admin' | 'support' | 'analyst' | 'user';
 type AccountStatus = 'active' | 'trialing' | 'past_due' | 'suspended' | 'deleted';
@@ -50,7 +51,7 @@ type AccountRecoveryStatus = 'none' | 'requested' | 'verified' | 'resolved' | 'r
 type PlanCode = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
 type CheckStatus = 'pass' | 'warn' | 'fail';
 type DataMode = 'supabase' | 'runtime_fallback';
-type BillingProvider = 'none' | 'admin' | 'google_play' | 'app_store' | 'stripe' | 'revenuecat' | 'manual' | 'midtrans' | 'xendit';
+type BillingProvider = 'none' | 'admin' | 'google_play' | 'app_store' | 'stripe' | 'revenuecat' | 'manual' | 'midtrans' | 'xendit' | 'mayar';
 type BillingStatus = 'none' | 'active' | 'trialing' | 'past_due' | 'cancelled' | 'expired' | 'refunded';
 type BillingMarket = 'indonesia' | 'brunei' | 'global' | 'unknown';
 type CheckoutMode = 'disabled' | 'external' | 'stripe_checkout' | 'play_billing' | 'app_store' | 'manual_invoice';
@@ -416,7 +417,7 @@ const VALID_ACCOUNT_STATUSES = new Set<AccountStatus>(['active', 'trialing', 'pa
 const VALID_ACCOUNT_RECOVERY_STATUSES = new Set<AccountRecoveryStatus>(['none', 'requested', 'verified', 'resolved', 'rejected']);
 const VALID_PLAN_CODES = new Set<PlanCode>(['free', 'starter', 'pro', 'team', 'enterprise']);
 const VALID_BILLING_STATUSES = new Set<BillingStatus>(['none', 'active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded']);
-const VALID_BILLING_PROVIDERS = new Set<BillingProvider>(['none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit']);
+const VALID_BILLING_PROVIDERS = new Set<BillingProvider>(['none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit', 'mayar']);
 const VALID_BILLING_MARKETS = new Set<BillingMarket>(['indonesia', 'brunei', 'global', 'unknown']);
 const VALID_CHECKOUT_MODES = new Set<CheckoutMode>(['disabled', 'external', 'stripe_checkout', 'play_billing', 'app_store', 'manual_invoice']);
 const VALID_CATALOG_KINDS = new Set<CatalogKind>(['water', 'dripper', 'grinder']);
@@ -1514,6 +1515,7 @@ function connectedBillingProviders(): BillingProvider[] {
   if (readEnv('STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'BILLING_CHECKOUT_URL')) providers.push('stripe');
   if (readEnv('MIDTRANS_SERVER_KEY', 'MIDTRANS_WEBHOOK_SECRET')) providers.push('midtrans');
   if (readEnv('XENDIT_SECRET_KEY', 'XENDIT_WEBHOOK_TOKEN')) providers.push('xendit');
+  if (readEnv('MAYAR_API_KEY')) providers.push('mayar');
   if (readManualPaymentInstructions('Admin readiness check')) providers.push('manual');
   return providers;
 }
@@ -1526,6 +1528,7 @@ function billingSyncConfigured(): boolean {
     'STRIPE_WEBHOOK_SECRET',
     'MIDTRANS_WEBHOOK_SECRET',
     'XENDIT_WEBHOOK_TOKEN',
+    'MAYAR_WEBHOOK_SECRET',
   ));
 }
 
@@ -1609,12 +1612,13 @@ async function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[],
   const gaps: string[] = [];
   const manualConfigured = connectedProviders.includes('manual');
   const externalProviderConfigured = connectedProviders.some((provider) => provider !== 'manual');
+  const mayarConfig = getMayarConfig();
 
   if (dataMode !== 'supabase') {
     gaps.push('Supabase billing tables are not live yet; runtime billing controls are preview-only.');
   }
   if (!connectedProviders.length) {
-    gaps.push('No payment provider env is configured. Enable MANUAL_PAYMENT_ENABLED or add RevenueCat/Google Play/App Store/Stripe/Midtrans/Xendit before paid launch.');
+    gaps.push('No payment provider env is configured. Enable MANUAL_PAYMENT_ENABLED or add RevenueCat/Google Play/App Store/Stripe/Midtrans/Xendit/Mayar before paid launch.');
   }
   if (!hasSyncToken && !connectedProviders.includes('manual')) {
     gaps.push('Billing lifecycle sync token is missing. Set BILLING_SYNC_TOKEN or provider webhook secret before live payments.');
@@ -1624,6 +1628,15 @@ async function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[],
   }
   if (externalProviderConfigured && !connectedProviders.includes('app_store')) {
     gaps.push('App Store purchase credentials are not configured for iOS parity.');
+  }
+  if (connectedProviders.includes('mayar')) {
+    gaps.push(`Mayar mode: ${mayarConfig.mode}; checkout API ${mayarConfig.configured ? 'configured' : 'not configured'}.`);
+    if (!mayarConfig.webhookSignatureReady) {
+      gaps.push('Mayar webhook signature verification is not ready because inspected official docs do not document a signature algorithm.');
+    }
+    for (const blocker of mayarConfig.blockers) {
+      if (/MAYAR_|signature/i.test(blocker)) gaps.push(blocker);
+    }
   }
   if (!planParity.ok) {
     gaps.push(`Plan catalog parity mismatch: ${planParity.mismatches.join('; ')}`);

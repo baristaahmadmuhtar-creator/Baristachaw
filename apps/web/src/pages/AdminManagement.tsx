@@ -2563,6 +2563,7 @@ function ManualPaymentQueuePanel({
   const [statusFilter, setStatusFilter] = useState<ManualPaymentQueueFilter>('all');
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [copiedPaymentId, setCopiedPaymentId] = useState<string | null>(null);
   const pageSize = 12;
 
   const proofStorageLabel = (payment: AdminManualPaymentRequest): string => {
@@ -2643,6 +2644,16 @@ function ManualPaymentQueuePanel({
   const askReason = (label: string, payment: AdminManualPaymentRequest, action: ManualPaymentAction) => {
     const reason = window.prompt(label);
     if (reason && reason.trim().length >= 3) onAction(payment.id, action, reason.trim());
+  };
+
+  const expectedSupportMessage = (payment: AdminManualPaymentRequest): string => (
+    payment.supportMessage?.text || buildPaymentWhatsappMessage(payment, admin)
+  );
+
+  const copyExpectedMessage = async (payment: AdminManualPaymentRequest) => {
+    await navigator.clipboard?.writeText(expectedSupportMessage(payment)).catch(() => undefined);
+    setCopiedPaymentId(payment.id);
+    window.setTimeout(() => setCopiedPaymentId(null), 1800);
   };
 
   return (
@@ -2758,6 +2769,19 @@ function ManualPaymentQueuePanel({
                         {payment.proof.objectPath ? ` / ${payment.proof.objectPath}` : ''}
                       </p>
                     ) : null}
+                    <div className="rounded-xl border border-glass bg-surface-alpha p-2.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-tertiary">Expected user message</p>
+                        {payment.supportMessage?.warnings?.length ? (
+                          <span className="rounded-full bg-amber-500/10 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-amber-700 dark:text-amber-200">
+                            {payment.supportMessage.warnings.length} warning
+                          </span>
+                        ) : null}
+                      </div>
+                      <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-[var(--bg-base)] p-2 text-[11px] leading-5 text-secondary">
+                        {expectedSupportMessage(payment)}
+                      </pre>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end xl:max-w-[30rem]">
                     {payment.proof ? (
@@ -2771,12 +2795,19 @@ function ManualPaymentQueuePanel({
                     ) : null}
                     <a
                       className="inline-flex h-9 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-800 hover:bg-emerald-500/15 dark:text-emerald-300"
-                      href={buildWhatsappComposeUrl(buildPaymentWhatsappMessage(payment, admin))}
+                      href={buildWhatsappComposeUrl(expectedSupportMessage(payment))}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
                       {admin.text('contactUserWhatsApp')}
                     </a>
+                    <button
+                      type="button"
+                      onClick={() => void copyExpectedMessage(payment)}
+                      className="inline-flex h-9 items-center justify-center rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-500/15 dark:text-blue-300"
+                    >
+                      {copiedPaymentId === payment.id ? 'Copied' : 'Copy message'}
+                    </button>
                     {payment.instructions.whatsappUrl ? (
                       <a className="inline-flex h-9 items-center justify-center rounded-lg border border-glass shadow-sm backdrop-blur-md px-3 text-xs font-semibold text-primary hover:bg-surface-alpha transition-colors" href={payment.instructions.whatsappUrl} target="_blank" rel="noopener noreferrer">
                         {admin.text('paymentSupportWhatsApp')}

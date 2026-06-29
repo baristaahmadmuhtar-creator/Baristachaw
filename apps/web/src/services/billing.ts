@@ -3,6 +3,24 @@ import type { CurrencyCode } from './billingConfig';
 
 export type BillingDuration = 'monthly' | 'quarterly' | 'yearly';
 
+export type ManualPaymentSupportMessage = {
+  templateType:
+    | 'payment_initiated'
+    | 'proof_submitted'
+    | 'proof_upload_failed_support_fallback'
+    | 'upgrade_followup'
+    | 'renewal_followup'
+    | 'admin_review_request'
+    | 'payment_problem';
+  text: string;
+  compactText: string;
+  whatsappText: string;
+  emailSubject: string;
+  previewLabel: string;
+  warnings: string[];
+  requiredMissing: string[];
+};
+
 export type ManualPaymentInstructions = {
   bankName: string;
   accountName: string;
@@ -35,6 +53,7 @@ export type BillingManualInvoice = {
     supportEmail?: string;
     instagramUrl?: string;
   };
+  supportMessage?: ManualPaymentSupportMessage;
   proof: {
     endpoint: string;
     allowedTypes: string[];
@@ -178,6 +197,7 @@ export function submitManualPaymentProof(input: ManualPaymentProofSubmission): P
     supportEmail?: string;
     instagramUrl?: string;
   };
+  supportMessage?: ManualPaymentSupportMessage;
   paymentActionRequired: true;
   entitlement: 'pending_admin_review';
   message: string;

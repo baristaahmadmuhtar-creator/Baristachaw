@@ -9,6 +9,8 @@ import {
 } from '../_shared.js';
 import {
   getManualPaymentProofMaxBytes,
+  buildManualPaymentRequestSupportMessage,
+  manualPaymentSupportLinksForTemplate,
   persistManualPaymentProof,
   verifyDraftToken,
 } from './manualPayments.js';
@@ -175,6 +177,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     manualRequest.proof = proofMetadata;
   }
 
+  const supportTemplate = uploadUrl ? 'proof_submitted' : 'proof_upload_failed_support_fallback';
+  const supportMessage = buildManualPaymentRequestSupportMessage(manualRequest, supportTemplate);
+  const templateInstructions = manualPaymentSupportLinksForTemplate(manualRequest, supportTemplate);
+
   return res.status(200).json({
     ok: true,
     requestId,
@@ -184,7 +190,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     proofStorage,
     deliveryMode: uploadUrl ? 'direct_upload' : 'manual_support',
     uploadUrl: uploadUrl || undefined,
-    supportLinks: supportLinksFor(manualRequest),
+    supportLinks: supportLinksFor({ instructions: templateInstructions }),
+    supportMessage,
     paymentActionRequired: true,
     entitlement: 'pending_admin_review',
     message: uploadUrl

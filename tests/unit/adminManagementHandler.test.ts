@@ -288,6 +288,11 @@ test('admin management supports billing section pagination for manual payment qu
   assert.equal(body.billing.manualQueueCounts.receipt_received, 1);
   assert.equal(body.billing.manualPayments.length, 1);
   assert.equal(body.billing.manualPayments[0].id, manualRequest.id);
+  assert.equal(body.billing.manualPayments[0].supportMessage.templateType, 'admin_review_request');
+  assert.match(body.billing.manualPayments[0].supportMessage.text, new RegExp(`Payment ID: ${manualRequest.id}`));
+  assert.match(body.billing.manualPayments[0].supportMessage.text, /User ID: queue-billing-user/);
+  assert.match(body.billing.manualPayments[0].supportMessage.text, /Email: queue\.billing@example\.com/);
+  assert.match(body.billing.manualPayments[0].supportMessage.text, /Durasi: 1 bulan/);
   assert.ok(body.plans.length >= 4, 'billing section must not page plan rows');
 });
 

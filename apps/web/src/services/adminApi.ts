@@ -15,6 +15,23 @@ export type AdminCatalogReviewStatus = 'queued' | 'approved' | 'published' | 're
 export type ManualPaymentStatus = 'pending_review' | 'receipt_received' | 'verified_paid' | 'rejected' | 'expired';
 export type ManualPaymentAction = 'receipt_received' | 'verified_paid' | 'rejected' | 'expired' | 'downgrade_free';
 export type ManualPaymentQrCurrency = 'idr' | 'bnd' | 'myr' | 'sgd' | 'usd' | 'eur' | 'aud';
+export type ManualPaymentSupportMessage = {
+  templateType:
+    | 'payment_initiated'
+    | 'proof_submitted'
+    | 'proof_upload_failed_support_fallback'
+    | 'upgrade_followup'
+    | 'renewal_followup'
+    | 'admin_review_request'
+    | 'payment_problem';
+  text: string;
+  compactText: string;
+  whatsappText: string;
+  emailSubject: string;
+  previewLabel: string;
+  warnings: string[];
+  requiredMissing: string[];
+};
 export type AdminManagementSection =
   | 'komando'
   | 'users'
@@ -319,6 +336,7 @@ export type AdminManualPaymentRequest = {
   promoCode?: string;
   status: ManualPaymentStatus;
   paymentActionRequired: true;
+  supportMessage?: ManualPaymentSupportMessage;
   instructions: {
     bankName: string;
     accountName: string;

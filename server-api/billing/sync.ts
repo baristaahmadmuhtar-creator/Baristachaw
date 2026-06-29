@@ -16,7 +16,7 @@ import {
 
 type PlanCode = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
 type BillingStatus = 'active' | 'trialing' | 'past_due' | 'cancelled' | 'expired' | 'refunded';
-type BillingProvider = 'admin' | 'google_play' | 'app_store' | 'stripe' | 'revenuecat' | 'manual' | 'midtrans' | 'xendit';
+type BillingProvider = 'admin' | 'google_play' | 'app_store' | 'stripe' | 'revenuecat' | 'manual' | 'midtrans' | 'xendit' | 'mayar';
 type BillingMarket = 'indonesia' | 'brunei' | 'global' | 'unknown';
 
 const BILLING_SYNC_RATE_LIMIT = {
@@ -28,7 +28,7 @@ const BILLING_SYNC_RATE_LIMIT = {
 
 const PLAN_CODES = new Set<PlanCode>(['free', 'starter', 'pro', 'team', 'enterprise']);
 const BILLING_STATUSES = new Set<BillingStatus>(['active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded']);
-const BILLING_PROVIDERS = new Set<BillingProvider>(['admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit']);
+const BILLING_PROVIDERS = new Set<BillingProvider>(['admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit', 'mayar']);
 
 function normalizeText(value: unknown, fallback = ''): string {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
@@ -66,7 +66,8 @@ function readSecret(): string {
       || process.env.REVENUECAT_WEBHOOK_SECRET
       || process.env.STRIPE_WEBHOOK_SECRET
       || process.env.MIDTRANS_WEBHOOK_SECRET
-      || process.env.XENDIT_WEBHOOK_TOKEN,
+      || process.env.XENDIT_WEBHOOK_TOKEN
+      || process.env.MAYAR_WEBHOOK_SECRET,
   );
 }
 

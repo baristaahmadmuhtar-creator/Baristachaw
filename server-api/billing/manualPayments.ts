@@ -11,6 +11,12 @@ import {
   type PaidPlanCode,
 } from '../../packages/shared/src/planCatalog.js';
 import {
+  buildManualPaymentSupportMessage,
+  buildManualPaymentWhatsappUrl,
+  type ManualPaymentMessageTemplateType,
+  type ManualPaymentSupportMessage,
+} from '../../packages/shared/src/manualPaymentMessage.js';
+import {
   getSupabaseAdminConfig,
   supabaseAdminRest,
   type SupabaseAdminConfig,
@@ -69,6 +75,7 @@ export type ManualPaymentRequest = {
   status: ManualPaymentStatus;
   paymentActionRequired: true;
   instructions: ManualPaymentInstructions;
+  supportMessage?: ManualPaymentSupportMessage;
   proof?: ManualPaymentProof;
   reason?: string;
   createdAt: number;
@@ -318,6 +325,7 @@ export function verifyDraftToken(token: string, userId: string): ManualPaymentRe
       paymentActionRequired: true,
       instructions: decoded.instructions,
     };
+    req.supportMessage = buildManualPaymentRequestSupportMessage(req, 'payment_initiated');
     return req;
   } catch (err) {
     return null;
@@ -378,9 +386,7 @@ function normalizeWhatsappNumber(value: string): string {
 }
 
 function buildWhatsappUrl(number: string, message: string): string | undefined {
-  const digits = normalizeWhatsappNumber(number);
-  if (!digits) return undefined;
-  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+  return buildManualPaymentWhatsappUrl(normalizeWhatsappNumber(number), message);
 }
 
 export function readManualPaymentInstructions(
@@ -514,6 +520,54 @@ function resolveManualAmount(planCode: PaidPlanCode, duration: BillingDuration, 
   return resolveTeamPrice(duration, currency);
 }
 
+function manualPaymentProofStatus(request: ManualPaymentRequest): 'none' | 'metadata_only' | 'supabase_signed_upload' | 'preview_unavailable' {
+  if (!request.proof) return 'none';
+  if (request.proof.storage === 'supabase_signed_upload') return 'supabase_signed_upload';
+  return 'metadata_only';
+}
+
+export function buildManualPaymentRequestSupportMessage(
+  request: ManualPaymentRequest,
+  templateType: ManualPaymentMessageTemplateType = 'admin_review_request',
+  userNote?: string,
+): ManualPaymentSupportMessage {
+  const plan = getPlanByCode(request.planCode);
+  return buildManualPaymentSupportMessage({
+    templateType,
+    paymentRequestId: request.id,
+    userId: request.userId,
+    userEmail: request.email,
+    planCode: request.planCode,
+    planDisplayName: plan.displayName,
+    duration: request.duration,
+    amount: request.amount,
+    amountLabel: request.amountLabel,
+    currency: request.currency,
+    promoCode: request.promoCode,
+    uniqueSuffix: request.uniqueSuffix,
+    status: request.status,
+    proofStatus: manualPaymentProofStatus(request),
+    proofFileName: request.proof?.objectPath || request.proof?.generatedFileName,
+    createdAt: request.createdAt,
+    updatedAt: request.updatedAt,
+    userNote,
+  });
+}
+
+export function manualPaymentSupportLinksForTemplate(
+  request: ManualPaymentRequest,
+  templateType: ManualPaymentMessageTemplateType,
+  userNote?: string,
+): ManualPaymentInstructions {
+  const supportMessage = buildManualPaymentRequestSupportMessage(request, templateType, userNote);
+  return {
+    ...request.instructions,
+    whatsappUrl: request.instructions.whatsappNumber
+      ? buildManualPaymentWhatsappUrl(request.instructions.whatsappNumber, supportMessage)
+      : request.instructions.whatsappUrl,
+  };
+}
+
 export function createManualPaymentRequest(input: {
   userId: string;
   email?: string;
@@ -537,18 +591,30 @@ export function createManualPaymentRequest(input: {
   const plan = getPlanByCode(input.planCode);
   const id = `manual_${Date.now().toString(36)}_${randomUUID().replace(/-/g, '').slice(0, 12)}`;
   const amountLabel = formatCurrency(amount, currency);
-  const message = [
-    `Baristachaw manual payment ${id}`,
-    `Plan: ${plan.displayName}`,
-    `Duration: ${input.duration}`,
-    `Amount: ${amountLabel}`,
-  ].join('\n');
-  const instructions = readManualPaymentInstructions(currency, message, {
+  const now = Date.now();
+  const supportMessage = buildManualPaymentSupportMessage({
+    templateType: 'payment_initiated',
+    paymentRequestId: id,
+    userId: input.userId,
+    userEmail: input.email,
+    planCode: input.planCode,
+    planDisplayName: plan.displayName,
+    duration: input.duration,
+    amount,
+    amountLabel,
+    currency,
+    promoCode: input.promoCode,
+    uniqueSuffix,
+    status: 'pending_review',
+    proofStatus: 'none',
+    createdAt: now,
+    updatedAt: now,
+  });
+  const instructions = readManualPaymentInstructions(currency, supportMessage.text, {
     allowFallbackInstructions: input.allowFallbackInstructions,
   });
   if (!instructions) return null;
 
-  const now = Date.now();
   const request: ManualPaymentRequest = {
     id,
     userId: input.userId,
@@ -562,6 +628,7 @@ export function createManualPaymentRequest(input: {
     status: 'pending_review',
     paymentActionRequired: true,
     instructions,
+    supportMessage,
     uniqueSuffix,
     createdAt: now,
     updatedAt: now,
@@ -618,8 +685,10 @@ function manualPaymentLifecycleMetadata(request: ManualPaymentRequest): Record<s
 }
 
 function manualPaymentMetadata(request: ManualPaymentRequest): Record<string, unknown> {
+  const supportMessage = buildManualPaymentRequestSupportMessage(request, 'admin_review_request');
   return {
     ...manualPaymentLifecycleMetadata(request),
+    supportMessageTemplateVersion: 1,
     manualStatus: request.status,
     manualRequestId: request.id,
     planCode: request.planCode,
@@ -630,6 +699,7 @@ function manualPaymentMetadata(request: ManualPaymentRequest): Record<string, un
     promoCode: request.promoCode || null,
     uniqueSuffix: request.uniqueSuffix ?? null,
     instructions: request.instructions,
+    supportMessage,
     proof: request.proof || null,
     reason: request.reason || null,
     createdAt: request.createdAt,
@@ -758,7 +828,7 @@ function requestFromPaymentReceipt(row: PaymentReceiptRow): ManualPaymentRequest
     `Amount: ${amountLabel}`,
   ].join('\n');
 
-  return {
+  const request: ManualPaymentRequest = {
     id,
     userId,
     email: safeText(row.payer_email, safeText(metadata.email), 320) || undefined,
@@ -781,6 +851,8 @@ function requestFromPaymentReceipt(row: PaymentReceiptRow): ManualPaymentRequest
       ? Number(metadata.uniqueSuffix)
       : undefined,
   };
+  request.supportMessage = buildManualPaymentRequestSupportMessage(request, 'admin_review_request');
+  return request;
 }
 
 export async function persistManualPaymentRequest(request: ManualPaymentRequest): Promise<boolean> {
@@ -864,6 +936,7 @@ export async function updatePersistedManualPaymentStatus(
   }
   request.reason = reason?.trim().slice(0, 240) || undefined;
   request.updatedAt = Date.now();
+  request.supportMessage = buildManualPaymentRequestSupportMessage(request, 'admin_review_request');
   REQUESTS.set(request.id, request);
 
   const reviewedActions = new Set<ManualPaymentAction>(['verified_paid', 'rejected', 'expired', 'downgrade_free']);
@@ -926,6 +999,7 @@ export function attachManualPaymentProof(input: {
   request.proof = proof;
   request.status = 'receipt_received';
   request.updatedAt = Date.now();
+  request.supportMessage = buildManualPaymentRequestSupportMessage(request, 'proof_submitted');
   REQUESTS.set(request.id, request);
   return { ok: true, request, proof };
 }
@@ -948,6 +1022,7 @@ export function updateManualPaymentStatus(
   }
   request.reason = reason?.trim().slice(0, 240) || undefined;
   request.updatedAt = Date.now();
+  request.supportMessage = buildManualPaymentRequestSupportMessage(request, 'admin_review_request');
   REQUESTS.set(request.id, request);
   return request;
 }

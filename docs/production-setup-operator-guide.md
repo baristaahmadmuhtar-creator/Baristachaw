@@ -13,6 +13,7 @@ Dashboard yang akan sering dibuka:
 - Midtrans dashboard: https://dashboard.midtrans.com/
 - Xendit dashboard: https://dashboard.xendit.co/
 - Stripe dashboard: https://dashboard.stripe.com/
+- Mayar developer docs: https://dev.mayar.id/
 - Sentry: https://sentry.io/
 - Google Play Console: https://play.google.com/console/
 - App Store Connect: https://appstoreconnect.apple.com/
@@ -277,6 +278,22 @@ STRIPE_CHECKOUT_URL_STARTER=<Stripe hosted checkout link>
 STRIPE_CHECKOUT_URL_PRO=<Stripe hosted checkout link>
 STRIPE_CUSTOMER_PORTAL_URL=<Stripe customer portal link>
 ```
+
+### Mayar
+
+Mayar checkout scaffold memakai endpoint invoice resmi. Jangan jadikan Mayar live entitlement provider sebelum Mayar memberi dokumentasi signature webhook resmi dan implementasi verifikasi sudah hijau.
+
+```text
+MAYAR_API_KEY=<secret>
+MAYAR_WEBHOOK_SECRET=<secret once official signature docs are available>
+MAYAR_ENV=sandbox
+MAYAR_SUCCESS_URL=https://app.baristachaw.com/billing/success
+MAYAR_CANCEL_URL=https://app.baristachaw.com/billing/cancel
+MAYAR_WEBHOOK_PATH=/api/billing/mayar-webhook
+MAYAR_CHECKOUT_ENABLED=false
+```
+
+Current behavior: checkout can be created server-side, webhook endpoint fails closed, and manual payment fallback remains available.
 
 ## 7. Monitoring Production
 

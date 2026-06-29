@@ -1331,6 +1331,8 @@ export interface BrewPlan {
   manualPresetLabel?: string;
   manualPresetCategory?: ManualBrewPresetCategory;
   manualPresetTechniquePattern?: ManualBrewTechniquePattern;
+  manualPresetVerificationLevel?: ManualBrewPresetVerificationLevel;
+  manualPresetSourceAttribution?: string;
   manualPresetSummary?: string;
   manualPresetSourceUrls?: string[];
   manualPresetGuidance?: string[];

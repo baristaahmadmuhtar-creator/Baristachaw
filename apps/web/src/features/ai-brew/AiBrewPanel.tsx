@@ -237,6 +237,8 @@ const COPY = {
     manualPresetCurated: 'Curated reference',
     manualPresetCommunity: 'Community reference',
     manualPresetInternal: 'Internal synthesis',
+    manualPresetSourceBasis: 'Source basis',
+    manualPresetDataCaveat: 'Use as an adapted starting point; cup validation still depends on bean, water, grinder, filter, and technique.',
     methodOptionTitle: 'Method setup',
     origamiFilterTitle: 'Origami filter',
     origamiFilterAuto: 'Auto',
@@ -863,6 +865,8 @@ const COPY = {
     manualPresetCurated: 'Referensi kurasi',
     manualPresetCommunity: 'Referensi komunitas',
     manualPresetInternal: 'Sintesis internal',
+    manualPresetSourceBasis: 'Basis sumber',
+    manualPresetDataCaveat: 'Gunakan sebagai titik awal adaptasi; validasi cangkir tetap bergantung pada biji, air, grinder, filter, dan teknik.',
     methodOptionTitle: 'Setelan metode',
     origamiFilterTitle: 'Filter Origami',
     origamiFilterAuto: 'Auto',
@@ -6737,6 +6741,11 @@ function PlanResultDialog({
   const manualPresetDisplayCopy = manualPreset
     ? getManualPresetDisplayCopy(manualPreset, language)
     : null;
+  const manualPresetVerificationLabel = manualPreset
+    ? formatManualPresetVerification(copy, manualPreset.verificationLevel)
+    : plan.manualPresetVerificationLevel
+      ? formatManualPresetVerification(copy, plan.manualPresetVerificationLevel)
+      : '';
   const localizedSwitchPresetLabel = plan.methodFamily === 'hario_switch'
     ? formatPlanSwitchPresetLabel(plan, language)
     : '';
@@ -7569,6 +7578,34 @@ function PlanResultDialog({
                     <p className="mt-1 text-xs leading-5 text-secondary" data-testid="ai-brew-result-manual-preset-summary">
                       {manualPresetDisplayCopy?.summary || localizeValidatedAiBrewText(plan.manualPresetSummary, language, plan.methodFamily, 'preset_summary')}
                     </p>
+                  ) : null}
+                  {manualPresetDisplayCopy || plan.manualPresetSourceAttribution ? (
+                    <div
+                      className="mt-2 min-w-0 rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/72 p-2.5 text-xs leading-5 text-secondary [overflow-wrap:anywhere]"
+                      data-testid="ai-brew-result-manual-preset-source"
+                    >
+                      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                        {manualPresetVerificationLabel ? (
+                          <span className="inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
+                            {copy.manualPresetSourceBasis}: {manualPresetVerificationLabel}
+                          </span>
+                        ) : null}
+                        {manualPresetDisplayCopy?.fallbackReason ? (
+                          <span className="inline-flex rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                            {copy.manualPresetFallback}
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="mt-1">
+                        {manualPresetDisplayCopy?.sourceAttribution || localizeValidatedAiBrewText(plan.manualPresetSourceAttribution, language, plan.methodFamily, 'preset_source')}
+                      </p>
+                      {manualPresetDisplayCopy?.fallbackReason ? (
+                        <p className="mt-1 text-amber-700 dark:text-amber-300">
+                          {manualPresetDisplayCopy.fallbackReason}
+                        </p>
+                      ) : null}
+                      <p className="mt-1 text-tertiary">{copy.manualPresetDataCaveat}</p>
+                    </div>
                   ) : null}
                   <p id={descriptionId} className="sr-only">
                     {isQuickResult

@@ -9437,6 +9437,8 @@ function finalizePlanCore(
     manualPresetLabel: manualPreset?.safeLabel,
     manualPresetCategory: manualPreset?.category,
     manualPresetTechniquePattern: manualPreset?.techniquePattern,
+    manualPresetVerificationLevel: manualPreset?.verificationLevel,
+    manualPresetSourceAttribution: manualPreset?.sourceAttribution,
     manualPresetSummary: manualPreset?.visibleSummary,
     manualPresetSourceUrls: manualPreset?.sourceUrls,
     manualPresetGuidance: manualPreset?.internalTips,

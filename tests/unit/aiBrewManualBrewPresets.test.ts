@@ -149,6 +149,77 @@ test('manual brew preset Indonesian localization source stays free of mojibake',
   assert.doesNotMatch(source, /[\u00c2\u00c3\uFFFD]/u);
 });
 
+test('AI Brew manual brew presets carry source confidence through plan, prompt, and result UI', async () => {
+  const catalog = await loadCatalogForTest();
+  const plan = applyPreset(catalog, 'inspired-tetsu-kasuya-46');
+  const prompt = buildAiAssistPrompt('ai_assist_deep_analysis', plan, 'en').body;
+  const panelSource = fs.readFileSync(path.join(ROOT, 'apps/web/src/features/ai-brew/AiBrewPanel.tsx'), 'utf8');
+
+  assert.equal(plan.manualPresetVerificationLevel, 'curated_reference');
+  assert.match(plan.manualPresetSourceAttribution || '', /World Brewers Cup 2016|4:6|adapted/i);
+  assert.match(prompt, /Manual brew preset source:.*curated_reference/i);
+  assert.match(prompt, /Do not invent manual preset source names/i);
+  assert.match(prompt, /Do not present curated_reference or internal_synthesis presets as official or exact/i);
+  assert.match(panelSource, /data-testid="ai-brew-result-manual-preset-source"/);
+  assert.match(panelSource, /manualPresetSourceBasis/);
+});
+
+test('manual brew preset source levels prevent public overclaims', async () => {
+  const catalog = await loadCatalogForTest();
+  const presets = catalog.manualBrewPresets || [];
+  const officialHosts = new Set(['aeropress.com', 'worldaeropresschampionship.com']);
+
+  assert.equal(presets.length, 40);
+  for (const preset of presets) {
+    const publicText = [
+      preset.safeLabel,
+      preset.sourceAttribution,
+      preset.visibleSummary,
+      preset.fallbackReason || '',
+      ...preset.guardrails,
+    ].join('\n');
+    const positiveClaimText = publicText.replace(
+      /\b(?:do not|not an?|never|without)\b[^\n.]*\b(?:official|exact|verified|world official)\b[^\n.]*[.\n]?/gi,
+      '',
+    );
+
+    for (const sourceUrl of preset.sourceUrls) {
+      const parsed = new URL(sourceUrl);
+      assert.equal(parsed.protocol, 'https:', `${preset.id} source URL must be https`);
+    }
+
+    if (preset.verificationLevel === 'official_reference') {
+      assert.ok(
+        preset.sourceUrls.some((sourceUrl) => officialHosts.has(new URL(sourceUrl).hostname.replace(/^www\./, ''))),
+        `${preset.id} official_reference must include a direct official source host`,
+      );
+    } else {
+      assert.doesNotMatch(
+        positiveClaimText,
+        /\bofficial\b|\bexact recipe\b|\bverified\b|world official/i,
+        `${preset.id} non-official preset must not overclaim source confidence`,
+      );
+    }
+
+    if (preset.verificationLevel === 'internal_synthesis') {
+      assert.match(
+        publicText,
+        /internal|synthesized|style|target|approach|reference|adapted|prefill/i,
+        `${preset.id} internal synthesis must be transparent as a starting point`,
+      );
+      assert.doesNotMatch(positiveClaimText, /\bexact\b|\bofficial\b|\bverified\b/i);
+    }
+
+    if (preset.category === 'competition_inspired') {
+      assert.match(
+        publicText,
+        /inspired|adapted|style|reference|prefill/i,
+        `${preset.id} competition preset must stay framed as inspired/adapted/reference`,
+      );
+    }
+  }
+});
+
 test('AI Brew AeroPress presets follow latest official WAC and Express Cold Brew references', async () => {
   const catalog = await loadCatalogForTest();
   const presets = catalog.manualBrewPresets || [];

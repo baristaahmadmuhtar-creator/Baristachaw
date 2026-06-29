@@ -38,6 +38,13 @@ test('AI Brew method-style contracts cover every method family and target rasa',
     assert.ok(contract.forbiddenVocabulary.length >= 3, `${methodFamily} must list cross-method leakage guardrails`);
     assert.ok(contract.outputFields.includes('methodFamily'), `${methodFamily} must require methodFamily output`);
     assert.ok(contract.outputFields.includes('recipeStyle'), `${methodFamily} must require recipeStyle output`);
+    if (methodFamily === 'espresso') {
+      assert.equal(
+        contract.outputFields.includes('espressoStyle'),
+        false,
+        'espresso style output must use BrewPlan.recipeStyle, not a nonexistent espressoStyle field',
+      );
+    }
     assert.match(contract.honestyBoundary, /physical cup validation/i, `${methodFamily} must keep sensory validation honest`);
 
     for (const targetProfileId of AI_BREW_TARGET_PROFILE_IDS) {

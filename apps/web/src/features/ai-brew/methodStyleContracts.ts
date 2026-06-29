@@ -609,7 +609,7 @@ export const METHOD_STYLE_CONTRACTS: Record<AiBrewMethodFamily, MethodStyleContr
     envelope: { ratio: [1.5, 3.2], temperatureC: [88, 96], timeSeconds: [20, 40], grind: 'extra_fine' },
     supportsIced: false,
     supportsBypass: false,
-    outputFields: [...COMMON_OUTPUT_FIELDS, 'espressoStyle'],
+    outputFields: [...COMMON_OUTPUT_FIELDS],
     honestyBoundary: SOFTWARE_HONESTY_BOUNDARY,
   },
 };

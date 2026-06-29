@@ -140,6 +140,15 @@ test('all 40 manual brew presets expose complete Indonesian display copy without
   }
 });
 
+test('manual brew preset Indonesian localization source stays free of mojibake', () => {
+  const source = fs.readFileSync(
+    path.join(ROOT, 'apps/web/src/features/ai-brew/manualPresetLocalization.ts'),
+    'utf8',
+  );
+
+  assert.doesNotMatch(source, /[\u00c2\u00c3\uFFFD]/u);
+});
+
 test('AI Brew AeroPress presets follow latest official WAC and Express Cold Brew references', async () => {
   const catalog = await loadCatalogForTest();
   const presets = catalog.manualBrewPresets || [];

@@ -26,6 +26,7 @@ import {
   loadPersistedManualPaymentRequest,
   normalizeManualCurrency,
   createDraftToken,
+  persistManualPaymentRequest,
 } from './manualPayments.js';
 import { buildAccountStatus } from '../account/status.js';
 import { getSupabaseAdminConfig, supabaseAdminRest } from '../_supabaseAdmin.js';
@@ -486,13 +487,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
 
+      let reviewStorage: 'persisted' | 'deferred' = 'deferred';
+      try {
+        const persisted = await persistManualPaymentRequest(manualRequest);
+        reviewStorage = persisted ? 'persisted' : 'deferred';
+      } catch (error) {
+        console.error('Failed to persist manual payment request:', error);
+      }
+
       const responsePayload = manualInvoiceResponse({
         requestId,
         planCode,
         duration,
         promoCode: promoCode || undefined,
         manualRequest,
-        reviewStorage: 'persisted',
+        reviewStorage,
       });
       // Attach token to response
       (responsePayload as any).draftToken = draftToken;

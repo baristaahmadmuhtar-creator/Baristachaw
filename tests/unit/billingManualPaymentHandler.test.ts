@@ -308,6 +308,11 @@ test('manual checkout returns env-configured invoice without granting paid entit
   assert.equal(body.manualInvoice.proof.endpoint, '/api/billing/proof');
   assert.match(body.manualInvoice.message, /Invoice is ready/i);
   assert.doesNotMatch(JSON.stringify(body), /STRIPE|REVENUECAT|sk_|service-role/i);
+  assert.equal(mockPaymentReceiptWrites.length, 1);
+  assert.equal(mockPaymentReceiptWrites[0][0].manual_request_id, body.paymentRequestId);
+  assert.equal(mockPaymentReceiptWrites[0][0].status, 'queued');
+  assert.equal(mockPaymentReceiptWrites[0][0].metadata.reviewState, 'waiting_for_receipt');
+  assert.equal(mockPaymentReceiptWrites[0][0].metadata.proofReceived, false);
 
   const userAfterInvoice = mockUsers.get('runtime_user_trial_review');
   assert.equal(userAfterInvoice.payment_action_required ?? false, false);
@@ -331,10 +336,10 @@ test('manual checkout still returns actionable invoice when receipt storage is t
     assert.equal(res.statusCode, 200);
     assert.equal(body.ok, true);
     assert.equal(body.mode, 'manual_invoice');
-    assert.equal(body.reviewStorage, 'persisted');
-    assert.equal(body.manualInvoice.proof.endpoint, '/api/billing/proof');
-    assert.equal(body.manualInvoice.proof.storage, 'persisted');
-    assert.match(body.manualInvoice.message, /Invoice is ready/i);
+    assert.equal(body.reviewStorage, 'deferred');
+    assert.equal(body.manualInvoice.proof.endpoint, '');
+    assert.equal(body.manualInvoice.proof.storage, 'deferred');
+    assert.match(body.manualInvoice.message, /automated proof storage is temporarily unavailable/i);
     assert.match(body.manualInvoice.supportLinks.whatsappUrl, /^https:\/\/wa\.me\//);
   } finally {
     globalThis.fetch = activeFetch;
@@ -519,6 +524,71 @@ test('manual payment proof blocks duplicate checkout until admin review finishes
   const duplicate = await postCheckout('runtime_user_duplicate_guard');
   assert.equal(duplicate.res.statusCode, 403);
   assert.equal(duplicate.body.errorCode, 'pending_invoice_exists');
+});
+
+test('manual payment proof inserts review row when checkout row is missing', async () => {
+  const { body, token } = await postCheckout('runtime_user_legacy_missing_receipt');
+  const activeFetch = globalThis.fetch;
+  const receiptWrites: Array<{ method: string; body: unknown }> = [];
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input.toString();
+    const method = init?.method || 'GET';
+
+    if (url.includes('/storage/v1/object/upload/sign/')) {
+      return new Response(JSON.stringify({ url: '/mock-upload-path' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (url.includes('/rest/v1/app_users')) {
+      if (method === 'GET') return new Response(JSON.stringify([{ id: 'runtime_user_legacy_missing_receipt' }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify([{ id: 'runtime_user_legacy_missing_receipt' }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    if (url.includes('/rest/v1/payment_receipts')) {
+      if (method === 'PATCH') {
+        receiptWrites.push({ method, body: JSON.parse(String(init?.body || '{}')) });
+        return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      if (method === 'POST') {
+        receiptWrites.push({ method, body: JSON.parse(String(init?.body || '[]')) });
+        return new Response(JSON.stringify([{ id: 'inserted-after-missing-row' }]), { status: 201, headers: { 'Content-Type': 'application/json' } });
+      }
+      return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    if (url.includes('/rest/v1/')) {
+      return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    return activeFetch(input, init);
+  }) as typeof fetch;
+
+  try {
+    const proofReq = makeReq({
+      cookies: { auth_token: token },
+      body: {
+        draftToken: body.draftToken,
+        requestId: body.paymentRequestId,
+        mimeType: 'image/png',
+        sizeBytes: 12345,
+      },
+    });
+    const proofRes = createMockRes();
+    await proofHandler(proofReq, proofRes as any);
+
+    assert.equal(proofRes.statusCode, 200);
+    const proofBody = JSON.parse(proofRes.body);
+    assert.equal(proofBody.ok, true);
+    assert.equal(proofBody.status, 'receipt_received');
+    assert.deepEqual(receiptWrites.map((write) => write.method), ['PATCH', 'POST']);
+    const insertedPayload = receiptWrites[1].body as Array<Record<string, unknown>>;
+    assert.equal(insertedPayload[0].manual_request_id, body.paymentRequestId);
+    assert.equal(insertedPayload[0].status, 'manual_review');
+  } finally {
+    globalThis.fetch = activeFetch;
+  }
 });
 
 test('manual payment proof falls back to support when signed upload generation fails', async () => {

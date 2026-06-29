@@ -871,10 +871,36 @@ export async function persistManualPaymentProof(request: ManualPaymentRequest): 
   const config = getSupabaseAdminConfig();
   if (!hasSupabaseConfig(config)) return false;
   await ensureManualPaymentAppUser(config, request);
+  const payload = paymentReceiptPayload(request);
+  const patched = await supabaseAdminRest<Array<{ id?: string }>>(
+    config,
+    `payment_receipts?manual_request_id=eq.${encodeURIComponent(request.id)}&select=id`,
+    {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify(payload),
+    },
+  );
+  if (Array.isArray(patched) && patched.length > 0) return true;
+
+  try {
+    await supabaseAdminRest(config, 'payment_receipts', {
+      method: 'POST',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify([payload]),
+    });
+    return true;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!/23505|duplicate key|payment_receipts_manual_request_unique_idx/i.test(message)) {
+      throw error;
+    }
+  }
+
   await supabaseAdminRest(config, `payment_receipts?manual_request_id=eq.${encodeURIComponent(request.id)}`, {
     method: 'PATCH',
     headers: { Prefer: 'return=minimal' },
-    body: JSON.stringify(paymentReceiptPayload(request)),
+    body: JSON.stringify(payload),
   });
   return true;
 }

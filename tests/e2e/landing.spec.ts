@@ -172,6 +172,7 @@ test('billing modal creates manual invoice and submits proof with inline validat
         mode: 'manual_invoice',
         provider: 'manual',
         paymentRequestId: 'landing_inv_123',
+        draftToken: 'landing_draft_token_123',
         paymentActionRequired: true,
         reviewStorage: 'persisted',
         planCode: 'starter',
@@ -210,6 +211,10 @@ test('billing modal creates manual invoice and submits proof with inline validat
       await route.fulfill({ status: 204, headers: corsHeaders });
       return;
     }
+    const body = route.request().postDataJSON() as Record<string, unknown>;
+    expect(body.requestId).toBe('landing_inv_123');
+    expect(body.draftToken).toBe('landing_draft_token_123');
+    expect(body.mimeType).toBe('image/png');
     await route.fulfill({
       status: 200,
       headers: { ...corsHeaders, 'content-type': 'application/json' },

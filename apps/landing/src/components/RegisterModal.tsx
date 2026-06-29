@@ -254,7 +254,10 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
         throw new Error(data.error || data.details || 'Failed to create manual transfer invoice');
       }
       if (data.ok && data.manualInvoice) {
-        setInvoice(data.manualInvoice);
+        setInvoice({
+          ...data.manualInvoice,
+          draftToken: data.draftToken || '',
+        });
       } else if (data.ok && data.mode === 'redirect' && data.url) {
         window.location.href = data.url;
       } else {
@@ -623,6 +626,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
           requestId: invoice.id,
           mimeType: uploadedFile.type,
           sizeBytes: uploadedFile.size,
+          draftToken: invoice.draftToken || '',
         }),
       });
 

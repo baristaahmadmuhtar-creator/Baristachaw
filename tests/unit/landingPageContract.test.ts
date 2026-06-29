@@ -68,6 +68,21 @@ test('landing and app pricing consume the shared plan catalog', () => {
   assert.doesNotMatch(sharedCatalog, /AI BREW COACH/);
 });
 
+test('landing manual payment proof keeps checkout draft token for upload validation', () => {
+  const registerModal = read('apps/landing/src/components/RegisterModal.tsx');
+
+  assert.match(
+    registerModal,
+    /setInvoice\(\{\s*\.\.\.data\.manualInvoice,\s*draftToken:\s*data\.draftToken/,
+    'landing checkout must keep the top-level draftToken beside manualInvoice state',
+  );
+  assert.match(
+    registerModal,
+    /draftToken:\s*invoice\.draftToken\s*\|\|\s*''/,
+    'landing proof upload must submit draftToken to /api/billing/proof',
+  );
+});
+
 test('support flow is explicit about its public issue fallback', () => {
   const form = read('apps/landing/src/components/ContactForm.tsx');
   assert.match(form, /GitHub issue channel/);

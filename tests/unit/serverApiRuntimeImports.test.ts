@@ -8,6 +8,7 @@ const FILES = [
   path.join(SERVER_API_DIR, 'ai.ts'),
   path.join(SERVER_API_DIR, 'chat.ts'),
   path.join(SERVER_API_DIR, '_orchestration.ts'),
+  path.join(SERVER_API_DIR, 'geo.ts'),
   path.join(SERVER_API_DIR, 'account', 'status.ts'),
   path.join(SERVER_API_DIR, 'admin', 'management.ts'),
   path.join(SERVER_API_DIR, 'billing', 'manualPayments.ts'),
@@ -33,4 +34,14 @@ test('serverless account admin and billing routes avoid workspace package plan c
       `${path.relative(process.cwd(), file)} should import the plan catalog through a bundleable relative path for Vercel serverless runtime`,
     );
   }
+});
+
+test('serverless public geo route avoids shared package source imports', () => {
+  const source = readFileSync(path.join(SERVER_API_DIR, 'geo.ts'), 'utf8');
+
+  assert.doesNotMatch(
+    source,
+    /from\s+['"]@baristachaw\/shared\/locale['"]/,
+    'server-api/geo.ts must not import @baristachaw/shared/locale because Vercel serverless does not include that TS package source for this route',
+  );
 });

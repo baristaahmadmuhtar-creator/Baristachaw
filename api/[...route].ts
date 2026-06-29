@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { applyPrivateApiNoStoreHeaders } from '../server-api/_shared.js';
+import { applyCors, applyPrivateApiNoStoreHeaders } from '../server-api/_shared.js';
 
 type Handler = (req: VercelRequest, res: VercelResponse) => unknown;
 type RouteMatch = { load: () => Promise<Handler>; before?: () => void };
@@ -127,6 +127,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return routeHandler(req, res);
   } catch (error) {
     const details = error instanceof Error ? error.message : String(error || 'unknown_error');
+    applyCors(req, res, 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     return res.status(500).json({
       error: 'Route handler failed',
       errorCode: 'route_handler_failed',

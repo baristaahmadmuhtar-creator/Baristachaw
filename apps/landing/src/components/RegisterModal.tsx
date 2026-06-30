@@ -1089,7 +1089,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                   >
                     <div className="pm-info" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div className="pm-text" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span className="pm-name" style={{ color: '#ffffff', fontWeight: 700, fontSize: '14px' }}>Online Payment (Mayar)</span>
+                        <span className="pm-name" style={{ color: '#ffffff', fontWeight: 700, fontSize: '14px' }}>Online Payment</span>
                         <span className="pm-desc" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>Bayar otomatis via QRIS, Virtual Account, atau E-Wallet.</span>
                       </div>
                     </div>
@@ -1138,7 +1138,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
               ) : paymentMethod === 'mayar' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
                   <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13.5px', lineHeight: 1.5, textAlign: 'center', margin: '0 0 10px' }}>
-                    Anda akan diarahkan ke halaman pembayaran online aman Mayar untuk menyelesaikan transaksi menggunakan QRIS, OVO, ShopeePay, GoPay, atau Virtual Account.
+                    Anda akan diarahkan ke halaman pembayaran online aman untuk menyelesaikan transaksi menggunakan QRIS, OVO, ShopeePay, GoPay, atau Virtual Account.
                   </p>
                   <button 
                     className="checkout-submit-btn" 

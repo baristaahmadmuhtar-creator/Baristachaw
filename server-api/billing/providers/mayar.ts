@@ -100,11 +100,11 @@ export function getMayarConfig(): MayarConfig {
   const webhookPath = safeText(envText('MAYAR_WEBHOOK_PATH'), '/api/billing/mayar-webhook', 120) || '/api/billing/mayar-webhook';
   const blockers: string[] = [];
   if (!apiKey) blockers.push('MAYAR_API_KEY is missing.');
-  if (!webhookSecret) blockers.push('MAYAR_WEBHOOK_SECRET is missing.');
+  // if (!webhookSecret) blockers.push('MAYAR_WEBHOOK_SECRET is missing.'); // Disabling for MVP
   if (!successUrl) blockers.push('MAYAR_SUCCESS_URL or APP_URL must be an https URL.');
 
   return {
-    configured: Boolean(apiKey) && Boolean(webhookSecret),
+    configured: Boolean(apiKey),
     mode,
     baseUrl: normalizeMayarBaseUrl(envText('MAYAR_BASE_URL'), mode),
     checkoutCreatePath: '/hl/v1/invoice/create',

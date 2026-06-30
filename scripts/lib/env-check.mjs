@@ -24,6 +24,9 @@ export const APP_OPTIONAL_ENV_GROUPS = [
   { label: 'ALLOWED_ORIGINS', sets: [['ALLOWED_ORIGINS']] },
   { label: 'HEALTHCHECK_TOKEN', sets: [['HEALTHCHECK_TOKEN']] },
   { label: 'SENTRY_DSN', sets: [['SENTRY_DSN']] },
+  { label: 'SENTRY_RELEASE', sets: [['SENTRY_RELEASE'], ['VERCEL_GIT_COMMIT_SHA'], ['RELEASE_VERSION']] },
+  { label: 'SENTRY_ENVIRONMENT', sets: [['SENTRY_ENVIRONMENT'], ['VERCEL_ENV'], ['APP_ENV']] },
+  { label: 'SENTRY_USER_CONTEXT_READY', sets: [['SENTRY_USER_CONTEXT_READY'], ['TELEMETRY_USER_CONTEXT_READY']] },
 ];
 
 export const MOBILE_ENV_GROUPS = [

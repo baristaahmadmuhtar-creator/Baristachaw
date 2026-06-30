@@ -2009,11 +2009,13 @@ function buildTelemetryReadiness(): AdminSystemCheck {
   const sentryConfigured = Boolean(readEnv('SENTRY_DSN', 'EXPO_PUBLIC_SENTRY_DSN', 'VITE_SENTRY_DSN'));
   const releaseConfigured = Boolean(readEnv('SENTRY_RELEASE', 'VERCEL_GIT_COMMIT_SHA', 'RELEASE_VERSION', 'VITE_APP_VERSION'));
   const environmentConfigured = Boolean(readEnv('SENTRY_ENVIRONMENT', 'VERCEL_ENV', 'NODE_ENV', 'APP_ENV'));
-  const ready = sentryConfigured && releaseConfigured && environmentConfigured;
+  const userContextVerified = envEnabled('SENTRY_USER_CONTEXT_READY') || envEnabled('TELEMETRY_USER_CONTEXT_READY');
+  const ready = sentryConfigured && releaseConfigured && environmentConfigured && userContextVerified;
   const missing = [
     !sentryConfigured ? 'DSN' : '',
     !releaseConfigured ? 'release' : '',
     !environmentConfigured ? 'environment' : '',
+    !userContextVerified ? 'user context proof' : '',
   ].filter(Boolean).join(', ');
   return {
     id: 'telemetry',
@@ -2021,11 +2023,31 @@ function buildTelemetryReadiness(): AdminSystemCheck {
     status: ready ? 'pass' : 'warn',
     owner: 'Operations',
     detail: ready
-      ? 'Telemetry DSN, release, environment, and user context hooks are ready for launch verification.'
+      ? 'Telemetry DSN, release, environment, and verified user context proof are ready for launch verification.'
       : sentryConfigured
-        ? `Telemetry DSN exists, but ${missing || 'release/environment'} and user context verification are incomplete.`
+        ? `Telemetry DSN exists, but ${missing || 'release/environment/user context'} verification is incomplete.`
         : 'Telemetry DSN is not configured; release, environment, and user context cannot be verified.',
-    nextAction: ready ? undefined : 'Set SENTRY_DSN plus SENTRY_RELEASE/SENTRY_ENVIRONMENT and verify user context in web/mobile before rollout.',
+    nextAction: ready ? undefined : 'Set SENTRY_DSN plus SENTRY_RELEASE/SENTRY_ENVIRONMENT and only set SENTRY_USER_CONTEXT_READY=true after verifying user-id context in web/mobile Sentry events.',
+  };
+}
+
+function buildAuditReviewCheck(audit: AdminAuditEvent[]): AdminSystemCheck {
+  const unreviewedCritical = audit.filter((event) => event.severity === 'critical' && event.reviewed !== true).length;
+  const unreviewedWarning = audit.filter((event) => event.severity === 'warning' && event.reviewed !== true).length;
+  const unreviewedTotal = unreviewedCritical + unreviewedWarning;
+  return {
+    id: 'audit_review_queue',
+    label: 'Audit review queue',
+    status: unreviewedCritical > 0 ? 'warn' : 'pass',
+    owner: 'Operations',
+    detail: unreviewedTotal > 0
+      ? `${unreviewedCritical} critical and ${unreviewedWarning} warning audit event(s) still need review. Raw audit rows stay immutable.`
+      : 'No unreviewed critical or warning audit events are active.',
+    nextAction: unreviewedCritical > 0
+      ? 'Open Admin > Audit, review critical events, add an operator note, then mark reviewed.'
+      : unreviewedWarning > 0
+        ? 'Review warning audit events when clearing launch support queues.'
+        : undefined,
   };
 }
 
@@ -2036,7 +2058,7 @@ function quotaOutagePolicyFromEnv(): 'strict_fail_closed' | 'graceful_dev_fallba
   return '';
 }
 
-function buildChecks(dataMode: DataMode, databaseContract: AdminDatabaseContract): AdminSystemCheck[] {
+function buildChecks(dataMode: DataMode, databaseContract: AdminDatabaseContract, audit: AdminAuditEvent[]): AdminSystemCheck[] {
   const supabase = getSupabaseConfig();
   const adminConfigured = Boolean(readEnv('ADMIN_EMAILS', 'ADMIN_BOOTSTRAP_EMAILS', 'ADMIN_USER_IDS', 'ADMIN_BOOTSTRAP_USER_IDS'));
   const jwtConfigured = Boolean(readEnv('JWT_SECRET'));
@@ -2091,6 +2113,7 @@ function buildChecks(dataMode: DataMode, databaseContract: AdminDatabaseContract
       detail: dataMode === 'supabase' ? 'Admin mutations are written to admin_audit_events.' : 'Runtime audit resets when serverless instances recycle.',
       nextAction: dataMode === 'supabase' ? undefined : 'Enable the admin database migration before managing real accounts.',
     },
+    buildAuditReviewCheck(audit),
     {
       id: 'plan_catalog',
       label: 'Plan catalog',
@@ -2230,6 +2253,14 @@ function buildLaunchChecklist(checks: AdminSystemCheck[]): LaunchChecklistItem[]
       action: 'Sync active, trialing, past_due, cancelled, and refunded events into app_users.',
     },
     {
+      id: 'audit_review_clear',
+      label: 'Critical admin audit reviewed',
+      status: statusFor('audit_review_queue'),
+      due: 'now',
+      owner: 'Admin',
+      action: 'Clear critical audit review items with operator notes before final launch.',
+    },
+    {
       id: 'support_ready',
       label: 'Support account workflow',
       status: 'pass',
@@ -2273,6 +2304,9 @@ function buildRecommendations(snapshot: {
   }
   if (snapshot.checks.some((check) => check.id === 'feature_flags' && check.status !== 'pass')) {
     recommendations.push('Persist maintenance flags so user-facing web/PWA/mobile banners match admin changes.');
+  }
+  if (snapshot.checks.some((check) => check.id === 'audit_review_queue' && check.status !== 'pass')) {
+    recommendations.push('Review Admin > Audit critical items before launch; marking reviewed keeps raw audit rows intact.');
   }
   if (snapshot.checks.some((check) => check.id === 'catalog_platform' && check.status !== 'pass')) {
     recommendations.push('Move grinder, dripper, and water catalog review into Supabase before adding new public catalog data.');
@@ -2413,7 +2447,7 @@ async function buildAdminSnapshot(
     ai,
     dataMode === 'supabase' ? 'admin_audit_events' : 'runtime_audit',
   );
-  const checks = buildChecks(dataMode, databaseContract);
+  const checks = buildChecks(dataMode, databaseContract, audit);
   const billing = await buildBillingSummary(users, plans, dataMode);
   const launchChecklist = buildLaunchChecklist(checks);
   const recommendations = buildRecommendations({ dataMode, metrics, checks });

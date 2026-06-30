@@ -188,8 +188,13 @@ Monitoring:
 
 ```text
 SENTRY_DSN=<server/web dsn>
+SENTRY_RELEASE=baristachaw@<version>
+SENTRY_ENVIRONMENT=production
+SENTRY_USER_CONTEXT_READY=false
 HEALTHCHECK_TOKEN=<random secret untuk deep health>
 ```
+
+Set `SENTRY_USER_CONTEXT_READY=true` only after a real web/PWA/mobile Sentry event shows the Baristachaw user id and no email, token, payment proof URL, service role error, or raw provider payload appears in event context.
 
 Billing MVP:
 

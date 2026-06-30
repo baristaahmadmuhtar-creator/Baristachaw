@@ -54,6 +54,7 @@ const ORIGINAL_ENV = {
   SENTRY_DSN: process.env.SENTRY_DSN,
   SENTRY_RELEASE: process.env.SENTRY_RELEASE,
   SENTRY_ENVIRONMENT: process.env.SENTRY_ENVIRONMENT,
+  SENTRY_USER_CONTEXT_READY: process.env.SENTRY_USER_CONTEXT_READY,
   VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA,
 };
 
@@ -161,6 +162,7 @@ test.beforeEach(() => {
   delete process.env.SENTRY_DSN;
   delete process.env.SENTRY_RELEASE;
   delete process.env.SENTRY_ENVIRONMENT;
+  delete process.env.SENTRY_USER_CONTEXT_READY;
   delete process.env.VERCEL_GIT_COMMIT_SHA;
   resetAiProviderRuntimeStateForTests();
   resetManualPaymentRequestsForTests();
@@ -314,6 +316,43 @@ test('admin management telemetry readiness does not pass with DSN only', async (
   const telemetry = body.checks.find((check: any) => check.id === 'telemetry');
   assert.equal(telemetry.status, 'warn');
   assert.match(telemetry.detail, /release|environment|user context/i);
+});
+
+test('admin management telemetry readiness requires verified user context proof', async () => {
+  process.env.SENTRY_DSN = 'https://public@example.ingest.sentry.io/123';
+  process.env.SENTRY_RELEASE = 'baristachaw@1.0.5';
+  process.env.SENTRY_ENVIRONMENT = 'production';
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const missingProofReq = makeReq({
+    cookies: { auth_token: token },
+  });
+  const missingProofRes = createMockRes();
+
+  await adminManagementHandler(missingProofReq, missingProofRes as any);
+
+  assert.equal(missingProofRes.statusCode, 200);
+  const missingProofBody = JSON.parse(missingProofRes.body);
+  const missingProofTelemetry = missingProofBody.checks.find((check: any) => check.id === 'telemetry');
+  assert.equal(missingProofTelemetry.status, 'warn');
+  assert.match(missingProofTelemetry.detail, /user context proof/i);
+
+  process.env.SENTRY_USER_CONTEXT_READY = 'true';
+  const readyReq = makeReq({
+    cookies: { auth_token: token },
+  });
+  const readyRes = createMockRes();
+
+  await adminManagementHandler(readyReq, readyRes as any);
+
+  assert.equal(readyRes.statusCode, 200);
+  const readyBody = JSON.parse(readyRes.body);
+  const readyTelemetry = readyBody.checks.find((check: any) => check.id === 'telemetry');
+  assert.equal(readyTelemetry.status, 'pass');
+  assert.match(readyTelemetry.detail, /verified user context proof/i);
 });
 
 test('admin management supports section pagination and filters for user tab payloads', async () => {
@@ -1293,6 +1332,12 @@ test('admin management marks critical audit events reviewed without deleting raw
   const mutationBody = JSON.parse(mutationRes.body);
   const criticalEvent = mutationBody.audit.find((event: any) => event.action === 'user_updated' && event.severity === 'critical');
   assert.ok(criticalEvent?.id);
+  const openAuditCheck = mutationBody.checks.find((check: any) => check.id === 'audit_review_queue');
+  assert.equal(openAuditCheck.status, 'warn');
+  assert.match(openAuditCheck.detail, /critical/i);
+  const openCriticalCount = Number(openAuditCheck.detail.match(/(\d+) critical/i)?.[1] || 0);
+  assert.ok(openCriticalCount > 0);
+  assert.ok(mutationBody.launchChecklist.some((item: any) => item.id === 'audit_review_clear' && item.status === 'warn'));
 
   const missingNoteReq = makeReq({
     method: 'PATCH',
@@ -1329,6 +1374,11 @@ test('admin management marks critical audit events reviewed without deleting raw
   assert.match(reviewedEvent.reviewNote, /founder verification is complete/);
   assert.ok(reviewBody.audit.some((event: any) => event.action === 'audit_mark_reviewed'));
   assert.ok(reviewBody.audit.some((event: any) => event.id === criticalEvent.id), 'raw audit event must remain available');
+  const clearedAuditCheck = reviewBody.checks.find((check: any) => check.id === 'audit_review_queue');
+  const clearedCriticalCount = Number(clearedAuditCheck.detail.match(/(\d+) critical/i)?.[1] || 0);
+  assert.equal(clearedCriticalCount, Math.max(0, openCriticalCount - 1));
+  assert.equal(clearedAuditCheck.status, clearedCriticalCount > 0 ? 'warn' : 'pass');
+  assert.ok(reviewBody.launchChecklist.some((item: any) => item.id === 'audit_review_clear' && item.status === clearedAuditCheck.status));
 });
 
 test('admin management rejects duplicate usernames', async () => {

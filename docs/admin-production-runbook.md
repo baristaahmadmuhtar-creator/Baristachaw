@@ -11,7 +11,7 @@ This release adds the `/admin` web console, `/api/admin/management` backend rout
 - `GEMINI_API_KEY`: AI provider capacity for protected AI routes.
 - Billing provider env before paid launch: `REVENUECAT_API_KEY`, `GOOGLE_PLAY_PACKAGE_NAME`, Apple/App Store Connect env, or Stripe/checkout URL env.
 - Optional web checkout links for MVP: `BILLING_CHECKOUT_URL_PRO`, `BILLING_CHECKOUT_URL_STARTER`, `BILLING_CHECKOUT_URL_TEAM`, and `BILLING_PORTAL_URL`.
-- Telemetry before Play Store rollout: `SENTRY_DSN` or platform-specific public DSN.
+- Telemetry before Play Store rollout: `SENTRY_DSN`, `SENTRY_RELEASE`, `SENTRY_ENVIRONMENT`, and `SENTRY_USER_CONTEXT_READY=true` only after a real web/PWA/mobile Sentry event shows the Baristachaw user id. Do not send email, payment proof URLs, tokens, or provider payloads as Sentry user context.
 
 Never expose `SUPABASE_SERVICE_ROLE_KEY` to Expo `EXPO_PUBLIC_*` or Vite `VITE_*`.
 
@@ -42,6 +42,7 @@ Before Play Store launch, the admin console should show:
 - `Billing provider contract`: pass or intentionally deferred for a free-only launch
 - `Per-plan enforcement`: pass before paid plan launch
 - `Crash and error telemetry`: pass
+- `Audit review queue`: pass after all critical admin events have an operator review note
 
 ## Operations
 

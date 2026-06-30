@@ -1427,7 +1427,7 @@ function ConfirmUserMutationDialog({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 14, scale: 0.98 }}
         transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-        className="max-h-[calc(100dvh-1.5rem)] w-full max-w-xl overflow-y-auto overscroll-contain rounded-t-[1.4rem] border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] p-3 lg:p-4 shadow-[var(--panel-elev-2)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl"
+        className="admin-scroll-pane max-h-[calc(100dvh-1.5rem)] w-full max-w-xl overflow-y-auto overscroll-contain rounded-t-[1.4rem] border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] p-3 lg:p-4 shadow-[var(--panel-elev-2)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-user-mutation-title"
@@ -1568,7 +1568,7 @@ function ConfirmFeatureFlagMutationDialog({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 14, scale: 0.98 }}
         transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-        className="max-h-[calc(100dvh-1.5rem)] w-full max-w-xl overflow-y-auto overscroll-contain rounded-t-[1.4rem] border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] p-3 lg:p-4 shadow-[var(--panel-elev-2)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl"
+        className="admin-scroll-pane max-h-[calc(100dvh-1.5rem)] w-full max-w-xl overflow-y-auto overscroll-contain rounded-t-[1.4rem] border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)] p-3 lg:p-4 shadow-[var(--panel-elev-2)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-feature-flag-title"
@@ -2267,7 +2267,7 @@ function AccountInspector({
     <aside
       role="dialog"
       aria-labelledby={titleId}
-      className="fixed inset-x-3 bottom-3 z-[70] max-h-[86dvh] overflow-y-auto overscroll-contain rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/94 p-3 shadow-[var(--panel-elev-2)] backdrop-blur-xl xl:sticky xl:inset-auto xl:top-3 lg:p-4 xl:z-auto xl:max-h-[calc(100dvh-8rem)] xl:bg-[var(--bg-base)]/82 xl:shadow-[var(--panel-elev-1)]"
+      className="admin-scroll-pane fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-[70] max-h-[86dvh] overflow-y-auto overscroll-contain rounded-3xl border border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/94 p-3 shadow-[var(--panel-elev-2)] backdrop-blur-xl xl:sticky xl:inset-auto xl:top-3 lg:p-4 xl:z-auto xl:max-h-[calc(100dvh-8rem)] xl:bg-[var(--bg-base)]/82 xl:shadow-[var(--panel-elev-1)]"
     >
       <div className="mx-auto mb-3 h-1 w-12 rounded-full bg-surface-alpha hover:bg-surface-alpha-hover transition-colors xl:hidden" aria-hidden="true" />
       <div className="sticky top-0 z-10 -mx-3 -mt-3 flex items-start justify-between gap-3 rounded-t-[1.4rem] border-b border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/94 px-3 py-2.5 backdrop-blur-xl xl:static xl:mx-0 xl:mt-0 xl:border-b-0 xl:bg-transparent xl:px-0 xl:py-0 xl:backdrop-blur-0">
@@ -5055,7 +5055,7 @@ export function AdminManagement() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="relative flex min-h-[100dvh] w-full bg-[var(--bg-base)] text-primary desktop-noise-bg overflow-hidden"
+      className="admin-app-shell relative flex h-[var(--app-height)] min-h-[var(--app-height)] max-h-[var(--app-height)] w-full overflow-hidden bg-[var(--bg-base)] text-primary desktop-noise-bg"
       aria-busy={loading || refreshing}
     >
       <a
@@ -5077,7 +5077,7 @@ export function AdminManagement() {
           </div>
         </div>
         
-        <div className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
+        <div className="admin-scroll-pane flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
           {TABS.map(({ id, labelKey, icon: Icon }) => (
             <button
               key={id}
@@ -5182,7 +5182,7 @@ export function AdminManagement() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 z-[65] flex w-[min(280px,86vw)] flex-col bg-[var(--bg-elevated)] pt-[env(safe-area-inset-top)] border-r border-glass shadow-sm backdrop-blur-md shadow-2xl lg:hidden"
+              className="fixed inset-y-0 left-0 z-[65] flex max-h-[var(--app-height)] w-[min(280px,86vw)] flex-col bg-[var(--bg-elevated)] pt-[env(safe-area-inset-top)] border-r border-glass shadow-sm backdrop-blur-md shadow-2xl lg:hidden"
             >
               <div className="flex h-14 items-center justify-between px-4 border-b border-glass shadow-sm backdrop-blur-md shrink-0">
                 <div className="flex items-center gap-2">
@@ -5198,7 +5198,7 @@ export function AdminManagement() {
                   <X size={17} />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto p-3 space-y-0.5">
+              <div className="admin-mobile-drawer-scroll flex-1 overflow-y-auto p-3 space-y-0.5">
                 {TABS.map(({ id, labelKey, icon: Icon }) => (
                   <button
                     key={id}
@@ -5283,7 +5283,7 @@ export function AdminManagement() {
       </AnimatePresence>
 
       {/* Main Content Pane */}
-      <div className="flex-1 min-w-0 lg:pl-60 flex flex-col min-h-[100dvh] overflow-y-auto">
+      <div data-testid="admin-scroll-pane" className="admin-scroll-pane flex h-full min-h-0 flex-1 min-w-0 flex-col overflow-y-auto overflow-x-hidden overscroll-contain lg:pl-60">
         {/* Mobile sticky top bar */}
         <header className="flex min-h-14 items-center justify-between px-4 pt-[env(safe-area-inset-top)] border-b border-glass shadow-sm backdrop-blur-md bg-[var(--bg-base)]/88 backdrop-blur-xl sticky top-0 z-30 lg:hidden shrink-0">
           <div className="flex items-center gap-2 min-w-0">
@@ -5313,7 +5313,7 @@ export function AdminManagement() {
         </header>
 
         {/* Content Body */}
-        <div className="flex-1 p-3 lg:p-5 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-3 max-w-7xl w-full mx-auto">
+        <div className="admin-content-body flex-1 min-h-0 p-3 lg:p-5 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-3 max-w-7xl w-full mx-auto">
           {/* Desktop Tab Header */}
           <div className="hidden lg:flex items-center justify-between border-b border-glass shadow-sm backdrop-blur-md pb-4 mb-2 shrink-0">
             <div>

@@ -1546,6 +1546,64 @@ html[data-ios-standalone] body::before {
   flex-direction: column;
 }
 
+.admin-app-shell {
+  height: var(--app-height);
+  min-height: var(--app-height);
+  max-height: var(--app-height);
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.admin-scroll-pane,
+.admin-mobile-drawer-scroll {
+  min-height: 0;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.admin-scroll-pane::-webkit-scrollbar,
+.admin-mobile-drawer-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-content-body {
+  min-height: 0;
+}
+
+@media (max-width: 1023px) {
+  .admin-content-body {
+    padding-left: max(0.75rem, var(--safe-left, 0px));
+    padding-right: max(0.75rem, var(--safe-right, 0px));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .admin-app-shell input,
+  .admin-app-shell select,
+  .admin-app-shell textarea {
+    font-size: 16px !important;
+    line-height: 1.25rem;
+  }
+
+  .admin-app-shell input,
+  .admin-app-shell select {
+    min-height: 44px;
+  }
+
+  .admin-app-shell textarea {
+    min-height: 44px;
+  }
+}
+
+html[data-ios] .admin-app-shell input,
+html[data-ios] .admin-app-shell select,
+html[data-ios] .admin-app-shell textarea,
+html[data-ios-standalone] .admin-app-shell input,
+html[data-ios-standalone] .admin-app-shell select,
+html[data-ios-standalone] .admin-app-shell textarea {
+  font-size: 16px !important;
+}
+
 html[data-ios-standalone] .desktop-noise-bg {
   background-image: none !important;
 }

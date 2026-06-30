@@ -114,3 +114,55 @@ test('admin iOS XR viewport keeps primary tabs inside the page without overflow'
 
   browserErrors.expectNoFatalErrors('admin iOS XR tabs');
 });
+
+test('admin iOS PWA shell scrolls internally and keeps form controls zoom-safe', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    const root = document.documentElement;
+    root.setAttribute('data-ios', '');
+    root.setAttribute('data-pwa', '');
+    root.setAttribute('data-ios-standalone', '');
+    root.setAttribute('data-web-parity', '');
+    root.style.setProperty('--app-height', '844px');
+    root.style.setProperty('--device-safe-bottom', '34px');
+    root.style.setProperty('--safe-bottom', '34px');
+  });
+  await qaLogin(page.request, buildQaAdminUser());
+
+  await page.goto('/admin?tab=users&language=id&runtime=web_parity&ui_profile=pwa&host_safe_bottom=34', { waitUntil: 'domcontentloaded' });
+  await expectAdminReady(page);
+
+  const metrics = await page.evaluate(() => {
+    const root = document.documentElement;
+    root.setAttribute('data-ios', '');
+    root.setAttribute('data-pwa', '');
+    root.setAttribute('data-ios-standalone', '');
+    root.setAttribute('data-web-parity', '');
+    root.style.setProperty('--app-height', '844px');
+    root.style.setProperty('--device-safe-bottom', '34px');
+    root.style.setProperty('--safe-bottom', '34px');
+
+    const pane = document.querySelector<HTMLElement>('[data-testid="admin-scroll-pane"]');
+    const field = document.querySelector<HTMLElement>('.admin-app-shell input, .admin-app-shell select, .admin-app-shell textarea');
+    if (!pane || !field) return null;
+
+    pane.scrollTop = 720;
+    return {
+      paneClientHeight: pane.clientHeight,
+      paneOverflowY: getComputedStyle(pane).overflowY,
+      paneScrollHeight: pane.scrollHeight,
+      paneScrollTop: pane.scrollTop,
+      fieldFontSize: Number.parseFloat(getComputedStyle(field).fontSize),
+      bodyOverflowY: getComputedStyle(document.body).overflowY,
+      htmlOverflowY: getComputedStyle(document.documentElement).overflowY,
+    };
+  });
+
+  expect(metrics).not.toBeNull();
+  expect(metrics?.paneScrollHeight ?? 0).toBeGreaterThan(metrics?.paneClientHeight ?? 0);
+  expect(metrics?.paneScrollTop ?? 0).toBeGreaterThan(100);
+  expect(metrics?.paneOverflowY).toMatch(/auto|scroll/);
+  expect(metrics?.fieldFontSize ?? 0).toBeGreaterThanOrEqual(16);
+  expect(metrics?.bodyOverflowY).toBe('hidden');
+  expect(metrics?.htmlOverflowY).toBe('hidden');
+});

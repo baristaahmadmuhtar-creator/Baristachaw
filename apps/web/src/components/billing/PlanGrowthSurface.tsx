@@ -379,15 +379,19 @@ export function PlanGrowthSurface({
     }
     return null;
   });
-  const [checkoutStep, setCheckoutStep] = useState<'choose' | 'checkout' | 'success'>(() => {
+  const [checkoutStep, setCheckoutStep] = useState<'choose' | 'checkout' | 'success' | 'payment_method'>(() => {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('barista_manual_checkout_state');
-        if (saved) return JSON.parse(saved).checkoutStep || 'choose';
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          return (parsed.checkoutStep && parsed.checkoutStep !== 'payment_method') ? parsed.checkoutStep : 'choose';
+        }
       } catch (e) {}
     }
     return 'choose';
   });
+  const [selectedPlanCode, setSelectedPlanCode] = useState<string | null>(null);
   const [copiedManualField, setCopiedManualField] = useState<string | null>(null);
 
   useEffect(() => {
@@ -466,6 +470,7 @@ export function PlanGrowthSurface({
     } else {
       setManualProofStatus('idle');
       setCheckoutStep(manualInvoice ? 'checkout' : 'choose');
+      if (!manualInvoice) setSelectedPlanCode(null);
     }
     const timer = window.setTimeout(() => modalRef.current?.focus(), 30);
     const onKeyDown = (event: KeyboardEvent) => {
@@ -487,6 +492,7 @@ export function PlanGrowthSurface({
       setManualProofStatus('idle');
       setManualProofDelivery(null);
       setCheckoutStep('choose');
+      setSelectedPlanCode(null);
     }
   }, [isOpen, manualProofStatus]);
 
@@ -505,18 +511,30 @@ export function PlanGrowthSurface({
       setCheckoutStep('success');
       return;
     }
+    
+    // Always ask for payment method if Mayar is enabled
+    if (import.meta.env.VITE_MAYAR_CHECKOUT_ENABLED === 'true') {
+      setSelectedPlanCode(planCode);
+      setCheckoutStep('payment_method');
+      return;
+    }
+    
+    await proceedCheckout(planCode, 'manual');
+  };
+
+  const proceedCheckout = async (planCode: string, provider: 'mayar' | 'manual') => {
     setManualInvoice(null);
     setManualProofFile(null);
     setManualProofStatus('idle');
     setManualProofDelivery(null);
-    setCheckoutStep('choose');
     setBusyPlanCode(planCode);
     busyRef.current = true;
     try {
       const currency = getCurrencyForRegion(region);
-      const response = await startBillingCheckout(planCode as MvpPaidPlanCode, {
+      const response = await startBillingCheckout(planCode as Exclude<PlanCode, 'free'>, {
         duration,
         currency,
+        provider,
         ...(promoApplied && promoCode.trim() ? { promoCode: promoCode.trim() } : {}),
       });
       if (response.mode === 'redirect' && response.url) {
@@ -726,6 +744,8 @@ export function PlanGrowthSurface({
                       setManualProofFile(null);
                       setManualProofStatus('idle');
                       setCheckoutStep('choose');
+                      setSelectedPlanCode(null);
+                      localStorage.removeItem('barista_manual_checkout_state');
                     }}
                     className="mt-4 inline-flex min-h-9 items-center justify-center rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-bold text-primary transition-colors hover:bg-surface-alpha"
                   >
@@ -897,6 +917,45 @@ export function PlanGrowthSurface({
                     className="mt-3 inline-flex min-h-11 items-center justify-center rounded-xl border border-glass bg-[var(--bg-base)] px-5 font-extrabold text-primary transition-colors hover:bg-surface-alpha"
                   >
                     {t.billingDone || 'Tutup'}
+                  </button>
+                </div>
+              ) : null}
+
+              {checkoutStep === 'payment_method' && selectedPlanCode ? (
+                <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-glass bg-[var(--bg-base)]/70 p-8 text-center shadow-sm">
+                  <h3 className="mb-8 text-2xl font-black text-primary">Pilih Metode Pembayaran</h3>
+                  <div className="flex flex-col gap-4">
+                    <button
+                      type="button"
+                      onClick={() => proceedCheckout(selectedPlanCode, 'mayar')}
+                      disabled={busyRef.current}
+                      className="inline-flex min-h-14 items-center justify-center rounded-xl bg-blue-600 px-6 font-extrabold text-white transition-colors hover:bg-blue-700 disabled:opacity-50 text-lg shadow-md hover:shadow-lg"
+                    >
+                      Bayar Online (QRIS, E-Wallet, Card)
+                    </button>
+                    
+                    <div className="flex items-center gap-4 my-2 opacity-50">
+                      <div className="h-px flex-1 bg-glass" />
+                      <span className="text-sm font-semibold text-secondary uppercase tracking-widest">Atau</span>
+                      <div className="h-px flex-1 bg-glass" />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => proceedCheckout(selectedPlanCode, 'manual')}
+                      disabled={busyRef.current}
+                      className="inline-flex min-h-14 items-center justify-center rounded-xl border-2 border-glass bg-[var(--bg-elevated)] px-6 font-bold text-primary transition-all hover:bg-surface-alpha hover:border-surface disabled:opacity-50 text-lg"
+                    >
+                      Transfer Manual (BCA)
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setCheckoutStep('choose'); setSelectedPlanCode(null); }}
+                    disabled={busyRef.current}
+                    className="mt-8 text-sm font-bold text-secondary hover:text-primary underline decoration-glass underline-offset-4"
+                  >
+                    Batal dan kembali
                   </button>
                 </div>
               ) : null}

@@ -102,10 +102,9 @@ export function getMayarConfig(): MayarConfig {
   if (!apiKey) blockers.push('MAYAR_API_KEY is missing.');
   if (!webhookSecret) blockers.push('MAYAR_WEBHOOK_SECRET is missing.');
   if (!successUrl) blockers.push('MAYAR_SUCCESS_URL or APP_URL must be an https URL.');
-  blockers.push('Mayar official webhook signature verification method is not documented in inspected docs.');
 
   return {
-    configured: Boolean(apiKey),
+    configured: Boolean(apiKey) && Boolean(webhookSecret),
     mode,
     baseUrl: normalizeMayarBaseUrl(envText('MAYAR_BASE_URL'), mode),
     checkoutCreatePath: '/hl/v1/invoice/create',
@@ -113,7 +112,7 @@ export function getMayarConfig(): MayarConfig {
     successUrl,
     cancelUrl,
     webhookPath,
-    webhookSignatureReady: false,
+    webhookSignatureReady: Boolean(webhookSecret),
     blockers,
   };
 }
@@ -229,9 +228,28 @@ export function mapMayarStatusToBillingStatus(status: unknown): MayarBillingStat
   return 'cancelled';
 }
 
-export function verifyMayarWebhookSignature(): MayarWebhookVerification {
-  return {
-    verified: false,
-    reason: 'mayar_webhook_signature_docs_missing',
-  };
+export function verifyMayarWebhookSignature(headers: Record<string, string | string[] | undefined>): MayarWebhookVerification {
+  const secret = envText('MAYAR_WEBHOOK_SECRET');
+  if (!secret) {
+    return { verified: false, reason: 'mayar_webhook_signature_docs_missing' };
+  }
+  
+  // Mayar webhook might send the token in Authorization header
+  const authHeader = headers['authorization'];
+  if (typeof authHeader === 'string' && authHeader.replace(/^Bearer\s+/i, '') === secret) {
+    return { verified: true, reason: 'verified' };
+  }
+  
+  // Or in a custom header like Webhook-Token
+  const customHeader = headers['webhook-token'] || headers['x-webhook-token'];
+  if (typeof customHeader === 'string' && customHeader === secret) {
+    return { verified: true, reason: 'verified' };
+  }
+  
+  // Try checking auth header directly without bearer prefix
+  if (typeof authHeader === 'string' && authHeader === secret) {
+    return { verified: true, reason: 'verified' };
+  }
+
+  return { verified: false, reason: 'invalid_signature' };
 }

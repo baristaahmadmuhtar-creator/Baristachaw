@@ -1071,8 +1071,8 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                 <div className="payment-method-card selected" style={{ marginBottom: '14px' }}>
                   <div className="pm-info">
                     <div className="pm-text">
-                      <span className="pm-name">Transfer Manual</span>
-                      <span className="pm-desc">Transfer, upload bukti, lalu tunggu review admin.</span>
+                      <span className="pm-name">{import.meta.env.VITE_MAYAR_CHECKOUT_ENABLED === 'true' ? 'Online Payment (Mayar)' : 'Transfer Manual'}</span>
+                      <span className="pm-desc">{import.meta.env.VITE_MAYAR_CHECKOUT_ENABLED === 'true' ? 'Bayar otomatis via QRIS, Virtual Account, atau E-Wallet.' : 'Transfer, upload bukti, lalu tunggu review admin.'}</span>
                     </div>
                   </div>
                   <div className="pm-check-dot"></div>
@@ -1080,7 +1080,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                 {fetchingInvoice ? (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '180px', gap: '12px' }}>
                     <Loader2 className="spin" size={28} color="#3b82f6" />
-                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>Menyiapkan detail transfer...</p>
+                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>{import.meta.env.VITE_MAYAR_CHECKOUT_ENABLED === 'true' ? 'Mengarahkan ke halaman pembayaran...' : 'Menyiapkan detail transfer...'}</p>
                   </div>
                 ) : invoiceError ? (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '180px', gap: '12px', textAlign: 'center' }}>

@@ -173,13 +173,14 @@ async function billingRequest<TResponse = BillingCheckoutResponse>(path: string,
 
 export function startBillingCheckout(
   planCode: Exclude<PlanCode, 'free'>,
-  options?: { duration?: BillingDuration; promoCode?: string; currency?: CurrencyCode },
+  options?: { duration?: BillingDuration; promoCode?: string; currency?: CurrencyCode; provider?: 'mayar' | 'manual' },
 ): Promise<BillingCheckoutResponse> {
   return billingRequest('/api/billing/checkout', {
     planCode,
     duration: options?.duration ?? 'monthly',
     ...(options?.promoCode ? { promoCode: options.promoCode } : {}),
     ...(options?.currency ? { currency: options.currency } : {}),
+    ...(options?.provider ? { provider: options.provider } : {}),
   });
 }
 

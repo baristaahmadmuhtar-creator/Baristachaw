@@ -181,6 +181,8 @@ export async function createMayarCheckoutSession(input: MayarCheckoutInput): Pro
   };
 
   let response: Response;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds timeout
   try {
     response = await fetch(`${config.baseUrl}${config.checkoutCreatePath}`, {
       method: 'POST',
@@ -190,9 +192,15 @@ export async function createMayarCheckoutSession(input: MayarCheckoutInput): Pro
         Accept: 'application/json',
       },
       body: JSON.stringify(payload),
+      signal: controller.signal,
     });
   } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('mayar_request_timeout');
+    }
     throw safeMayarError(error);
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   const text = await response.text().catch(() => '');

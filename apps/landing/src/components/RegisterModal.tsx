@@ -239,7 +239,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     try {
       const planCode = selectedPlan;
       const targetProvider = forcedProvider || paymentMethod;
-      const res = await fetch(`${APP_ORIGIN}/api/billing/checkout`, {
+      const res = await fetch(`/api/billing/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -299,8 +299,8 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
     try {
       const endpoint = isLogin
-        ? `${APP_ORIGIN}/api/auth/email/signin`
-        : `${APP_ORIGIN}/api/auth/email/signup`;
+        ? `/api/auth/email/signin`
+        : `/api/auth/email/signup`;
 
       const bodyPayload = isLogin
         ? { email, password }
@@ -376,7 +376,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     }
     setLoading(true);
     try {
-      const res = await fetch(`${APP_ORIGIN}/api/auth/email/otp/verify`, {
+      const res = await fetch(`/api/auth/email/otp/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -417,7 +417,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     setError('');
     setLoading(true);
     try {
-      const res = await fetch(`${APP_ORIGIN}/api/auth/email/otp/send`, {
+      const res = await fetch(`/api/auth/email/otp/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -441,7 +441,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     setError('');
     setLoading(true);
     try {
-      const res = await fetch(`${APP_ORIGIN}/api/auth/email/password/reset/start`, {
+      const res = await fetch(`/api/auth/email/password/reset/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -471,7 +471,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     setLoading(true);
     try {
       // Step 1: Verify OTP and get session/accessToken
-      const verifyRes = await fetch(`${APP_ORIGIN}/api/auth/email/password/reset/verify`, {
+      const verifyRes = await fetch(`/api/auth/email/password/reset/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -488,7 +488,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
       }
 
       // Step 2: Update password using the acquired token
-      const updateRes = await fetch(`${APP_ORIGIN}/api/auth/email/password/reset/update`, {
+      const updateRes = await fetch(`/api/auth/email/password/reset/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -531,7 +531,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     try {
       const returnPlan = normalizedInitialPlan || 'free';
       const returnTo = window.location.origin + `/?login_success=1&plan=${returnPlan}&duration=${duration}`;
-      const res = await fetch(`${APP_ORIGIN}/api/auth/url?provider=google&returnTo=${encodeURIComponent(returnTo)}`, {
+      const res = await fetch(`/api/auth/url?provider=google&returnTo=${encodeURIComponent(returnTo)}`, {
         credentials: 'include'
       });
       if (!res.ok) {
@@ -552,7 +552,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   const handleLogout = async () => {
     setLoading(true);
     try {
-      await fetch(`${APP_ORIGIN}/api/auth/logout`, {
+      await fetch(`/api/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -630,7 +630,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     setError('');
 
     try {
-      const res = await fetch(`${APP_ORIGIN}/api/billing/proof`, {
+      const res = await fetch(`/api/billing/proof`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

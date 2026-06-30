@@ -456,7 +456,7 @@ export function App() {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch(`${APP_ORIGIN}/api/auth/me?soft=1`, {
+      const res = await fetch(`/api/auth/me?soft=1`, {
         credentials: 'include',
       });
       if (res.ok) {
@@ -476,7 +476,7 @@ export function App() {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${APP_ORIGIN}/api/auth/logout`, {
+      await fetch(`/api/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -513,7 +513,7 @@ export function App() {
     let cancelled = false;
     const applyServerLocale = async () => {
       try {
-        const res = await fetch(`${APP_ORIGIN}/api/geo`, { credentials: 'omit' });
+        const res = await fetch(`/api/geo`, { credentials: 'omit' });
         if (!res.ok) return;
         const data = await res.json();
         if (cancelled) return;

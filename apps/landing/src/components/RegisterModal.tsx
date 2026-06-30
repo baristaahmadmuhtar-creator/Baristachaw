@@ -72,6 +72,10 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   });
   const [selectedDuration, setSelectedDuration] = useState<BillingDuration>(duration);
 
+  const [paymentMethod, setPaymentMethod] = useState<'mayar' | 'manual'>(() => 
+    import.meta.env.VITE_MAYAR_CHECKOUT_ENABLED === 'true' ? 'mayar' : 'manual'
+  );
+
   const [invoice, setInvoice] = useState<any>(null);
   const [fetchingInvoice, setFetchingInvoice] = useState(false);
   const [invoiceError, setInvoiceError] = useState('');
@@ -228,12 +232,13 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     return formatCurrencyByLang(tier.discounted[currency], language);
   };
 
-  const fetchInvoice = useCallback(async () => {
+  const fetchInvoice = useCallback(async (forcedProvider?: 'mayar' | 'manual') => {
     setFetchingInvoice(true);
     setInvoiceError('');
     setInvoice(null);
     try {
       const planCode = selectedPlan;
+      const targetProvider = forcedProvider || paymentMethod;
       const res = await fetch(`${APP_ORIGIN}/api/billing/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -242,6 +247,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
           planCode,
           duration: selectedDuration,
           currency,
+          provider: targetProvider,
           ...(promoCode ? { promoCode } : {}),
         }),
       });
@@ -251,7 +257,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
           showPendingReview();
           return;
         }
-        throw new Error(data.error || data.details || 'Failed to create manual transfer invoice');
+        throw new Error(data.error || data.details || 'Failed to load checkout details');
       }
       if (data.ok && data.manualInvoice) {
         setInvoice({
@@ -268,16 +274,21 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     } finally {
       setFetchingInvoice(false);
     }
-  }, [currency, promoCode, selectedDuration, selectedPlan]);
+  }, [currency, promoCode, selectedDuration, selectedPlan, paymentMethod]);
 
   useEffect(() => {
     if (step === 'checkout') {
       setUploadedFile(null);
       setTurnstileVerified(false);
       setProofDelivery(null);
-      void fetchInvoice();
+      if (paymentMethod === 'manual') {
+        void fetchInvoice('manual');
+      } else {
+        setInvoice(null);
+        setInvoiceError('');
+      }
     }
-  }, [fetchInvoice, step]);
+  }, [fetchInvoice, step, paymentMethod]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1068,232 +1079,282 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
             </div>
 
             <div className="manual-transfer-container">
+              {import.meta.env.VITE_MAYAR_CHECKOUT_ENABLED === 'true' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+                  <button 
+                    type="button"
+                    className={`payment-method-card ${paymentMethod === 'mayar' ? 'selected' : ''}`}
+                    onClick={() => setPaymentMethod('mayar')}
+                    style={{ cursor: 'pointer', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '14px' }}
+                  >
+                    <div className="pm-info" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div className="pm-text" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span className="pm-name" style={{ color: '#ffffff', fontWeight: 700, fontSize: '14px' }}>Online Payment (Mayar)</span>
+                        <span className="pm-desc" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>Bayar otomatis via QRIS, Virtual Account, atau E-Wallet.</span>
+                      </div>
+                    </div>
+                    <div className="pm-check-dot"></div>
+                  </button>
+                  <button 
+                    type="button"
+                    className={`payment-method-card ${paymentMethod === 'manual' ? 'selected' : ''}`}
+                    onClick={() => setPaymentMethod('manual')}
+                    style={{ cursor: 'pointer', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '14px' }}
+                  >
+                    <div className="pm-info" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div className="pm-text" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span className="pm-name" style={{ color: '#ffffff', fontWeight: 700, fontSize: '14px' }}>Transfer Manual</span>
+                        <span className="pm-desc" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>Transfer, upload bukti, lalu tunggu review admin.</span>
+                      </div>
+                    </div>
+                    <div className="pm-check-dot"></div>
+                  </button>
+                </div>
+              ) : (
                 <div className="payment-method-card selected" style={{ marginBottom: '14px' }}>
                   <div className="pm-info">
                     <div className="pm-text">
-                      <span className="pm-name">{import.meta.env.VITE_MAYAR_CHECKOUT_ENABLED === 'true' ? 'Online Payment (Mayar)' : 'Transfer Manual'}</span>
-                      <span className="pm-desc">{import.meta.env.VITE_MAYAR_CHECKOUT_ENABLED === 'true' ? 'Bayar otomatis via QRIS, Virtual Account, atau E-Wallet.' : 'Transfer, upload bukti, lalu tunggu review admin.'}</span>
+                      <span className="pm-name">Transfer Manual</span>
+                      <span className="pm-desc">Transfer, upload bukti, lalu tunggu review admin.</span>
                     </div>
                   </div>
                   <div className="pm-check-dot"></div>
                 </div>
-                {fetchingInvoice ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '180px', gap: '12px' }}>
-                    <Loader2 className="spin" size={28} color="#3b82f6" />
-                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>{import.meta.env.VITE_MAYAR_CHECKOUT_ENABLED === 'true' ? 'Mengarahkan ke halaman pembayaran...' : 'Menyiapkan detail transfer...'}</p>
-                  </div>
-                ) : invoiceError ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '180px', gap: '12px', textAlign: 'center' }}>
-                    <AlertCircle size={28} color="#ef4444" />
-                    <p style={{ color: '#ef4444', fontSize: '13px', fontWeight: 600 }}>{invoiceError}</p>
-                    <button onClick={fetchInvoice} style={{ border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: '#ffffff', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px' }}>Coba Lagi</button>
-                  </div>
-                ) : invoice ? (
-                  <>
-                    <div className="total-transfer-box">
-                      <span className="total-transfer-label">TOTAL TRANSFER</span>
-                      <strong className="total-transfer-amount">{invoice.amountLabel}</strong>
-                      <p className="total-transfer-notice">
-                        Transfer tepat sebesar <strong>{invoice.amountLabel}</strong>.
-                        {invoice.uniqueSuffix ? (
-                          <> Kode <strong>{invoice.uniqueSuffix}</strong> membantu admin mencocokkan invoice Anda.</>
-                        ) : (
-                          <> Nominal invoice membantu admin mencocokkan pembayaran Anda.</>
-                        )}
-                      </p>
-                    </div>
+              )}
 
-                    <div className="bank-details-card" style={{ marginTop: '12px' }}>
+              {fetchingInvoice ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '180px', gap: '12px' }}>
+                  <Loader2 className="spin" size={28} color="#3b82f6" />
+                  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>
+                    {paymentMethod === 'mayar' ? 'Mengarahkan ke halaman pembayaran...' : 'Menyiapkan detail transfer...'}
+                  </p>
+                </div>
+              ) : invoiceError ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '180px', gap: '12px', textAlign: 'center' }}>
+                  <AlertCircle size={28} color="#ef4444" />
+                  <p style={{ color: '#ef4444', fontSize: '13px', fontWeight: 600 }}>{invoiceError}</p>
+                  <button onClick={() => void fetchInvoice()} style={{ border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: '#ffffff', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px' }}>Coba Lagi</button>
+                </div>
+              ) : paymentMethod === 'mayar' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
+                  <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13.5px', lineHeight: 1.5, textAlign: 'center', margin: '0 0 10px' }}>
+                    Anda akan diarahkan ke halaman pembayaran online aman Mayar untuk menyelesaikan transaksi menggunakan QRIS, OVO, ShopeePay, GoPay, atau Virtual Account.
+                  </p>
+                  <button 
+                    className="checkout-submit-btn" 
+                    type="button" 
+                    onClick={() => void fetchInvoice('mayar')}
+                    data-testid="landing-submit-mayar"
+                  >
+                    Bayar Sekarang (Online) <ArrowRight size={16} />
+                  </button>
+                </div>
+              ) : invoice ? (
+                <>
+                  <div className="total-transfer-box">
+                    <span className="total-transfer-label">TOTAL TRANSFER</span>
+                    <strong className="total-transfer-amount">{invoice.amountLabel}</strong>
+                    <p className="total-transfer-notice">
+                      Transfer tepat sebesar <strong>{invoice.amountLabel}</strong>.
+                      {invoice.uniqueSuffix ? (
+                        <> Kode <strong>{invoice.uniqueSuffix}</strong> membantu admin mencocokkan invoice Anda.</>
+                      ) : (
+                        <> Nominal invoice membantu admin mencocokkan pembayaran Anda.</>
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="bank-details-card" style={{ marginTop: '12px' }}>
+                    <div className="bank-info-row">
+                      <span className="bank-name-label">Payment ID</span>
+                      <button
+                        className={`bank-copy-btn ${copiedSupportField === 'payment-id' ? 'copied' : ''}`}
+                        onClick={() => void copySupportText('payment-id', invoice.id)}
+                        type="button"
+                      >
+                        {copiedSupportField === 'payment-id' ? 'Copied' : 'Salin ID'}
+                      </button>
+                    </div>
+                    <div className="bank-info-row" style={{ marginTop: '4px' }}>
+                      <span className="bank-account-number">{invoice.id}</span>
+                    </div>
+                    <div className="bank-info-row" style={{ marginTop: '8px', gap: '8px', flexWrap: 'wrap' }}>
+                      <button
+                        className={`bank-copy-btn ${copiedSupportField === 'details' ? 'copied' : ''}`}
+                        onClick={() => void copySupportText('details', paymentDetailText)}
+                        type="button"
+                      >
+                        {copiedSupportField === 'details' ? 'Copied' : 'Salin detail pembayaran'}
+                      </button>
+                      <button
+                        className={`bank-copy-btn ${copiedSupportField === 'admin-message' ? 'copied' : ''}`}
+                        onClick={() => void copySupportText('admin-message', supportMessageText)}
+                        type="button"
+                      >
+                        {copiedSupportField === 'admin-message' ? 'Copied' : 'Salin pesan admin'}
+                      </button>
+                    </div>
+                    {supportMessageText ? (
+                      <pre style={{
+                        margin: '10px 0 0',
+                        maxHeight: '150px',
+                        overflow: 'auto',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        borderRadius: '10px',
+                        background: 'rgba(255,255,255,0.05)',
+                        padding: '10px',
+                        color: 'rgba(255,255,255,0.72)',
+                        fontSize: '11px',
+                        lineHeight: 1.55,
+                      }}>
+                        {supportMessageText}
+                      </pre>
+                    ) : null}
+                  </div>
+
+                  {invoice.instructions.qrisImageUrl ? (
+                    <div className="qris-box">
+                      <img
+                        className="qris-image"
+                        src={invoice.instructions.qrisImageUrl}
+                        alt={invoice.instructions.qrisLabel || 'QRIS manual Baristachaw'}
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                      />
+                      <span>{invoice.instructions.qrisLabel || 'Scan QRIS manual'}</span>
+                    </div>
+                  ) : (
+                    <div className="qris-empty-box">
+                      QRIS belum aktif untuk invoice ini. Gunakan transfer bank di bawah.
+                    </div>
+                  )}
+
+                  {invoice.instructions.banks && invoice.instructions.banks.length > 0 ? (
+                    invoice.instructions.banks.map((bank: any, idx: number) => {
+                      const isCopied = copiedBankIndex === idx;
+                      return (
+                        <div className="bank-details-card" key={idx} style={{ marginTop: idx > 0 ? '12px' : '0' }}>
+                          <div className="bank-info-row">
+                            <span className="bank-name-label">{bank.bankName}</span>
+                            <button 
+                              className={`bank-copy-btn ${isCopied ? 'copied' : ''}`}
+                              onClick={() => handleCopyBankDetail(bank.accountNumber, idx)}
+                              type="button"
+                            >
+                              {isCopied ? 'Copied' : 'Copy'}
+                            </button>
+                          </div>
+                          <div className="bank-info-row" style={{ marginTop: '4px' }}>
+                            <span className="bank-account-number">{bank.accountNumber}</span>
+                          </div>
+                          <div className="bank-info-row">
+                            <span className="bank-account-name">{bank.accountName}</span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="bank-details-card">
                       <div className="bank-info-row">
-                        <span className="bank-name-label">Payment ID</span>
-                        <button
-                          className={`bank-copy-btn ${copiedSupportField === 'payment-id' ? 'copied' : ''}`}
-                          onClick={() => void copySupportText('payment-id', invoice.id)}
+                        <span className="bank-name-label">{invoice.instructions.bankName}</span>
+                        <button 
+                          className={`bank-copy-btn ${copied ? 'copied' : ''}`}
+                          onClick={() => handleCopyAccount(invoice.instructions.accountNumber)}
                           type="button"
                         >
-                          {copiedSupportField === 'payment-id' ? 'Copied' : 'Salin ID'}
+                          {copied ? 'Copied' : 'Copy'}
                         </button>
                       </div>
                       <div className="bank-info-row" style={{ marginTop: '4px' }}>
-                        <span className="bank-account-number">{invoice.id}</span>
+                        <span className="bank-account-number">{invoice.instructions.accountNumber}</span>
                       </div>
-                      <div className="bank-info-row" style={{ marginTop: '8px', gap: '8px', flexWrap: 'wrap' }}>
-                        <button
-                          className={`bank-copy-btn ${copiedSupportField === 'details' ? 'copied' : ''}`}
-                          onClick={() => void copySupportText('details', paymentDetailText)}
-                          type="button"
-                        >
-                          {copiedSupportField === 'details' ? 'Copied' : 'Salin detail pembayaran'}
-                        </button>
-                        <button
-                          className={`bank-copy-btn ${copiedSupportField === 'admin-message' ? 'copied' : ''}`}
-                          onClick={() => void copySupportText('admin-message', supportMessageText)}
-                          type="button"
-                        >
-                          {copiedSupportField === 'admin-message' ? 'Copied' : 'Salin pesan admin'}
-                        </button>
+                      <div className="bank-info-row">
+                        <span className="bank-account-name">{invoice.instructions.accountName}</span>
                       </div>
-                      {supportMessageText ? (
-                        <pre style={{
-                          margin: '10px 0 0',
-                          maxHeight: '150px',
-                          overflow: 'auto',
-                          whiteSpace: 'pre-wrap',
-                          wordBreak: 'break-word',
-                          borderRadius: '10px',
-                          background: 'rgba(255,255,255,0.05)',
-                          padding: '10px',
-                          color: 'rgba(255,255,255,0.72)',
-                          fontSize: '11px',
-                          lineHeight: 1.55,
-                        }}>
-                          {supportMessageText}
-                        </pre>
-                      ) : null}
                     </div>
+                  )}
 
-                    {invoice.instructions.qrisImageUrl ? (
-                      <div className="qris-box">
-                        <img
-                          className="qris-image"
-                          src={invoice.instructions.qrisImageUrl}
-                          alt={invoice.instructions.qrisLabel || 'QRIS manual Baristachaw'}
-                          loading="lazy"
-                          referrerPolicy="no-referrer"
-                        />
-                        <span>{invoice.instructions.qrisLabel || 'Scan QRIS manual'}</span>
+                  {proofUploadReady ? (
+                    <>
+                      {/* Screenshot Upload Drag/Drop Box */}
+                      <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={handleFileChange} 
+                        style={{ display: 'none' }} 
+                        accept="image/png, image/jpeg, image/webp, application/pdf"
+                        data-testid="landing-proof-input"
+                      />
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        className={`receipt-upload-box ${uploadedFile ? 'uploaded' : ''}`}
+                        onClick={handleUploadClick}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            handleUploadClick();
+                          }
+                        }}
+                      >
+                        <UploadCloud className="upload-icon" />
+                        <p>{uploadedFile ? uploadedFile.name : 'Klik untuk upload screenshot'}</p>
+                        <span>Maksimal 5MB (JPG, PNG, WebP, PDF)</span>
                       </div>
+                    </>
+                  ) : (
+                    <div className="receipt-upload-box uploaded">
+                      <AlertCircle className="upload-icon" />
+                      <p>Upload otomatis belum siap</p>
+                      <span>Kirim bukti transfer lewat WhatsApp atau Instagram dengan ID invoice ini.</span>
+                    </div>
+                  )}
+
+                  {/* Manual confirmation */}
+                  <button
+                    type="button"
+                    className="turnstile-mock-container"
+                    onClick={() => setTurnstileVerified(!turnstileVerified)}
+                    aria-pressed={turnstileVerified}
+                    data-testid="landing-confirm-proof"
+                  >
+                    <div className="turnstile-left">
+                      <div className={`turnstile-box ${turnstileVerified ? 'checked' : ''}`}>
+                        {turnstileVerified && <Check size={14} color="#ffffff" />}
+                      </div>
+                      <span className="turnstile-text">Konfirmasi bukti transfer</span>
+                    </div>
+                    <div className="turnstile-right">
+                      <div className="turnstile-cf-logo">
+                        <span>Manual check</span>
+                      </div>
+                      <span className="turnstile-links">No auto charge</span>
+                    </div>
+                  </button>
+
+                  {error && <p className="register-error" role="alert" style={{ margin: 0 }}>{error}</p>}
+
+                  {renderSupportLinks()}
+
+                  <button 
+                    className="checkout-submit-btn" 
+                    type="button" 
+                    onClick={handleCheckoutSubmit}
+                    disabled={paymentLoading || (proofUploadReady && (!uploadedFile || !turnstileVerified))}
+                    data-testid="landing-submit-proof"
+                  >
+                    {paymentLoading ? (
+                      <><Loader2 size={16} className="spin" /> Memproses...</>
+                    ) : !proofUploadReady ? (
+                      <>Kirim Bukti via WhatsApp <ArrowRight size={16} /></>
                     ) : (
-                      <div className="qris-empty-box">
-                        QRIS belum aktif untuk invoice ini. Gunakan transfer bank di bawah.
-                      </div>
+                      <>Kirim Bukti & Tunggu Review <ArrowRight size={16} /></>
                     )}
-
-                    {invoice.instructions.banks && invoice.instructions.banks.length > 0 ? (
-                      invoice.instructions.banks.map((bank: any, idx: number) => {
-                        const isCopied = copiedBankIndex === idx;
-                        return (
-                          <div className="bank-details-card" key={idx} style={{ marginTop: idx > 0 ? '12px' : '0' }}>
-                            <div className="bank-info-row">
-                              <span className="bank-name-label">{bank.bankName}</span>
-                              <button 
-                                className={`bank-copy-btn ${isCopied ? 'copied' : ''}`}
-                                onClick={() => handleCopyBankDetail(bank.accountNumber, idx)}
-                                type="button"
-                              >
-                                {isCopied ? 'Copied' : 'Copy'}
-                              </button>
-                            </div>
-                            <div className="bank-info-row" style={{ marginTop: '4px' }}>
-                              <span className="bank-account-number">{bank.accountNumber}</span>
-                            </div>
-                            <div className="bank-info-row">
-                              <span className="bank-account-name">{bank.accountName}</span>
-                            </div>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="bank-details-card">
-                        <div className="bank-info-row">
-                          <span className="bank-name-label">{invoice.instructions.bankName}</span>
-                          <button 
-                            className={`bank-copy-btn ${copied ? 'copied' : ''}`}
-                            onClick={() => handleCopyAccount(invoice.instructions.accountNumber)}
-                            type="button"
-                          >
-                            {copied ? 'Copied' : 'Copy'}
-                          </button>
-                        </div>
-                        <div className="bank-info-row" style={{ marginTop: '4px' }}>
-                          <span className="bank-account-number">{invoice.instructions.accountNumber}</span>
-                        </div>
-                        <div className="bank-info-row">
-                          <span className="bank-account-name">{invoice.instructions.accountName}</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {proofUploadReady ? (
-                      <>
-                        {/* Screenshot Upload Drag/Drop Box */}
-                        <input 
-                          type="file" 
-                          ref={fileInputRef} 
-                          onChange={handleFileChange} 
-                          style={{ display: 'none' }} 
-                          accept="image/png, image/jpeg, image/webp, application/pdf"
-                          data-testid="landing-proof-input"
-                        />
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          className={`receipt-upload-box ${uploadedFile ? 'uploaded' : ''}`}
-                          onClick={handleUploadClick}
-                          onKeyDown={(event) => {
-                            if (event.key === 'Enter' || event.key === ' ') {
-                              event.preventDefault();
-                              handleUploadClick();
-                            }
-                          }}
-                        >
-                          <UploadCloud className="upload-icon" />
-                          <p>{uploadedFile ? uploadedFile.name : 'Klik untuk upload screenshot'}</p>
-                          <span>Maksimal 5MB (JPG, PNG, WebP, PDF)</span>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="receipt-upload-box uploaded">
-                        <AlertCircle className="upload-icon" />
-                        <p>Upload otomatis belum siap</p>
-                        <span>Kirim bukti transfer lewat WhatsApp atau Instagram dengan ID invoice ini.</span>
-                      </div>
-                    )}
-
-                    {/* Manual confirmation */}
-                    <button
-                      type="button"
-                      className="turnstile-mock-container"
-                      onClick={() => setTurnstileVerified(!turnstileVerified)}
-                      aria-pressed={turnstileVerified}
-                      data-testid="landing-confirm-proof"
-                    >
-                      <div className="turnstile-left">
-                        <div className={`turnstile-box ${turnstileVerified ? 'checked' : ''}`}>
-                          {turnstileVerified && <Check size={14} color="#ffffff" />}
-                        </div>
-                        <span className="turnstile-text">Konfirmasi bukti transfer</span>
-                      </div>
-                      <div className="turnstile-right">
-                        <div className="turnstile-cf-logo">
-                          <span>Manual check</span>
-                        </div>
-                        <span className="turnstile-links">No auto charge</span>
-                      </div>
-                    </button>
-
-                    {error && <p className="register-error" role="alert" style={{ margin: 0 }}>{error}</p>}
-
-                    {renderSupportLinks()}
-
-                    <button 
-                      className="checkout-submit-btn" 
-                      type="button" 
-                      onClick={handleCheckoutSubmit}
-                      disabled={paymentLoading || (proofUploadReady && (!uploadedFile || !turnstileVerified))}
-                      data-testid="landing-submit-proof"
-                    >
-                      {paymentLoading ? (
-                        <><Loader2 size={16} className="spin" /> Memproses...</>
-                      ) : !proofUploadReady ? (
-                        <>Kirim Bukti via WhatsApp <ArrowRight size={16} /></>
-                      ) : (
-                        <>Kirim Bukti & Tunggu Review <ArrowRight size={16} /></>
-                      )}
-                    </button>
-                  </>
-                ) : null}
-              </div>
+                  </button>
+                </>
+              ) : null}
+            </div>
           </>
         )}
 

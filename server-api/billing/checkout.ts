@@ -268,13 +268,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         && statusSnapshot.billing.paymentAction === 'contact_support';
       
       if (hasPendingManual && !mayarCheckoutRequested(req.body)) {
-        return res.status(403).json({
-          ok: false,
-          requestId,
-          error: 'Anda memiliki tagihan manual yang belum selesai.',
-          errorCode: 'pending_invoice_exists',
-          details: 'Harap selesaikan pembayaran dan unggah bukti transfer, atau tunggu review admin selesai sebelum memesan paket baru.',
-        });
+        // We no longer block this. We allow them to override the manual invoice with a new checkout.
       }
 
       if (statusSnapshot.billing.status === 'past_due') {
@@ -391,13 +385,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const pendingRows = await supabaseAdminRest<any[]>(config, `payment_receipts?user_id=eq.${encodeURIComponent(authResult.auth.userId)}&status=in.(queued,manual_review)&requested_plan_code=eq.${planCode}&requested_duration=eq.${duration}&requested_currency=eq.${currency}&select=manual_request_id,metadata&limit=1`);
         if (pendingRows && pendingRows.length > 0) {
           if (!mayarCheckoutRequested(req.body)) {
-            return res.status(403).json({
-              ok: false,
-              requestId,
-              error: 'Anda memiliki tagihan manual yang belum selesai untuk paket ini.',
-              errorCode: 'pending_invoice_exists',
-              details: 'Harap selesaikan pembayaran dan unggah bukti transfer, atau tunggu review admin selesai sebelum memesan ulang paket yang sama.',
-            });
+            // We no longer block this. We allow overriding with a new checkout.
           }
         }
       } catch (e) {

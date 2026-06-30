@@ -901,15 +901,17 @@ export function PlanGrowthSurface({
                       <MessageCircle size={18} />
                       WhatsApp
                     </a>
-                    <a
-                      href={pendingSupportInstagramUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)] px-5 font-extrabold text-primary transition-colors hover:bg-surface-alpha"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        localStorage.removeItem('BARISTACHAW_MANUAL_PAYMENT_PENDING_V1');
+                        window.location.reload();
+                      }}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)] px-5 font-extrabold text-red-500 transition-colors hover:bg-red-500/10"
                     >
-                      <Instagram size={18} />
-                      Instagram
-                    </a>
+                      <RefreshCw size={18} variant="glyph" tone="red" />
+                      Batalkan Tagihan
+                    </button>
                   </div>
                   <button
                     type="button"
@@ -1121,11 +1123,14 @@ export function PlanGrowthSurface({
                 </a>
                 <button
                   type="button"
-                  onClick={() => window.location.reload()}
-                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)]/70 px-3 text-sm font-bold text-primary transition-colors hover:bg-[var(--bg-base)]"
+                  onClick={() => {
+                    localStorage.removeItem('BARISTACHAW_MANUAL_PAYMENT_PENDING_V1');
+                    window.location.reload();
+                  }}
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)]/70 px-3 text-sm font-bold text-red-500 transition-colors hover:bg-red-500/10"
                 >
-                  <RefreshCw size={16} variant="glyph" tone="blue" />
-                  Sinkronkan status
+                  <RefreshCw size={16} variant="glyph" tone="red" />
+                  Batalkan Tagihan
                 </button>
               </div>
             ) : (

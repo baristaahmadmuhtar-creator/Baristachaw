@@ -260,6 +260,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
         throw new Error(data.error || data.details || 'Failed to load checkout details');
       }
       if (data.ok && data.manualInvoice) {
+        setPaymentMethod('manual');
         setInvoice({
           ...data.manualInvoice,
           draftToken: data.draftToken || '',

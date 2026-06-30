@@ -73,7 +73,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   const [selectedDuration, setSelectedDuration] = useState<BillingDuration>(duration);
 
   const [paymentMethod, setPaymentMethod] = useState<'mayar' | 'manual'>(() => 
-    import.meta.env.VITE_MAYAR_CHECKOUT_ENABLED === 'true' ? 'mayar' : 'manual'
+    import.meta.env.VITE_MAYAR_CHECKOUT_ENABLED !== 'false' ? 'mayar' : 'manual'
   );
 
   const [invoice, setInvoice] = useState<any>(null);
@@ -1079,7 +1079,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
             </div>
 
             <div className="manual-transfer-container">
-              {import.meta.env.VITE_MAYAR_CHECKOUT_ENABLED === 'true' ? (
+              {import.meta.env.VITE_MAYAR_CHECKOUT_ENABLED !== 'false' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
                   <button 
                     type="button"

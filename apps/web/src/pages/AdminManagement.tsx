@@ -909,24 +909,43 @@ function CheckIcon({ status }: { status: CheckStatus }) {
   return <XCircle size={17} className="text-rose-500" />;
 }
 
+type MetricTone = 'blue' | 'emerald' | 'violet' | 'amber' | 'rose';
+
+const METRIC_TONES: Record<MetricTone, { chip: string; accent: string; value: string }> = {
+  blue: { chip: 'bg-blue-500/12 text-blue-600 dark:text-blue-300', accent: 'before:bg-blue-500/60', value: 'text-primary' },
+  emerald: { chip: 'bg-emerald-500/12 text-emerald-600 dark:text-emerald-300', accent: 'before:bg-emerald-500/60', value: 'text-primary' },
+  violet: { chip: 'bg-violet-500/12 text-violet-600 dark:text-violet-300', accent: 'before:bg-violet-500/60', value: 'text-primary' },
+  amber: { chip: 'bg-amber-500/15 text-amber-600 dark:text-amber-300', accent: 'before:bg-amber-500/70', value: 'text-amber-600 dark:text-amber-300' },
+  rose: { chip: 'bg-rose-500/15 text-rose-600 dark:text-rose-300', accent: 'before:bg-rose-500/70', value: 'text-rose-600 dark:text-rose-300' },
+};
+
 function MetricTile({
   label,
   value,
   detail,
   icon: Icon,
+  tone = 'blue',
 }: {
   label: string;
   value: string;
   detail: string;
   icon: typeof Gauge;
+  tone?: MetricTone;
 }) {
+  const toneStyle = METRIC_TONES[tone];
   return (
-    <div className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors px-3 py-2.5 shadow-sm">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary truncate">{label}</p>
-        <Icon size={14} className="text-blue-500 shrink-0" />
+    <div className={clsx(
+      'relative overflow-hidden rounded-2xl border border-glass bg-[var(--bg-elevated)]/70 px-3 py-3 shadow-[var(--panel-elev-1)] backdrop-blur-md transition-colors',
+      'before:absolute before:inset-y-0 before:left-0 before:w-1 before:content-[""]',
+      toneStyle.accent,
+    )}>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-tertiary truncate">{label}</p>
+        <span className={clsx('inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-xl', toneStyle.chip)}>
+          <Icon size={14} />
+        </span>
       </div>
-      <p className="mt-1.5 text-xl font-bold tracking-tight text-primary">{value}</p>
+      <p className={clsx('mt-1.5 text-2xl font-black tracking-tight tabular-nums', toneStyle.value)}>{value}</p>
       <p className="mt-0.5 text-[10px] leading-4 text-secondary truncate" title={detail}>{detail}</p>
     </div>
   );
@@ -1045,6 +1064,44 @@ type AdminQueueSummary = {
   warningChecks: AdminSystemCheck[];
 };
 
+function QueueStatCard({
+  tone,
+  icon: Icon,
+  count,
+  title,
+  detail,
+  onClick,
+}: {
+  tone: MetricTone;
+  icon: typeof Gauge;
+  count: number;
+  title: string;
+  detail: string;
+  onClick: () => void;
+}) {
+  const toneStyle = METRIC_TONES[tone];
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={clsx(
+        'relative overflow-hidden rounded-2xl border border-glass bg-[var(--bg-elevated)]/60 p-3 text-left shadow-sm backdrop-blur-md transition-all hover:bg-[var(--bg-elevated)] hover:shadow-md active:scale-[0.98]',
+        'before:absolute before:inset-y-0 before:left-0 before:w-1 before:content-[""]',
+        toneStyle.accent,
+      )}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span className={clsx('inline-flex h-7 w-7 items-center justify-center rounded-xl', toneStyle.chip)}>
+          <Icon size={14} />
+        </span>
+        <span className="text-xl font-black tabular-nums text-primary">{count}</span>
+      </div>
+      <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.1em] text-tertiary truncate">{title}</p>
+      <p className="mt-0.5 truncate text-[10px] text-secondary">{detail}</p>
+    </button>
+  );
+}
+
 function AdminCommandCenter({
   snapshot,
   queues,
@@ -1077,56 +1134,46 @@ function AdminCommandCenter({
         </div>
 
         <div className="mt-3 grid gap-2.5 grid-cols-2 md:grid-cols-5">
-          <button
-            type="button"
+          <QueueStatCard
+            tone="rose"
+            icon={AlertTriangle}
+            count={queues.riskUsers.length}
+            title={admin.text('riskCardTitle')}
+            detail={admin.format('riskCardDetail', { count: admin.number(queues.pastDueUsers.length) })}
             onClick={() => onOpenQueue('risk')}
-            className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
-          >
-            <AlertTriangle size={15} className="text-rose-500" />
-            <p className="mt-1.5 text-lg font-bold text-primary">{queues.riskUsers.length}</p>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-tertiary truncate">{admin.text('riskCardTitle')}</p>
-            <p className="text-[10px] text-secondary truncate mt-0.5">{admin.format('riskCardDetail', { count: admin.number(queues.pastDueUsers.length) })}</p>
-          </button>
-          <button
-            type="button"
+          />
+          <QueueStatCard
+            tone="amber"
+            icon={KeyRound}
+            count={queues.recoveryUsers.length}
+            title={admin.text('recoveryCardTitle')}
+            detail={admin.text('recoveryCardDetail')}
             onClick={() => onOpenQueue('recovery')}
-            className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
-          >
-            <KeyRound size={15} className="text-amber-500" />
-            <p className="mt-1.5 text-lg font-bold text-primary">{queues.recoveryUsers.length}</p>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-tertiary truncate">{admin.text('recoveryCardTitle')}</p>
-            <p className="text-[10px] text-secondary truncate mt-0.5">{admin.text('recoveryCardDetail')}</p>
-          </button>
-          <button
-            type="button"
+          />
+          <QueueStatCard
+            tone="blue"
+            icon={WalletCards}
+            count={queues.billingUsers.length}
+            title={admin.text('billingCardTitle')}
+            detail={admin.text('billingCardDetail')}
             onClick={() => onOpenQueue('billing')}
-            className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
-          >
-            <WalletCards size={15} className="text-blue-500" />
-            <p className="mt-1.5 text-lg font-bold text-primary">{queues.billingUsers.length}</p>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-tertiary truncate">{admin.text('billingCardTitle')}</p>
-            <p className="text-[10px] text-secondary truncate mt-0.5">{admin.text('billingCardDetail')}</p>
-          </button>
-          <button
-            type="button"
+          />
+          <QueueStatCard
+            tone="violet"
+            icon={Wrench}
+            count={queues.maintenanceFlags.length}
+            title={admin.text('flagsCardTitle')}
+            detail={admin.text('flagsCardDetail')}
             onClick={onOpenMaintenance}
-            className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
-          >
-            <Wrench size={15} className="text-blue-500" />
-            <p className="mt-1.5 text-lg font-bold text-primary">{queues.maintenanceFlags.length}</p>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-tertiary truncate">{admin.text('flagsCardTitle')}</p>
-            <p className="text-[10px] text-secondary truncate mt-0.5">{admin.text('flagsCardDetail')}</p>
-          </button>
-          <button
-            type="button"
+          />
+          <QueueStatCard
+            tone="emerald"
+            icon={WalletCards}
+            count={queues.paidUsers.length}
+            title={admin.text('paidCardTitle')}
+            detail={admin.text('paidCardDetail')}
             onClick={() => onOpenQueue('paid')}
-            className="rounded-2xl border border-glass shadow-sm backdrop-blur-md bg-surface-alpha hover:bg-surface-alpha-hover transition-colors p-3 text-left transition-colors hover:bg-[var(--bg-base)] border-0"
-          >
-            <WalletCards size={15} className="text-emerald-500" />
-            <p className="mt-1.5 text-lg font-bold text-primary">{queues.paidUsers.length}</p>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-tertiary truncate">{admin.text('paidCardTitle')}</p>
-            <p className="text-[10px] text-secondary truncate mt-0.5">{admin.text('paidCardDetail')}</p>
-          </button>
+          />
         </div>
       </div>
 
@@ -3249,11 +3296,11 @@ function AdminQueuesPanel({
           </div>
           <StatusBadge value={pendingManual || queues.billingUsers.length ? 'warn' : 'pass'} />
         </div>
-        <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricTile label={admin.text('paymentQueueKpiManual')} value={admin.number(pendingManual)} detail={admin.format('paymentQueueResults', { shown: admin.number(snapshot.billing.manualPayments.length), total: admin.number(snapshot.billing.manualPayments.length) })} icon={WalletCards} />
-          <MetricTile label={admin.text('paymentQueueKpiProof')} value={admin.number(manualCounts.receipt_received || 0)} detail={admin.text('paymentQueueReceipt')} icon={BadgeCheck} />
-          <MetricTile label={admin.text('paymentQueueKpiPlan')} value={admin.number(queues.billingUsers.length)} detail={admin.text('queueBilling')} icon={Users} />
-          <MetricTile label={admin.text('paymentQueueKpiClosed')} value={admin.number(closedManual)} detail={admin.text('paymentQueueVerified')} icon={CheckCircle2} />
+        <div className="mt-4 grid gap-2 grid-cols-2 xl:grid-cols-4">
+          <MetricTile tone={pendingManual > 0 ? 'amber' : 'blue'} label={admin.text('paymentQueueKpiManual')} value={admin.number(pendingManual)} detail={admin.format('paymentQueueResults', { shown: admin.number(snapshot.billing.manualPayments.length), total: admin.number(snapshot.billing.manualPayments.length) })} icon={WalletCards} />
+          <MetricTile tone={(manualCounts.receipt_received || 0) > 0 ? 'violet' : 'blue'} label={admin.text('paymentQueueKpiProof')} value={admin.number(manualCounts.receipt_received || 0)} detail={admin.text('paymentQueueReceipt')} icon={BadgeCheck} />
+          <MetricTile tone={queues.billingUsers.length > 0 ? 'amber' : 'blue'} label={admin.text('paymentQueueKpiPlan')} value={admin.number(queues.billingUsers.length)} detail={admin.text('queueBilling')} icon={Users} />
+          <MetricTile tone="emerald" label={admin.text('paymentQueueKpiClosed')} value={admin.number(closedManual)} detail={admin.text('paymentQueueVerified')} icon={CheckCircle2} />
         </div>
       </div>
       <BillingReadinessPanel
@@ -5375,10 +5422,10 @@ export function AdminManagement() {
             <>
               {/* Compact Metrics Bar */}
               <section className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-                <MetricTile label={admin.text('metricTotalUsers')} value={admin.number(snapshot.metrics.totalUsers)} detail={admin.format('activeAccounts', { count: admin.number(snapshot.metrics.activeUsers) })} icon={Users} />
-                <MetricTile label={admin.text('metricPaidUsers')} value={admin.number(snapshot.metrics.paidUsers)} detail={admin.format('planConversion', { count: snapshot.metrics.planConversionRate })} icon={WalletCards} />
-                <MetricTile label={admin.text('metricAiToday')} value={admin.number(snapshot.metrics.aiRequestsToday)} detail={admin.format('deepRequests', { count: admin.number(snapshot.metrics.deepRequestsToday) })} icon={Sparkles} />
-                <MetricTile label={admin.text('metricLaunchGate')} value={`${criticalChecks}/${warningChecks}`} detail={admin.text('criticalWarnings')} icon={AlertTriangle} />
+                <MetricTile tone="blue" label={admin.text('metricTotalUsers')} value={admin.number(snapshot.metrics.totalUsers)} detail={admin.format('activeAccounts', { count: admin.number(snapshot.metrics.activeUsers) })} icon={Users} />
+                <MetricTile tone="emerald" label={admin.text('metricPaidUsers')} value={admin.number(snapshot.metrics.paidUsers)} detail={admin.format('planConversion', { count: snapshot.metrics.planConversionRate })} icon={WalletCards} />
+                <MetricTile tone="violet" label={admin.text('metricAiToday')} value={admin.number(snapshot.metrics.aiRequestsToday)} detail={admin.format('deepRequests', { count: admin.number(snapshot.metrics.deepRequestsToday) })} icon={Sparkles} />
+                <MetricTile tone={criticalChecks > 0 ? 'rose' : warningChecks > 0 ? 'amber' : 'emerald'} label={admin.text('metricLaunchGate')} value={`${criticalChecks}/${warningChecks}`} detail={admin.text('criticalWarnings')} icon={criticalChecks > 0 ? AlertTriangle : ShieldCheck} />
               </section>
 
               {error && !accountErrorUserId ? <AdminInlineError error={error} onDismiss={() => setError(null)} /> : null}

@@ -79,6 +79,9 @@ export async function createSignedUploadUrl(
       Authorization: `Bearer ${config.serviceRoleKey}`,
       'Content-Type': 'application/json',
     },
+    // Supabase Storage rejects the request ("Body cannot be empty when content-type is set to
+    // 'application/json'") if Content-Type: application/json is sent with no body at all.
+    body: JSON.stringify({}),
   });
   
   const text = await response.text();

@@ -381,12 +381,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       // Idempotency: Check if there's already a pending manual request for the same plan & duration.
+      // A pending manual invoice does not block switching to Mayar online checkout (that override
+      // is intentional so users stuck on a slow manual review can pay online instead), but it must
+      // still block creating a second, duplicate manual invoice for the same request.
       try {
         const pendingRows = await supabaseAdminRest<any[]>(config, `payment_receipts?user_id=eq.${encodeURIComponent(authResult.auth.userId)}&status=in.(queued,manual_review)&requested_plan_code=eq.${planCode}&requested_duration=eq.${duration}&requested_currency=eq.${currency}&select=manual_request_id,metadata&limit=1`);
-        if (pendingRows && pendingRows.length > 0) {
-          if (!mayarCheckoutRequested(req.body)) {
-            // We no longer block this. We allow overriding with a new checkout.
-          }
+        if (pendingRows && pendingRows.length > 0 && !mayarCheckoutRequested(req.body)) {
+          return res.status(403).json({
+            ok: false,
+            requestId,
+            error: 'A manual payment request for this plan is already pending admin review.',
+            errorCode: 'pending_invoice_exists',
+            details: 'Wait for admin review, or retry with online (Mayar) checkout instead.',
+          });
         }
       } catch (e) {
         console.error('Failed to check pending manual payment idempotency:', e);

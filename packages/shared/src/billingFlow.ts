@@ -125,6 +125,11 @@ export function shouldBlockDuplicateManualPayment(input: {
   now?: number;
   billing?: BillingSnapshotForPendingCheck | null;
 }): boolean {
+  // Once the server snapshot confirms the plan is active, that is authoritative: a leftover
+  // local "pending review" marker (e.g. the client hasn't polled since admin approval landed)
+  // must never keep showing a stale pending-review state on top of a genuinely active plan.
+  if (String(input.billing?.status || '').toLowerCase() === 'active') return false;
+
   if (parsePendingManualPaymentMarker(input.markerRaw, input.now)) return true;
 
   const billing = input.billing;

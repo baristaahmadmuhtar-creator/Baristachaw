@@ -144,6 +144,7 @@ function AiAccessGateDialog({
   selectedDuration,
   setSelectedDuration,
   effectivePlanCode,
+  billingVerifiedActive,
   isPastDue,
   manageUrl,
   isRenewal,
@@ -164,6 +165,7 @@ function AiAccessGateDialog({
   onSignin: () => void;
   onUpgrade: (planCode: MvpPaidPlanCode, duration: BillingDuration, promoCode?: string) => void;
   effectivePlanCode: PlanCode | null;
+  billingVerifiedActive: boolean;
   onRefresh: () => void | Promise<void>;
   onManualProofFileChange: (file: File | null) => void;
   onManualProofSubmit: () => void | Promise<void>;
@@ -216,10 +218,8 @@ function AiAccessGateDialog({
     const basePrice = getPrice(p, d, currency);
     let finalPrice = basePrice;
     
-    if (effectivePlanCode && effectivePlanCode === 'starter' && p === 'pro') {
-      const currentPrice = effectivePlanCode === 'starter' || effectivePlanCode === 'pro'
-        ? getPrice(effectivePlanCode as 'starter'|'pro', d, currency)
-        : 0;
+    if (billingVerifiedActive && effectivePlanCode === 'starter' && p === 'pro') {
+      const currentPrice = getPrice(effectivePlanCode, d, currency);
       finalPrice = Math.max(0, basePrice - currentPrice);
     }
     return formatCurrency(finalPrice, currency);
@@ -654,11 +654,6 @@ function AiAccessGateDialog({
                   </button>
                 </div>
               </div>
-              {supportMessageText ? (
-                <pre className="mt-3 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-[var(--bg-base)] p-2 text-xs leading-5 text-secondary">
-                  {supportMessageText}
-                </pre>
-              ) : null}
             </div>
 
             {checkoutError ? (
@@ -905,6 +900,10 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   const tokenPlanCode = normalizePlanCode(user?.planCode);
   const effectivePlanCode = normalizePlanCode(snapshot?.user?.planCode || snapshot?.plan?.code) || tokenPlanCode;
   const hasPaidAiAccess = isAuthenticated && !isGuest && isPaidPlanCode(effectivePlanCode);
+  // The upgrade-diff price preview must mirror the server's checkout eligibility check
+  // (billing.status === 'active'), otherwise the price shown here can diverge from the
+  // amount the server actually invoices when billing is still pending admin verification.
+  const billingVerifiedActive = snapshot?.billing?.status === 'active';
   const activeGateSource = state?.source || feature;
   const requiredPlanCode = minimumMvpPlanForFeature(activeGateSource);
   const requiredPaidPlan = useMemo(() => {
@@ -1083,6 +1082,27 @@ export function useAiAccessGate(feature: AiPaidFeature): {
         draftToken: manualInvoice.draftToken || '',
       });
       writePendingManualPaymentMarker(manualInvoice.paymentRequestId, selectedPlan);
+      // Keep the invoice's support message/links in sync with what actually happened during
+      // proof submission (uploaded vs. failed), so the WhatsApp/Instagram buttons and the copy
+      // buttons always reflect the current situation instead of the stale invoice-creation text.
+      const applyUpdatedSupportContext = (supportLinks?: typeof proofResponse.supportLinks, supportMessage?: typeof proofResponse.supportMessage) => {
+        setManualInvoice((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            manualInvoice: {
+              ...prev.manualInvoice,
+              supportMessage: supportMessage || prev.manualInvoice.supportMessage,
+              instructions: {
+                ...prev.manualInvoice.instructions,
+                whatsappUrl: supportLinks?.whatsappUrl || prev.manualInvoice.instructions.whatsappUrl,
+                instagramUrl: supportLinks?.instagramUrl || prev.manualInvoice.instructions.instagramUrl,
+                supportEmail: supportLinks?.supportEmail || prev.manualInvoice.instructions.supportEmail,
+              },
+            },
+          };
+        });
+      };
       if (proofResponse.uploadUrl) {
         const uploadResponse = await fetch(proofResponse.uploadUrl, {
           method: 'PUT',
@@ -1090,6 +1110,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
           body: manualProofFile,
         });
         if (!uploadResponse.ok) {
+          applyUpdatedSupportContext(proofResponse.supportLinks, proofResponse.supportMessage);
           const supportUrl = proofResponse.supportLinks?.whatsappUrl || manualInvoice.manualInvoice.instructions.whatsappUrl;
           if (supportUrl) window.open(supportUrl, '_blank', 'noopener,noreferrer');
           setCheckoutError(t.billingUploadFailedFallback || 'Automatic upload failed. Invoice is still queued; please send the proof file via WhatsApp/Instagram with the invoice ID.');
@@ -1103,6 +1124,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
         const supportUrl = proofResponse.supportLinks?.whatsappUrl || manualInvoice.manualInvoice.instructions.whatsappUrl;
         if (supportUrl) window.open(supportUrl, '_blank', 'noopener,noreferrer');
       }
+      applyUpdatedSupportContext(proofResponse.supportLinks, proofResponse.supportMessage);
       setManualProofDelivery(proofResponse.deliveryMode);
       setManualProofStatus('submitted');
       void refreshAccountStatus();
@@ -1158,6 +1180,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
             selectedDuration={selectedDuration}
             setSelectedDuration={setSelectedDuration}
             effectivePlanCode={effectivePlanCode}
+            billingVerifiedActive={billingVerifiedActive}
             isPastDue={snapshot?.billing.status === 'past_due'}
             manageUrl={snapshot?.billing.manageUrl}
             isRenewal={isRenewal}

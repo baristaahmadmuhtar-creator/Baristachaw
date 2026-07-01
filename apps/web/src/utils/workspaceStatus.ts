@@ -82,7 +82,7 @@ export function resolveWorkspaceStatus(
     pendingManualPayment?: boolean;
   },
 ): WorkspaceStatusModel {
-  const { snapshot, loading, error, maintenance, language, locale, pendingManualPayment = false } = params;
+  const { snapshot, loading, maintenance, language, locale, pendingManualPayment = false } = params;
   const id = language === 'id';
 
   if (loading && !snapshot) {
@@ -99,7 +99,10 @@ export function resolveWorkspaceStatus(
     };
   }
 
-  if (error || !snapshot) {
+  // A transient error from a background poll must not blank out a perfectly good, already-loaded
+  // snapshot (AccountStatusContext keeps the last successful snapshot on non-auth errors). Only
+  // show "unavailable" when we have never successfully loaded a snapshot at all.
+  if (!snapshot) {
     return {
       kind: 'unavailable',
       severity: 'warning',

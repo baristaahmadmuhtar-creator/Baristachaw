@@ -128,6 +128,28 @@ describe('resolveWorkspaceStatus', () => {
     assert.equal(status.kind, 'pending_review');
   });
 
+  it('transient poll error with an already-loaded active snapshot => kind active, not unavailable', () => {
+    const snapshot: AccountStatusSnapshot = {
+      ...mockBaseSnapshot,
+      user: { ...mockBaseSnapshot.user, planCode: 'pro' },
+      billing: {
+        ...mockBaseSnapshot.billing,
+        status: 'active',
+        provider: 'stripe',
+        currentPeriodEnd: new Date(Date.now() + 30 * 86400000).toISOString(),
+      },
+    };
+    const status = resolveWorkspaceStatus({
+      snapshot,
+      loading: false,
+      error: 'Account status timed out.',
+      maintenance: [],
+      language: 'en',
+      locale: 'en-US',
+    });
+    assert.equal(status.kind, 'active');
+  });
+
   it('billing past_due => kind past_due', () => {
     const snapshot: AccountStatusSnapshot = {
       ...mockBaseSnapshot,

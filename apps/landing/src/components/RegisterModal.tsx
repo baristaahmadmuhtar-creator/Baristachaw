@@ -649,6 +649,24 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
 
       const data = await res.json();
       if (data.ok) {
+        // Keep the invoice's support message/links in sync with what actually happened during
+        // proof submission (uploaded vs. failed), so the WhatsApp/Instagram buttons and the copy
+        // buttons always reflect the current situation instead of the stale invoice-creation text.
+        const applyUpdatedSupportContext = () => {
+          setInvoice((prev: any) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              supportMessage: data.supportMessage || prev.supportMessage,
+              instructions: {
+                ...prev.instructions,
+                whatsappUrl: data.supportLinks?.whatsappUrl || prev.instructions?.whatsappUrl,
+                instagramUrl: data.supportLinks?.instagramUrl || prev.instructions?.instagramUrl,
+                supportEmail: data.supportLinks?.supportEmail || prev.instructions?.supportEmail,
+              },
+            };
+          });
+        };
         if (data.uploadUrl) {
           const uploadRes = await fetch(data.uploadUrl, {
             method: 'PUT',
@@ -658,6 +676,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
             body: uploadedFile,
           });
           if (!uploadRes.ok) {
+            applyUpdatedSupportContext();
             const supportUrl = data.supportLinks?.whatsappUrl || manualProofFallbackUrl;
             if (supportUrl) window.open(supportUrl, '_blank', 'noopener,noreferrer');
             setProofDelivery('manual_support');
@@ -668,6 +687,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
           const supportUrl = data.supportLinks?.whatsappUrl || manualProofFallbackUrl;
           if (supportUrl) window.open(supportUrl, '_blank', 'noopener,noreferrer');
         }
+        applyUpdatedSupportContext();
         setProofDelivery(data.deliveryMode || 'direct_upload');
         markPendingReview(invoice.id, selectedPlan, data.deliveryMode || 'direct_upload');
       } else {
@@ -1195,23 +1215,6 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                         {copiedSupportField === 'admin-message' ? 'Copied' : 'Salin pesan admin'}
                       </button>
                     </div>
-                    {supportMessageText ? (
-                      <pre style={{
-                        margin: '10px 0 0',
-                        maxHeight: '150px',
-                        overflow: 'auto',
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word',
-                        borderRadius: '10px',
-                        background: 'rgba(255,255,255,0.05)',
-                        padding: '10px',
-                        color: 'rgba(255,255,255,0.72)',
-                        fontSize: '11px',
-                        lineHeight: 1.55,
-                      }}>
-                        {supportMessageText}
-                      </pre>
-                    ) : null}
                   </div>
 
                   {invoice.instructions.qrisImageUrl ? (

@@ -341,7 +341,7 @@ create or replace function public.reserve_app_quota(
 )
 returns table (
   allowed boolean,
-  usage_date date,
+  out_usage_date date,
   used integer,
   daily_limit integer,
   plan_code text,
@@ -736,7 +736,7 @@ create or replace function public.consume_app_quota(
 )
 returns table (
   allowed boolean,
-  usage_date date,
+  out_usage_date date,
   used integer,
   daily_limit integer,
   plan_code text,
@@ -763,7 +763,7 @@ begin
 
   return query select
     coalesce(v_reserved.allowed, false),
-    coalesce(v_reserved.usage_date, current_date),
+    coalesce(v_reserved.out_usage_date, current_date),
     coalesce(v_reserved.used, 0),
     coalesce(v_reserved.daily_limit, 0),
     coalesce(v_reserved.plan_code, ''::text),

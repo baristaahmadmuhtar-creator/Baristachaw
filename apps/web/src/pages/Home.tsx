@@ -36,7 +36,8 @@ import {
   Sparkles as AppSparklesIcon,
 } from "../components/icons";
 import { normalizeAgentProfileMemory, resolveAgentProfileNamespace, type AgentProfileMemory } from "@baristachaw/shared";
-import { BILLING_PENDING_STORAGE_KEY, shouldBlockDuplicateManualPayment } from "@baristachaw/shared/billingFlow";
+import { BILLING_PENDING_STORAGE_KEY, parsePendingManualPaymentMarker, shouldBlockDuplicateManualPayment } from "@baristachaw/shared/billingFlow";
+import { buildManualPaymentSupportMessage, buildManualPaymentWhatsappUrl } from "@baristachaw/shared/manualPaymentMessage";
 import { getLanguageDirection, getLanguageLocale, LANGUAGE_OPTIONS } from "../constants";
 
 const genId = (prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -600,7 +601,23 @@ export function Home() {
 
   const handleWorkspaceStatusAction = async () => {
     if (workspaceStatus.kind === 'pending_review') {
-      window.open(`${SUPPORT_WHATSAPP_BASE}?text=${encodeURIComponent(t.billingContactSupportPending || 'Hello Baristachaw, I would like to ask about my payment status which is pending admin review.')}`, '_blank', 'noopener,noreferrer');
+      // Send a message that carries the user's actual payment context (id, plan, status)
+      // instead of a generic "I would like to ask about my payment status" line, so the
+      // admin doesn't have to ask the user to identify themselves before helping.
+      const marker = parsePendingManualPaymentMarker(readBillingPendingMarkerRaw());
+      const supportMessage = buildManualPaymentSupportMessage({
+        templateType: 'admin_review_request',
+        paymentRequestId: marker?.paymentRequestId,
+        userId: accountSnapshot?.user.id,
+        userEmail: accountSnapshot?.user.email,
+        userName: accountSnapshot?.user.name,
+        planCode: marker?.planCode || accountSnapshot?.user.planCode,
+        planDisplayName: accountSnapshot?.user.planName,
+        status: 'receipt_received',
+      });
+      const url = buildManualPaymentWhatsappUrl(SUPPORT_WHATSAPP_BASE, supportMessage)
+        || `${SUPPORT_WHATSAPP_BASE}?text=${encodeURIComponent(supportMessage.text)}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
       return;
     }
     if (workspaceStatus.action === 'checkout') {

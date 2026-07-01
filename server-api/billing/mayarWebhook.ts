@@ -46,9 +46,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const signature = verifyMayarWebhookSignature(req.headers);
   if (!signature.verified) {
-    // TEMPORARY: Since Mayar docs for webhook signature are missing, we log it and allow it for MVP.
-    // In production, we should fetch the transaction status from Mayar API to verify.
-    console.warn('Mayar webhook signature missing or invalid. Allowing for MVP.', req.headers);
+    console.warn('Mayar webhook rejected: signature verification failed.', { requestId, reason: signature.reason });
+    return res.status(401).json({
+      ok: false,
+      requestId,
+      error: 'Invalid webhook signature',
+      errorCode: 'invalid_webhook_signature',
+    });
   }
 
   // Parse webhook payload

@@ -107,6 +107,28 @@ test('pending marker and billing snapshot both block duplicate manual checkout',
   }), false);
 });
 
+test('active billing status overrides a stale local pending-review marker', () => {
+  const now = Date.now();
+  const marker = JSON.stringify({
+    paymentRequestId: 'manual_stale_marker_abcdef',
+    planCode: 'starter',
+    status: 'pending_admin_review',
+    updatedAt: now,
+  });
+
+  assert.equal(shouldBlockDuplicateManualPayment({
+    markerRaw: marker,
+    now,
+    billing: {
+      status: 'active',
+      provider: 'manual',
+      paymentActionRequired: false,
+      paymentAction: 'none',
+      message: '',
+    },
+  }), false);
+});
+
 test('fresh proof marker survives a lagging free account-status snapshot', () => {
   const now = Date.now();
   const marker = JSON.stringify({

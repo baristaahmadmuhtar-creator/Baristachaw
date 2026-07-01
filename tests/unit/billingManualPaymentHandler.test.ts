@@ -521,9 +521,29 @@ test('manual payment proof blocks duplicate checkout until admin review finishes
   await proofHandler(proofReq, proofRes as any);
   assert.equal(proofRes.statusCode, 200);
 
-  const duplicate = await postCheckout('runtime_user_duplicate_guard');
-  assert.equal(duplicate.res.statusCode, 403);
-  assert.equal(duplicate.body.errorCode, 'pending_invoice_exists');
+  // The default beforeEach mock always answers payment_receipts GET with an empty array, so it
+  // never actually reflects the row just written above. Simulate that row still being pending
+  // admin review so the checkout handler's duplicate-invoice guard has something to find.
+  const activeFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input.toString();
+    const method = init?.method || 'GET';
+    if (url.includes('/rest/v1/payment_receipts') && method === 'GET' && url.includes('select=manual_request_id,metadata')) {
+      return new Response(JSON.stringify([{ manual_request_id: body.paymentRequestId, metadata: { manualRequestId: body.paymentRequestId } }]), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return activeFetch(input as any, init);
+  }) as typeof fetch;
+
+  try {
+    const duplicate = await postCheckout('runtime_user_duplicate_guard');
+    assert.equal(duplicate.res.statusCode, 403);
+    assert.equal(duplicate.body.errorCode, 'pending_invoice_exists');
+  } finally {
+    globalThis.fetch = activeFetch;
+  }
 });
 
 test('manual payment proof inserts review row when checkout row is missing', async () => {

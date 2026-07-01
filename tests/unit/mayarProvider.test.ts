@@ -91,8 +91,10 @@ test('Mayar config normalizes official base URLs and exposes readiness without l
   assert.equal(config.mode, 'sandbox');
   assert.equal(config.baseUrl, 'https://api.mayar.club');
   assert.equal(config.checkoutCreatePath, '/hl/v1/invoice/create');
-  assert.equal(config.webhookSignatureReady, false);
-  assert.ok(config.blockers.includes('Mayar official webhook signature verification method is not documented in inspected docs.'));
+  // A configured MAYAR_WEBHOOK_SECRET means signature verification is ready and there is
+  // nothing blocking checkout (API key + success URL are both set in this test).
+  assert.equal(config.webhookSignatureReady, true);
+  assert.deepEqual(config.blockers, []);
   assert.doesNotMatch(JSON.stringify(config), /mayar-secret-key|mayar-webhook-secret/);
   assert.equal(normalizeMayarBaseUrl('https://api.mayar.id/'), 'https://api.mayar.id');
   assert.equal(normalizeMayarBaseUrl('https://api.mayar.club/'), 'https://api.mayar.club');
@@ -163,15 +165,31 @@ test('Mayar checkout creates server-side invoice payload using official invoice 
   }
 });
 
-test('Mayar status mapping is conservative and webhook verification is blocked until official signature docs exist', () => {
+test('Mayar status mapping is conservative and webhook verification requires a matching shared secret', () => {
   assert.equal(mapMayarStatusToBillingStatus('settled'), 'active');
   assert.equal(mapMayarStatusToBillingStatus('paid'), 'active');
   assert.equal(mapMayarStatusToBillingStatus('pending'), 'trialing');
   assert.equal(mapMayarStatusToBillingStatus('expired'), 'expired');
   assert.equal(mapMayarStatusToBillingStatus('failed'), 'cancelled');
-  assert.deepEqual(verifyMayarWebhookSignature(), {
+
+  delete process.env.MAYAR_WEBHOOK_SECRET;
+  assert.deepEqual(verifyMayarWebhookSignature({}), {
     verified: false,
     reason: 'mayar_webhook_signature_docs_missing',
+  });
+
+  process.env.MAYAR_WEBHOOK_SECRET = 'mayar-webhook-secret';
+  assert.deepEqual(verifyMayarWebhookSignature({ authorization: 'Bearer mayar-webhook-secret' }), {
+    verified: true,
+    reason: 'verified',
+  });
+  assert.deepEqual(verifyMayarWebhookSignature({ 'webhook-token': 'mayar-webhook-secret' }), {
+    verified: true,
+    reason: 'verified',
+  });
+  assert.deepEqual(verifyMayarWebhookSignature({ authorization: 'Bearer wrong-token' }), {
+    verified: false,
+    reason: 'invalid_signature',
   });
 });
 
@@ -199,7 +217,9 @@ test('admin management recognizes Mayar provider readiness without leaking Mayar
   assert.equal(res.statusCode, 200);
   const body = JSON.parse(res.body);
   assert.ok(body.billing.connectedProviders.includes('mayar'));
-  assert.ok(body.billing.gaps.some((gap: string) => /Mayar webhook signature/i.test(gap)));
+  // MAYAR_WEBHOOK_SECRET is configured above, so signature verification is ready and
+  // the admin panel should not warn that it is missing.
+  assert.equal(body.billing.gaps.some((gap: string) => /Mayar webhook signature/i.test(gap)), false);
   assert.equal(JSON.stringify(body).includes('mayar-secret-key'), false);
   assert.equal(JSON.stringify(body).includes('mayar-webhook-secret'), false);
 });

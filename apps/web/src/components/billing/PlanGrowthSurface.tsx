@@ -425,6 +425,10 @@ export function PlanGrowthSurface({
   const showUpgradeFraming = !hasPendingManualPayment && (currentPlanCode === 'free' || snapshot?.recommendedUpgrade.action === 'checkout');
   const showCompactPaidSurface = !showUpgradeFraming;
   const hasActivePaidPlan = currentPlanCode !== 'free' && !hasPendingManualPayment;
+  // The upgrade-diff price preview must mirror the server's checkout eligibility check
+  // (billing.status === 'active'), otherwise the price shown here can diverge from the
+  // amount the server actually invoices when billing is still pending admin verification.
+  const billingVerifiedActive = snapshot?.billing?.status === 'active';
   const pendingSupportWhatsappUrl = manualInvoice?.manualInvoice.instructions.whatsappUrl || 'https://wa.me/6738270092';
 
   const upgradeOptions = useMemo<MvpPaidPlanCode[]>(() => getMvpUpgradeOptions(currentPlanCode), [currentPlanCode]);
@@ -570,6 +574,27 @@ export function PlanGrowthSurface({
         draftToken: manualInvoice.draftToken || '',
       });
       writePendingManualPaymentMarker(manualInvoice.paymentRequestId, manualInvoice.planCode);
+      // Keep the invoice's support message/links in sync with what actually happened during
+      // proof submission (uploaded vs. failed), so the WhatsApp/Instagram buttons and the copy
+      // buttons always reflect the current situation instead of the stale invoice-creation text.
+      const applyUpdatedSupportContext = (supportLinks?: typeof proofResponse.supportLinks, supportMessage?: typeof proofResponse.supportMessage) => {
+        setManualInvoice((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            manualInvoice: {
+              ...prev.manualInvoice,
+              supportMessage: supportMessage || prev.manualInvoice.supportMessage,
+              instructions: {
+                ...prev.manualInvoice.instructions,
+                whatsappUrl: supportLinks?.whatsappUrl || prev.manualInvoice.instructions.whatsappUrl,
+                instagramUrl: supportLinks?.instagramUrl || prev.manualInvoice.instructions.instagramUrl,
+                supportEmail: supportLinks?.supportEmail || prev.manualInvoice.instructions.supportEmail,
+              },
+            },
+          };
+        });
+      };
       if (proofResponse.uploadUrl) {
         const uploadResponse = await fetch(proofResponse.uploadUrl, {
           method: 'PUT',
@@ -577,6 +602,7 @@ export function PlanGrowthSurface({
           body: manualProofFile,
         });
         if (!uploadResponse.ok) {
+          applyUpdatedSupportContext(proofResponse.supportLinks, proofResponse.supportMessage);
           const supportUrl = proofResponse.supportLinks?.whatsappUrl || manualInvoice.manualInvoice.instructions.whatsappUrl;
           if (supportUrl) window.open(supportUrl, '_blank', 'noopener,noreferrer');
           setActionError('Upload otomatis belum berhasil. Invoice tetap masuk antrean admin; kirim file bukti lewat WhatsApp/Instagram dengan ID invoice.');
@@ -590,6 +616,7 @@ export function PlanGrowthSurface({
         const supportUrl = proofResponse.supportLinks?.whatsappUrl || manualInvoice.manualInvoice.instructions.whatsappUrl;
         if (supportUrl) window.open(supportUrl, '_blank', 'noopener,noreferrer');
       }
+      applyUpdatedSupportContext(proofResponse.supportLinks, proofResponse.supportMessage);
       setManualProofDelivery(proofResponse.deliveryMode);
       setManualProofStatus('submitted');
       setCheckoutStep('success');
@@ -606,9 +633,10 @@ export function PlanGrowthSurface({
 
   const copyManualAccount = async () => {
     if (!manualInvoice) return;
-    const { bankName, accountName, accountNumber } = manualInvoice.manualInvoice.instructions;
-    const text = `${bankName}\n${accountName}\n${accountNumber}`;
-    await navigator.clipboard?.writeText(text).catch(() => undefined);
+    const { accountNumber } = manualInvoice.manualInvoice.instructions;
+    if (!accountNumber) return;
+    await navigator.clipboard?.writeText(accountNumber).catch(() => undefined);
+    markManualCopied('account-number');
   };
 
   const markManualCopied = (field: string) => {
@@ -784,11 +812,6 @@ export function PlanGrowthSurface({
                         </button>
                       </div>
                     </div>
-                    {manualSupportMessage ? (
-                      <pre className="mt-3 max-h-44 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-surface-alpha p-3 text-xs leading-5 text-secondary">
-                        {manualSupportMessage}
-                      </pre>
-                    ) : null}
                   </div>
                   <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
                     <div className="rounded-xl border border-glass bg-[var(--bg-base)]/70 p-3">
@@ -812,7 +835,7 @@ export function PlanGrowthSurface({
                       onClick={copyManualAccount}
                       className="inline-flex min-h-11 items-center justify-center rounded-xl border border-blue-600 bg-blue-600 px-4 font-extrabold text-white transition-colors hover:bg-blue-700"
                     >
-                      Copy account
+                      {copiedManualField === 'account-number' ? 'Copied' : 'Copy account'}
                     </button>
                   </div>
                   <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto_auto_auto] md:items-end">
@@ -995,8 +1018,8 @@ export function PlanGrowthSurface({
                   let finalDynamicPrice = undefined;
                   if (code === 'starter' || code === 'pro') {
                     const basePrice = getPrice(code, duration, getCurrencyForRegion(region));
-                    if (hasActivePaidPlan && upgradeOptions.length > 0) {
-                      const currentPrice = currentPlanCode === 'starter' || currentPlanCode === 'pro' 
+                    if (hasActivePaidPlan && billingVerifiedActive && upgradeOptions.length > 0) {
+                      const currentPrice = currentPlanCode === 'starter' || currentPlanCode === 'pro'
                         ? getPrice(currentPlanCode as 'starter'|'pro', duration, getCurrencyForRegion(region))
                         : 0;
                       finalDynamicPrice = Math.max(0, basePrice - currentPrice);

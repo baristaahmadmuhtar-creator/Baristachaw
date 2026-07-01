@@ -777,6 +777,96 @@ test('admin management keeps open manual proof users in payment queue instead of
   assert.equal(body.billing.attentionUsers, 0);
 });
 
+test('admin management does not treat a freshly created manual invoice as needing admin attention before proof is submitted', async () => {
+  process.env.SUPABASE_URL = 'https://unit-test.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'dummy-service-role-key';
+  process.env.MANUAL_PAYMENT_ENABLED = '1';
+
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const targetUserId = 'brand-new-buyer';
+
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    const method = init?.method || 'GET';
+    if (url.includes('/rest/v1/app_users') && method === 'POST') {
+      return new Response(JSON.stringify([{ id: 'owner-user' }]), { status: 201, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/app_users') && method === 'GET') {
+      return new Response(JSON.stringify([{
+        id: targetUserId,
+        email: 'brand.new@example.com',
+        display_name: 'Brand New Buyer',
+        provider: 'email',
+        role: 'user',
+        status: 'active',
+        plan_code: 'free',
+        // Matches what createManualPaymentRequest actually persists at invoice-creation time,
+        // before any proof has been submitted: paymentActionRequired stays false.
+        billing_status: 'none',
+        billing_provider: 'none',
+        billing_market: 'indonesia',
+        payment_action_required: false,
+        created_at: '2026-06-28T00:00:00.000Z',
+        updated_at: '2026-06-28T00:00:00.000Z',
+      }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/payment_receipts') && method === 'GET') {
+      return new Response(JSON.stringify([{
+        manual_request_id: 'manual_brandnew_aabbccddeeff',
+        user_id: targetUserId,
+        requested_plan_code: 'pro',
+        requested_duration: 'monthly',
+        requested_currency: 'idr',
+        requested_amount: 299000,
+        requested_amount_label: 'Rp299.000',
+        payer_email: 'brand.new@example.com',
+        // No receipt_reference / proof metadata at all: the user has not uploaded anything yet.
+        receipt_reference: '',
+        receipt_mime_type: '',
+        receipt_size_bytes: null,
+        status: 'queued',
+        metadata: {
+          manualRequestId: 'manual_brandnew_aabbccddeeff',
+          duration: 'monthly',
+          currency: 'idr',
+          amount: 299000,
+          amountLabel: 'Rp299.000',
+          instructions: {
+            bankName: 'BCA',
+            accountName: 'AHMAD MUHTAR ALIMUDIN',
+            accountNumber: '3480711393',
+            message: 'Baristachaw manual payment manual_brandnew_aabbccddeeff',
+          },
+        },
+        created_at: '2026-06-28T00:00:00.000Z',
+        updated_at: '2026-06-28T00:00:00.000Z',
+      }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.includes('/rest/v1/')) {
+      return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    throw new Error(`Unexpected fetch: ${method} ${url}`);
+  }) as typeof fetch;
+
+  const req = makeReq({
+    cookies: { auth_token: token },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.dataMode, 'supabase');
+  assert.equal(body.billing.attentionUsers, 0);
+  const user = body.users.find((item: any) => item.id === targetUserId);
+  assert.equal(user.billing.paymentActionRequired, false);
+});
+
 test('admin management requires support note for direct plan overrides', async () => {
   const token = createToken({
     id: 'owner-user',

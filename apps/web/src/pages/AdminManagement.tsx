@@ -674,7 +674,11 @@ function isRecoveryUser(user: AdminUserRecord): boolean {
 const OPEN_MANUAL_PAYMENT_STATUSES = new Set<ManualPaymentStatus>(['pending_review', 'receipt_received']);
 
 function isOpenManualPayment(payment: AdminManualPaymentRequest): boolean {
-  return OPEN_MANUAL_PAYMENT_STATUSES.has(payment.status);
+  if (!OPEN_MANUAL_PAYMENT_STATUSES.has(payment.status)) return false;
+  // A freshly created invoice starts tagged 'pending_review' even though no proof has been
+  // submitted yet. Only treat it as actually needing admin attention once proof metadata exists -
+  // otherwise every new checkout would immediately count as an open manual payment.
+  return Boolean(payment.proof);
 }
 
 function buildOpenManualPaymentUserIds(payments: AdminManualPaymentRequest[]): Set<string> {

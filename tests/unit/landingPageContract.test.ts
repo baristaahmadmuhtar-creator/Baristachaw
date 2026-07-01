@@ -15,13 +15,27 @@ test('landing is a separate non-PWA workspace', () => {
 });
 
 test('landing routes product actions to the app domain', () => {
+  // The deployed "baristachaw-landing" Vercel project has its root directory set to the repo
+  // root and builds via `npm run build --workspace @baristachaw/landing`, so it is
+  // `vercel.landing.json` (repo root) that Vercel actually reads for this project -
+  // NOT apps/landing/vercel.json, which is an unused duplicate that has previously gone stale
+  // without anyone noticing since nothing validated it.
   const config = read('apps/landing/src/config.ts');
-  const vercel = read('apps/landing/vercel.json');
+  const vercel = read('vercel.landing.json');
   assert.match(config, /https:\/\/app\.baristachaw\.com/);
   assert.match(config, /tools\?tab=ai_brew/);
   assert.match(vercel, /https:\/\/app\.baristachaw\.com\/login/);
   assert.match(vercel, /https:\/\/app\.baristachaw\.com\/register/);
   assert.match(vercel, /https:\/\/app\.baristachaw\.com\/tools\?tab=ai_brew/);
+});
+
+test('landing proxies /api/* to the app domain so relative fetch calls resolve to JSON, not the SPA shell', () => {
+  const vercel = JSON.parse(read('vercel.landing.json')) as { rewrites?: Array<{ source: string; destination: string }> };
+  const apiRewriteIndex = (vercel.rewrites || []).findIndex((rule) => rule.source === '/api/:path*');
+  const catchAllIndex = (vercel.rewrites || []).findIndex((rule) => rule.source === '/:path*');
+  assert.notEqual(apiRewriteIndex, -1, 'expected an /api/:path* rewrite to the app domain');
+  assert.equal(vercel.rewrites![apiRewriteIndex].destination, 'https://app.baristachaw.com/api/:path*');
+  assert.ok(apiRewriteIndex < catchAllIndex, 'the /api rewrite must be listed before the SPA catch-all rewrite');
 });
 
 test('landing includes required brewer coverage and honest evidence', () => {

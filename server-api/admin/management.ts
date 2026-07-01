@@ -1671,7 +1671,12 @@ function buildManualQueueCounts(requests: ManualPaymentRequest[]): AdminSnapshot
 const OPEN_MANUAL_PAYMENT_STATUSES = new Set<ManualPaymentRequest['status']>(['pending_review', 'receipt_received']);
 
 function isOpenManualPaymentRequest(request: ManualPaymentRequest): boolean {
-  return OPEN_MANUAL_PAYMENT_STATUSES.has(request.status);
+  if (!OPEN_MANUAL_PAYMENT_STATUSES.has(request.status)) return false;
+  // A freshly created invoice starts life tagged 'pending_review' even though no proof has been
+  // submitted yet (the user hasn't paid or uploaded anything). Only treat it as actually needing
+  // admin attention once proof metadata actually exists - otherwise every new checkout would
+  // immediately show up in the admin queue before the user has done anything.
+  return Boolean(request.proof);
 }
 
 function buildOpenManualPaymentUserIds(requests: ManualPaymentRequest[]): Set<string> {

@@ -516,13 +516,16 @@ export function PlanGrowthSurface({
       return;
     }
     
-    // Always ask for payment method if Mayar is enabled
-    if (import.meta.env.VITE_MAYAR_CHECKOUT_ENABLED === 'true') {
+    // Ask for payment method unless Mayar checkout is explicitly disabled. This mirrors the
+    // landing page's default (enabled unless explicitly turned off), since requiring an opt-in
+    // env var here meant this env var was never set for the app build and the online-payment
+    // choice was permanently unreachable, silently forcing everyone through manual-only checkout.
+    if (import.meta.env.VITE_MAYAR_CHECKOUT_ENABLED !== 'false') {
       setSelectedPlanCode(planCode);
       setCheckoutStep('payment_method');
       return;
     }
-    
+
     await proceedCheckout(planCode, 'manual');
   };
 
@@ -761,8 +764,13 @@ export function PlanGrowthSurface({
                         Transfer manually, attach proof, then wait for admin verification. Paid entitlement is not active until this payment is marked verified paid.
                       </p>
                     </div>
-                    <span className="w-fit rounded-full bg-amber-500/15 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-amber-700 dark:text-amber-200">
-                      {manualInvoice.manualInvoice.status.replace(/_/g, ' ')}
+                    <span className="w-fit rounded-full bg-blue-500/15 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-blue-700 dark:text-blue-200">
+                      {/* This step only renders before proof has been submitted (submitting proof
+                          moves checkoutStep to 'success'), so it must never show the invoice's raw
+                          status string - that value is 'pending_review' from the moment the invoice
+                          is created, which reads as "admin is already reviewing this" even though
+                          the user hasn't paid or uploaded anything yet. */}
+                      {language === 'id' ? 'Menunggu pembayaran' : 'Awaiting payment'}
                     </span>
                   </div>
                   <button

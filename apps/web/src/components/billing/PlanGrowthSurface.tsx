@@ -393,6 +393,10 @@ export function PlanGrowthSurface({
   });
   const [selectedPlanCode, setSelectedPlanCode] = useState<string | null>(null);
   const [copiedManualField, setCopiedManualField] = useState<string | null>(null);
+  // Mayar's invoice API requires a customer mobile number, which Google-login users do not have
+  // on their profile. Collect it in the online-payment step so "Bayar Online" actually reaches Mayar.
+  const [mayarMobile, setMayarMobile] = useState('');
+  const [mayarMobileError, setMayarMobileError] = useState('');
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -530,6 +534,16 @@ export function PlanGrowthSurface({
   };
 
   const proceedCheckout = async (planCode: string, provider: 'mayar' | 'manual') => {
+    // Mayar requires a customer mobile number; block the online path until one is entered so the
+    // request never silently falls back to a manual invoice.
+    const normalizedMobile = mayarMobile.replace(/[^\d+]/g, '');
+    if (provider === 'mayar') {
+      if (normalizedMobile.replace(/\D/g, '').length < 8) {
+        setMayarMobileError(language === 'id' ? 'Masukkan nomor WhatsApp/HP yang valid untuk pembayaran online.' : 'Enter a valid mobile number for online payment.');
+        return;
+      }
+      setMayarMobileError('');
+    }
     setManualInvoice(null);
     setManualProofFile(null);
     setManualProofStatus('idle');
@@ -542,6 +556,7 @@ export function PlanGrowthSurface({
         duration,
         currency,
         provider,
+        ...(provider === 'mayar' ? { mobile: normalizedMobile } : {}),
         ...(promoApplied && promoCode.trim() ? { promoCode: promoCode.trim() } : {}),
       });
       if (response.mode === 'redirect' && response.url) {
@@ -549,6 +564,13 @@ export function PlanGrowthSurface({
         return;
       }
       if (response.mode === 'manual_invoice') {
+        // The user asked for online payment but the server fell back to a manual invoice
+        // (Mayar not configured or unavailable). Surface that instead of silently switching.
+        if (provider === 'mayar') {
+          setActionError(language === 'id'
+            ? 'Pembayaran online belum tersedia saat ini. Kami siapkan transfer manual sebagai gantinya.'
+            : 'Online payment is unavailable right now. We prepared a manual transfer instead.');
+        }
         setManualInvoice(response);
         setCheckoutStep('checkout');
         busyRef.current = false;
@@ -557,7 +579,10 @@ export function PlanGrowthSurface({
       setActionError(t.homePlanCheckoutFailed || 'Checkout failed');
       busyRef.current = false;
     } catch (error) {
-      setActionError(t.homePlanCheckoutFailed || 'Checkout failed');
+      const message = error instanceof BillingApiError
+        ? `${error.message}${error.details ? `: ${error.details}` : ''}`
+        : (t.homePlanCheckoutFailed || 'Checkout failed');
+      setActionError(message);
       busyRef.current = false;
     } finally {
       setBusyPlanCode(null);
@@ -956,7 +981,26 @@ export function PlanGrowthSurface({
 
               {checkoutStep === 'payment_method' && selectedPlanCode ? (
                 <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-glass bg-[var(--bg-base)]/70 p-8 text-center shadow-sm">
-                  <h3 className="mb-8 text-2xl font-black text-primary">Pilih Metode Pembayaran</h3>
+                  <h3 className="mb-6 text-2xl font-black text-primary">{language === 'id' ? 'Pilih Metode Pembayaran' : 'Choose Payment Method'}</h3>
+                  <div className="mb-5 text-left">
+                    <label htmlFor="mayar-mobile" className="block text-xs font-bold uppercase tracking-wide text-secondary">
+                      {language === 'id' ? 'Nomor WhatsApp / HP' : 'Mobile number'}
+                    </label>
+                    <input
+                      id="mayar-mobile"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      value={mayarMobile}
+                      onChange={(event) => { setMayarMobile(event.currentTarget.value); if (mayarMobileError) setMayarMobileError(''); }}
+                      placeholder={language === 'id' ? 'cth. 081234567890' : 'e.g. 081234567890'}
+                      className="mt-1.5 w-full rounded-xl border border-glass bg-[var(--bg-elevated)] px-3 py-2.5 text-sm font-semibold text-primary outline-none transition-colors focus:border-blue-500"
+                    />
+                    <p className="mt-1 text-[11px] text-tertiary">
+                      {language === 'id' ? 'Diperlukan untuk pembayaran online (invoice & konfirmasi).' : 'Required for online payment (invoice & confirmation).'}
+                    </p>
+                    {mayarMobileError ? <p className="mt-1 text-xs font-semibold text-rose-500">{mayarMobileError}</p> : null}
+                  </div>
                   <div className="flex flex-col gap-4">
                     <button
                       type="button"
@@ -964,9 +1008,9 @@ export function PlanGrowthSurface({
                       disabled={busyRef.current}
                       className="inline-flex min-h-14 items-center justify-center rounded-xl bg-blue-600 px-6 font-extrabold text-white transition-colors hover:bg-blue-700 disabled:opacity-50 text-lg shadow-md hover:shadow-lg"
                     >
-                      Bayar Online (QRIS, E-Wallet, Card)
+                      {language === 'id' ? 'Bayar Online (QRIS, E-Wallet, Kartu)' : 'Pay Online (QRIS, E-Wallet, Card)'}
                     </button>
-                    
+
                     <div className="flex items-center gap-4 my-2 opacity-50">
                       <div className="h-px flex-1 bg-glass" />
                       <span className="text-sm font-semibold text-secondary uppercase tracking-widest">Atau</span>
@@ -979,16 +1023,16 @@ export function PlanGrowthSurface({
                       disabled={busyRef.current}
                       className="inline-flex min-h-14 items-center justify-center rounded-xl border-2 border-glass bg-[var(--bg-elevated)] px-6 font-bold text-primary transition-all hover:bg-surface-alpha hover:border-surface disabled:opacity-50 text-lg"
                     >
-                      Transfer Manual (BCA)
+                      {language === 'id' ? 'Transfer Manual (Bank)' : 'Manual Transfer (Bank)'}
                     </button>
                   </div>
                   <button
                     type="button"
-                    onClick={() => { setCheckoutStep('choose'); setSelectedPlanCode(null); }}
+                    onClick={() => { setCheckoutStep('choose'); setSelectedPlanCode(null); setMayarMobileError(''); }}
                     disabled={busyRef.current}
                     className="mt-8 text-sm font-bold text-secondary hover:text-primary underline decoration-glass underline-offset-4"
                   >
-                    Batal dan kembali
+                    {language === 'id' ? 'Batal dan kembali' : 'Cancel and go back'}
                   </button>
                 </div>
               ) : null}

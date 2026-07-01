@@ -14,28 +14,34 @@ test('landing is a separate non-PWA workspace', () => {
   assert.equal(fs.existsSync('apps/landing/public/sw.js'), false);
 });
 
+// The deployed "baristachaw-landing" Vercel project has its Root Directory set to `apps/landing`
+// (confirmed from build logs: it runs `@baristachaw/landing build` -> `vite build` with output
+// `dist/`). Therefore Vercel reads `apps/landing/vercel.json`, NOT the repo-root `vercel.landing.json`.
+// Both are validated below and kept in sync so a future Root Directory change can't silently
+// reintroduce the "API returns index.html instead of JSON" bug on the landing domain.
+const LANDING_VERCEL_FILES = ['apps/landing/vercel.json', 'vercel.landing.json'] as const;
+
 test('landing routes product actions to the app domain', () => {
-  // The deployed "baristachaw-landing" Vercel project has its root directory set to the repo
-  // root and builds via `npm run build --workspace @baristachaw/landing`, so it is
-  // `vercel.landing.json` (repo root) that Vercel actually reads for this project -
-  // NOT apps/landing/vercel.json, which is an unused duplicate that has previously gone stale
-  // without anyone noticing since nothing validated it.
   const config = read('apps/landing/src/config.ts');
-  const vercel = read('vercel.landing.json');
   assert.match(config, /https:\/\/app\.baristachaw\.com/);
   assert.match(config, /tools\?tab=ai_brew/);
-  assert.match(vercel, /https:\/\/app\.baristachaw\.com\/login/);
-  assert.match(vercel, /https:\/\/app\.baristachaw\.com\/register/);
-  assert.match(vercel, /https:\/\/app\.baristachaw\.com\/tools\?tab=ai_brew/);
+  for (const file of LANDING_VERCEL_FILES) {
+    const vercel = read(file);
+    assert.match(vercel, /https:\/\/app\.baristachaw\.com\/login/, `${file} missing /login redirect`);
+    assert.match(vercel, /https:\/\/app\.baristachaw\.com\/register/, `${file} missing /register redirect`);
+    assert.match(vercel, /https:\/\/app\.baristachaw\.com\/tools\?tab=ai_brew/, `${file} missing /ai-brew redirect`);
+  }
 });
 
 test('landing proxies /api/* to the app domain so relative fetch calls resolve to JSON, not the SPA shell', () => {
-  const vercel = JSON.parse(read('vercel.landing.json')) as { rewrites?: Array<{ source: string; destination: string }> };
-  const apiRewriteIndex = (vercel.rewrites || []).findIndex((rule) => rule.source === '/api/:path*');
-  const catchAllIndex = (vercel.rewrites || []).findIndex((rule) => rule.source === '/:path*');
-  assert.notEqual(apiRewriteIndex, -1, 'expected an /api/:path* rewrite to the app domain');
-  assert.equal(vercel.rewrites![apiRewriteIndex].destination, 'https://app.baristachaw.com/api/:path*');
-  assert.ok(apiRewriteIndex < catchAllIndex, 'the /api rewrite must be listed before the SPA catch-all rewrite');
+  for (const file of LANDING_VERCEL_FILES) {
+    const vercel = JSON.parse(read(file)) as { rewrites?: Array<{ source: string; destination: string }> };
+    const apiRewriteIndex = (vercel.rewrites || []).findIndex((rule) => rule.source === '/api/:path*');
+    const catchAllIndex = (vercel.rewrites || []).findIndex((rule) => rule.source === '/:path*');
+    assert.notEqual(apiRewriteIndex, -1, `${file} is missing the /api/:path* rewrite to the app domain`);
+    assert.equal(vercel.rewrites![apiRewriteIndex].destination, 'https://app.baristachaw.com/api/:path*', `${file} /api rewrite has wrong destination`);
+    assert.ok(apiRewriteIndex < catchAllIndex, `${file} lists the /api rewrite after the SPA catch-all rewrite`);
+  }
 });
 
 test('landing includes required brewer coverage and honest evidence', () => {

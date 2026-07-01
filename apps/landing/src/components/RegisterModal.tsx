@@ -79,6 +79,8 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
   const [invoice, setInvoice] = useState<any>(null);
   const [fetchingInvoice, setFetchingInvoice] = useState(false);
   const [invoiceError, setInvoiceError] = useState('');
+  // Mayar's invoice API requires a customer mobile number; collect it for the online-payment path.
+  const [mayarMobile, setMayarMobile] = useState('');
   
   const [copied, setCopied] = useState(false);
   const [copiedBankIndex, setCopiedBankIndex] = useState<number | null>(null);
@@ -239,6 +241,12 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     try {
       const planCode = selectedPlan;
       const targetProvider = forcedProvider || paymentMethod;
+      const normalizedMobile = mayarMobile.replace(/[^\d+]/g, '');
+      if (targetProvider === 'mayar' && normalizedMobile.replace(/\D/g, '').length < 8) {
+        setInvoiceError('Masukkan nomor WhatsApp/HP yang valid untuk pembayaran online.');
+        setFetchingInvoice(false);
+        return;
+      }
       const res = await fetch(`/api/billing/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -248,6 +256,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
           duration: selectedDuration,
           currency,
           provider: targetProvider,
+          ...(targetProvider === 'mayar' ? { mobile: normalizedMobile } : {}),
           ...(promoCode ? { promoCode } : {}),
         }),
       });
@@ -275,7 +284,7 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
     } finally {
       setFetchingInvoice(false);
     }
-  }, [currency, promoCode, selectedDuration, selectedPlan, paymentMethod]);
+  }, [currency, promoCode, selectedDuration, selectedPlan, paymentMethod, mayarMobile]);
 
   useEffect(() => {
     if (step === 'checkout') {
@@ -1158,12 +1167,28 @@ export function RegisterModal({ language, plan, duration, user, onLoginSuccess, 
                 </div>
               ) : paymentMethod === 'mayar' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
-                  <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13.5px', lineHeight: 1.5, textAlign: 'center', margin: '0 0 10px' }}>
+                  <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13.5px', lineHeight: 1.5, textAlign: 'center', margin: '0 0 4px' }}>
                     Anda akan diarahkan ke halaman pembayaran online aman untuk menyelesaikan transaksi menggunakan QRIS, OVO, ShopeePay, GoPay, atau Virtual Account.
                   </p>
-                  <button 
-                    className="checkout-submit-btn" 
-                    type="button" 
+                  <div style={{ textAlign: 'left' }}>
+                    <label htmlFor="landing-mayar-mobile" style={{ display: 'block', fontSize: '11px', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)', marginBottom: '6px' }}>
+                      Nomor WhatsApp / HP
+                    </label>
+                    <input
+                      id="landing-mayar-mobile"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      value={mayarMobile}
+                      onChange={(event) => { setMayarMobile(event.currentTarget.value); if (invoiceError) setInvoiceError(''); }}
+                      placeholder="cth. 081234567890"
+                      style={{ width: '100%', padding: '11px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(255,255,255,0.05)', color: '#ffffff', fontSize: '14px', fontWeight: 600, outline: 'none' }}
+                    />
+                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', margin: '6px 0 0' }}>Diperlukan untuk invoice &amp; konfirmasi pembayaran online.</p>
+                  </div>
+                  <button
+                    className="checkout-submit-btn"
+                    type="button"
                     onClick={() => void fetchInvoice('mayar')}
                     data-testid="landing-submit-mayar"
                   >

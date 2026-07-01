@@ -173,7 +173,7 @@ async function billingRequest<TResponse = BillingCheckoutResponse>(path: string,
 
 export function startBillingCheckout(
   planCode: Exclude<PlanCode, 'free'>,
-  options?: { duration?: BillingDuration; promoCode?: string; currency?: CurrencyCode; provider?: 'mayar' | 'manual' },
+  options?: { duration?: BillingDuration; promoCode?: string; currency?: CurrencyCode; provider?: 'mayar' | 'manual'; mobile?: string },
 ): Promise<BillingCheckoutResponse> {
   return billingRequest('/api/billing/checkout', {
     planCode,
@@ -181,6 +181,11 @@ export function startBillingCheckout(
     ...(options?.promoCode ? { promoCode: options.promoCode } : {}),
     ...(options?.currency ? { currency: options.currency } : {}),
     ...(options?.provider ? { provider: options.provider } : {}),
+    // Mayar's invoice API requires a customer mobile number. Google-login users have none on
+    // their profile, so the online-payment UI collects one and passes it here; the server's
+    // authMobile() reads body.mobile first. Without this, the Mayar branch is skipped and the
+    // request silently falls back to a manual invoice ("Bayar Online" appears to do nothing).
+    ...(options?.mobile ? { mobile: options.mobile } : {}),
   });
 }
 
